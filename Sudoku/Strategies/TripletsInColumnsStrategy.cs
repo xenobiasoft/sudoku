@@ -6,25 +6,23 @@ public class TripletsInColumnsStrategy : SolverStrategy
 {
 	public override void Execute(SudokuPuzzle puzzle)
 	{
-		var tripletsLocation = new StringBuilder();
-
 		for (var triplet1Col = 0; triplet1Col < SudokuPuzzle.Columns; triplet1Col++)
 		{
 			for (var triplet1Row = 0; triplet1Row < SudokuPuzzle.Rows; triplet1Row++)
 			{
 				if (puzzle.Values[triplet1Col, triplet1Row] != 0 || puzzle.PossibleValues[triplet1Col, triplet1Row].Length != 3) continue;
 
+				var tripletsLocation = new StringBuilder();
+
 				tripletsLocation.Append(triplet1Col).Append(triplet1Row);
 
-				for (var triplet2Row = 0; triplet2Row < SudokuPuzzle.Rows; triplet2Row++)
+				for (var triplet2Row = triplet1Row + 1; triplet2Row < SudokuPuzzle.Rows; triplet2Row++)
 				{
-					if (triplet2Row != triplet1Row &&
-					    (
-						    puzzle.PossibleValues[triplet1Col, triplet2Row] == puzzle.PossibleValues[triplet1Col, triplet1Row] ||
-						    (puzzle.PossibleValues[triplet1Col, triplet2Row].Length == 2 &&
-						     puzzle.PossibleValues[triplet1Col, triplet1Row].Contains(puzzle.PossibleValues[triplet1Col, triplet2Row][0].ToString()) &&
-						     puzzle.PossibleValues[triplet1Col, triplet1Row].Contains(puzzle.PossibleValues[triplet1Col, triplet2Row][1].ToString()))
-					    ))
+					if (puzzle.PossibleValues[triplet1Col, triplet1Row] == puzzle.PossibleValues[triplet1Col, triplet2Row] ||
+					    (puzzle.PossibleValues[triplet1Col, triplet2Row].Length == 2 &&
+					     puzzle.PossibleValues[triplet1Col, triplet1Row].Contains(puzzle.PossibleValues[triplet1Col, triplet2Row][0].ToString()) &&
+					     puzzle.PossibleValues[triplet1Col, triplet1Row].Contains(puzzle.PossibleValues[triplet1Col, triplet2Row][1].ToString()))
+					    )
 					{
 						tripletsLocation.Append(triplet1Col).Append(triplet2Row);
 					}

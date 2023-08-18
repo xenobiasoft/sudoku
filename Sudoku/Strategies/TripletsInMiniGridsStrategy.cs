@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using XenobiaSoft.Sudoku.Helpers;
 
 namespace XenobiaSoft.Sudoku.Strategies;
 
@@ -6,57 +7,57 @@ public class TripletsInMiniGridsStrategy : SolverStrategy
 {
 	public override void Execute(SudokuPuzzle puzzle)
 	{
-		var tripletsLocation = new StringBuilder();
-
-		for (var row = 0; row < SudokuPuzzle.Rows; row++)
+		for (var triplet1Row = 0; triplet1Row < SudokuPuzzle.Rows; triplet1Row++)
 		{
-			for (var col = 0; col < SudokuPuzzle.Columns; col++)
+			for (var triplet1Col = 0; triplet1Col < SudokuPuzzle.Columns; triplet1Col++)
 			{
-				if (puzzle.Values[col, row] != 0 || puzzle.PossibleValues[col, row].Length != 3) continue;
+				if (puzzle.Values[triplet1Col, triplet1Row] != 0 || puzzle.PossibleValues[triplet1Col, triplet1Row].Length != 3) continue;
+				
+				var tripletsLocation = new StringBuilder();
 
-				tripletsLocation.Append(col).Append(row);
+				tripletsLocation.Append(triplet1Col).Append(triplet1Row);
 
-				var startC = col - (col - 1) % 3;
-				var startR = row - (row - 1) % 3;
+				var miniGridStartCol = PuzzleHelper.CalculateMiniGridStartCol(triplet1Col);
+				var miniGridStartRow = PuzzleHelper.CalculateMiniGridStartRow(triplet1Row);
 
-				for (var rr = startR; rr < startR + 2; rr++)
+				for (var triplet2Row = miniGridStartRow; triplet2Row < miniGridStartRow + 2; triplet2Row++)
 				{
-					for (var cc = startC; cc < startC + 2; cc++)
+					for (var triplet2Col = miniGridStartCol; triplet2Col < miniGridStartCol + 2; triplet2Col++)
 					{
-						if (!(cc == col && rr == row) &&
+						if (!(triplet2Col == triplet1Col && triplet2Row == triplet1Row) &&
 						    (
-							    (puzzle.PossibleValues[cc, rr] == puzzle.PossibleValues[col, row]) ||
-							    (puzzle.PossibleValues[cc, rr].Length == 2 &&
-							     puzzle.PossibleValues[col, row].Contains(puzzle.PossibleValues[cc, rr][0].ToString()) &&
-							     puzzle.PossibleValues[col, row].Contains(puzzle.PossibleValues[cc, rr][1].ToString()))
+							    (puzzle.PossibleValues[triplet2Col, triplet2Row] == puzzle.PossibleValues[triplet1Col, triplet1Row]) ||
+							    (puzzle.PossibleValues[triplet2Col, triplet2Row].Length == 2 &&
+							     puzzle.PossibleValues[triplet1Col, triplet1Row].Contains(puzzle.PossibleValues[triplet2Col, triplet2Row][0].ToString()) &&
+							     puzzle.PossibleValues[triplet1Col, triplet1Row].Contains(puzzle.PossibleValues[triplet2Col, triplet2Row][1].ToString()))
 						    ))
 						{
-							tripletsLocation.Append(cc).Append(rr);
+							tripletsLocation.Append(triplet2Col).Append(triplet2Row);
 						}
 					}
 				}
 
 				if (tripletsLocation.Length != 6) continue;
 
-				for (var rrr = startR; rrr < startR + 2; rrr++)
+				for (var nonTripletRow = miniGridStartRow; nonTripletRow < miniGridStartRow + 3; nonTripletRow++)
 				{
-					for (var ccc = startC; ccc < startC + 2; ccc++)
+					for (var nonTripletCol = miniGridStartCol; nonTripletCol < miniGridStartCol + 3; nonTripletCol++)
 					{
-						if (puzzle.Values[ccc, rrr] != 0 ||
-						    ccc == Convert.ToInt32(tripletsLocation[0].ToString()) ||
-						    rrr == Convert.ToInt32(tripletsLocation[1].ToString()) ||
-						    ccc == Convert.ToInt32(tripletsLocation[2].ToString()) ||
-						    rrr == Convert.ToInt32(tripletsLocation[3].ToString()) ||
-						    ccc == Convert.ToInt32(tripletsLocation[4].ToString()) ||
-						    rrr == Convert.ToInt32(tripletsLocation[5].ToString())) continue;
+						if (puzzle.Values[nonTripletCol, nonTripletRow] != 0 ||
+						    nonTripletCol == int.Parse(tripletsLocation[0].ToString()) ||
+						    nonTripletRow == int.Parse(tripletsLocation[1].ToString()) ||
+						    nonTripletCol == int.Parse(tripletsLocation[2].ToString()) ||
+						    nonTripletRow == int.Parse(tripletsLocation[3].ToString()) ||
+						    nonTripletCol == int.Parse(tripletsLocation[4].ToString()) ||
+						    nonTripletRow == int.Parse(tripletsLocation[5].ToString())) continue;
 
-						puzzle.PossibleValues[ccc, rrr] = puzzle.PossibleValues[ccc, rrr].Replace(puzzle.PossibleValues[col, row][0].ToString(), string.Empty);
-						puzzle.PossibleValues[ccc, rrr] = puzzle.PossibleValues[ccc, rrr].Replace(puzzle.PossibleValues[col, row][1].ToString(), string.Empty);
-						puzzle.PossibleValues[ccc, rrr] = puzzle.PossibleValues[ccc, rrr].Replace(puzzle.PossibleValues[col, row][2].ToString(), string.Empty);
+						puzzle.PossibleValues[nonTripletCol, nonTripletRow] = puzzle.PossibleValues[nonTripletCol, nonTripletRow].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][0].ToString(), string.Empty);
+						puzzle.PossibleValues[nonTripletCol, nonTripletRow] = puzzle.PossibleValues[nonTripletCol, nonTripletRow].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][1].ToString(), string.Empty);
+						puzzle.PossibleValues[nonTripletCol, nonTripletRow] = puzzle.PossibleValues[nonTripletCol, nonTripletRow].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][2].ToString(), string.Empty);
 
-						if (puzzle.PossibleValues[ccc, rrr].Length != 1) continue;
+						if (puzzle.PossibleValues[nonTripletCol, nonTripletRow].Length != 1) continue;
 
-						puzzle.Values[ccc, rrr] = int.Parse(puzzle.PossibleValues[ccc, rrr]);
+						puzzle.Values[nonTripletCol, nonTripletRow] = int.Parse(puzzle.PossibleValues[nonTripletCol, nonTripletRow]);
 					}
 				}
 			}

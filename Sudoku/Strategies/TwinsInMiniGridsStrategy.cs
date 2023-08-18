@@ -1,4 +1,6 @@
-﻿namespace XenobiaSoft.Sudoku.Strategies;
+﻿using XenobiaSoft.Sudoku.Helpers;
+
+namespace XenobiaSoft.Sudoku.Strategies;
 
 public class TwinsInMiniGridsStrategy : SolverStrategy
 {
@@ -10,8 +12,8 @@ public class TwinsInMiniGridsStrategy : SolverStrategy
 			{
 				if (puzzle.Values[twin1Col, twin1Row] != 0 || puzzle.PossibleValues[twin1Col, twin1Row].Length != 2) continue;
 
-				var miniGridStartCol = twin1Col + 1 - twin1Col % 3 - 1;
-				var miniGridStartRow = twin1Row + 1 - twin1Row % 3 - 1;
+				var miniGridStartCol = PuzzleHelper.CalculateMiniGridStartCol(twin1Col);
+				var miniGridStartRow = PuzzleHelper.CalculateMiniGridStartRow(twin1Row);
 
 				for (var twin2Row = miniGridStartRow; twin2Row < miniGridStartRow + 2; twin2Row++)
 				{
@@ -19,9 +21,9 @@ public class TwinsInMiniGridsStrategy : SolverStrategy
 					{
 						if (twin1Col == twin2Col && twin1Row == twin2Row || puzzle.PossibleValues[twin1Col, twin1Row] != puzzle.PossibleValues[twin2Col, twin2Row]) continue;
 
-						for (var nonTwinRow = miniGridStartRow; nonTwinRow < miniGridStartRow + 2; nonTwinRow++)
+						for (var nonTwinRow = miniGridStartRow; nonTwinRow < miniGridStartRow + 3; nonTwinRow++)
 						{
-							for (var nonTwinCol = miniGridStartCol; nonTwinCol < miniGridStartCol + 2; nonTwinCol++)
+							for (var nonTwinCol = miniGridStartCol; nonTwinCol < miniGridStartCol + 3; nonTwinCol++)
 							{
 								if (puzzle.Values[nonTwinCol, nonTwinRow] != 0 || puzzle.PossibleValues[nonTwinCol, nonTwinRow] == puzzle.PossibleValues[twin1Col, twin1Row]) continue;
 

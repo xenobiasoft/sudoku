@@ -1,4 +1,6 @@
-﻿namespace XenobiaSoft.Sudoku;
+﻿using XenobiaSoft.Sudoku.Helpers;
+
+namespace XenobiaSoft.Sudoku;
 
 public static class SudokuPuzzleExtensionMethods
 {
@@ -37,8 +39,8 @@ public static class SudokuPuzzleExtensionMethods
 			}
 		}
 
-		var miniGridStartCol = col + 1 - col % 3 - 1;
-		var miniGridStartRow = row + 1 - row % 3 - 1;
+		var miniGridStartCol = PuzzleHelper.CalculateMiniGridStartCol(col);
+		var miniGridStartRow = PuzzleHelper.CalculateMiniGridStartCol(row);
 
 		for (var miniGridRow = miniGridStartRow; miniGridRow <= miniGridStartRow + 2; miniGridRow++)
 		{
