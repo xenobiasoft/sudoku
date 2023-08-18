@@ -31,6 +31,7 @@ public class LoneRangersInRowsStrategy : SolverStrategy
 				if (occurrence != 1) continue;
 
 				puzzle.Values[colPos, rowPos] = number;
+				puzzle.PossibleValues[colPos, rowPos] = number.ToString();
 			}
 		}
 	}

@@ -42,6 +42,7 @@ public class LoneRangersInMiniGridsStrategy : SolverStrategy
 					if (nextMiniGrid || occurrence != 1) continue;
 
 					puzzle.Values[colPos, rowPos] = number;
+					puzzle.PossibleValues[colPos, rowPos] = number.ToString();
 				}
 			}
 		}
