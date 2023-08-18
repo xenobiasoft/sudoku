@@ -28,8 +28,4 @@
     <ProjectReference Include="..\Sudoku\Sudoku.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Helpers\" />
-  </ItemGroup>
-
 </Project>

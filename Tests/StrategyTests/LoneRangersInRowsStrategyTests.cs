@@ -7,9 +7,8 @@ public class LoneRangersInRowsStrategyTests
 {
 	[Theory]
 	[InlineData(Level.Easy, 6, 0, 9)]
-	[InlineData(Level.Medium, 5, 1, 3)]
-	[InlineData(Level.Hard, 5, 3, 8)]
-	[InlineData(Level.ExtremelyHard, 5, 3, 5)]
+	[InlineData(Level.Medium, 0, 2, 8)]
+	[InlineData(Level.Hard, 5, 1, 8)]
 	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInRow_SetValueToThatNumber(Level level, int col, int row, int expectedValue)
 	{
 		// Arrange

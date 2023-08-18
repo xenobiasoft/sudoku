@@ -3,7 +3,7 @@ using XenobiaSoft.Sudoku.Strategies;
 
 namespace UnitTests.StrategyTests;
 
-public class TwinsInMiniGridsStrategyTests
+public class TwinsInRowsStrategyTests
 {
 	[Fact]
 	public void SolvePuzzle_WhenTwoCellsHaveSamePossibleValuesWithLengthOfTwo_ThenSetAsTwins()
@@ -41,12 +41,12 @@ public class TwinsInMiniGridsStrategyTests
 				}
 			}
 		};
-		var sut = new TwinsInMiniGridsStrategy();
+		var sut = new TwinsInRowsStrategy();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.PossibleValues[4, 1].Should().Be(puzzle.PossibleValues[5, 1]).And.Be("23");
+		puzzle.PossibleValues[0, 1].Should().Be(puzzle.PossibleValues[2, 1]).And.Be("45");
 	}
 }

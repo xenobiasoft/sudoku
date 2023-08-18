@@ -8,9 +8,9 @@ public static class SudokuPuzzleExtensionMethods
 		{
 			for (var col = 0; col < SudokuPuzzle.Columns; col++)
 			{
-				puzzle.PossibleValues[col, row] = puzzle.Values[col, row] != 0 ?
-					string.Empty :
-					CalculatePossibleValues(puzzle, col, row);
+				puzzle.PossibleValues[col, row] = puzzle.Values[col, row] == 0 ?
+					CalculatePossibleValues(puzzle, col, row) :
+					string.Empty;
 			}
 		}
 	}
@@ -37,12 +37,12 @@ public static class SudokuPuzzleExtensionMethods
 			}
 		}
 
-		var startC = col - (col - 1) % 3 - 1;
-		var startR = row - (row - 1) % 3 - 1;
+		var miniGridStartCol = (col + 1) - col % 3 - 1;
+		var miniGridStartRow = (row + 1) - row % 3 - 1;
 
-		for (var miniGridRow = startR; miniGridRow <= startR + 2; miniGridRow++)
+		for (var miniGridRow = miniGridStartRow; miniGridRow <= miniGridStartRow + 2; miniGridRow++)
 		{
-			for (var miniGridCol = startC; miniGridCol <= startC + 2; miniGridCol++)
+			for (var miniGridCol = miniGridStartCol; miniGridCol <= miniGridStartCol + 2; miniGridCol++)
 			{
 				if (values[miniGridCol, miniGridRow] != 0)
 				{

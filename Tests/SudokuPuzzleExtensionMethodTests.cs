@@ -5,20 +5,28 @@ namespace UnitTests;
 
 public class SudokuPuzzleExtensionMethodTests
 {
-	[Theory]
-	[InlineData("124", Level.Easy, 0, 2)]
-	[InlineData("68", Level.Medium, 0, 2)]
-	[InlineData("34569", Level.Hard, 0, 1)]
-	[InlineData("1269", Level.ExtremelyHard, 0, 2)]
-	public void PopulatePossibleValues_WhenCellDoesNotHaveValue_PopulatesPossibleValues(string expectedValues, Level level, int col, int row)
+	[Fact]
+	public void PopulatePossibleValues_WhenCellDoesNotHaveValue_PopulatesPossibleValues()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(level);
+		var expectedPossibleValues = new[,]
+		{
+			{"", "", "124", "26", "", "2468", "1489", "1249", "248"},
+			{"", "247", "247", "", "", "", "3478", "234", "2478"},
+			{"12", "", "", "23", "34", "24", "13457", "", "247"},
+			{"", "125", "1259", "579", "", "147", "4579", "2459", ""},
+			{"", "25", "2569", "", "5", "", "579", "259", ""},
+			{"", "15", "1359", "59", "", "14", "4589", "459", ""},
+			{"139", "", "134579", "357", "35", "7", "", "", "4"},
+			{"23", "278", "237", "", "", "", "36", "3", ""},
+			{"123", "1245", "12345", "2356", "", "26", "1346", "", ""}
+		};
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
 
 		// Act
 		puzzle.PopulatePossibleValues();
 
 		// Assert
-		puzzle.PossibleValues[col, row].Should().Be(expectedValues);
+		puzzle.PossibleValues.Should().BeEquivalentTo(expectedPossibleValues);
 	}
 }

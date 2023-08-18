@@ -1,12 +1,12 @@
-﻿using XenobiaSoft.Sudoku;
-using XenobiaSoft.Sudoku.Strategies;
+﻿using XenobiaSoft.Sudoku.Strategies;
+using XenobiaSoft.Sudoku;
 
 namespace UnitTests.StrategyTests;
 
-public class TwinsInMiniGridsStrategyTests
+public class TripletsInRowsStrategyTests
 {
 	[Fact]
-	public void SolvePuzzle_WhenTwoCellsHaveSamePossibleValuesWithLengthOfTwo_ThenSetAsTwins()
+	public void SolvePuzzle_WhenTwoCellsHaveSamePossibleValuesWithLengthOfThree_ThenSetAsTriplets()
 	{
 		// Arrange
 		var puzzle = new SudokuPuzzle
@@ -41,12 +41,15 @@ public class TwinsInMiniGridsStrategyTests
 				}
 			}
 		};
-		var sut = new TwinsInMiniGridsStrategy();
+		var sut = new TripletsInRowsStrategy();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.PossibleValues[4, 1].Should().Be(puzzle.PossibleValues[5, 1]).And.Be("23");
+		puzzle.PossibleValues[6, 0]
+			.Should().Be(puzzle.PossibleValues[7, 0])
+			.And.Be(puzzle.PossibleValues[8, 0])
+			.And.Be("345");
 	}
 }
