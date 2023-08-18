@@ -6,10 +6,44 @@ namespace UnitTests.StrategyTests;
 public class TwinsInMiniGridsStrategyTests
 {
 	[Fact]
-	public void SolvePuzzle_WhenTwoCellsHaveSamePossibleValuesWithLengthOfTwo_ThenSetAsTwins()
+	public void SolvePuzzle_WhenTwoCellsHaveSamePossibleValuesWithLengthOfTwoInMiniGrid_ThenSetAsTwins()
 	{
 		// Arrange
-		var puzzle = new SudokuPuzzle
+		var puzzle = GetTwinsPuzzle();
+		var sut = new TwinsInMiniGridsStrategy();
+
+		// Act
+		sut.SolvePuzzle(puzzle);
+
+		// Assert
+		puzzle.PossibleValues[4, 1].Should().Be(puzzle.PossibleValues[5, 1]).And.Be("23");
+	}
+
+	[Fact]
+	public void SolvePuzzle_WhenTwinsAreFoundInMiniGrid_RemovesTwinsNumbersFromOtherCells()
+	{
+		// Arrange
+		var puzzle = GetTwinsPuzzle();
+		var sut = new TwinsInMiniGridsStrategy();
+
+		// Act
+		sut.SolvePuzzle(puzzle);
+
+		// Assert
+		for (var col = 3; col < 6; col++)
+		{
+			for (var row = 0; row < 3; row++)
+			{
+				if (row is 1 && col is 4 or 5) continue;
+
+				puzzle.PossibleValues[col, row].Should().NotContain("2").And.NotContain("3");
+			}
+		}
+	}
+
+	private SudokuPuzzle GetTwinsPuzzle()
+	{
+		return new SudokuPuzzle
 		{
 			Values = new[,] {
 				{
@@ -41,12 +75,5 @@ public class TwinsInMiniGridsStrategyTests
 				}
 			}
 		};
-		var sut = new TwinsInMiniGridsStrategy();
-
-		// Act
-		sut.SolvePuzzle(puzzle);
-
-		// Assert
-		puzzle.PossibleValues[4, 1].Should().Be(puzzle.PossibleValues[5, 1]).And.Be("23");
 	}
 }

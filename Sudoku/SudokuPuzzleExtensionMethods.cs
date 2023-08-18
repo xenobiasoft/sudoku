@@ -37,8 +37,8 @@ public static class SudokuPuzzleExtensionMethods
 			}
 		}
 
-		var miniGridStartCol = (col + 1) - col % 3 - 1;
-		var miniGridStartRow = (row + 1) - row % 3 - 1;
+		var miniGridStartCol = col + 1 - col % 3 - 1;
+		var miniGridStartRow = row + 1 - row % 3 - 1;
 
 		for (var miniGridRow = miniGridStartRow; miniGridRow <= miniGridStartRow + 2; miniGridRow++)
 		{
