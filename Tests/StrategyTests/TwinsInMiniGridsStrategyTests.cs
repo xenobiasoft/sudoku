@@ -1,4 +1,5 @@
-﻿using XenobiaSoft.Sudoku;
+﻿using UnitTests.Helpers;
+using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Strategies;
 
 namespace UnitTests.StrategyTests;
@@ -10,7 +11,7 @@ public class TwinsInMiniGridsStrategyTests
 	{
 		// Arrange
 		var puzzle = GetTwinsPuzzle();
-		var sut = new TwinsInMiniGridsStrategy();
+		var sut = GetStrategyInstance();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
@@ -24,7 +25,7 @@ public class TwinsInMiniGridsStrategyTests
 	{
 		// Arrange
 		var puzzle = GetTwinsPuzzle();
-		var sut = new TwinsInMiniGridsStrategy();
+		var sut = GetStrategyInstance();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
@@ -39,6 +40,34 @@ public class TwinsInMiniGridsStrategyTests
 				puzzle.PossibleValues[col, row].Should().NotContain("2").And.NotContain("3");
 			}
 		}
+	}
+
+	[Fact]
+	public void SolvePuzzle_WhenACellValueIsSet_ReturnsScoreGreaterThanZero()
+	{
+		// Arrange
+		var puzzle = GetTwinsPuzzle();
+		var sut = GetStrategyInstance();
+
+		// Act
+		var score = sut.SolvePuzzle(puzzle);
+
+		// Assert
+		score.Should().Be(3);
+	}
+
+	[Fact]
+	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsScoreOfZero()
+	{
+		// Arrange
+		var puzzle = PuzzleFactory.GetEmptyPuzzle();
+		var sut = GetStrategyInstance();
+
+		// Act
+		var score = sut.SolvePuzzle(puzzle);
+
+		// Assert
+		score.Should().Be(0);
 	}
 
 	private SudokuPuzzle GetTwinsPuzzle()
@@ -59,7 +88,7 @@ public class TwinsInMiniGridsStrategyTests
 					0, 7, 6, 5, 0, 0, 0, 0, 0
 				},
 				{
-					0, 0, 4, 0, 0, 0, 0, 0, 0
+					8, 0, 4, 0, 0, 0, 0, 0, 0
 				},
 				{
 					1, 0, 5, 7, 0, 0, 0, 0, 0
@@ -75,5 +104,10 @@ public class TwinsInMiniGridsStrategyTests
 				}
 			}
 		};
+	}
+
+	private static TwinsInMiniGridsStrategy GetStrategyInstance()
+	{
+		return new TwinsInMiniGridsStrategy();
 	}
 }

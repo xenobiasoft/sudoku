@@ -2,10 +2,13 @@
 
 public class LoneRangersInRowsStrategy : SolverStrategy
 {
-	public override void Execute(SudokuPuzzle puzzle)
+	private const int Score = 2;
+
+	public override int Execute(SudokuPuzzle puzzle)
 	{
 		var colPos = 0;
 		var rowPos = 0;
+		var changed = false;
 
 		for (var row = 0; row < SudokuPuzzle.Rows; row++)
 		{
@@ -32,7 +35,11 @@ public class LoneRangersInRowsStrategy : SolverStrategy
 
 				puzzle.Values[colPos, rowPos] = number;
 				puzzle.PossibleValues[colPos, rowPos] = number.ToString();
+
+				changed = true;
 			}
 		}
+
+		return changed ? Score : 0;
 	}
 }

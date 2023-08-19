@@ -13,9 +13,18 @@ public class PuzzleSolver
 
 	public void SolvePuzzle(SudokuPuzzle puzzle)
 	{
-		foreach (var strategy in _strategies)
+		int previousScore;
+
+		do
 		{
-			strategy.SolvePuzzle(puzzle);
-		}
+			previousScore = TotalScore;
+
+			foreach (var strategy in _strategies)
+			{
+				TotalScore += strategy.SolvePuzzle(puzzle);
+			}
+		} while (TotalScore > previousScore);
 	}
+
+	public int TotalScore { get; private set; }
 }

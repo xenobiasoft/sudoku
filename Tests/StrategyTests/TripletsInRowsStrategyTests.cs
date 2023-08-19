@@ -1,5 +1,6 @@
 ﻿using XenobiaSoft.Sudoku.Strategies;
 using XenobiaSoft.Sudoku;
+using UnitTests.Helpers;
 
 namespace UnitTests.StrategyTests;
 
@@ -10,7 +11,7 @@ public class TripletsInRowsStrategyTests
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		var sut = new TripletsInRowsStrategy();
+		var sut = GetStrategyInstance();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
@@ -27,7 +28,7 @@ public class TripletsInRowsStrategyTests
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		var sut = new TripletsInRowsStrategy();
+		var sut = GetStrategyInstance();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
@@ -40,6 +41,34 @@ public class TripletsInRowsStrategyTests
 				.And.NotContain("8")
 				.And.NotContain("9");
 		}
+	}
+
+	[Fact]
+	public void SolvePuzzle_WhenACellValueIsSet_ReturnsScoreGreaterThanZero()
+	{
+		// Arrange
+		var puzzle = GetTripletsPuzzle();
+		var sut = GetStrategyInstance();
+
+		// Act
+		var score = sut.SolvePuzzle(puzzle);
+
+		// Assert
+		score.Should().Be(4);
+	}
+
+	[Fact]
+	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsScoreOfZero()
+	{
+		// Arrange
+		var puzzle = PuzzleFactory.GetEmptyPuzzle();
+		var sut = GetStrategyInstance();
+
+		// Act
+		var score = sut.SolvePuzzle(puzzle);
+
+		// Assert
+		score.Should().Be(0);
 	}
 
 	private SudokuPuzzle GetTripletsPuzzle()
@@ -57,7 +86,7 @@ public class TripletsInRowsStrategyTests
 					0, 0, 0, 0, 0, 0, 6, 4, 5
 				},
 				{
-					0, 0, 0, 0, 0, 0, 0, 0, 0
+					0, 5, 6, 0, 0, 0, 0, 0, 0
 				},
 				{
 					0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -76,5 +105,10 @@ public class TripletsInRowsStrategyTests
 				}
 			}
 		};
+	}
+
+	private static TripletsInRowsStrategy GetStrategyInstance()
+	{
+		return new TripletsInRowsStrategy();
 	}
 }

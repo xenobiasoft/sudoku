@@ -2,8 +2,12 @@
 
 public class TwinsInRowsStrategy : SolverStrategy
 {
-	public override void Execute(SudokuPuzzle puzzle)
+	private const int Score = 3;
+
+	public override int Execute(SudokuPuzzle puzzle)
 	{
+		var changed = false;
+
 		for (var twin1Row = 0; twin1Row < SudokuPuzzle.Rows; twin1Row++)
 		{
 			for (var twin1Col = 0; twin1Col < SudokuPuzzle.Columns; twin1Col++)
@@ -24,9 +28,13 @@ public class TwinsInRowsStrategy : SolverStrategy
 						if (puzzle.PossibleValues[nonTwinCol, twin1Row].Length != 1) continue;
 
 						puzzle.Values[nonTwinCol, twin1Row] = int.Parse(puzzle.PossibleValues[nonTwinCol, twin1Row]);
+
+						changed = true;
 					}
 				}
 			}
 		}
+
+		return changed ? Score : 0;
 	}
 }

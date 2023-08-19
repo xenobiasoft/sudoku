@@ -4,8 +4,12 @@ namespace XenobiaSoft.Sudoku.Strategies;
 
 public class TwinsInMiniGridsStrategy : SolverStrategy
 {
-	public override void Execute(SudokuPuzzle puzzle)
+	private const int Score = 3;
+
+	public override int Execute(SudokuPuzzle puzzle)
 	{
+		var changed = false;
+		
 		for (var twin1Row = 0; twin1Row < SudokuPuzzle.Rows; twin1Row++)
 		{
 			for (var twin1Col = 0; twin1Col < SudokuPuzzle.Columns; twin1Col++)
@@ -30,15 +34,18 @@ public class TwinsInMiniGridsStrategy : SolverStrategy
 								puzzle.PossibleValues[nonTwinCol, nonTwinRow] = puzzle.PossibleValues[nonTwinCol, nonTwinRow].Replace(puzzle.PossibleValues[twin1Col, twin1Row][0].ToString(), string.Empty);
 								puzzle.PossibleValues[nonTwinCol, nonTwinRow] = puzzle.PossibleValues[nonTwinCol, nonTwinRow].Replace(puzzle.PossibleValues[twin1Col, twin1Row][1].ToString(), string.Empty);
 
-								if (puzzle.PossibleValues[nonTwinCol, nonTwinRow].Length == 1)
-								{
-									puzzle.Values[nonTwinCol, nonTwinRow] = int.Parse(puzzle.PossibleValues[nonTwinCol, nonTwinRow]);
-								}
+								if (puzzle.PossibleValues[nonTwinCol, nonTwinRow].Length != 1) continue;
+
+								puzzle.Values[nonTwinCol, nonTwinRow] = int.Parse(puzzle.PossibleValues[nonTwinCol, nonTwinRow]);
+
+								changed = true;
 							}
 						}
 					}
 				}
 			}
 		}
+
+		return changed ? Score : 0;
 	}
 }

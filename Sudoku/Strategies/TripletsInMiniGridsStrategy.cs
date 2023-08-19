@@ -5,8 +5,12 @@ namespace XenobiaSoft.Sudoku.Strategies;
 
 public class TripletsInMiniGridsStrategy : SolverStrategy
 {
-	public override void Execute(SudokuPuzzle puzzle)
+	private const int Score = 4;
+
+	public override int Execute(SudokuPuzzle puzzle)
 	{
+		var changed = false;
+
 		for (var triplet1Row = 0; triplet1Row < SudokuPuzzle.Rows; triplet1Row++)
 		{
 			for (var triplet1Col = 0; triplet1Col < SudokuPuzzle.Columns; triplet1Col++)
@@ -44,12 +48,12 @@ public class TripletsInMiniGridsStrategy : SolverStrategy
 					for (var nonTripletCol = miniGridStartCol; nonTripletCol < miniGridStartCol + 3; nonTripletCol++)
 					{
 						if (puzzle.Values[nonTripletCol, nonTripletRow] != 0 ||
-						    nonTripletCol == int.Parse(tripletsLocation[0].ToString()) ||
-						    nonTripletRow == int.Parse(tripletsLocation[1].ToString()) ||
-						    nonTripletCol == int.Parse(tripletsLocation[2].ToString()) ||
-						    nonTripletRow == int.Parse(tripletsLocation[3].ToString()) ||
-						    nonTripletCol == int.Parse(tripletsLocation[4].ToString()) ||
-						    nonTripletRow == int.Parse(tripletsLocation[5].ToString())) continue;
+						    (nonTripletCol == int.Parse(tripletsLocation[0].ToString()) &&
+						    nonTripletRow == int.Parse(tripletsLocation[1].ToString())) ||
+						    (nonTripletCol == int.Parse(tripletsLocation[2].ToString()) &&
+						    nonTripletRow == int.Parse(tripletsLocation[3].ToString())) ||
+						    (nonTripletCol == int.Parse(tripletsLocation[4].ToString()) &&
+						    nonTripletRow == int.Parse(tripletsLocation[5].ToString()))) continue;
 
 						puzzle.PossibleValues[nonTripletCol, nonTripletRow] = puzzle.PossibleValues[nonTripletCol, nonTripletRow].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][0].ToString(), string.Empty);
 						puzzle.PossibleValues[nonTripletCol, nonTripletRow] = puzzle.PossibleValues[nonTripletCol, nonTripletRow].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][1].ToString(), string.Empty);
@@ -58,9 +62,13 @@ public class TripletsInMiniGridsStrategy : SolverStrategy
 						if (puzzle.PossibleValues[nonTripletCol, nonTripletRow].Length != 1) continue;
 
 						puzzle.Values[nonTripletCol, nonTripletRow] = int.Parse(puzzle.PossibleValues[nonTripletCol, nonTripletRow]);
+
+						changed = true;
 					}
 				}
 			}
 		}
+
+		return changed ? Score : 0;
 	}
 }

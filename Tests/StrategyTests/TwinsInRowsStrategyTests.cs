@@ -1,4 +1,5 @@
-﻿using XenobiaSoft.Sudoku;
+﻿using UnitTests.Helpers;
+using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Strategies;
 
 namespace UnitTests.StrategyTests;
@@ -10,7 +11,7 @@ public class TwinsInRowsStrategyTests
 	{
 		// Arrange
 		var puzzle = GetTwinsPuzzle();
-		var sut = new TwinsInRowsStrategy();
+		var sut = GetStrategyInstance();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
@@ -24,7 +25,7 @@ public class TwinsInRowsStrategyTests
 	{
 		// Arrange
 		var puzzle = GetTwinsPuzzle();
-		var sut = new TwinsInRowsStrategy();
+		var sut = GetStrategyInstance();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
@@ -38,39 +39,72 @@ public class TwinsInRowsStrategyTests
 		}
 	}
 
+	[Fact]
+	public void SolvePuzzle_WhenACellValueIsSet_ReturnsScoreGreaterThanZero()
+	{
+		// Arrange
+		var puzzle = GetTwinsPuzzle();
+		var sut = GetStrategyInstance();
+
+		// Act
+		var score = sut.SolvePuzzle(puzzle);
+
+		// Assert
+		score.Should().Be(3);
+	}
+
+	[Fact]
+	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsScoreOfZero()
+	{
+		// Arrange
+		var puzzle = PuzzleFactory.GetEmptyPuzzle();
+		var sut = GetStrategyInstance();
+
+		// Act
+		var score = sut.SolvePuzzle(puzzle);
+
+		// Assert
+		score.Should().Be(0);
+	}
+
 	private SudokuPuzzle GetTwinsPuzzle()
 	{
 		return new SudokuPuzzle
 		{
 			Values = new[,] {
 				{
-					6, 0, 9, 1, 0, 0, 0, 0, 0
+					1, 0, 2, 3, 6, 7, 8, 9, 0
 				},
 				{
-					0, 8, 3, 0, 0, 0, 0, 0, 0
+					0, 0, 0, 0, 0, 0, 0, 0, 0
 				},
 				{
-					7, 0, 1, 6, 0, 0, 0, 0, 0
+					2, 0, 3, 6, 7, 8, 9, 1, 0
 				},
 				{
-					0, 7, 6, 5, 0, 0, 0, 0, 0
+					3, 0, 6, 7, 8, 9, 1, 0, 0
 				},
 				{
-					0, 0, 4, 0, 0, 0, 0, 0, 0
+					0, 0, 0, 0, 0, 0, 0, 0, 0
 				},
 				{
-					1, 0, 5, 7, 0, 0, 0, 0, 0
+					0, 0, 0, 0, 0, 0, 0, 0, 0
 				},
 				{
-					0, 1, 2, 8, 0, 0, 0, 0, 0
+					0, 0, 0, 0, 0, 0, 0, 0, 0
 				},
 				{
-					0, 6, 8, 9, 0, 0, 0, 0, 0
+					0, 0, 0, 0, 0, 0, 0, 0, 0
 				},
 				{
-					0, 9, 7, 0, 0, 0, 0, 0, 0
+					0, 0, 0, 0, 0, 0, 0, 0, 0
 				}
 			}
 		};
+	}
+
+	private static TwinsInRowsStrategy GetStrategyInstance()
+	{
+		return new TwinsInRowsStrategy();
 	}
 }

@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using XenobiaSoft.Sudoku;
+﻿using XenobiaSoft.Sudoku;
 
 namespace UnitTests;
 
@@ -31,9 +30,4 @@ public class SudokuGameTests
 		// Assert
 		sut.IsValid().Should().BeTrue();
 	}
-
-	// Validate:
-	//		Rows
-	//		Columns
-	//		SubGrids
 }

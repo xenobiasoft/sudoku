@@ -29,4 +29,30 @@ public class SudokuPuzzleExtensionMethodTests
 		// Assert
 		puzzle.PossibleValues.Should().BeEquivalentTo(expectedPossibleValues);
 	}
+
+	[Fact]
+	public void IsValid_WhenGivenValidPuzzle_ReturnsTrue()
+	{
+		// Arrange
+		var puzzle = PuzzleFactory.GetSolvedPuzzle();
+
+		// Act
+		var isValid = puzzle.IsValid();
+
+		// Assert
+		isValid.Should().BeTrue();
+	}
+
+	[Fact]
+	public void IsSolved_WhenPuzzleIsValidAndAllValuesPopulatedWithNumber_ReturnsTrue()
+	{
+		// Arrange
+		var puzzle = PuzzleFactory.GetSolvedPuzzle();
+
+		// Act
+		var isSolved = puzzle.IsSolved();
+
+		// Assert
+		isSolved.Should().BeTrue();
+	}
 }
