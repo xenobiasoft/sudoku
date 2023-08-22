@@ -66,6 +66,24 @@ public class SudokuGame : ISudokuGame
 		}
 	}
 
+	public void SetCell(int col, int row, int value)
+	{
+		if (col is < 0 or > 8)
+		{
+			throw new ArgumentException("Invalid column", nameof(col));
+		}
+		if (row is < 0 or > 8)
+		{
+			throw new ArgumentException("Invalid row", nameof(row));
+		}
+		if (value is < 0 or > 9)
+		{
+			throw new ArgumentException("Invalid value", nameof(value));
+		}
+
+		Puzzle.Values[col, row] = value;
+	}
+
 	private void TryBruteForceMethod()
 	{
 		SaveGameState();
@@ -84,5 +102,6 @@ public class SudokuGame : ISudokuGame
 	}
 
 	public SudokuPuzzle Puzzle { get; set; }
+
 	public int Score { get; set; }
 }

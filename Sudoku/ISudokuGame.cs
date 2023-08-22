@@ -9,4 +9,5 @@ public interface ISudokuGame
 
 	SudokuPuzzle Puzzle { get; set; }
 	int Score { get; set; }
+	void SetCell(int col, int row, int value);
 }

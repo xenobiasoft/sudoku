@@ -1,4 +1,5 @@
 ﻿using DepenMock.XUnit;
+using Newtonsoft.Json.Linq;
 using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
@@ -207,7 +208,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenUsingBruteForceMethod_MakesMaxFiftyAttemps()
+	public void SolvePuzzle_WhenUsingBruteForceMethod_MakesMaxFiftyAttempts()
 	{
 		// Arrange
 		var mockPuzzleSolver = Container.ResolveMock<IPuzzleSolver>();
@@ -227,6 +228,38 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 	}
 
 	[Fact]
+	public void SetCell_AcceptsValue_AndSetsCell()
+	{
+		// Arrange
+		var sut = ResolveSut();
+
+		// Act
+		sut.SetCell(2, 1, 5);
+
+		// Assert
+		sut.Puzzle.Values[2, 1].Should().Be(5);
+	}
+
+	[Theory]
+	[InlineData(9, 5, 6, "Invalid column (Parameter 'col')")]
+	[InlineData(5, 9, 6, "Invalid row (Parameter 'row')")]
+	[InlineData(3, 1, 10, "Invalid value (Parameter 'value')")]
+	[InlineData(-1, 5, 6, "Invalid column (Parameter 'col')")]
+	[InlineData(5, -1, 6, "Invalid row (Parameter 'row')")]
+	[InlineData(3, 1, -1, "Invalid value (Parameter 'value')")]
+	public void SetCell_WhenGivenInvalidNumber_ThrowsInvalidArgumentException(int col, int row, int value, string expectedMessage)
+	{
+		// Arrange
+		var sut = ResolveSut();
+
+		// Act
+		void SetCell() => sut.SetCell(col, row, value);
+
+		// Assert
+		Assert.Throws<ArgumentException>(SetCell).Message.Should().Be(expectedMessage);
+	}
+
+	//[Fact]
 	public void IntegrationTest()
 	{
 		// Arrange
