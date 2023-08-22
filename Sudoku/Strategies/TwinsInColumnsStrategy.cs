@@ -25,6 +25,11 @@ public class TwinsInColumnsStrategy : SolverStrategy
 						puzzle.PossibleValues[twin1Col, nonTwinRow] = puzzle.PossibleValues[twin1Col, nonTwinRow].Replace(puzzle.PossibleValues[twin1Col, twin1Row][0].ToString(), string.Empty);
 						puzzle.PossibleValues[twin1Col, nonTwinRow] = puzzle.PossibleValues[twin1Col, nonTwinRow].Replace(puzzle.PossibleValues[twin1Col, twin1Row][1].ToString(), string.Empty);
 
+						if (string.IsNullOrWhiteSpace(puzzle.PossibleValues[twin1Col, nonTwinRow]))
+						{
+							throw new InvalidOperationException("An invalid move was made");
+						}
+
 						if (puzzle.PossibleValues[twin1Col, nonTwinRow].Length != 1) continue;
 
 						puzzle.Values[twin1Col, nonTwinRow] = int.Parse(puzzle.PossibleValues[twin1Col, nonTwinRow]);

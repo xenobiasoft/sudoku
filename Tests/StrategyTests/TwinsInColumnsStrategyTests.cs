@@ -1,17 +1,18 @@
-﻿using XenobiaSoft.Sudoku.Strategies;
+﻿using DepenMock.XUnit;
+using XenobiaSoft.Sudoku.Strategies;
 using XenobiaSoft.Sudoku;
 using UnitTests.Helpers;
 
 namespace UnitTests.StrategyTests;
 
-public class TwinsInColumnsStrategyTests
+public class TwinsInColumnsStrategyTests : BaseTestByAbstraction<TwinsInColumnsStrategy, SolverStrategy>
 {
 	[Fact]
 	public void SolvePuzzle_WhenTwoCellsHaveSamePossibleValuesWithLengthOfTwoInColumn_ThenSetAsTwins()
 	{
 		// Arrange
 		var puzzle = GetTwinsPuzzle();
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
@@ -25,7 +26,7 @@ public class TwinsInColumnsStrategyTests
 	{
 		// Arrange
 		var puzzle = GetTwinsPuzzle();
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
@@ -44,7 +45,7 @@ public class TwinsInColumnsStrategyTests
 	{
 		// Arrange
 		var puzzle = GetTwinsPuzzle();
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
@@ -58,13 +59,28 @@ public class TwinsInColumnsStrategyTests
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetEmptyPuzzle();
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
 		score.Should().Be(0);
+	}
+
+	[Fact]
+	public void SolvePuzzle_WhenNonTripletPossibleValuesIsEmpty_ThrowsException()
+	{
+		// Arrange
+		var puzzle = GetTwinsPuzzle();
+		puzzle.Values[2, 4] = 1;
+		var sut = ResolveSut();
+
+		// Act
+		void SolvePuzzle() => sut.SolvePuzzle(puzzle);
+
+		// Assert
+		Assert.Throws<InvalidOperationException>(SolvePuzzle);
 	}
 
 	private SudokuPuzzle GetTwinsPuzzle()
@@ -102,10 +118,5 @@ public class TwinsInColumnsStrategyTests
 				}
 			}
 		};
-	}
-
-	private static TwinsInColumnsStrategy GetStrategyInstance()
-	{
-		return new TwinsInColumnsStrategy();
 	}
 }

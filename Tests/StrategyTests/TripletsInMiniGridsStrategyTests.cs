@@ -1,17 +1,18 @@
-﻿using XenobiaSoft.Sudoku.Strategies;
+﻿using DepenMock.XUnit;
+using XenobiaSoft.Sudoku.Strategies;
 using XenobiaSoft.Sudoku;
 using UnitTests.Helpers;
 
 namespace UnitTests.StrategyTests;
 
-public class TripletsInMiniGridsStrategyTests
+public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsInMiniGridsStrategy, SolverStrategy>
 {
 	[Fact]
 	public void SolvePuzzle_WhenThreeCellsHavePossibleValuesWithLengthOfThreeInMiniGrid_ThenSetAsTriplets()
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
@@ -28,7 +29,7 @@ public class TripletsInMiniGridsStrategyTests
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
@@ -53,7 +54,7 @@ public class TripletsInMiniGridsStrategyTests
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
@@ -67,7 +68,7 @@ public class TripletsInMiniGridsStrategyTests
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetEmptyPuzzle();
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
@@ -110,10 +111,5 @@ public class TripletsInMiniGridsStrategyTests
 				}
 			}
 		};
-	}
-
-	private static TripletsInMiniGridsStrategy GetStrategyInstance()
-	{
-		return new TripletsInMiniGridsStrategy();
 	}
 }

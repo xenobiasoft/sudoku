@@ -45,6 +45,11 @@ public class TripletsInRowsStrategy : SolverStrategy
 					puzzle.PossibleValues[nonTripletCol, triplet1Row] = puzzle.PossibleValues[nonTripletCol, triplet1Row].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][1].ToString(), string.Empty);
 					puzzle.PossibleValues[nonTripletCol, triplet1Row] = puzzle.PossibleValues[nonTripletCol, triplet1Row].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][2].ToString(), string.Empty);
 
+					if (string.IsNullOrWhiteSpace(puzzle.PossibleValues[nonTripletCol, triplet1Row]))
+					{
+						throw new InvalidOperationException("An invalid move was made");
+					}
+
 					if (puzzle.PossibleValues[nonTripletCol, triplet1Row].Length != 1) continue;
 
 					puzzle.Values[nonTripletCol, triplet1Row] = int.Parse(puzzle.PossibleValues[nonTripletCol, triplet1Row]);

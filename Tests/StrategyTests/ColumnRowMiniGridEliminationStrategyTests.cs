@@ -1,17 +1,18 @@
-﻿using UnitTests.Helpers;
+﻿using DepenMock.XUnit;
+using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Strategies;
 
 namespace UnitTests.StrategyTests;
 
-public class ColumnRowMiniGridEliminationStrategyTests
+public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<ColumnRowMiniGridEliminationStrategy, SolverStrategy>
 {
 	[Fact]
 	public void SolvePuzzle_WhenOnlyOnePossibleValue_ThenValueEqualsThatNumber()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
@@ -25,7 +26,7 @@ public class ColumnRowMiniGridEliminationStrategyTests
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
@@ -39,17 +40,12 @@ public class ColumnRowMiniGridEliminationStrategyTests
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.ExtremelyHard);
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
 		score.Should().Be(0);
-	}
-
-	private static ColumnRowMiniGridEliminationStrategy GetStrategyInstance()
-	{
-		return new ColumnRowMiniGridEliminationStrategy();
 	}
 }

@@ -59,6 +59,11 @@ public class TripletsInMiniGridsStrategy : SolverStrategy
 						puzzle.PossibleValues[nonTripletCol, nonTripletRow] = puzzle.PossibleValues[nonTripletCol, nonTripletRow].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][1].ToString(), string.Empty);
 						puzzle.PossibleValues[nonTripletCol, nonTripletRow] = puzzle.PossibleValues[nonTripletCol, nonTripletRow].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][2].ToString(), string.Empty);
 
+						if (string.IsNullOrWhiteSpace(puzzle.PossibleValues[nonTripletCol, nonTripletRow]))
+						{
+							throw new InvalidOperationException("An invalid move was made");
+						}
+
 						if (puzzle.PossibleValues[nonTripletCol, nonTripletRow].Length != 1) continue;
 
 						puzzle.Values[nonTripletCol, nonTripletRow] = int.Parse(puzzle.PossibleValues[nonTripletCol, nonTripletRow]);

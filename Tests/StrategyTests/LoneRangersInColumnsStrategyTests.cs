@@ -1,17 +1,18 @@
-﻿using UnitTests.Helpers;
+﻿using DepenMock.XUnit;
+using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Strategies;
 
 namespace UnitTests.StrategyTests;
 
-public class LoneRangersInColumnsStrategyTests
+public class LoneRangersInColumnsStrategyTests : BaseTestByAbstraction<LoneRangersInColumnsStrategy, SolverStrategy>
 {
 	[Fact]
 	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInColumn_SetValueToThatNumber()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
@@ -27,7 +28,7 @@ public class LoneRangersInColumnsStrategyTests
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
@@ -41,17 +42,12 @@ public class LoneRangersInColumnsStrategyTests
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetEmptyPuzzle();
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
 		score.Should().Be(0);
-	}
-
-	private static LoneRangersInColumnsStrategy GetStrategyInstance()
-	{
-		return new LoneRangersInColumnsStrategy();
 	}
 }

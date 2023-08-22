@@ -23,7 +23,7 @@ public class TripletsInColumnsStrategy : SolverStrategy
 				for (var triplet2Row = triplet1Row + 1; triplet2Row < SudokuPuzzle.Rows; triplet2Row++)
 				{
 					if (puzzle.PossibleValues[triplet1Col, triplet1Row] == puzzle.PossibleValues[triplet1Col, triplet2Row] ||
-					    (puzzle.PossibleValues[triplet1Col, triplet2Row].Length == 2 &&
+					    (puzzle.PossibleValues[triplet1Col, triplet2Row].Length == 3 &&
 					     puzzle.PossibleValues[triplet1Col, triplet1Row].Contains(puzzle.PossibleValues[triplet1Col, triplet2Row][0].ToString()) &&
 					     puzzle.PossibleValues[triplet1Col, triplet1Row].Contains(puzzle.PossibleValues[triplet1Col, triplet2Row][1].ToString()))
 					    )
@@ -44,6 +44,11 @@ public class TripletsInColumnsStrategy : SolverStrategy
 					puzzle.PossibleValues[triplet1Col, nonTripletRow] = puzzle.PossibleValues[triplet1Col, nonTripletRow].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][0].ToString(), string.Empty);
 					puzzle.PossibleValues[triplet1Col, nonTripletRow] = puzzle.PossibleValues[triplet1Col, nonTripletRow].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][1].ToString(), string.Empty);
 					puzzle.PossibleValues[triplet1Col, nonTripletRow] = puzzle.PossibleValues[triplet1Col, nonTripletRow].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][2].ToString(), string.Empty);
+
+					if (string.IsNullOrWhiteSpace(puzzle.PossibleValues[triplet1Col, nonTripletRow]))
+					{
+						throw new InvalidOperationException("An invalid move was made");
+					}
 
 					if (puzzle.PossibleValues[triplet1Col, nonTripletRow].Length != 1) continue;
 

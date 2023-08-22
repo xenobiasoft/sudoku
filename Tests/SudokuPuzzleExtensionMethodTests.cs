@@ -31,28 +31,36 @@ public class SudokuPuzzleExtensionMethodTests
 	}
 
 	[Fact]
-	public void IsValid_WhenGivenValidPuzzle_ReturnsTrue()
+	public void FindCellWithFewestPossibleValues_DoesWhatItsNamed()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetSolvedPuzzle();
+		var puzzle = PuzzleFactory.GetEmptyPuzzle();
+		puzzle.Values[2, 4] = 5;
+		puzzle.PopulatePossibleValues();
 
 		// Act
-		var isValid = puzzle.IsValid();
+		var cellWithFewestPossibleValues = puzzle.FindCellWithFewestPossibleValues();
 
 		// Assert
-		isValid.Should().BeTrue();
+		Assert.Multiple(() =>
+		{
+			cellWithFewestPossibleValues.Item1.Should().Be(0);
+			cellWithFewestPossibleValues.Item2.Should().Be(3);
+		});
 	}
 
 	[Fact]
-	public void IsSolved_WhenPuzzleIsValidAndAllValuesPopulatedWithNumber_ReturnsTrue()
+	public void SetCellWithFewestPossibleValues_FindsCellWithFewestPossibleValues_AndSetsValueBasedOnOneOfThoseValues()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetSolvedPuzzle();
+		var puzzle = PuzzleFactory
+			.GetPuzzle(Level.ExtremelyHard)
+			.PopulatePossibleValues();
 
 		// Act
-		var isSolved = puzzle.IsSolved();
+		puzzle.SetCellWithFewestPossibleValues();
 
 		// Assert
-		isSolved.Should().BeTrue();
+		puzzle.Values[3, 5].Should().BeOneOf(5, 9);
 	}
 }

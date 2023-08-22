@@ -1,17 +1,18 @@
-﻿using XenobiaSoft.Sudoku.Strategies;
+﻿using DepenMock.XUnit;
+using XenobiaSoft.Sudoku.Strategies;
 using XenobiaSoft.Sudoku;
 using UnitTests.Helpers;
 
 namespace UnitTests.StrategyTests;
 
-public class TripletsInColumnsStrategyTests
+public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInColumnsStrategy, SolverStrategy>
 {
 	[Fact]
 	public void SolvePuzzle_WhenThreeCellsHaveSamePossibleValuesWithLengthOfThreeInColumn_ThenSetAsTriplets()
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
@@ -28,7 +29,7 @@ public class TripletsInColumnsStrategyTests
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
@@ -48,7 +49,7 @@ public class TripletsInColumnsStrategyTests
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
@@ -62,13 +63,29 @@ public class TripletsInColumnsStrategyTests
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetEmptyPuzzle();
-		var sut = GetStrategyInstance();
+		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
 		score.Should().Be(0);
+	}
+
+	[Fact]
+	public void SolvePuzzle_WhenNonTripletPossibleValuesIsEmpty_ThrowsException()
+	{
+		// Arrange
+		var puzzle = GetTripletsPuzzle();
+		puzzle.Values[8, 3] = 9;
+		puzzle.Values[7, 3] = 4;
+		var sut = ResolveSut();
+
+		// Act
+		void SolvePuzzle() => sut.SolvePuzzle(puzzle);
+
+		// Assert
+		Assert.Throws<InvalidOperationException>(SolvePuzzle);
 	}
 
 	private SudokuPuzzle GetTripletsPuzzle()
@@ -105,10 +122,5 @@ public class TripletsInColumnsStrategyTests
 				}
 			}
 		};
-	}
-
-	private static TripletsInColumnsStrategy GetStrategyInstance()
-	{
-		return new TripletsInColumnsStrategy();
 	}
 }

@@ -34,6 +34,11 @@ public class TwinsInMiniGridsStrategy : SolverStrategy
 								puzzle.PossibleValues[nonTwinCol, nonTwinRow] = puzzle.PossibleValues[nonTwinCol, nonTwinRow].Replace(puzzle.PossibleValues[twin1Col, twin1Row][0].ToString(), string.Empty);
 								puzzle.PossibleValues[nonTwinCol, nonTwinRow] = puzzle.PossibleValues[nonTwinCol, nonTwinRow].Replace(puzzle.PossibleValues[twin1Col, twin1Row][1].ToString(), string.Empty);
 
+								if (string.IsNullOrWhiteSpace(puzzle.PossibleValues[nonTwinCol, nonTwinRow]))
+								{
+									throw new InvalidOperationException("An invalid move was made");
+								}
+
 								if (puzzle.PossibleValues[nonTwinCol, nonTwinRow].Length != 1) continue;
 
 								puzzle.Values[nonTwinCol, nonTwinRow] = int.Parse(puzzle.PossibleValues[nonTwinCol, nonTwinRow]);
