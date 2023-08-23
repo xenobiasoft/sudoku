@@ -1,8 +1,10 @@
 ﻿using DepenMock.XUnit;
 using Newtonsoft.Json.Linq;
+using UnitTests.CustomAssertions;
 using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
+using XenobiaSoft.Sudoku.Helpers;
 using XenobiaSoft.Sudoku.PuzzleSolver;
 using XenobiaSoft.Sudoku.Strategies;
 
@@ -74,6 +76,20 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 			Assert.Equal(puzzle.PossibleValues, sut.Puzzle.PossibleValues);
 			Assert.Equal(puzzle.Values, sut.Puzzle.Values);
 		});
+	}
+
+	[Fact]
+	public void LoadPuzzle_ClearsGameState()
+	{
+		// Arrange
+		var mockGameState = Container.ResolveMock<IGameStateMemory>();
+		var sut = ResolveSut();
+
+		// Act
+		sut.LoadPuzzle(PuzzleFactory.GetSolvedPuzzle());
+
+		// Assert
+		mockGameState.Verify(x => x.Clear(), Times.Once);
 	}
 
 	[Fact]
@@ -257,6 +273,46 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 
 		// Assert
 		Assert.Throws<ArgumentException>(SetCell).Message.Should().Be(expectedMessage);
+	}
+
+	[Fact]
+	public void Reset_ClearsGameState()
+	{
+		// Arrange
+		var mockGameState = Container.ResolveMock<IGameStateMemory>();
+		var sut = ResolveSut();
+
+		// Act
+		sut.Reset();
+
+		// Assert
+		mockGameState.Verify(x => x.Clear(), Times.Once);
+	}
+
+	[Fact]
+	public void Reset_SetsPuzzle_ToEmptyPuzzle()
+	{
+		// Arrange
+		var sut = ResolveSut();
+
+		// Act
+		sut.Reset();
+
+		// Assert
+		sut.Puzzle.Should().BeEmpty();
+	}
+
+	[Fact]
+	public void Reset_ResetsScoreBackToZero()
+	{
+		// Arrange
+		var sut = ResolveSut();
+
+		// Act
+		sut.Reset();
+
+		// Assert
+		sut.Score.Should().Be(0);
 	}
 
 	//[Fact]

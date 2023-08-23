@@ -1,5 +1,7 @@
-﻿using UnitTests.Helpers;
+﻿using UnitTests.CustomAssertions;
+using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Helpers;
 
 namespace UnitTests;
 
@@ -62,5 +64,31 @@ public class SudokuPuzzleExtensionMethodTests
 
 		// Assert
 		puzzle.Values[3, 5].Should().BeOneOf(5, 9);
+	}
+
+	[Fact]
+	public void Reset_SetsValuesAllToZero()
+	{
+		// Arrange
+		var puzzle = PuzzleFactory.GetSolvedPuzzle();
+
+		// Act
+		puzzle.Reset();
+
+		// Assert
+		puzzle.Values.Should().BeEmpty();
+	}
+
+	[Fact]
+	public void Reset_SetsPossibleValuesAllToEmptyString()
+	{
+		// Arrange
+		var puzzle = PuzzleFactory.GetSolvedPuzzle();
+
+		// Act
+		puzzle.Reset();
+
+		// Assert
+		puzzle.PossibleValues.Should().BeEmpty();
 	}
 }

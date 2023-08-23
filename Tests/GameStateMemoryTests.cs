@@ -39,4 +39,18 @@ public class GameStateMemoryTests : BaseTestByType<GameStateMemory>
 			actualGameState.Should().Be(gameState);
 		});
 	}
+
+	[Fact]
+	public void Clear_ClearsGameStateStack()
+	{
+		// Arrange
+		var sut = ResolveSut();
+		sut.Save(Container.Create<GameStateMemento>());
+
+		// Act
+		sut.Clear();
+
+		// Assert
+		sut.GameState.Count.Should().Be(0);
+	}
 }

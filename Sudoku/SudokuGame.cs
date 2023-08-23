@@ -1,4 +1,5 @@
 ﻿using XenobiaSoft.Sudoku.GameState;
+using XenobiaSoft.Sudoku.Helpers;
 using XenobiaSoft.Sudoku.PuzzleSolver;
 
 namespace XenobiaSoft.Sudoku;
@@ -9,7 +10,7 @@ public class SudokuGame : ISudokuGame
 	private readonly IPuzzleSolver _puzzleSolver;
 
 	private const int SolveMaxAttempts = 50;
-	private int _solveAttempts = 0;
+	private int _solveAttempts;
 
 	public SudokuGame(IGameStateMemory gameState, IPuzzleSolver puzzleSolver)
 	{
@@ -17,27 +18,44 @@ public class SudokuGame : ISudokuGame
 		_gameState = gameState;
 	}
 
-	public void SaveGameState()
-	{
-		_gameState.Save(new GameStateMemento((string[,])Puzzle.PossibleValues.Clone(), (int[,])Puzzle.Values.Clone(), Score));
-	}
-
-	public void Undo()
-	{
-		var memento = _gameState.Undo();
-
-		Score = memento.Score;
-		Puzzle.PossibleValues = (string[,])memento.PossibleValues.Clone();
-		Puzzle.Values = (int[,])memento.Values.Clone();
-	}
-
 	public void LoadPuzzle(SudokuPuzzle puzzle)
 	{
+		Reset();
 		Puzzle = new SudokuPuzzle
 		{
 			PossibleValues = (string[,])puzzle.PossibleValues.Clone(),
 			Values = (int[,])puzzle.Values.Clone()
 		};
+	}
+
+	public void Reset()
+	{
+		_gameState.Clear();
+		Puzzle.Reset();
+		Score = 0;
+	}
+
+	public void SaveGameState()
+	{
+		_gameState.Save(new GameStateMemento((string[,])Puzzle.PossibleValues.Clone(), (int[,])Puzzle.Values.Clone(), Score));
+	}
+
+	public void SetCell(int col, int row, int value)
+	{
+		if (col is < 0 or > 8)
+		{
+			throw new ArgumentException("Invalid column", nameof(col));
+		}
+		if (row is < 0 or > 8)
+		{
+			throw new ArgumentException("Invalid row", nameof(row));
+		}
+		if (value is < 0 or > 9)
+		{
+			throw new ArgumentException("Invalid value", nameof(value));
+		}
+
+		Puzzle.Values[col, row] = value;
 	}
 
 	public void SolvePuzzle()
@@ -66,22 +84,13 @@ public class SudokuGame : ISudokuGame
 		}
 	}
 
-	public void SetCell(int col, int row, int value)
+	public void Undo()
 	{
-		if (col is < 0 or > 8)
-		{
-			throw new ArgumentException("Invalid column", nameof(col));
-		}
-		if (row is < 0 or > 8)
-		{
-			throw new ArgumentException("Invalid row", nameof(row));
-		}
-		if (value is < 0 or > 9)
-		{
-			throw new ArgumentException("Invalid value", nameof(value));
-		}
+		var memento = _gameState.Undo();
 
-		Puzzle.Values[col, row] = value;
+		Score = memento.Score;
+		Puzzle.PossibleValues = (string[,])memento.PossibleValues.Clone();
+		Puzzle.Values = (int[,])memento.Values.Clone();
 	}
 
 	private void TryBruteForceMethod()

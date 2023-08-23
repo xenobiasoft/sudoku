@@ -4,6 +4,11 @@ public class GameStateMemory : IGameStateMemory
 {
 	private readonly Stack<GameStateMemento> _gameState = new();
 
+	public void Clear()
+	{
+		_gameState.Clear();
+	}
+
 	public void Save(GameStateMemento gameState)
 	{
 		_gameState.Push(gameState);
