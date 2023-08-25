@@ -11,6 +11,7 @@
   <ItemGroup>
     <PackageReference Include="AutoFixture" Version="4.18.0" />
     <PackageReference Include="AutoFixture.AutoMoq" Version="4.18.0" />
+    <PackageReference Include="bunit" Version="1.22.19" />
     <PackageReference Include="FluentAssertions" Version="6.12.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="7.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1" />
@@ -27,7 +28,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Sudoku.Web\Sudoku.Web.csproj" />
     <ProjectReference Include="..\Sudoku\Sudoku.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Web\Components\" />
   </ItemGroup>
 
 </Project>
