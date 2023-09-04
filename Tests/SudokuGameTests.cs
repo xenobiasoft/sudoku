@@ -61,6 +61,20 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 	}
 
 	[Fact]
+	public void LoadPuzzle_ClearsGameState()
+	{
+		// Arrange
+		var mockGameState = Container.ResolveMock<IGameStateMemory>();
+		var sut = ResolveSut();
+
+		// Act
+		sut.LoadPuzzle(PuzzleFactory.GetSolvedPuzzle());
+
+		// Assert
+		mockGameState.Verify(x => x.Clear(), Times.Once);
+	}
+
+	[Fact]
 	public void LoadPuzzle_SetsGamePuzzle()
 	{
 		// Arrange
@@ -76,20 +90,6 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 			Assert.Equal(puzzle.PossibleValues, sut.Puzzle.PossibleValues);
 			Assert.Equal(puzzle.Values, sut.Puzzle.Values);
 		});
-	}
-
-	[Fact]
-	public void LoadPuzzle_ClearsGameState()
-	{
-		// Arrange
-		var mockGameState = Container.ResolveMock<IGameStateMemory>();
-		var sut = ResolveSut();
-
-		// Act
-		sut.LoadPuzzle(PuzzleFactory.GetSolvedPuzzle());
-
-		// Assert
-		mockGameState.Verify(x => x.Clear(), Times.Once);
 	}
 
 	[Fact]

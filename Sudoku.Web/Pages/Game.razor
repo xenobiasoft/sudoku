@@ -1,0 +1,15 @@
+﻿@page "/game"
+
+<h3>New Game</h3>
+
+<table id="grid" border="1">
+    @for (var row = 0; row < Puzzle.GetLength(0); row++)
+    {
+        <tr class="gridRow">
+            @for (var col = 0; col < Puzzle.GetLength(1); col++)
+            {
+                <td class="cell"><input type="text" maxlength="1" @bind="@Puzzle[col, row]"></td>
+            }
+        </tr>
+    }
+</table>
