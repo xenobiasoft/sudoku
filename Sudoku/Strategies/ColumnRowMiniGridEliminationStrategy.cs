@@ -8,16 +8,13 @@ public class ColumnRowMiniGridEliminationStrategy : SolverStrategy
 	{
 		var changed = false;
 
-		for (var row = 0; row < SudokuPuzzle.Rows; row++)
+		foreach (var cell in puzzle.Cells)
 		{
-			for (var col = 0; col < SudokuPuzzle.Columns; col++)
-			{
-				if (puzzle.Values[col, row] != 0 || puzzle.PossibleValues[col, row].Length != 1) continue;
+			if (cell.Value.HasValue || cell.PossibleValues.Length != 1) continue;
 
-				puzzle.Values[col, row] = int.Parse(puzzle.PossibleValues[col, row]);
-
-				changed = true;
-			}
+			cell.Value = int.Parse(cell.PossibleValues);
+			cell.PossibleValues = string.Empty;
+			changed = true;
 		}
 
 		return changed ? Score : 0;

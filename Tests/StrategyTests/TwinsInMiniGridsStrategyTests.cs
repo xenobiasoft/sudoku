@@ -11,34 +11,38 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 	public void SolvePuzzle_WhenTwoCellsHaveSamePossibleValuesWithLengthOfTwoInMiniGrid_ThenSetAsTwins()
 	{
 		// Arrange
-		var puzzle = GetTwinsPuzzle();
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
 		var sut = ResolveSut();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.PossibleValues[4, 1].Should().Be(puzzle.PossibleValues[5, 1]).And.Be("23");
+		Assert.Multiple(() =>
+		{
+			puzzle.GetCell(3, 2).PossibleValues.Should().Be("46");
+			puzzle.GetCell(4, 2).PossibleValues.Should().Be("46");
+		});
 	}
 
 	[Fact]
 	public void SolvePuzzle_WhenTwinsAreFoundInMiniGrid_RemovesTwinsNumbersFromOtherCells()
 	{
 		// Arrange
-		var puzzle = GetTwinsPuzzle();
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
 		var sut = ResolveSut();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
-
+		
 		// Assert
-		for (var col = 3; col < 6; col++)
+		for (var col = 0; col < 3; col++)
 		{
-			for (var row = 0; row < 3; row++)
+			for (var row = 3; row < 6; row++)
 			{
-				if (row is 1 && col is 4 or 5) continue;
+				if (col is 2 && row is 3 or 4) continue;
 
-				puzzle.PossibleValues[col, row].Should().NotContain("2").And.NotContain("3");
+				puzzle.GetCell(row, col).PossibleValues.Should().NotContain("4").And.NotContain("6");
 			}
 		}
 	}
@@ -47,7 +51,7 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 	public void SolvePuzzle_WhenACellValueIsSet_ReturnsScoreGreaterThanZero()
 	{
 		// Arrange
-		var puzzle = GetTwinsPuzzle();
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
 		var sut = ResolveSut();
 
 		// Act
@@ -75,9 +79,19 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 	public void SolvePuzzle_WhenNonTripletPossibleValuesIsEmpty_ThrowsException()
 	{
 		// Arrange
-		var puzzle = GetTwinsPuzzle();
-		puzzle.Values[3, 7] = 2;
-		puzzle.Values[3, 8] = 9;
+		var puzzle = new SudokuPuzzle();
+		var values = new[,] {
+			{6, 0, 9, 1, 0, 0, 0, 0, 0},
+			{0, 8, 3, 0, 0, 0, 0, 0, 0},
+			{7, 0, 1, 6, 0, 0, 0, 0, 0},
+			{0, 7, 6, 5, 0, 0, 0, 0, 0},
+			{8, 0, 4, 0, 0, 0, 0, 0, 0},
+			{1, 0, 5, 7, 0, 0, 0, 0, 0},
+			{0, 1, 2, 8, 0, 0, 0, 0, 0},
+			{0, 6, 8, 9, 0, 0, 0, 0, 0},
+			{0, 9, 7, 0, 0, 0, 0, 0, 0}
+		};
+		puzzle.RestoreValues(values);
 		var sut = ResolveSut();
 
 		// Act
@@ -85,41 +99,5 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 
 		// Assert
 		Assert.Throws<InvalidOperationException>(SolvePuzzle);
-	}
-
-	private SudokuPuzzle GetTwinsPuzzle()
-	{
-		return new SudokuPuzzle
-		{
-			Values = new[,] {
-				{
-					6, 0, 9, 1, 0, 0, 0, 0, 0
-				},
-				{
-					0, 8, 3, 0, 0, 0, 0, 0, 0
-				},
-				{
-					7, 0, 1, 6, 0, 0, 0, 0, 0
-				},
-				{
-					0, 7, 6, 5, 0, 0, 0, 0, 0
-				},
-				{
-					8, 0, 4, 0, 0, 0, 0, 0, 0
-				},
-				{
-					1, 0, 5, 7, 0, 0, 0, 0, 0
-				},
-				{
-					0, 1, 2, 8, 0, 0, 0, 0, 0
-				},
-				{
-					0, 6, 8, 9, 0, 0, 0, 0, 0
-				},
-				{
-					0, 9, 7, 0, 0, 0, 0, 0, 0
-				}
-			}
-		};
 	}
 }

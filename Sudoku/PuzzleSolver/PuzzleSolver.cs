@@ -1,6 +1,4 @@
-﻿using System.Text;
-using XenobiaSoft.Sudoku.Helpers;
-using XenobiaSoft.Sudoku.Strategies;
+﻿using XenobiaSoft.Sudoku.Strategies;
 
 namespace XenobiaSoft.Sudoku.PuzzleSolver;
 
@@ -40,121 +38,80 @@ public class PuzzleSolver : IPuzzleSolver
 
     public bool IsSolved(SudokuPuzzle puzzle)
     {
-	    for (var row = 0; row < SudokuPuzzle.Rows; row++)
+	    foreach (var cell in puzzle.Cells)
 	    {
-		    var pattern = "123456789";
-
-		    for (var col = 0; col < SudokuPuzzle.Columns; col++)
-		    {
-			    pattern = pattern.Replace(puzzle.Values[col, row].ToString(), string.Empty);
-		    }
+		    var pattern = puzzle.GetColumnCells(cell.Column).Aggregate("123456789", (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));
 
 		    if (pattern.Length > 0)
 		    {
 			    return false;
 		    }
-	    }
 
-	    for (var col = 0; col < SudokuPuzzle.Columns; col++)
-	    {
-		    var pattern = "123456789";
-
-		    for (var row = 0; row < SudokuPuzzle.Rows; row++)
-		    {
-			    pattern = pattern.Replace(puzzle.Values[col, row].ToString(), string.Empty);
-		    }
+		    pattern = puzzle.GetRowCells(cell.Row).Aggregate("123456789", (current, rowCell) => current.Replace(rowCell.Value.GetValueOrDefault().ToString(), string.Empty));
 
 		    if (pattern.Length > 0)
-		    {
-			    return false;
-		    }
-	    }
+			{
+				return false;
+			}
 
-	    for (var col = 0; col < SudokuPuzzle.Columns; col++)
-	    {
-		    for (var row = 0; row < SudokuPuzzle.Rows; row++)
-		    {
-			    var pattern = "123456789";
-			    var miniGridStartCol = PuzzleHelper.CalculateMiniGridStartCol(col);
-			    var miniGridStartRow = PuzzleHelper.CalculateMiniGridStartRow(row);
+		    pattern = puzzle.GetMiniGridCells(cell.Row, cell.Column).Aggregate("123456789", (current, gridCell) => current.Replace(gridCell.Value.GetValueOrDefault().ToString(), string.Empty));
 
-			    for (var miniGridCol = miniGridStartCol; miniGridCol < miniGridStartCol + 3; miniGridCol++)
-			    {
-				    for (var miniGridRow = miniGridStartRow; miniGridRow < miniGridStartRow + 3; miniGridRow++)
-				    {
-					    pattern = pattern.Replace(puzzle.Values[miniGridCol, miniGridRow].ToString(), string.Empty);
-				    }
-			    }
-
-			    if (pattern.Length > 0)
-			    {
-				    return false;
-			    }
-		    }
-	    }
+		    if (pattern.Length > 0)
+			{
+				return false;
+			}
+		}
 
 	    return true;
 	}
 
     public bool IsValid(SudokuPuzzle puzzle)
     {
-	    for (var row = 0; row < SudokuPuzzle.Rows; row++)
+	    foreach (var cell in puzzle.Cells)
 	    {
-		    var usedNumbers = new StringBuilder();
+		    if (!cell.Value.HasValue) continue;
 
-		    for (var col = 0; col < SudokuPuzzle.Columns; col++)
+		    var usedNumbers = new List<int?>();
+
+		    foreach (var colCell in puzzle.GetColumnCells(cell.Column))
 		    {
-				if (puzzle.Values[col, row] == 0) continue;
+			    if (!colCell.Value.HasValue) continue;
 
-			    if (usedNumbers.ToString().Contains(puzzle.Values[col, row].ToString()))
+			    if (usedNumbers.Contains(colCell.Value))
 			    {
 				    return false;
 			    }
 
-			    usedNumbers.Append(puzzle.Values[col, row]);
+				usedNumbers.Add(colCell.Value);
 		    }
-	    }
 
-	    for (var col = 0; col < SudokuPuzzle.Columns; col++)
-	    {
-		    var usedNumbers = new StringBuilder();
+			usedNumbers.Clear();
 
-		    for (var row = 0; row < SudokuPuzzle.Rows; row++)
-		    {
-			    if (puzzle.Values[col, row] == 0) continue;
+			foreach (var rowCell in puzzle.GetRowCells(cell.Row))
+			{
+				if (!rowCell.Value.HasValue) continue;
 
-				if (usedNumbers.ToString().Contains(puzzle.Values[col, row].ToString()))
-			    {
-				    return false;
-			    }
+				if (usedNumbers.Contains(rowCell.Value))
+				{
+					return false;
+				}
 
-			    usedNumbers.Append(puzzle.Values[col, row]);
-		    }
-	    }
+				usedNumbers.Add(rowCell.Value);
+			}
 
-	    for (var col = 0; col < SudokuPuzzle.Columns; col++)
-	    {
-		    for (var row = 0; row < SudokuPuzzle.Rows; row++)
-		    {
-			    var usedNumbers = new StringBuilder();
-			    var miniGridStartCol = PuzzleHelper.CalculateMiniGridStartCol(col);
-			    var miniGridStartRow = PuzzleHelper.CalculateMiniGridStartRow(row);
+			usedNumbers.Clear();
 
-			    for (var miniGridCol = miniGridStartCol; miniGridCol < miniGridStartCol + 3; miniGridCol++)
-			    {
-				    for (var miniGridRow = miniGridStartRow; miniGridRow < miniGridStartRow + 3; miniGridRow++)
-				    {
-					    if (puzzle.Values[miniGridCol, miniGridRow] == 0) continue;
+			foreach (var miniGridCell in puzzle.GetMiniGridCells(cell.Column, cell.Row))
+			{
+				if (!miniGridCell.Value.HasValue) continue;
 
-					    if (usedNumbers.ToString().Contains(puzzle.Values[miniGridCol, miniGridRow].ToString()))
-					    {
-						    return false;
-					    }
+				if (usedNumbers.Contains(miniGridCell.Value))
+				{
+					return false;
+				}
 
-					    usedNumbers.Append(puzzle.Values[miniGridCol, miniGridRow]);
-				    }
-			    }
-		    }
+				usedNumbers.Add(miniGridCell.Value);
+			}
 	    }
 
 	    return true;

@@ -1,6 +1,4 @@
-﻿using XenobiaSoft.Sudoku.Helpers;
-
-namespace XenobiaSoft.Sudoku.Strategies;
+﻿namespace XenobiaSoft.Sudoku.Strategies;
 
 public abstract class SolverStrategy
 {

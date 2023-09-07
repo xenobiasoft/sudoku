@@ -11,21 +11,25 @@ public class TwinsInRowsStrategyTests : BaseTestByAbstraction<TwinsInRowsStrateg
 	public void SolvePuzzle_WhenTwoCellsHaveSamePossibleValuesWithLengthOfTwoInRow_ThenSetAsTwins()
 	{
 		// Arrange
-		var puzzle = GetTwinsPuzzle();
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
 		var sut = ResolveSut();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.PossibleValues[0, 1].Should().Be(puzzle.PossibleValues[2, 1]).And.Be("45");
+		Assert.Multiple(() =>
+		{
+			puzzle.GetCell(7, 7).PossibleValues.Should().Be("15");
+			puzzle.GetCell(7, 8).PossibleValues.Should().Be("15");
+		});
 	}
 
 	[Fact]
 	public void SolvePuzzle_WhenTwinsAreFoundInRow_RemovesTwinsNumbersFromOtherCells()
 	{
 		// Arrange
-		var puzzle = GetTwinsPuzzle();
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
 		var sut = ResolveSut();
 
 		// Act
@@ -34,9 +38,9 @@ public class TwinsInRowsStrategyTests : BaseTestByAbstraction<TwinsInRowsStrateg
 		// Assert
 		for (var col = 0; col < 9; col++)
 		{
-			if (col is 0 or 2) continue;
+			if (col is 7 or 8) continue;
 
-			puzzle.PossibleValues[col, 1].Should().NotContain("4").And.NotContain("5");
+			puzzle.GetCell(7, col).PossibleValues.Should().NotContain("1").And.NotContain("5");
 		}
 	}
 
@@ -44,7 +48,7 @@ public class TwinsInRowsStrategyTests : BaseTestByAbstraction<TwinsInRowsStrateg
 	public void SolvePuzzle_WhenACellValueIsSet_ReturnsScoreGreaterThanZero()
 	{
 		// Arrange
-		var puzzle = GetTwinsPuzzle();
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
 		var sut = ResolveSut();
 
 		// Act
@@ -72,8 +76,8 @@ public class TwinsInRowsStrategyTests : BaseTestByAbstraction<TwinsInRowsStrateg
 	public void SolvePuzzle_WhenNonTripletPossibleValuesIsEmpty_ThrowsException()
 	{
 		// Arrange
-		var puzzle = GetTwinsPuzzle();
-		puzzle.Values[3, 8] = 2;
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
+		puzzle.GetCell(4, 2).Value = 7;
 		var sut = ResolveSut();
 
 		// Act
@@ -81,41 +85,5 @@ public class TwinsInRowsStrategyTests : BaseTestByAbstraction<TwinsInRowsStrateg
 
 		// Assert
 		Assert.Throws<InvalidOperationException>(SolvePuzzle);
-	}
-
-	private SudokuPuzzle GetTwinsPuzzle()
-	{
-		return new SudokuPuzzle
-		{
-			Values = new[,] {
-				{
-					1, 0, 2, 3, 6, 7, 8, 9, 0
-				},
-				{
-					0, 0, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					2, 0, 3, 6, 7, 8, 9, 1, 0
-				},
-				{
-					3, 0, 6, 7, 8, 9, 1, 0, 0
-				},
-				{
-					0, 0, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					0, 0, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					0, 0, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					0, 0, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					0, 0, 0, 0, 0, 0, 0, 0, 0
-				}
-			}
-		};
 	}
 }

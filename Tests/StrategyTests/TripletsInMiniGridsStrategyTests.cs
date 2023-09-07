@@ -18,10 +18,12 @@ public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsIn
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.PossibleValues[0, 0]
-			.Should().Be(puzzle.PossibleValues[1, 1])
-			.And.Be(puzzle.PossibleValues[2, 2])
-			.And.Be("123");
+		Assert.Multiple(() =>
+		{
+			puzzle.GetCell(0, 0).PossibleValues.Should().Be("123");
+			puzzle.GetCell(1, 1).PossibleValues.Should().Be("123");
+			puzzle.GetCell(2, 2).PossibleValues.Should().Be("123");
+		});
 	}
 
 	[Fact]
@@ -41,7 +43,7 @@ public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsIn
 			{
 				if ((col == 0 && row == 0) || (col == 1 && row == 1) || (col == 2 && row == 2)) continue;
 
-				puzzle.PossibleValues[col, row]
+				puzzle.GetCell(row, col).PossibleValues
 					.Should().NotContain("1")
 					.And.NotContain("2")
 					.And.NotContain("3");
@@ -79,37 +81,39 @@ public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsIn
 
 	private SudokuPuzzle GetTripletsPuzzle()
 	{
-		return new SudokuPuzzle
-		{
-			Values = new[,] {
-				{
-					0, 4, 5, 6, 7, 8, 9, 0, 0
-				},
-				{
-					9, 0, 8, 7, 6, 5, 4, 0, 0
-				},
-				{
-					8, 7, 0, 6, 5, 4, 0, 0, 0
-				},
-				{
-					0, 0, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					0, 0, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					0, 0, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					0, 0, 0, 0, 0, 0, 3, 2, 1
-				},
-				{
-					0, 0, 0, 0, 0, 0, 2, 1, 3
-				},
-				{
-					0, 0, 0, 0, 0, 0, 1, 3, 2
-				}
+		var puzzle = new SudokuPuzzle();
+		var values = new[,] {
+			{
+				0, 4, 5, 6, 7, 8, 9, 0, 0
+			},
+			{
+				9, 0, 8, 7, 6, 5, 4, 0, 0
+			},
+			{
+				8, 7, 0, 6, 5, 4, 0, 0, 0
+			},
+			{
+				0, 0, 0, 0, 0, 0, 0, 0, 0
+			},
+			{
+				0, 0, 0, 0, 0, 0, 0, 0, 0
+			},
+			{
+				0, 0, 0, 0, 0, 0, 0, 0, 0
+			},
+			{
+				0, 0, 0, 0, 0, 0, 3, 2, 1
+			},
+			{
+				0, 0, 0, 0, 0, 0, 2, 1, 3
+			},
+			{
+				0, 0, 0, 0, 0, 0, 1, 3, 2
 			}
 		};
+
+		puzzle.RestoreValues(values);
+
+		return puzzle;
 	}
 }

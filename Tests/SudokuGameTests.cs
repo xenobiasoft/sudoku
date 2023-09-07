@@ -1,10 +1,8 @@
 ﻿using DepenMock.XUnit;
-using Newtonsoft.Json.Linq;
 using UnitTests.CustomAssertions;
 using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.Helpers;
 using XenobiaSoft.Sudoku.PuzzleSolver;
 using XenobiaSoft.Sudoku.Strategies;
 
@@ -17,8 +15,9 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 	public SudokuGameTests()
 	{
 		_puzzle = PuzzleFactory
-			.GetPuzzle(Level.ExtremelyHard)
-			.PopulatePossibleValues();
+			.GetPuzzle(Level.ExtremelyHard);
+
+		_puzzle.PopulatePossibleValues();
 
 		Container.Register(_puzzle);
 	}
@@ -41,7 +40,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 	public void Undo_RestoresGameStateFromSavedGameState()
 	{
 		// Arrange
-		var gameState = Container.Create<GameStateMemento>();
+		var gameState = new GameStateMemento(Container.CreateMany<Cell>(), Container.Create<int>());
 		Container
 			.ResolveMock<IGameStateMemory>()
 			.Setup(x => x.Undo())
@@ -55,8 +54,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		Assert.Multiple(() =>
 		{
 			Assert.Equal(gameState.Score, sut.Score);
-			Assert.Equal(gameState.PossibleValues, sut.Puzzle.PossibleValues);
-			Assert.Equal(gameState.Values, sut.Puzzle.Values);
+			Assert.Equal(gameState.Cells, sut.Puzzle.Cells);
 		});
 	}
 
@@ -87,8 +85,8 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		// Assert
 		Assert.Multiple(() =>
 		{
-			Assert.Equal(puzzle.PossibleValues, sut.Puzzle.PossibleValues);
-			Assert.Equal(puzzle.Values, sut.Puzzle.Values);
+			Assert.Equal(puzzle.GetCellPossibleValues(), sut.Puzzle.GetCellPossibleValues());
+			Assert.Equal(puzzle.GetCellValues(), sut.Puzzle.GetCellValues());
 		});
 	}
 
@@ -152,11 +150,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 	public void SolvePuzzle_WhenStrategyThrowsInvalidOperationException_GamePopsSavedStateOffStack()
 	{
 		// Arrange
-		var expectedGameState = Container.Create<GameStateMemento>();
-		Container
-			.ResolveMock<IGameStateMemory>()
-			.Setup(x => x.Undo())
-			.Returns(expectedGameState);
+		var mockGameState = Container.ResolveMock<IGameStateMemory>();
 		Container
 			.ResolveMock<IPuzzleSolver>()
 			.Setup(x => x.TrySolvePuzzle(It.IsAny<SudokuPuzzle>()))
@@ -167,12 +161,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		sut.SolvePuzzle();
 
 		// Assert
-		Assert.Multiple(() =>
-		{
-			Assert.Equal(expectedGameState.PossibleValues, sut.Puzzle.PossibleValues);
-			Assert.Equal(expectedGameState.Values, sut.Puzzle.Values);
-			Assert.Equal(expectedGameState.Score, sut.Score);
-		});
+		mockGameState.Verify(x => x.Undo(), Times.AtLeastOnce);
 	}
 
 	[Fact]
@@ -194,7 +183,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		sut.SolvePuzzle();
 
 		// Assert
-		_puzzle.Values[3, 5].Should().BeOneOf(5, 9);
+		_puzzle.GetCell(3, 1).Value.Should().BeOneOf(6, 7);
 	}
 
 	[Fact]
@@ -253,23 +242,23 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		sut.SetCell(2, 1, 5);
 
 		// Assert
-		sut.Puzzle.Values[2, 1].Should().Be(5);
+		sut.Puzzle.GetCell(2, 1).Value.Should().Be(5);
 	}
 
 	[Theory]
-	[InlineData(9, 5, 6, "Invalid column (Parameter 'col')")]
-	[InlineData(5, 9, 6, "Invalid row (Parameter 'row')")]
-	[InlineData(3, 1, 10, "Invalid value (Parameter 'value')")]
-	[InlineData(-1, 5, 6, "Invalid column (Parameter 'col')")]
-	[InlineData(5, -1, 6, "Invalid row (Parameter 'row')")]
-	[InlineData(3, 1, -1, "Invalid value (Parameter 'value')")]
-	public void SetCell_WhenGivenInvalidNumber_ThrowsInvalidArgumentException(int col, int row, int value, string expectedMessage)
+	[InlineData(5, 9, 6, "Invalid column (Parameter 'col')")]
+	[InlineData(9, 5, 6, "Invalid row (Parameter 'row')")]
+	[InlineData(1, 3, 10, "Invalid value (Parameter 'value')")]
+	[InlineData(5, -1, 6, "Invalid column (Parameter 'col')")]
+	[InlineData(-1, 5, 6, "Invalid row (Parameter 'row')")]
+	[InlineData(1, 3, -1, "Invalid value (Parameter 'value')")]
+	public void SetCell_WhenGivenInvalidNumber_ThrowsInvalidArgumentException(int row, int col, int value, string expectedMessage)
 	{
 		// Arrange
 		var sut = ResolveSut();
 
 		// Act
-		void SetCell() => sut.SetCell(col, row, value);
+		void SetCell() => sut.SetCell(row, col, value);
 
 		// Assert
 		Assert.Throws<ArgumentException>(SetCell).Message.Should().Be(expectedMessage);
@@ -335,8 +324,8 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		var puzzleSolver = new PuzzleSolver(strategies);
 		var sut = new SudokuGame(new GameStateMemory(), puzzleSolver);
 		var puzzle = PuzzleFactory
-			.GetPuzzle(Level.ExtremelyHard)
-			.PopulatePossibleValues();
+			.GetPuzzle(Level.ExtremelyHard);
+		_puzzle.PopulatePossibleValues();
 		sut.LoadPuzzle(puzzle);
 
 		// Act

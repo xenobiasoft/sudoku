@@ -18,9 +18,7 @@ public class LoneRangersInMiniGridStrategyTests : BaseTestByAbstraction<LoneRang
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.Values[8, 6]
-			.Should().Be(int.Parse(puzzle.PossibleValues[8, 6]))
-			.And.Subject?.Should().Be(1);
+		puzzle.GetCell(5, 1).Value.Should().Be(8);
 	}
 
 	[Fact]

@@ -1,5 +1,4 @@
 ﻿using DepenMock.XUnit;
-using System.Reflection.Emit;
 using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.PuzzleSolver;
@@ -22,7 +21,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
         var sut = ResolveSut();
 
         // Act
-        sut.TrySolvePuzzle(new SudokuPuzzle());
+        sut.TrySolvePuzzle(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
 
         // Assert
         solverStrategy.Verify(x => x.Execute(It.IsAny<SudokuPuzzle>()), Times.Exactly(3));

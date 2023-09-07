@@ -1,5 +1,4 @@
 ﻿using DepenMock.XUnit;
-using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
 
@@ -11,7 +10,7 @@ public class GameStateMemoryTests : BaseTestByType<GameStateMemory>
 	public void Push_AddsGameStateToStack()
 	{
 		// Arrange
-		var gameState = new GameStateMemento(Container.Create<string[,]>(), Container.Create<int[,]>(), Container.Create<int>());
+		var gameState = new GameStateMemento(Container.CreateMany<Cell>(), Container.Create<int>());
 		var sut = ResolveSut();
 
 		// Act
@@ -25,7 +24,7 @@ public class GameStateMemoryTests : BaseTestByType<GameStateMemory>
 	public void Undo_PopsGameStateOffStack()
 	{
 		// Arrange
-		var gameState = new GameStateMemento(Container.Create<string[,]>(), Container.Create<int[,]>(), Container.Create<int>());
+		var gameState = new GameStateMemento(Container.CreateMany<Cell>(), Container.Create<int>());
 		var sut = ResolveSut();
 
 		// Act

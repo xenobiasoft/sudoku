@@ -1,5 +1,6 @@
-﻿// ReSharper disable once CheckNamespace
-namespace XenobiaSoft.Sudoku;
+﻿using Newtonsoft.Json;
+
+namespace XenobiaSoft.Sudoku.Helpers;
 
 public static class GeneralExtensionMethods
 {
@@ -11,7 +12,7 @@ public static class GeneralExtensionMethods
 		{
 			for (var row = 0; row < source.GetLength(1); row++)
 			{
-				isEmpty = isEmpty && string.IsNullOrWhiteSpace(source[col, row]);
+				isEmpty = isEmpty && string.IsNullOrWhiteSpace(source[row, col]);
 			}
 		}
 
@@ -26,10 +27,16 @@ public static class GeneralExtensionMethods
 		{
 			for (var row = 0; row < source.GetLength(1); row++)
 			{
-				isEmpty = isEmpty && source[col, row] == 0;
+				isEmpty = isEmpty && source[row, col] == 0;
 			}
 		}
 
 		return isEmpty;
+	}
+
+	public static string ToJson(this object obj, bool formatted = false)
+	{
+		var formatting = formatted ? Formatting.Indented : Formatting.None;
+		return JsonConvert.SerializeObject(obj, formatting);
 	}
 }

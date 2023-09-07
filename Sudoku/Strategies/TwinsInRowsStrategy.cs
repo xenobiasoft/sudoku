@@ -8,34 +8,31 @@ public class TwinsInRowsStrategy : SolverStrategy
 	{
 		var changed = false;
 
-		for (var twin1Row = 0; twin1Row < SudokuPuzzle.Rows; twin1Row++)
+		foreach (var cell in puzzle.Cells)
 		{
-			for (var twin1Col = 0; twin1Col < SudokuPuzzle.Columns; twin1Col++)
+			if (cell.Value.HasValue || cell.PossibleValues.Length != 2) continue;
+
+			foreach (var twinCell in puzzle.GetRowCells(cell.Row).Where(x => x != cell))
 			{
-				if (puzzle.Values[twin1Col, twin1Row] != 0 || puzzle.PossibleValues[twin1Col, twin1Row].Length != 2) continue;
+				if (cell.PossibleValues != twinCell.PossibleValues) continue;
 
-				for (var twin2Col = twin1Col + 1; twin2Col < SudokuPuzzle.Columns; twin2Col++)
+				foreach (var nonTwinCell in puzzle.GetRowCells(cell.Row).Where(x => x != cell && x != twinCell))
 				{
-					if (puzzle.PossibleValues[twin2Col, twin1Row] != puzzle.PossibleValues[twin1Col, twin1Row]) continue;
+					if (nonTwinCell.Value.HasValue) continue;
 
-					for (var nonTwinCol = 0; nonTwinCol < SudokuPuzzle.Columns; nonTwinCol++)
+					nonTwinCell.PossibleValues = nonTwinCell.PossibleValues.Replace(cell.PossibleValues[0].ToString(), string.Empty);
+					nonTwinCell.PossibleValues = nonTwinCell.PossibleValues.Replace(cell.PossibleValues[1].ToString(), string.Empty);
+
+					if (string.IsNullOrWhiteSpace(nonTwinCell.PossibleValues))
 					{
-						if (puzzle.Values[nonTwinCol, twin1Row] != 0 || nonTwinCol == twin1Col || nonTwinCol == twin2Col) continue;
-
-						puzzle.PossibleValues[nonTwinCol, twin1Row] = puzzle.PossibleValues[nonTwinCol, twin1Row].Replace(puzzle.PossibleValues[twin1Col, twin1Row][0].ToString(), string.Empty);
-						puzzle.PossibleValues[nonTwinCol, twin1Row] = puzzle.PossibleValues[nonTwinCol, twin1Row].Replace(puzzle.PossibleValues[twin1Col, twin1Row][1].ToString(), string.Empty);
-
-						if (string.IsNullOrWhiteSpace(puzzle.PossibleValues[nonTwinCol, twin1Row]))
-						{
-							throw new InvalidOperationException("An invalid move was made");
-						}
-
-						if (puzzle.PossibleValues[nonTwinCol, twin1Row].Length != 1) continue;
-
-						puzzle.Values[nonTwinCol, twin1Row] = int.Parse(puzzle.PossibleValues[nonTwinCol, twin1Row]);
-
-						changed = true;
+						throw new InvalidOperationException("An invalid move was made");
 					}
+
+					if (nonTwinCell.PossibleValues.Length != 1) continue;
+
+					nonTwinCell.Value = int.Parse(nonTwinCell.PossibleValues);
+
+					changed = true;
 				}
 			}
 		}

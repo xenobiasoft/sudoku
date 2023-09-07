@@ -1,6 +1,7 @@
-﻿using FluentAssertions.Execution;
+﻿using System.Diagnostics;
+using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
-using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Helpers;
 
 namespace UnitTests.CustomAssertions;
 
@@ -11,6 +12,7 @@ public class StringArrayAssertions : ReferenceTypeAssertions<string[,], StringAr
 
 	protected override string Identifier => "string array";
 
+	[DebuggerStepThrough]
 	public AndConstraint<StringArrayAssertions> BeEmpty(string because = "", params object[] becauseArgs)
 	{
 		Execute.Assertion
@@ -21,12 +23,13 @@ public class StringArrayAssertions : ReferenceTypeAssertions<string[,], StringAr
 		return new AndConstraint<StringArrayAssertions>(this);
 	}
 
+	[DebuggerStepThrough]
 	public AndConstraint<StringArrayAssertions> BeEquivalentTo(string[,] target, string because = "", params object[] becauseArgs)
 	{
 		Execute.Assertion
 			.BecauseOf(because, becauseArgs)
 			.ForCondition(Subject.IsEquivalentTo(target))
-			.FailWith($"{Identifier} does not match {target}");
+			.FailWith($"{Identifier} does not match {target}.\r\n\r\nExpected:\r\n{target.ToJson()}\r\n\r\nBut found:\r\n{Subject.ToJson()}");
 
 		return new AndConstraint<StringArrayAssertions>(this);
 	}

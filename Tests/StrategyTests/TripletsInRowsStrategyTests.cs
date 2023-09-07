@@ -8,7 +8,7 @@ namespace UnitTests.StrategyTests;
 public class TripletsInRowsStrategyTests : BaseTestByAbstraction<TripletsInRowsStrategy, SolverStrategy>
 {
 	[Fact]
-	public void SolvePuzzle_WhenTwoCellsHaveSamePossibleValuesWithLengthOfThreeInRow_ThenSetAsTriplets()
+	public void SolvePuzzle_WhenThreeCellsHaveSamePossibleValuesWithLengthOfThreeInRow_ThenSetAsTriplets()
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
@@ -18,10 +18,12 @@ public class TripletsInRowsStrategyTests : BaseTestByAbstraction<TripletsInRowsS
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.PossibleValues[0, 0]
-			.Should().Be(puzzle.PossibleValues[1, 0])
-			.And.Be(puzzle.PossibleValues[2, 0])
-			.And.Be("789");
+		Assert.Multiple(() =>
+		{
+			puzzle.GetCell(0, 0).PossibleValues.Should().Be("789");
+			puzzle.GetCell(0, 1).PossibleValues.Should().Be("789");
+			puzzle.GetCell(0, 2).PossibleValues.Should().Be("789");
+		});
 	}
 
 	[Fact]
@@ -37,8 +39,7 @@ public class TripletsInRowsStrategyTests : BaseTestByAbstraction<TripletsInRowsS
 		// Assert
 		for (var col = 3; col < 9; col++)
 		{
-			puzzle.PossibleValues[col, 0]
-				.Should().NotContain("7")
+			puzzle.GetCell(0, col).PossibleValues.Should().NotContain("7")
 				.And.NotContain("8")
 				.And.NotContain("9");
 		}
@@ -62,7 +63,38 @@ public class TripletsInRowsStrategyTests : BaseTestByAbstraction<TripletsInRowsS
 	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsScoreOfZero()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetEmptyPuzzle();
+
+		var puzzle = new SudokuPuzzle();
+		var values = new[,] {
+			{
+				0, 0, 0, 0, 0, 0, 4, 5, 6
+			},
+			{
+				0, 0, 0, 0, 0, 0, 5, 6, 4
+			},
+			{
+				0, 0, 0, 0, 0, 0, 6, 4, 5
+			},
+			{
+				0, 5, 6, 0, 0, 0, 0, 0, 0
+			},
+			{
+				0, 0, 0, 0, 0, 0, 0, 0, 0
+			},
+			{
+				0, 0, 0, 0, 0, 0, 0, 0, 0
+			},
+			{
+				3, 4, 5, 6, 7, 8, 9, 1, 2
+			},
+			{
+				2, 3, 4, 5, 6, 7, 8, 9, 1
+			},
+			{
+				1, 2, 3, 4, 5, 6, 7, 8, 9
+			}
+		};
+		puzzle.RestoreValues(values);
 		var sut = ResolveSut();
 
 		// Act
@@ -77,8 +109,9 @@ public class TripletsInRowsStrategyTests : BaseTestByAbstraction<TripletsInRowsS
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		puzzle.Values[3, 3] = 4;
-		puzzle.Values[3, 4] = 7;
+		puzzle.GetCell(3, 3).Value = 4;
+		puzzle.GetCell(4, 3).Value = 7;
+		puzzle.GetCell(8, 3).Value = 9;
 		var sut = ResolveSut();
 
 		// Act
@@ -90,37 +123,20 @@ public class TripletsInRowsStrategyTests : BaseTestByAbstraction<TripletsInRowsS
 
 	private SudokuPuzzle GetTripletsPuzzle()
 	{
-		return new SudokuPuzzle
-		{
-			Values = new[,] {
-				{
-					0, 0, 0, 0, 0, 0, 4, 5, 6
-				},
-				{
-					0, 0, 0, 0, 0, 0, 5, 6, 4
-				},
-				{
-					0, 0, 0, 0, 0, 0, 6, 4, 5
-				},
-				{
-					0, 5, 6, 0, 0, 0, 0, 0, 0
-				},
-				{
-					0, 0, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					0, 0, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					3, 4, 5, 6, 7, 8, 9, 1, 2
-				},
-				{
-					2, 3, 4, 5, 6, 7, 8, 9, 1
-				},
-				{
-					1, 2, 3, 4, 5, 6, 7, 8, 9
-				}
-			}
+		var puzzle = new SudokuPuzzle();
+		var values = new[,] {
+			{0, 0, 0, 0, 0, 0, 3, 2, 1},
+			{0, 0, 0, 5, 0, 0, 4, 3, 2},
+			{0, 0, 0, 6, 0, 0, 5, 4, 3},
+			{0, 0, 0, 0, 0, 0, 6, 5, 4},
+			{0, 0, 0, 0, 0, 0, 7, 6, 5},
+			{0, 0, 0, 0, 0, 0, 8, 7, 6},
+			{4, 5, 6, 0, 0, 0, 9, 8, 7},
+			{5, 6, 4, 0, 0, 0, 1, 9, 8},
+			{6, 4, 5, 0, 0, 0, 2, 1, 9}
 		};
+		puzzle.RestoreValues(values);
+
+		return puzzle;
 	}
 }

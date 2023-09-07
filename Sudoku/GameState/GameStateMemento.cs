@@ -2,14 +2,12 @@
 
 public class GameStateMemento
 {
-	public GameStateMemento(string[,] possibleValues, int[,] values, int score)
+	public GameStateMemento(IEnumerable<Cell> cells, int score)
 	{
-		PossibleValues = possibleValues;
-		Values = values;
+		Cells = cells;
 		Score = score;
 	}
 
-	public string[,] PossibleValues { get; private set; }
-	public int[,] Values { get; private set; }
+	public IEnumerable<Cell> Cells { get; private set; }
 	public int Score { get; private set; }
 }

@@ -15,10 +15,10 @@ public class SudokuPuzzleAssertions : ReferenceTypeAssertions<SudokuPuzzle, Sudo
     {
         Execute.Assertion
             .BecauseOf(because, becauseArgs)
-            .ForCondition(Subject.Values.IsEmpty())
+            .ForCondition(Subject.Cells.All(x => !x.Value.HasValue))
             .FailWith($"{Identifier} values is not empty")
             .Then
-            .ForCondition(Subject.PossibleValues.IsEmpty())
+            .ForCondition(Subject.Cells.All(x => string.IsNullOrWhiteSpace(x.PossibleValues)))
             .FailWith($"{Identifier} possible values is not empty");
 
         return new AndConstraint<SudokuPuzzleAssertions>(this);

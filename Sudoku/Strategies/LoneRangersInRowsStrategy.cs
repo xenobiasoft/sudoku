@@ -16,9 +16,9 @@ public class LoneRangersInRowsStrategy : SolverStrategy
 			{
 				var occurrence = 0;
 
-				for (var rol = 0; rol < SudokuPuzzle.Columns; rol++)
+				foreach (var rowCell in puzzle.GetRowCells(row))
 				{
-					if (puzzle.Values[rol, row] != 0 || !puzzle.PossibleValues[rol, row].Contains(number.ToString())) continue;
+					if (rowCell.Value.HasValue || !rowCell.PossibleValues.Contains(number.ToString())) continue;
 
 					occurrence += 1;
 
@@ -27,14 +27,15 @@ public class LoneRangersInRowsStrategy : SolverStrategy
 						break;
 					}
 
-					colPos = rol;
-					rowPos = row;
+					colPos = rowCell.Column;
+					rowPos = rowCell.Row;
 				}
 
 				if (occurrence != 1) continue;
 
-				puzzle.Values[colPos, rowPos] = number;
-				puzzle.PossibleValues[colPos, rowPos] = number.ToString();
+				var loneRangerCell = puzzle.GetCell(rowPos, colPos);
+				loneRangerCell.Value = number;
+				loneRangerCell.PossibleValues = number.ToString();
 
 				changed = true;
 			}

@@ -18,7 +18,7 @@ public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<C
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.Values[4, 4].Should().Be(int.Parse(puzzle.PossibleValues[4, 4]));
+		puzzle.GetCell(4, 4).Value.Should().Be(5);
 	}
 
 	[Fact]

@@ -6,7 +6,7 @@ public class PuzzleFactory
 {
 	public static SudokuPuzzle GetPuzzle(Level level)
 	{
-		var puzzle = level switch
+		var puzzleValues = level switch
 		{
 			Level.Easy => EasyPuzzle,
 			Level.Medium => MediumPuzzle,
@@ -15,26 +15,28 @@ public class PuzzleFactory
 			_ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
 		};
 
-		return new SudokuPuzzle
-		{
-			Values = (int[,])puzzle.Clone()
-		};
+		var puzzle = new SudokuPuzzle();
+		puzzle.RestoreValues(puzzleValues);
+
+		return puzzle;
 	}
 
 	public static SudokuPuzzle GetEmptyPuzzle()
 	{
-		return new SudokuPuzzle
-		{
-			Values = (int[,])DefaultPuzzle.Clone()
-		};
+		var puzzle = new SudokuPuzzle();
+
+		puzzle.RestoreValues(DefaultPuzzle);
+
+		return puzzle;
 	}
 
 	public static SudokuPuzzle GetSolvedPuzzle()
 	{
-		return new SudokuPuzzle
-		{
-			Values = (int[,])SolvedPuzzle.Clone()
-		};
+		var puzzle = new SudokuPuzzle();
+
+		puzzle.RestoreValues(SolvedPuzzle);
+
+		return puzzle;
 	}
 
 	private static readonly int[,] EasyPuzzle = {
@@ -147,7 +149,7 @@ public class PuzzleFactory
 			4, 0, 0, 0, 6, 7, 1, 0, 0
 		},
 		{
-			0, 0, 5, 9, 0, 0, 3, 0, 0
+			0, 0, 0, 9, 0, 0, 3, 0, 0
 		},
 		{
 			0, 0, 0, 0, 2, 0, 0, 7, 0

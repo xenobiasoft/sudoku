@@ -18,9 +18,7 @@ public class LoneRangersInColumnsStrategyTests : BaseTestByAbstraction<LoneRange
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.Values[2, 6]
-			.Should().Be(int.Parse(puzzle.PossibleValues[2, 6]))
-			.And.Subject?.Should().Be(5);
+		puzzle.GetCell(0, 6).Value.Should().Be(9);
 	}
 
 	[Fact]

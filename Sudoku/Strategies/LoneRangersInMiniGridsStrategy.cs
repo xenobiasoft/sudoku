@@ -10,43 +10,30 @@ public class LoneRangersInMiniGridsStrategy : SolverStrategy
 		var rowPos = 0;
 		var changed = false;
 
-		for (var number = 1; number <= 9; number++)
+		for (var col = 0; col < SudokuPuzzle.Columns; col = col + 3)
 		{
-			for (var row = 0; row < SudokuPuzzle.Rows; row += 3)
+			for (var row = 0; row < SudokuPuzzle.Rows; row = row + 3)
 			{
-				for (var col = 0; col < SudokuPuzzle.Columns; col += 3)
+				for (var number = 1; number <= 9; number++)
 				{
-					var nextMiniGrid = false;
 					var occurrence = 0;
 
-					for (var miniGridRow = 0; miniGridRow <= 2; miniGridRow++)
+					foreach (var miniGridCell in puzzle.GetMiniGridCells(row, col))
 					{
-						for (var miniGridCol = 0; miniGridCol <= 2; miniGridCol++)
-						{
-							if (puzzle.Values[col + miniGridCol, row + miniGridRow] != 0 || 
-							    !puzzle.PossibleValues[col + miniGridCol, row + miniGridRow].Contains(number.ToString())) continue;
+						if (miniGridCell.Value.HasValue || !miniGridCell.PossibleValues.Contains(number.ToString())) continue;
 
-							occurrence += 1;
-							colPos = col + miniGridCol;
-							rowPos = row + miniGridRow;
+						occurrence += 1;
+						colPos = miniGridCell.Column;
+						rowPos = miniGridCell.Row;
 
-							if (occurrence <= 1) continue;
-
-							nextMiniGrid = true;
-							break;
-						}
-
-						if (nextMiniGrid)
-						{
-							break;
-						}
+						if (occurrence > 1) break;
 					}
 
-					if (nextMiniGrid || occurrence != 1) continue;
+					if (occurrence != 1) continue;
 
-					puzzle.Values[colPos, rowPos] = number;
-					puzzle.PossibleValues[colPos, rowPos] = number.ToString();
-
+					var loneRangerCell = puzzle.GetCell(rowPos, colPos);
+					loneRangerCell.Value = number;
+					loneRangerCell.PossibleValues = number.ToString();
 					changed = true;
 				}
 			}

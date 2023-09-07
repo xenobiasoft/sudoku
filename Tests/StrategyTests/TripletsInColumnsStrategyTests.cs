@@ -18,10 +18,12 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.PossibleValues[0, 0]
-			.Should().Be(puzzle.PossibleValues[0, 1])
-			.And.Be(puzzle.PossibleValues[0, 2])
-			.And.Be("456");
+		Assert.Multiple(() =>
+		{
+			puzzle.GetCell(0, 0).PossibleValues.Should().Be("456");
+			puzzle.GetCell(0, 1).PossibleValues.Should().Be("456");
+			puzzle.GetCell(0, 2).PossibleValues.Should().Be("456");
+		});
 	}
 
 	[Fact]
@@ -37,7 +39,7 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 		// Assert
 		for (var row = 3; row < 9; row++)
 		{
-			puzzle.PossibleValues[0, row]
+			puzzle.GetCell(row, 2).PossibleValues
 				.Should().NotContain("4")
 				.And.NotContain("5")
 				.And.NotContain("6");
@@ -77,8 +79,8 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		puzzle.Values[8, 3] = 9;
-		puzzle.Values[7, 3] = 4;
+		puzzle.GetCell(6, 2).Value = 8;
+		puzzle.GetCell(4, 3).Value = 6;
 		var sut = ResolveSut();
 
 		// Act
@@ -90,37 +92,38 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 
 	private SudokuPuzzle GetTripletsPuzzle()
 	{
-		return new SudokuPuzzle
-		{
-			Values = new[,] {
-				{
-					0, 0, 0, 0, 1, 2, 3, 7, 8
-				},
-				{
-					1, 7, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					2, 8, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					3, 9, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					7, 1, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					8, 2, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					9, 3, 0, 0, 0, 0, 0, 0, 0
-				},
-				{
-					0, 0, 3, 0, 0, 0, 0, 0, 0
-				},
-				{
-					0, 0, 9, 0, 0, 0, 0, 0, 0
-				}
+		var puzzle = new SudokuPuzzle();
+		var values = new[,] {
+			{
+				0, 0, 0, 0, 1, 2, 3, 7, 8
+			},
+			{
+				1, 7, 0, 0, 0, 0, 0, 0, 0
+			},
+			{
+				2, 8, 0, 0, 0, 0, 0, 0, 0
+			},
+			{
+				3, 9, 0, 0, 0, 0, 0, 0, 0
+			},
+			{
+				7, 1, 0, 0, 0, 0, 0, 0, 0
+			},
+			{
+				8, 2, 0, 0, 0, 0, 0, 0, 0
+			},
+			{
+				9, 3, 0, 0, 0, 0, 0, 0, 0
+			},
+			{
+				0, 0, 3, 0, 0, 0, 0, 0, 0
+			},
+			{
+				0, 0, 9, 0, 0, 0, 0, 0, 0
 			}
 		};
+		puzzle.RestoreValues(values);
+
+		return puzzle;
 	}
 }

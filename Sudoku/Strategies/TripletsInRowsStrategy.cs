@@ -1,6 +1,4 @@
-﻿using System.Text;
-
-namespace XenobiaSoft.Sudoku.Strategies;
+﻿namespace XenobiaSoft.Sudoku.Strategies;
 
 public class TripletsInRowsStrategy : SolverStrategy
 {
@@ -10,52 +8,44 @@ public class TripletsInRowsStrategy : SolverStrategy
 	{
 		var changed = false;
 
-		for (var triplet1Row = 0; triplet1Row < SudokuPuzzle.Rows; triplet1Row++)
+		foreach (var cell in puzzle.Cells)
 		{
-			for (var triplet1Col = 0; triplet1Col < SudokuPuzzle.Columns; triplet1Col++)
+			if (cell.Value.HasValue || cell.PossibleValues.Length != 3) continue;
+
+			var triplets = new List<Cell>() { cell };
+
+			foreach (var rowCell in puzzle.GetRowCells(cell.Row).Where(x => x != cell))
 			{
-				if (puzzle.Values[triplet1Col, triplet1Row] != 0 || puzzle.PossibleValues[triplet1Col, triplet1Row].Length != 3) continue;
-
-				var tripletsLocation = new StringBuilder();
-
-				tripletsLocation.Append(triplet1Col).Append(triplet1Row);
-
-				for (var triplet2Col = triplet1Col + 1; triplet2Col < SudokuPuzzle.Columns; triplet2Col++)
+				if (cell.PossibleValues == rowCell.PossibleValues ||
+				    (rowCell.PossibleValues.Length == 2 &&
+				     cell.PossibleValues.Contains(rowCell.PossibleValues[0].ToString()) &&
+				     cell.PossibleValues.Contains(rowCell.PossibleValues[1].ToString()))
+				   )
 				{
-					if (puzzle.PossibleValues[triplet1Col, triplet1Row] == puzzle.PossibleValues[triplet2Col, triplet1Row] ||
-					    (puzzle.PossibleValues[triplet2Col, triplet1Row].Length == 2 &&
-					     puzzle.PossibleValues[triplet1Col, triplet1Row].Contains(puzzle.PossibleValues[triplet2Col, triplet1Row][0].ToString()) &&
-					     puzzle.PossibleValues[triplet1Col, triplet1Row].Contains(puzzle.PossibleValues[triplet2Col, triplet1Row][1].ToString()))
-					    )
-					{
-						tripletsLocation.Append(triplet2Col).Append(triplet1Row);
-					}
+					triplets.Add(rowCell);
+				}
+			}
+
+			if (triplets.Count != 3) continue;
+
+			foreach (var nonTripletCell in puzzle.GetRowCells(cell.Row))
+			{
+				if (nonTripletCell.Value.HasValue || triplets.Contains(nonTripletCell)) continue;
+
+				nonTripletCell.PossibleValues = nonTripletCell.PossibleValues.Replace(cell.PossibleValues[0].ToString(), string.Empty);
+				nonTripletCell.PossibleValues = nonTripletCell.PossibleValues.Replace(cell.PossibleValues[1].ToString(), string.Empty);
+				nonTripletCell.PossibleValues = nonTripletCell.PossibleValues.Replace(cell.PossibleValues[2].ToString(), string.Empty);
+
+				if (string.IsNullOrWhiteSpace(nonTripletCell.PossibleValues))
+				{
+					throw new InvalidOperationException("An invalid move was made");
 				}
 
-				if (tripletsLocation.Length != 6) continue;
+				if (nonTripletCell.PossibleValues.Length != 1) continue;
 
-				for (var nonTripletCol = 0; nonTripletCol < SudokuPuzzle.Columns; nonTripletCol++)
-				{
-					if (puzzle.Values[nonTripletCol, triplet1Row] != 0 ||
-					    nonTripletCol == int.Parse(tripletsLocation[0].ToString()) ||
-					    nonTripletCol == int.Parse(tripletsLocation[2].ToString()) ||
-					    nonTripletCol == int.Parse(tripletsLocation[4].ToString())) continue;
+				nonTripletCell.Value = int.Parse(nonTripletCell.PossibleValues);
 
-					puzzle.PossibleValues[nonTripletCol, triplet1Row] = puzzle.PossibleValues[nonTripletCol, triplet1Row].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][0].ToString(), string.Empty);
-					puzzle.PossibleValues[nonTripletCol, triplet1Row] = puzzle.PossibleValues[nonTripletCol, triplet1Row].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][1].ToString(), string.Empty);
-					puzzle.PossibleValues[nonTripletCol, triplet1Row] = puzzle.PossibleValues[nonTripletCol, triplet1Row].Replace(puzzle.PossibleValues[triplet1Col, triplet1Row][2].ToString(), string.Empty);
-
-					if (string.IsNullOrWhiteSpace(puzzle.PossibleValues[nonTripletCol, triplet1Row]))
-					{
-						throw new InvalidOperationException("An invalid move was made");
-					}
-
-					if (puzzle.PossibleValues[nonTripletCol, triplet1Row].Length != 1) continue;
-
-					puzzle.Values[nonTripletCol, triplet1Row] = int.Parse(puzzle.PossibleValues[nonTripletCol, triplet1Row]);
-
-					changed = true;
-				}
+				changed = true;
 			}
 		}
 

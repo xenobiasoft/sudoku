@@ -1,6 +1,6 @@
 ﻿using FluentAssertions.Execution;
 using FluentAssertions.Primitives;
-using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Helpers;
 
 namespace UnitTests.CustomAssertions;
 

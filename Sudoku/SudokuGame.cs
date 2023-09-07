@@ -1,5 +1,4 @@
 ﻿using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.Helpers;
 using XenobiaSoft.Sudoku.PuzzleSolver;
 
 namespace XenobiaSoft.Sudoku;
@@ -21,11 +20,7 @@ public class SudokuGame : ISudokuGame
 	public void LoadPuzzle(SudokuPuzzle puzzle)
 	{
 		Reset();
-		Puzzle = new SudokuPuzzle
-		{
-			PossibleValues = (string[,])puzzle.PossibleValues.Clone(),
-			Values = (int[,])puzzle.Values.Clone()
-		};
+		Puzzle = puzzle;
 	}
 
 	public void Reset()
@@ -37,10 +32,10 @@ public class SudokuGame : ISudokuGame
 
 	public void SaveGameState()
 	{
-		_gameState.Save(new GameStateMemento((string[,])Puzzle.PossibleValues.Clone(), (int[,])Puzzle.Values.Clone(), Score));
+		_gameState.Save(new GameStateMemento(Puzzle.Cells, Score));
 	}
 
-	public void SetCell(int col, int row, int value)
+	public void SetCell(int row, int col, int value)
 	{
 		if (col is < 0 or > 8)
 		{
@@ -55,7 +50,7 @@ public class SudokuGame : ISudokuGame
 			throw new ArgumentException("Invalid value", nameof(value));
 		}
 
-		Puzzle.Values[col, row] = value;
+		Puzzle.GetCell(row, col).Value = value;
 	}
 
 	public void SolvePuzzle()
@@ -89,8 +84,7 @@ public class SudokuGame : ISudokuGame
 		var memento = _gameState.Undo();
 
 		Score = memento.Score;
-		Puzzle.PossibleValues = (string[,])memento.PossibleValues.Clone();
-		Puzzle.Values = (int[,])memento.Values.Clone();
+		Puzzle.Restore(memento.Cells);
 	}
 
 	private void TryBruteForceMethod()

@@ -8,7 +8,7 @@
         <tr class="gridRow">
             @for (var col = 0; col < Puzzle.GetLength(1); col++)
             {
-                <td class="cell"><input type="text" maxlength="1" @bind="@Puzzle[col, row]"></td>
+                <td class="cell"><input type="text" maxlength="1" @bind="@Puzzle[row, col]"></td>
             }
         </tr>
     }

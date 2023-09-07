@@ -5,7 +5,7 @@ public interface ISudokuGame
 	void LoadPuzzle(SudokuPuzzle puzzle);
 	void Reset();
 	void SaveGameState();
-	void SetCell(int col, int row, int value);
+	void SetCell(int row, int col, int value);
 	void SolvePuzzle();
 	void Undo();
 
