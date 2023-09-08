@@ -4,7 +4,7 @@ namespace UnitTests.Helpers;
 
 public class PuzzleFactory
 {
-	public static SudokuPuzzle GetPuzzle(Level level)
+	public static Cell[] GetPuzzle(Level level)
 	{
 		var puzzleValues = level switch
 		{
@@ -15,181 +15,103 @@ public class PuzzleFactory
 			_ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
 		};
 
-		var puzzle = new SudokuPuzzle();
-		puzzle.RestoreValues(puzzleValues);
-
-		return puzzle;
+		var cells = PopulateCells(puzzleValues);
+		
+		return cells;
 	}
 
-	public static SudokuPuzzle GetEmptyPuzzle()
+	public static Cell[] GetEmptyPuzzle()
 	{
-		var puzzle = new SudokuPuzzle();
+		var cells = PopulateCells(DefaultPuzzle);
 
-		puzzle.RestoreValues(DefaultPuzzle);
-
-		return puzzle;
+		return cells;
 	}
 
-	public static SudokuPuzzle GetSolvedPuzzle()
+	public static Cell[] GetSolvedPuzzle()
 	{
-		var puzzle = new SudokuPuzzle();
+		var cells = PopulateCells(SolvedPuzzle);
 
-		puzzle.RestoreValues(SolvedPuzzle);
-
-		return puzzle;
+		return cells;
 	}
 
-	private static readonly int[,] EasyPuzzle = {
+	public static Cell[] PopulateCells(int?[,] values)
+	{
+		var cells = new Cell[81];
+		var index = 0;
+
+		for (var col = 0; col < 9; col++)
 		{
-			5, 3, 0, 0, 7, 0, 0, 0, 0
-		},
-		{
-			6, 0, 0, 1, 9, 5, 0, 0, 0
-		},
-		{
-			0, 9, 8, 0, 0, 0, 0, 6, 0
-		},
-		{
-			8, 0, 0, 0, 6, 0, 0, 0, 3
-		},
-		{
-			4, 0, 0, 8, 0, 3, 0, 0, 1
-		},
-		{
-			7, 0, 0, 0, 2, 0, 0, 0, 6
-		},
-		{
-			0, 6, 0, 0, 0, 0, 2, 8, 0
-		},
-		{
-			0, 0, 0, 4, 1, 9, 0, 0, 5
-		},
-		{
-			0, 0, 0, 0, 8, 0, 0, 7, 9
+			for (var row = 0; row < 9; row++)
+			{
+				var cell = new Cell(row, col) { Value = values[row, col] };
+				cells[index++] = cell;
+			}
 		}
+
+		return cells;
+	}
+
+	private static readonly int?[,] EasyPuzzle = {
+		{ 5, 3, null, null, 7, null, null, null, null },
+		{ 6, null, null, 1, 9, 5, null, null, null },
+		{ null, 9, 8, null, null, null, null, 6, null },
+		{ 8, null, null, null, 6, null, null, null, 3 },
+		{ 4, null, null, 8, null, 3, null, null, 1 },
+		{ 7, null, null, null, 2, null, null, null, 6 },
+		{ null, 6, null, null, null, null, 2, 8, null },
+		{ null, null, null, 4, 1, 9, null, null, 5 },
+		{ null, null, null, null, 8, null, null, 7, 9 }
 	};
 
-	private static readonly int[,] MediumPuzzle = {
-		{
-			7, 0, 0, 0, 0, 0, 5, 0, 0
-		},
-		{
-			0, 0, 3, 0, 0, 7, 0, 2, 8
-		},
-		{
-			4, 0, 2, 5, 8, 0, 0, 0, 0
-		},
-		{
-			8, 0, 0, 0, 7, 0, 2, 0, 0
-		},
-		{
-			0, 0, 0, 2, 1, 3, 0, 0, 0
-		},
-		{
-			0, 0, 9, 0, 6, 0, 0, 0, 4
-		},
-		{
-			0, 0, 0, 0, 3, 8, 4, 0, 9
-		},
-		{
-			3, 8, 0, 7, 0, 0, 6, 0, 0
-		},
-		{
-			0, 0, 1, 0, 0, 0, 0, 0, 2
-		}
+	private static readonly int?[,] MediumPuzzle = {
+		{ 7, null, null, null, null, null, 5, null, null },
+		{ null, null, 3, null, null, 7, null, 2, 8 },
+		{ 4, null, 2, 5, 8, null, null, null, null },
+		{ 8, null, null, null, 7, null, 2, null, null },
+		{ null, null, null, 2, 1, 3, null, null, null },
+		{ null, null, 9, null, 6, null, null, null, 4 },
+		{ null, null, null, null, 3, 8, 4, null, 9 },
+		{ 3, 8, null, 7, null, null, 6, null, null },
+		{ null, null, 1, null, null, null, null, null, 2 }
 	};
 
-	private static readonly int[,] HardPuzzle = {
-		{
-			7, 0, 8, 0, 0, 0, 0, 2, 0
-		},
-		{
-			0, 0, 1, 4, 8, 0, 0, 0, 3
-		},
-		{
-			0, 0, 0, 0, 5, 7, 4, 0, 0
-		},
-		{
-			0, 7, 0, 2, 0, 0, 0, 0, 1
-		},
-		{
-			3, 0, 0, 0, 6, 0, 0, 0, 8
-		},
-		{
-			1, 0, 0, 0, 0, 5, 0, 4, 0
-		},
-		{
-			0, 0, 7, 5, 1, 0, 0, 0, 0
-		},
-		{
-			8, 0, 0, 0, 2, 6, 7, 0, 0
-		},
-		{
-			0, 1, 0, 0, 0, 0, 6, 0, 2
-		}
+	private static readonly int?[,] HardPuzzle = {
+		{ 7, null, 8, null, null, null, null, 2, null },
+		{ null, null, 1, 4, 8, null, null, null, 3 },
+		{ null, null, null, null, 5, 7, 4, null, null },
+		{ null, 7, null, 2, null, null, null, null, 1 },
+		{ 3, null, null, null, 6, null, null, null, 8 },
+		{ 1, null, null, null, null, 5, null, 4, null },
+		{ null, null, 7, 5, 1, null, null, null, null },
+		{ 8, null, null, null, 2, 6, 7, null, null },
+		{ null, 1, null, null, null, null, 6, null, 2 }
 	};
 
-	private static readonly int[,] ExtremePuzzle = {
-		{
-			0, 0, 0, 0, 0, 8, 0, 0, 9
-		},
-		{
-			0, 5, 0, 0, 9, 0, 0, 0, 0
-		},
-		{
-			0, 0, 9, 0, 0, 4, 8, 0, 0
-		},
-		{
-			0, 0, 2, 1, 4, 0, 0, 0, 3
-		},
-		{
-			0, 0, 6, 0, 0, 0, 9, 0, 0
-		},
-		{
-			4, 0, 0, 0, 6, 7, 1, 0, 0
-		},
-		{
-			0, 0, 0, 9, 0, 0, 3, 0, 0
-		},
-		{
-			0, 0, 0, 0, 2, 0, 0, 7, 0
-		},
-		{
-			8, 0, 0, 4, 0, 0, 0, 0, 0
-		}
+	private static readonly int?[,] ExtremePuzzle = {
+		{ null, null, null, null, null, 8, null, null, 9 },
+		{ null, 5, null, null, 9, null, null, null, null },
+		{ null, null, 9, null, null, 4, 8, null, null },
+		{ null, null, 2, 1, 4, null, null, null, 3 },
+		{ null, null, 6, null, null, null, 9, null, null },
+		{ 4, null, null, null, 6, 7, 1, null, null },
+		{ null, null, null, 9, null, null, 3, null, null },
+		{ null, null, null, null, 2, null, null, 7, null },
+		{ 8, null, null, 4, null, null, null, null, null }
 	};
 
-	private static readonly int[,] DefaultPuzzle = {
-		{
-			0, 0, 0, 0, 0, 0, 0, 0, 0
-		},
-		{
-			0, 0, 0, 0, 0, 0, 0, 0, 0
-		},
-		{
-			0, 0, 0, 0, 0, 0, 0, 0, 0
-		},
-		{
-			0, 0, 0, 0, 0, 0, 0, 0, 0
-		},
-		{
-			0, 0, 0, 0, 0, 0, 0, 0, 0
-		},
-		{
-			0, 0, 0, 0, 0, 0, 0, 0, 0
-		},
-		{
-			0, 0, 0, 0, 0, 0, 0, 0, 0
-		},
-		{
-			0, 0, 0, 0, 0, 0, 0, 0, 0
-		},
-		{
-			0, 0, 0, 0, 0, 0, 0, 0, 0
-		}
+	private static readonly int?[,] DefaultPuzzle = {
+		{ null, null, null, null, null, null, null, null, null },
+		{ null, null, null, null, null, null, null, null, null },
+		{ null, null, null, null, null, null, null, null, null },
+		{ null, null, null, null, null, null, null, null, null },
+		{ null, null, null, null, null, null, null, null, null },
+		{ null, null, null, null, null, null, null, null, null },
+		{ null, null, null, null, null, null, null, null, null },
+		{ null, null, null, null, null, null, null, null, null },
+		{ null, null, null, null, null, null, null, null, null }
 	};
 
-	private static readonly int[,] SolvedPuzzle =
+	private static readonly int?[,] SolvedPuzzle =
 	{
 		{ 1, 2, 3, 4, 5, 6, 7, 8, 9 },
 		{ 4, 5, 6, 7, 8, 9, 1, 2, 3 },

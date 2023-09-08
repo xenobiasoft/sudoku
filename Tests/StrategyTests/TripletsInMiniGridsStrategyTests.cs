@@ -79,41 +79,20 @@ public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsIn
 		score.Should().Be(0);
 	}
 
-	private SudokuPuzzle GetTripletsPuzzle()
+	private Cell[] GetTripletsPuzzle()
 	{
-		var puzzle = new SudokuPuzzle();
-		var values = new[,] {
-			{
-				0, 4, 5, 6, 7, 8, 9, 0, 0
-			},
-			{
-				9, 0, 8, 7, 6, 5, 4, 0, 0
-			},
-			{
-				8, 7, 0, 6, 5, 4, 0, 0, 0
-			},
-			{
-				0, 0, 0, 0, 0, 0, 0, 0, 0
-			},
-			{
-				0, 0, 0, 0, 0, 0, 0, 0, 0
-			},
-			{
-				0, 0, 0, 0, 0, 0, 0, 0, 0
-			},
-			{
-				0, 0, 0, 0, 0, 0, 3, 2, 1
-			},
-			{
-				0, 0, 0, 0, 0, 0, 2, 1, 3
-			},
-			{
-				0, 0, 0, 0, 0, 0, 1, 3, 2
-			}
+		var values = new int?[,] {
+			{ null, 4, 5, 6, 7, 8, 9, null, null },
+			{ 9, null, 8, 7, 6, 5, 4, null, null },
+			{ 8, 7, null, 6, 5, 4, null, null, null },
+			{ null, null, null, null, null, null, null, null, null },
+			{ null, null, null, null, null, null, null, null, null },
+			{ null, null, null, null, null, null, null, null, null },
+			{ null, null, null, null, null, null, 3, 2, 1 },
+			{ null, null, null, null, null, null, 2, 1, 3 },
+			{ null, null, null, null, null, null, 1, 3, 2 }
 		};
 
-		puzzle.RestoreValues(values);
-
-		return puzzle;
+		return PuzzleFactory.PopulateCells(values);
 	}
 }

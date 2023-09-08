@@ -2,12 +2,12 @@
 
 public abstract class SolverStrategy
 {
-	public int SolvePuzzle(SudokuPuzzle puzzle)
+	public int SolvePuzzle(Cell[] cells)
 	{
-		puzzle.PopulatePossibleValues();
+		cells.PopulatePossibleValues();
 
-		return Execute(puzzle);
+		return Execute(cells);
 	}
 
-	public abstract int Execute(SudokuPuzzle puzzle);
+	public abstract int Execute(Cell[] cells);
 }

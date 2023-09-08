@@ -4,9 +4,9 @@ using XenobiaSoft.Sudoku;
 
 namespace UnitTests.CustomAssertions;
 
-public class SudokuPuzzleAssertions : ReferenceTypeAssertions<SudokuPuzzle, SudokuPuzzleAssertions>
+public class SudokuPuzzleAssertions : ReferenceTypeAssertions<Cell[], SudokuPuzzleAssertions>
 {
-    public SudokuPuzzleAssertions(SudokuPuzzle instance) : base(instance)
+    public SudokuPuzzleAssertions(Cell[] instance) : base(instance)
     { }
 
     protected override string Identifier => "puzzle";
@@ -15,12 +15,23 @@ public class SudokuPuzzleAssertions : ReferenceTypeAssertions<SudokuPuzzle, Sudo
     {
         Execute.Assertion
             .BecauseOf(because, becauseArgs)
-            .ForCondition(Subject.Cells.All(x => !x.Value.HasValue))
+            .ForCondition(Subject.All(x => !x.Value.HasValue))
             .FailWith($"{Identifier} values is not empty")
             .Then
-            .ForCondition(Subject.Cells.All(x => string.IsNullOrWhiteSpace(x.PossibleValues)))
+            .ForCondition(Subject.All(x => string.IsNullOrWhiteSpace(x.PossibleValues)))
             .FailWith($"{Identifier} possible values is not empty");
 
         return new AndConstraint<SudokuPuzzleAssertions>(this);
     }
+
+    public AndConstraint<SudokuPuzzleAssertions> BeEquivalentTo(Cell[] cells, string because = "",
+	    params object[] becauseArgs)
+	{
+		Execute.Assertion
+			.BecauseOf(because, becauseArgs)
+			.ForCondition(Subject.SequenceEqual(cells))
+			.FailWith($"Expected:\r\n{Identifier.ToJson()}\r\n\r\nTo be equivalent to:{cells.ToJson()}");
+
+		return new AndConstraint<SudokuPuzzleAssertions>(this);
+	}
 }

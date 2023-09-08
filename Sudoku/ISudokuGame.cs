@@ -2,13 +2,13 @@
 
 public interface ISudokuGame
 {
-	void LoadPuzzle(SudokuPuzzle puzzle);
 	void Reset();
+	void Restore(Cell[] cells);
 	void SaveGameState();
 	void SetCell(int row, int col, int value);
 	void SolvePuzzle();
 	void Undo();
 
-	SudokuPuzzle Puzzle { get; set; }
 	int Score { get; set; }
+	Cell[] Puzzle { get; set; }
 }

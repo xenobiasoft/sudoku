@@ -1,5 +1,4 @@
-﻿using UnitTests.CustomAssertions;
-using UnitTests.Helpers;
+﻿using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 
 namespace UnitTests;
@@ -28,7 +27,7 @@ public class SudokuPuzzleTests
 		puzzle.PopulatePossibleValues();
 
 		// Assert
-		puzzle.GetCellPossibleValues().Should().BeEquivalentTo(expectedPossibleValues);
+		puzzle.GetAllPossibleValues().Should().BeEquivalentTo(expectedPossibleValues);
 	}
 
 	[Fact]
@@ -69,32 +68,6 @@ public class SudokuPuzzleTests
 		puzzle.GetCell(cell.Row, cell.Column).Value.Should().BeOneOf(possibleValues);
 	}
 
-	[Fact]
-	public void Reset_SetsValuesAllToNull()
-	{
-		// Arrange
-		var puzzle = PuzzleFactory.GetSolvedPuzzle();
-
-		// Act
-		puzzle.Reset();
-
-		// Assert
-		puzzle.Cells.ToList().ForEach(x => x.Value.Should().BeNull());
-	}
-
-	[Fact]
-	public void Reset_SetsPossibleValuesAllToEmptyString()
-	{
-		// Arrange
-		var puzzle = PuzzleFactory.GetSolvedPuzzle();
-
-		// Act
-		puzzle.Reset();
-
-		// Assert
-		puzzle.GetCellPossibleValues().Should().BeEmpty();
-	}
-
 	[Theory]
 	[InlineData(0)]
 	[InlineData(1)]
@@ -108,7 +81,7 @@ public class SudokuPuzzleTests
 	public void GetColumnCells_ReturnsAllCellsInSpecifiedColumn(int col)
 	{
 		// Arrange
-		var sut = new SudokuPuzzle();
+		var sut = PuzzleFactory.GetEmptyPuzzle();
 
 		// Act
 		var columnCells = sut.GetColumnCells(col);
@@ -134,7 +107,7 @@ public class SudokuPuzzleTests
 	public void GetRowCells_ReturnsAllCellsInSpecifiedRow(int row)
 	{
 		// Arrange
-		var sut = new SudokuPuzzle();
+		var sut = PuzzleFactory.GetEmptyPuzzle();
 
 		// Act
 		var rowCells = sut.GetRowCells(row);
@@ -156,7 +129,7 @@ public class SudokuPuzzleTests
 	public void GetMiniGridCells_ReturnsAllCellsLocatedWithinMiniGrid(int row, int col, int minRow, int maxRow, int minCol, int maxCol)
 	{
 		// Arrange
-		var sut = new SudokuPuzzle();
+		var sut = PuzzleFactory.GetEmptyPuzzle();
 
 		// Act
 		var miniGridCells = sut.GetMiniGridCells(row, col);
@@ -180,7 +153,7 @@ public class SudokuPuzzleTests
 		var rnd = new Random();
 		var col = rnd.Next(0, 9);
 		var row = rnd.Next(0, 9);
-		var sut = new SudokuPuzzle();
+		var sut = PuzzleFactory.GetEmptyPuzzle();
 
 		// Act
 		var cell = sut.GetCell(row, col);

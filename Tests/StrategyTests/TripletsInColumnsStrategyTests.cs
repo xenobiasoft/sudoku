@@ -90,40 +90,20 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 		Assert.Throws<InvalidOperationException>(SolvePuzzle);
 	}
 
-	private SudokuPuzzle GetTripletsPuzzle()
+	private Cell[] GetTripletsPuzzle()
 	{
-		var puzzle = new SudokuPuzzle();
-		var values = new[,] {
-			{
-				0, 0, 0, 0, 1, 2, 3, 7, 8
-			},
-			{
-				1, 7, 0, 0, 0, 0, 0, 0, 0
-			},
-			{
-				2, 8, 0, 0, 0, 0, 0, 0, 0
-			},
-			{
-				3, 9, 0, 0, 0, 0, 0, 0, 0
-			},
-			{
-				7, 1, 0, 0, 0, 0, 0, 0, 0
-			},
-			{
-				8, 2, 0, 0, 0, 0, 0, 0, 0
-			},
-			{
-				9, 3, 0, 0, 0, 0, 0, 0, 0
-			},
-			{
-				0, 0, 3, 0, 0, 0, 0, 0, 0
-			},
-			{
-				0, 0, 9, 0, 0, 0, 0, 0, 0
-			}
+		var values = new int?[,] {
+			{ null, null, null, null, 1, 2, 3, 7, 8 },
+			{ 1, 7, null, null, null, null, null, null, null },
+			{ 2, 8, null, null, null, null, null, null, null },
+			{ 3, 9, null, null, null, null, null, null, null },
+			{ 7, 1, null, null, null, null, null, null, null },
+			{ 8, 2, null, null, null, null, null, null, null },
+			{ 9, 3, null, null, null, null, null, null, null },
+			{ null, null, 3, null, null, null, null, null, null },
+			{ null, null, 9, null, null, null, null, null, null }
 		};
-		puzzle.RestoreValues(values);
 
-		return puzzle;
+		return PuzzleFactory.PopulateCells(values);
 	}
 }

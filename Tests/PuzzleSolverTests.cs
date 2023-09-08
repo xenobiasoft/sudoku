@@ -14,7 +14,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
         // Arrange
         var solverStrategy = Container.ResolveMock<SolverStrategy>();
         solverStrategy
-            .SetupSequence(x => x.Execute(It.IsAny<SudokuPuzzle>()))
+            .SetupSequence(x => x.Execute(It.IsAny<Cell[]>()))
             .Returns(4)
             .Returns(4)
             .Returns(0);
@@ -24,7 +24,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
         sut.TrySolvePuzzle(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
 
         // Assert
-        solverStrategy.Verify(x => x.Execute(It.IsAny<SudokuPuzzle>()), Times.Exactly(3));
+        solverStrategy.Verify(x => x.Execute(It.IsAny<Cell[]>()), Times.Exactly(3));
     }
 
     [Fact]

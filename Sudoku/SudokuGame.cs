@@ -5,11 +5,17 @@ namespace XenobiaSoft.Sudoku;
 
 public class SudokuGame : ISudokuGame
 {
+	public const int Rows = 9;
+	public const int Columns = 9;
+
 	private readonly IGameStateMemory _gameState;
 	private readonly IPuzzleSolver _puzzleSolver;
 
 	private const int SolveMaxAttempts = 50;
 	private int _solveAttempts;
+
+	public int Score { get; set; }
+	public Cell[] Puzzle { get; set; } = new Cell[Columns * Rows];
 
 	public SudokuGame(IGameStateMemory gameState, IPuzzleSolver puzzleSolver)
 	{
@@ -17,22 +23,21 @@ public class SudokuGame : ISudokuGame
 		_gameState = gameState;
 	}
 
-	public void LoadPuzzle(SudokuPuzzle puzzle)
-	{
-		Reset();
-		Puzzle = puzzle;
-	}
-
 	public void Reset()
 	{
 		_gameState.Clear();
-		Puzzle.Reset();
+		Initialize();
 		Score = 0;
+	}
+
+	public void Restore(Cell[] cells)
+	{
+		Puzzle = cells;
 	}
 
 	public void SaveGameState()
 	{
-		_gameState.Save(new GameStateMemento(Puzzle.Cells, Score));
+		_gameState.Save(new GameStateMemento(Puzzle, Score));
 	}
 
 	public void SetCell(int row, int col, int value)
@@ -49,7 +54,7 @@ public class SudokuGame : ISudokuGame
 		{
 			throw new ArgumentException("Invalid value", nameof(value));
 		}
-
+		
 		Puzzle.GetCell(row, col).Value = value;
 	}
 
@@ -84,15 +89,19 @@ public class SudokuGame : ISudokuGame
 		var memento = _gameState.Undo();
 
 		Score = memento.Score;
-		Puzzle.Restore(memento.Cells);
+		Restore(memento.Cells.ToArray());
 	}
 
-	private void TryBruteForceMethod()
+	private void Initialize()
 	{
-		SaveGameState();
-		Score += 5;
-		Puzzle.SetCellWithFewestPossibleValues();
-		RetrySolvePuzzle();
+		var index = 0;
+		for (var col = 0; col < Columns; col++)
+		{
+			for (var row = 0; row < Rows; row++)
+			{
+				Puzzle[index++] = new Cell(row, col);
+			}
+		}
 	}
 
 	private void RetrySolvePuzzle()
@@ -104,7 +113,11 @@ public class SudokuGame : ISudokuGame
 		SolvePuzzle();
 	}
 
-	public SudokuPuzzle Puzzle { get; set; }
-
-	public int Score { get; set; }
+	private void TryBruteForceMethod()
+	{
+		SaveGameState();
+		Score += 5;
+		Puzzle.SetCellWithFewestPossibleValues();
+		RetrySolvePuzzle();
+	}
 }

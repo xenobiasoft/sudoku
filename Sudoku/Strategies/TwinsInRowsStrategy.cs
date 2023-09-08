@@ -4,19 +4,19 @@ public class TwinsInRowsStrategy : SolverStrategy
 {
 	private const int Score = 3;
 
-	public override int Execute(SudokuPuzzle puzzle)
+	public override int Execute(Cell[] cells)
 	{
 		var changed = false;
 
-		foreach (var cell in puzzle.Cells)
+		foreach (var cell in cells)
 		{
 			if (cell.Value.HasValue || cell.PossibleValues.Length != 2) continue;
 
-			foreach (var twinCell in puzzle.GetRowCells(cell.Row).Where(x => x != cell))
+			foreach (var twinCell in cells.GetRowCells(cell.Row).Where(x => x != cell))
 			{
 				if (cell.PossibleValues != twinCell.PossibleValues) continue;
 
-				foreach (var nonTwinCell in puzzle.GetRowCells(cell.Row).Where(x => x != cell && x != twinCell))
+				foreach (var nonTwinCell in cells.GetRowCells(cell.Row).Where(x => x != cell && x != twinCell))
 				{
 					if (nonTwinCell.Value.HasValue) continue;
 

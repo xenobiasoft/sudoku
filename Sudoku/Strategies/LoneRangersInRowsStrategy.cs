@@ -4,19 +4,19 @@ public class LoneRangersInRowsStrategy : SolverStrategy
 {
 	private const int Score = 2;
 
-	public override int Execute(SudokuPuzzle puzzle)
+	public override int Execute(Cell[] cells)
 	{
 		var colPos = 0;
 		var rowPos = 0;
 		var changed = false;
 
-		for (var row = 0; row < SudokuPuzzle.Rows; row++)
+		for (var row = 0; row < SudokuGame.Rows; row++)
 		{
 			for (var number = 1; number <= 9; number++)
 			{
 				var occurrence = 0;
 
-				foreach (var rowCell in puzzle.GetRowCells(row))
+				foreach (var rowCell in cells.GetRowCells(row))
 				{
 					if (rowCell.Value.HasValue || !rowCell.PossibleValues.Contains(number.ToString())) continue;
 
@@ -33,7 +33,7 @@ public class LoneRangersInRowsStrategy : SolverStrategy
 
 				if (occurrence != 1) continue;
 
-				var loneRangerCell = puzzle.GetCell(rowPos, colPos);
+				var loneRangerCell = cells.GetCell(rowPos, colPos);
 				loneRangerCell.Value = number;
 				loneRangerCell.PossibleValues = number.ToString();
 

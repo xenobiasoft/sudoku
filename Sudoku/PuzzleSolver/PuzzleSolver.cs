@@ -11,7 +11,7 @@ public class PuzzleSolver : IPuzzleSolver
 	    _strategies = strategies;
     }
 
-    public int TrySolvePuzzle(SudokuPuzzle puzzle)
+    public int TrySolvePuzzle(Cell[] cells)
     {
 	    var score = 0;
         var changesMade = true;
@@ -22,11 +22,11 @@ public class PuzzleSolver : IPuzzleSolver
 
 	        foreach (var strategy in _strategies)
             {
-                score += strategy.SolvePuzzle(puzzle);
+                score += strategy.SolvePuzzle(cells);
                 changesMade = previousScore != score;
                 previousScore = score;
 
-                if (IsSolved(puzzle))
+                if (IsSolved(cells))
                 {
                     return score;
                 }
@@ -36,25 +36,25 @@ public class PuzzleSolver : IPuzzleSolver
         return score;
     }
 
-    public bool IsSolved(SudokuPuzzle puzzle)
+    public bool IsSolved(Cell[] cells)
     {
-	    foreach (var cell in puzzle.Cells)
+	    foreach (var cell in cells)
 	    {
-		    var pattern = puzzle.GetColumnCells(cell.Column).Aggregate("123456789", (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));
+		    var pattern = cells.GetColumnCells(cell.Column).Aggregate("123456789", (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));
 
 		    if (pattern.Length > 0)
 		    {
 			    return false;
 		    }
 
-		    pattern = puzzle.GetRowCells(cell.Row).Aggregate("123456789", (current, rowCell) => current.Replace(rowCell.Value.GetValueOrDefault().ToString(), string.Empty));
+		    pattern = cells.GetRowCells(cell.Row).Aggregate("123456789", (current, rowCell) => current.Replace(rowCell.Value.GetValueOrDefault().ToString(), string.Empty));
 
 		    if (pattern.Length > 0)
 			{
 				return false;
 			}
 
-		    pattern = puzzle.GetMiniGridCells(cell.Row, cell.Column).Aggregate("123456789", (current, gridCell) => current.Replace(gridCell.Value.GetValueOrDefault().ToString(), string.Empty));
+		    pattern = cells.GetMiniGridCells(cell.Row, cell.Column).Aggregate("123456789", (current, gridCell) => current.Replace(gridCell.Value.GetValueOrDefault().ToString(), string.Empty));
 
 		    if (pattern.Length > 0)
 			{
@@ -65,15 +65,15 @@ public class PuzzleSolver : IPuzzleSolver
 	    return true;
 	}
 
-    public bool IsValid(SudokuPuzzle puzzle)
+    public bool IsValid(Cell[] cells)
     {
-	    foreach (var cell in puzzle.Cells)
+	    foreach (var cell in cells)
 	    {
 		    if (!cell.Value.HasValue) continue;
 
 		    var usedNumbers = new List<int?>();
 
-		    foreach (var colCell in puzzle.GetColumnCells(cell.Column))
+		    foreach (var colCell in cells.GetColumnCells(cell.Column))
 		    {
 			    if (!colCell.Value.HasValue) continue;
 
@@ -87,7 +87,7 @@ public class PuzzleSolver : IPuzzleSolver
 
 			usedNumbers.Clear();
 
-			foreach (var rowCell in puzzle.GetRowCells(cell.Row))
+			foreach (var rowCell in cells.GetRowCells(cell.Row))
 			{
 				if (!rowCell.Value.HasValue) continue;
 
@@ -101,7 +101,7 @@ public class PuzzleSolver : IPuzzleSolver
 
 			usedNumbers.Clear();
 
-			foreach (var miniGridCell in puzzle.GetMiniGridCells(cell.Column, cell.Row))
+			foreach (var miniGridCell in cells.GetMiniGridCells(cell.Column, cell.Row))
 			{
 				if (!miniGridCell.Value.HasValue) continue;
 

@@ -4,21 +4,21 @@ public class LoneRangersInMiniGridsStrategy : SolverStrategy
 {
 	private const int Score = 2;
 
-	public override int Execute(SudokuPuzzle puzzle)
+	public override int Execute(Cell[] cells)
 	{
 		var colPos = 0;
 		var rowPos = 0;
 		var changed = false;
 
-		for (var col = 0; col < SudokuPuzzle.Columns; col = col + 3)
+		for (var col = 0; col < SudokuGame.Columns; col = col + 3)
 		{
-			for (var row = 0; row < SudokuPuzzle.Rows; row = row + 3)
+			for (var row = 0; row < SudokuGame.Rows; row = row + 3)
 			{
 				for (var number = 1; number <= 9; number++)
 				{
 					var occurrence = 0;
 
-					foreach (var miniGridCell in puzzle.GetMiniGridCells(row, col))
+					foreach (var miniGridCell in cells.GetMiniGridCells(row, col))
 					{
 						if (miniGridCell.Value.HasValue || !miniGridCell.PossibleValues.Contains(number.ToString())) continue;
 
@@ -31,7 +31,7 @@ public class LoneRangersInMiniGridsStrategy : SolverStrategy
 
 					if (occurrence != 1) continue;
 
-					var loneRangerCell = puzzle.GetCell(rowPos, colPos);
+					var loneRangerCell = cells.GetCell(rowPos, colPos);
 					loneRangerCell.Value = number;
 					loneRangerCell.PossibleValues = number.ToString();
 					changed = true;

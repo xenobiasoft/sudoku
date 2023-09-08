@@ -2,7 +2,7 @@
 
 public interface IPuzzleSolver
 {
-	int TrySolvePuzzle(SudokuPuzzle puzzle);
-	bool IsSolved(SudokuPuzzle puzzle);
-	bool IsValid(SudokuPuzzle puzzle);
+	int TrySolvePuzzle(Cell[] cells);
+	bool IsSolved(Cell[] cells);
+	bool IsValid(Cell[] cells);
 }

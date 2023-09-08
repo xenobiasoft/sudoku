@@ -1,7 +1,7 @@
 ﻿using DepenMock.XUnit;
-using XenobiaSoft.Sudoku.Strategies;
-using XenobiaSoft.Sudoku;
 using UnitTests.Helpers;
+using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Strategies;
 
 namespace UnitTests.StrategyTests;
 
@@ -63,38 +63,18 @@ public class TripletsInRowsStrategyTests : BaseTestByAbstraction<TripletsInRowsS
 	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsScoreOfZero()
 	{
 		// Arrange
-
-		var puzzle = new SudokuPuzzle();
-		var values = new[,] {
-			{
-				0, 0, 0, 0, 0, 0, 4, 5, 6
-			},
-			{
-				0, 0, 0, 0, 0, 0, 5, 6, 4
-			},
-			{
-				0, 0, 0, 0, 0, 0, 6, 4, 5
-			},
-			{
-				0, 5, 6, 0, 0, 0, 0, 0, 0
-			},
-			{
-				0, 0, 0, 0, 0, 0, 0, 0, 0
-			},
-			{
-				0, 0, 0, 0, 0, 0, 0, 0, 0
-			},
-			{
-				3, 4, 5, 6, 7, 8, 9, 1, 2
-			},
-			{
-				2, 3, 4, 5, 6, 7, 8, 9, 1
-			},
-			{
-				1, 2, 3, 4, 5, 6, 7, 8, 9
-			}
+		var values = new int?[,] {
+			{ null, null, null, null, null, null, 4, 5, 6 },
+			{ null, null, null, null, null, null, 5, 6, 4 },
+			{ null, null, null, null, null, null, 6, 4, 5 },
+			{ null, 5, 6, null, null, null, null, null, null },
+			{ null, null, null, null, null, null, null, null, null },
+			{ null, null, null, null, null, null, null, null, null },
+			{ 3, 4, 5, 6, 7, 8, 9, 1, 2 },
+			{ 2, 3, 4, 5, 6, 7, 8, 9, 1 },
+			{ 1, 2, 3, 4, 5, 6, 7, 8, 9 }
 		};
-		puzzle.RestoreValues(values);
+		var puzzle = PuzzleFactory.PopulateCells(values);
 		var sut = ResolveSut();
 
 		// Act
@@ -121,22 +101,20 @@ public class TripletsInRowsStrategyTests : BaseTestByAbstraction<TripletsInRowsS
 		Assert.Throws<InvalidOperationException>(SolvePuzzle);
 	}
 
-	private SudokuPuzzle GetTripletsPuzzle()
+	private Cell[] GetTripletsPuzzle()
 	{
-		var puzzle = new SudokuPuzzle();
-		var values = new[,] {
-			{0, 0, 0, 0, 0, 0, 3, 2, 1},
-			{0, 0, 0, 5, 0, 0, 4, 3, 2},
-			{0, 0, 0, 6, 0, 0, 5, 4, 3},
-			{0, 0, 0, 0, 0, 0, 6, 5, 4},
-			{0, 0, 0, 0, 0, 0, 7, 6, 5},
-			{0, 0, 0, 0, 0, 0, 8, 7, 6},
-			{4, 5, 6, 0, 0, 0, 9, 8, 7},
-			{5, 6, 4, 0, 0, 0, 1, 9, 8},
-			{6, 4, 5, 0, 0, 0, 2, 1, 9}
+		var values = new int?[,] {
+			{null, null, null, null, null, null, 3, 2, 1},
+			{null, null, null, 5, null, null, 4, 3, 2},
+			{null, null, null, 6, null, null, 5, 4, 3},
+			{null, null, null, null, null, null, 6, 5, 4},
+			{null, null, null, null, null, null, 7, 6, 5},
+			{null, null, null, null, null, null, 8, 7, 6},
+			{4, 5, 6, null, null, null, 9, 8, 7},
+			{5, 6, 4, null, null, null, 1, 9, 8},
+			{6, 4, 5, null, null, null, 2, 1, 9}
 		};
-		puzzle.RestoreValues(values);
 
-		return puzzle;
+		return PuzzleFactory.PopulateCells(values);
 	}
 }

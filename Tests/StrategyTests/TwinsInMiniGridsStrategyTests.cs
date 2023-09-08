@@ -79,19 +79,18 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 	public void SolvePuzzle_WhenNonTripletPossibleValuesIsEmpty_ThrowsException()
 	{
 		// Arrange
-		var puzzle = new SudokuPuzzle();
-		var values = new[,] {
-			{6, 0, 9, 1, 0, 0, 0, 0, 0},
-			{0, 8, 3, 0, 0, 0, 0, 0, 0},
-			{7, 0, 1, 6, 0, 0, 0, 0, 0},
-			{0, 7, 6, 5, 0, 0, 0, 0, 0},
-			{8, 0, 4, 0, 0, 0, 0, 0, 0},
-			{1, 0, 5, 7, 0, 0, 0, 0, 0},
-			{0, 1, 2, 8, 0, 0, 0, 0, 0},
-			{0, 6, 8, 9, 0, 0, 0, 0, 0},
-			{0, 9, 7, 0, 0, 0, 0, 0, 0}
+		var values = new int?[,] {
+			{6, null, 9, 1, null, null, null, null, null},
+			{null, 8, 3, null, null, null, null, null, null},
+			{7, null, 1, 6, null, null, null, null, null},
+			{null, 7, 6, 5, null, null, null, null, null},
+			{8, null, 4, null, null, null, null, null, null},
+			{1, null, 5, 7, null, null, null, null, null},
+			{null, 1, 2, 8, null, null, null, null, null},
+			{null, 6, 8, 9, null, null, null, null, null},
+			{null, 9, 7, null, null, null, null, null, null}
 		};
-		puzzle.RestoreValues(values);
+		var puzzle = PuzzleFactory.PopulateCells(values);
 		var sut = ResolveSut();
 
 		// Act
