@@ -1,5 +1,8 @@
-﻿namespace XenobiaSoft.Sudoku;
+﻿using System.Diagnostics.CodeAnalysis;
 
+namespace XenobiaSoft.Sudoku;
+
+[ExcludeFromCodeCoverage]
 public class SudokuGameOld
 {
 	private const int Columns = 9;
@@ -1118,6 +1121,7 @@ public class SudokuGameOld
 	public int TotalScore { get; private set; }
 }
 
+[ExcludeFromCodeCoverage]
 public static class TempExtensions
 {
 	public static bool IsPuzzleSolved(this int[,] puzzle)

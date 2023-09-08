@@ -10,9 +10,9 @@ public class LoneRangersInMiniGridsStrategy : SolverStrategy
 		var rowPos = 0;
 		var changed = false;
 
-		for (var col = 0; col < SudokuGame.Columns; col = col + 3)
+		for (var col = 0; col < GameDimensions.Columns; col = col + 3)
 		{
-			for (var row = 0; row < SudokuGame.Rows; row = row + 3)
+			for (var row = 0; row < GameDimensions.Rows; row = row + 3)
 			{
 				for (var number = 1; number <= 9; number++)
 				{

@@ -5,9 +5,6 @@ namespace XenobiaSoft.Sudoku;
 
 public class SudokuGame : ISudokuGame
 {
-	public const int Rows = 9;
-	public const int Columns = 9;
-
 	private readonly IGameStateMemory _gameState;
 	private readonly IPuzzleSolver _puzzleSolver;
 
@@ -15,7 +12,7 @@ public class SudokuGame : ISudokuGame
 	private int _solveAttempts;
 
 	public int Score { get; set; }
-	public Cell[] Puzzle { get; set; } = new Cell[Columns * Rows];
+	public Cell[] Puzzle { get; set; } = new Cell[GameDimensions.Columns * GameDimensions.Rows];
 
 	public SudokuGame(IGameStateMemory gameState, IPuzzleSolver puzzleSolver)
 	{
@@ -95,9 +92,9 @@ public class SudokuGame : ISudokuGame
 	private void Initialize()
 	{
 		var index = 0;
-		for (var col = 0; col < Columns; col++)
+		for (var col = 0; col < GameDimensions.Columns; col++)
 		{
-			for (var row = 0; row < Rows; row++)
+			for (var row = 0; row < GameDimensions.Rows; row++)
 			{
 				Puzzle[index++] = new Cell(row, col);
 			}

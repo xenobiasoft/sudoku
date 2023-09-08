@@ -10,7 +10,7 @@ public class LoneRangersInColumnsStrategy : SolverStrategy
 		var rowPos = 0;
 		var changed = false;
 
-		for (var col = 0; col < SudokuGame.Columns; col++)
+		for (var col = 0; col < GameDimensions.Columns; col++)
 		{
 			for (var number = 1; number <= 9; number++)
 			{
