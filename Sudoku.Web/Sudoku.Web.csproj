@@ -16,4 +16,8 @@
     <Folder Include="Components\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Sudoku\Sudoku.csproj" />
+  </ItemGroup>
+
 </Project>
