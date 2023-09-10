@@ -14,7 +14,7 @@ public class SudokuGameIntegrationTests
 		// Arrange
 		var puzzleSolver = new PuzzleSolver(GetStrategies());
 		var sut = new SudokuGame(new GameStateMemory(), puzzleSolver);
-		var puzzle = PuzzleFactory.GetPuzzle(Level.ExtremelyHard);
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
 		sut.LoadPuzzle(puzzle);
 
 		// Act

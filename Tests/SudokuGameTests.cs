@@ -138,12 +138,13 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 			.Returns(0);
 		var mockGameState = Container.ResolveMock<IGameStateMemory>();
 		var sut = ResolveSut();
+		sut.LoadPuzzle(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
 
 		// Act
 		sut.SolvePuzzle();
 
 		// Assert
-		mockGameState.Verify(x => x.Save(It.IsAny<GameStateMemento>()), Times.Once);
+		mockGameState.Verify(x => x.Save(It.IsAny<GameStateMemento>()), Times.Exactly(2));
 	}
 
 	[Fact]
@@ -225,6 +226,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 			.Setup(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()))
 			.Returns(0);
 		var sut = ResolveSut();
+		sut.LoadPuzzle(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
 
 		// Act
 		sut.SolvePuzzle();

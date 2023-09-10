@@ -8,6 +8,6 @@ public interface ISudokuGame
 	void SolvePuzzle();
 	void Undo();
 
-	int Score { get; set; }
-	Cell[] Puzzle { get; set; }
+	int Score { get; }
+	Cell[] Puzzle { get; }
 }

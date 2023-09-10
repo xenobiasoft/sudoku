@@ -187,7 +187,7 @@ public class SudokuPuzzleTests
 		puzzle.PopulatePossibleValues();
 
 		// Assert
-		puzzle.GetAllPossibleValues().Should().BeEquivalentTo(expectedPossibleValues);
+		GetAllPossibleValues(puzzle).Should().BeEquivalentTo(expectedPossibleValues);
 	}
 
 	[Fact]
@@ -207,5 +207,14 @@ public class SudokuPuzzleTests
 
 		// Assert
 		puzzle.GetCell(cell.Row, cell.Column).Value.Should().BeOneOf(possibleValues);
+	}
+	
+	private static string[,] GetAllPossibleValues(Cell[] cells)
+	{
+		var possibleValues = new string[9, 9];
+
+		cells.ToList().ForEach(x => possibleValues[x.Row, x.Column] = x.PossibleValues);
+
+		return possibleValues;
 	}
 }

@@ -40,57 +40,6 @@ public static class CellsExtensionMethods
 		}
 	}
 
-	public static void PopulatePossibleValues(this Cell[] cells)
-	{
-		foreach (var cell in cells)
-		{
-			cell.PossibleValues = cell.Value.HasValue ? string.Empty : cells.CalculatePossibleValues(cell);
-		}
-	}
-
-	private static string CalculatePossibleValues(this Cell[] cells, Cell cell)
-	{
-		var possibleValues = cells.GetColumnCells(cell.Column).Aggregate("123456789", (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));
-
-		possibleValues = cells.GetRowCells(cell.Row).Aggregate(possibleValues, (current, rowCell) => current.Replace(rowCell.Value.GetValueOrDefault().ToString(), string.Empty));
-
-		return cells.GetMiniGridCells(cell.Row, cell.Column).Aggregate(possibleValues, (current, gridCell) => current.Replace(gridCell.Value.GetValueOrDefault().ToString(), string.Empty));
-	}
-
-	public static string[,] GetAllPossibleValues(this Cell[] cells)
-	{
-		var possibleValues = new string[9, 9];
-
-		cells.ToList().ForEach(x => possibleValues[x.Row, x.Column] = x.PossibleValues);
-
-		return possibleValues;
-	}
-
-	public static Cell FindCellWithFewestPossibleValues(this Cell[] cells)
-	{
-		var cellPossibleValues = cells
-			.Where(x => !x.Value.HasValue)
-			.OrderBy(x => x.PossibleValues.Length)
-			.ThenBy(x => x.Column)
-			.ThenBy(x => x.Row)
-			.ToList();
-
-		return cellPossibleValues.First();
-	}
-
-	public static void SetCellWithFewestPossibleValues(this Cell[] cells)
-	{
-		var cell = cells.FindCellWithFewestPossibleValues();
-		var possibleValues = cell.PossibleValues.Randomize();
-
-		if (string.IsNullOrWhiteSpace(possibleValues))
-		{
-			throw new InvalidOperationException("An invalid move was made");
-		}
-
-		cell.Value = int.Parse(possibleValues[0].ToString());
-	}
-
 	public static bool IsValid(this Cell[] cells)
 	{
 		foreach (var cell in cells)
@@ -146,19 +95,45 @@ public static class CellsExtensionMethods
 		return true;
 	}
 
-	public static void EliminatePossibleNumberFromAssociatedCells(this Cell[] cells, Cell cell)
+	public static void PopulatePossibleValues(this Cell[] cells)
 	{
-		cells
-			.GetMiniGridCells(cell.Row, cell.Column)
-			.ToList()
-			.ForEach(x => x.PossibleValues = x.PossibleValues.Replace(cell.Value.ToString(), string.Empty));
-		cells
-			.GetRowCells(cell.Row)
-			.ToList()
-			.ForEach(x => x.PossibleValues = x.PossibleValues.Replace(cell.Value.ToString(), string.Empty));
-		cells
-			.GetColumnCells(cell.Column)
-			.ToList()
-			.ForEach(x => x.PossibleValues = x.PossibleValues.Replace(cell.Value.ToString(), string.Empty));
+		foreach (var cell in cells)
+		{
+			cell.PossibleValues = cell.Value.HasValue ? string.Empty : cells.CalculatePossibleValues(cell);
+		}
+	}
+
+	public static Cell FindCellWithFewestPossibleValues(this Cell[] cells)
+	{
+		var cellPossibleValues = cells
+			.Where(x => !x.Value.HasValue)
+			.OrderBy(x => x.PossibleValues.Length)
+			.ThenBy(x => x.Column)
+			.ThenBy(x => x.Row)
+			.ToList();
+
+		return cellPossibleValues.First();
+	}
+
+	public static void SetCellWithFewestPossibleValues(this Cell[] cells)
+	{
+		var cell = cells.FindCellWithFewestPossibleValues();
+		var possibleValues = cell.PossibleValues.Randomize();
+
+		if (string.IsNullOrWhiteSpace(possibleValues))
+		{
+			throw new InvalidOperationException("An invalid move was made");
+		}
+
+		cell.Value = int.Parse(possibleValues[0].ToString());
+	}
+
+	private static string CalculatePossibleValues(this Cell[] cells, Cell cell)
+	{
+		var possibleValues = cells.GetColumnCells(cell.Column).Aggregate("123456789", (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));
+
+		possibleValues = cells.GetRowCells(cell.Row).Aggregate(possibleValues, (current, rowCell) => current.Replace(rowCell.Value.GetValueOrDefault().ToString(), string.Empty));
+
+		return cells.GetMiniGridCells(cell.Row, cell.Column).Aggregate(possibleValues, (current, gridCell) => current.Replace(gridCell.Value.GetValueOrDefault().ToString(), string.Empty));
 	}
 }

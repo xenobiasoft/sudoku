@@ -11,8 +11,8 @@ public class SudokuGame : ISudokuGame
 	private const int SolveMaxAttempts = 50;
 	private int _solveAttempts;
 
-	public int Score { get; set; }
-	public Cell[] Puzzle { get; set; } = new Cell[GameDimensions.Columns * GameDimensions.Rows];
+	public int Score { get; private set; }
+	public Cell[] Puzzle { get; private set; } = new Cell[GameDimensions.Columns * GameDimensions.Rows];
 
 	public SudokuGame(IGameStateMemory gameState, IPuzzleSolver puzzleSolver)
 	{
