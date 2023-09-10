@@ -9,20 +9,6 @@ namespace UnitTests;
 public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 {
 	[Fact]
-	public void LoadPuzzle_WhenGivenPuzzle_SetsGamePuzzle()
-	{
-		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-		var sut = ResolveSut();
-
-		// Act
-		sut.LoadPuzzle(puzzle);
-
-		// Assert
-		sut.Puzzle.Should().BeEquivalentTo(puzzle);
-	}
-
-	[Fact]
 	public void LoadPuzzle_ResetsGameState()
 	{
 		// Arrange
@@ -34,6 +20,34 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 
 		// Assert
 		mockGameState.Verify(x => x.Clear(), Times.Once);
+	}
+
+	[Fact]
+	public void LoadPuzzle_SavesInitialGameState()
+	{
+		// Arrange
+		var mockGameState = Container.ResolveMock<IGameStateMemory>();
+		var sut = ResolveSut();
+
+		// Act
+		sut.LoadPuzzle(PuzzleFactory.GetEmptyPuzzle());
+
+		// Assert
+		mockGameState.Verify(x => x.Save(It.IsAny<GameStateMemento>()), Times.Once);
+	}
+
+	[Fact]
+	public void LoadPuzzle_SetsGamePuzzle()
+	{
+		// Arrange
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var sut = ResolveSut();
+
+		// Act
+		sut.LoadPuzzle(puzzle);
+
+		// Assert
+		sut.Puzzle.Should().BeEquivalentTo(puzzle);
 	}
 
 	[Fact]

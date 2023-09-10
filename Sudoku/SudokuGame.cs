@@ -24,6 +24,7 @@ public class SudokuGame : ISudokuGame
 	{
 		Reset();
 		Restore(puzzle);
+		SaveGameState();
 	}
 
 	public void Reset()
@@ -115,7 +116,9 @@ public class SudokuGame : ISudokuGame
 
 	private void SaveGameState()
 	{
-		_gameState.Save(new GameStateMemento(Puzzle, Score));
+		var clonedPuzzle = Puzzle.Select(x => (Cell)x.Clone());
+
+		_gameState.Save(new GameStateMemento(clonedPuzzle, Score));
 	}
 
 	private void TryBruteForceMethod()

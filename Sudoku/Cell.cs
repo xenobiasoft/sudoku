@@ -1,6 +1,6 @@
 ﻿namespace XenobiaSoft.Sudoku;
 
-public class Cell
+public class Cell : ICloneable
 {
 	public Cell(int row, int col)
 	{
@@ -11,5 +11,10 @@ public class Cell
 	public int Column { get; }
 	public int Row { get; }
 	public string PossibleValues { get; set; } = string.Empty;
-	public int? Value { get; set; } = null;
+	public int? Value { get; set; }
+
+	public object Clone()
+	{
+		return new Cell(Row, Column) { Value = Value };
+	}
 }

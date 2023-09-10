@@ -8,12 +8,45 @@ namespace UnitTests;
 
 public class SudokuGameIntegrationTests
 {
-	private readonly SudokuGame _sut;
-	private readonly PuzzleSolver _puzzleSolver;
-
-	public SudokuGameIntegrationTests()
+	[Fact]
+	public void SudokuGame_WhenSolvingPuzzle_ReturnsPuzzleCompletelySolved()
 	{
-		var strategies = new List<SolverStrategy>
+		// Arrange
+		var puzzleSolver = new PuzzleSolver(GetStrategies());
+		var sut = new SudokuGame(new GameStateMemory(), puzzleSolver);
+		var puzzle = PuzzleFactory.GetPuzzle(Level.ExtremelyHard);
+		sut.LoadPuzzle(puzzle);
+
+		// Act
+		sut.SolvePuzzle();
+
+		// Assert
+		puzzleSolver.IsSolved(sut.Puzzle).Should().BeTrue();
+	}
+
+	[Theory]
+	[InlineData(Level.Easy, 40, 45)]
+	[InlineData(Level.Medium, 46, 49)]
+	[InlineData(Level.Hard, 50, 53)]
+	[InlineData(Level.ExtremelyHard, 54, 58)]
+	public void SudokuGame_WhenSolvingPuzzle_ReturnsExpectedScoreForEachLevel(Level level, int minExpectedScore, int maxExpectedScore)
+	{
+		// Arrange
+		var puzzleSolver = new PuzzleSolver(GetStrategies());
+		var sut = new SudokuGame(new GameStateMemory(), puzzleSolver);
+		var puzzle = PuzzleFactory.GetPuzzle(level);
+		sut.LoadPuzzle(puzzle);
+
+		// Act
+		sut.SolvePuzzle();
+
+		// Assert
+		sut.Score.Should().BeInRange(minExpectedScore, maxExpectedScore);
+	}
+
+	private IEnumerable<SolverStrategy> GetStrategies()
+	{
+		return new List<SolverStrategy>
 		{
 			new ColumnRowMiniGridEliminationStrategy(),
 			new LoneRangersInMiniGridsStrategy(),
@@ -26,37 +59,5 @@ public class SudokuGameIntegrationTests
 			new TripletsInRowsStrategy(),
 			new TripletsInColumnsStrategy(),
 		};
-		_puzzleSolver = new PuzzleSolver(strategies);
-		_sut = new SudokuGame(new GameStateMemory(), _puzzleSolver);
-		var puzzle = PuzzleFactory.GetPuzzle(Level.ExtremelyHard);
-		_sut.Restore(puzzle);
-	}
-
-	[Fact]
-	public void SudokuGame_WhenSolvingPuzzle_ReturnsPuzzleCompletelySolved()
-	{
-		// Arrange
-
-		// Act
-		_sut.SolvePuzzle();
-
-		// Assert
-		_puzzleSolver.IsSolved(_sut.Puzzle).Should().BeTrue();
-	}
-
-	[Theory]
-	[InlineData(Level.Easy, 40, 45)]
-	[InlineData(Level.Medium, 46, 49)]
-	[InlineData(Level.Hard, 50, 53)]
-	[InlineData(Level.ExtremelyHard, 54, 58)]
-	public void SudokuGame_WhenSolvingPuzzle_ReturnsExpectedScoreForEachLevel(Level level, int minExpectedScore, int maxExpectedScore)
-	{
-		// Arrange
-
-		// Act
-		_sut.SolvePuzzle();
-
-		// Assert
-		_sut.Score.Should().BeInRange(minExpectedScore, maxExpectedScore);
 	}
 }
