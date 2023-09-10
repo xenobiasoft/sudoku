@@ -15,6 +15,10 @@ public class Cell : ICloneable
 
 	public object Clone()
 	{
-		return new Cell(Row, Column) { Value = Value };
+		return new Cell(Row, Column)
+		{
+			Value = Value,
+			PossibleValues = PossibleValues,
+		};
 	}
 }

@@ -43,6 +43,30 @@ public class SudokuGameIntegrationTests
 		// Assert
 		sut.Score.Should().BeInRange(minExpectedScore, maxExpectedScore);
 	}
+	
+	[Fact]
+	public void SudokuGame_GenerateNewPuzzle()
+	{
+		// Arrange
+		var puzzleSolver = new PuzzleSolver(GetStrategies());
+		var sut = new SudokuGame(new GameStateMemory(), puzzleSolver);
+		var puzzle = PuzzleFactory.GetEmptyPuzzle();
+		sut.LoadPuzzle(puzzle);
+
+		// Act
+		while (!puzzleSolver.IsSolved(puzzle))
+		{
+			sut.SolvePuzzle();
+
+			if (!puzzleSolver.IsSolved(puzzle) && puzzle.IsValid())
+			{
+				sut.LoadPuzzle(puzzle);
+			}
+		}
+
+		// Assert
+		puzzleSolver.IsSolved(sut.Puzzle).Should().BeTrue();
+	}
 
 	private IEnumerable<SolverStrategy> GetStrategies()
 	{

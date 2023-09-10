@@ -1,5 +1,4 @@
-﻿// ReSharper disable once CheckNamespace
-namespace XenobiaSoft.Sudoku;
+﻿namespace XenobiaSoft.Sudoku.Helpers;
 
 public static class StringExtensionMethods
 {
@@ -14,7 +13,13 @@ public static class StringExtensionMethods
 
 			(charArray[i], charArray[j]) = (charArray[j], charArray[i]);
 		}
+		var randomized = new string(charArray);
 
-		return new string(charArray);
+		if (randomized == source)
+		{
+			source.Randomize();
+		}
+
+		return randomized;
 	}
 }

@@ -47,7 +47,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		sut.LoadPuzzle(puzzle);
 
 		// Assert
-		sut.Puzzle.Should().BeEquivalentTo(puzzle);
+		Assert.Equivalent(puzzle, sut.Puzzle);
 	}
 
 	[Fact]
@@ -302,6 +302,6 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		sut.Undo();
 
 		// Assert
-		sut.Puzzle.Should().BeEquivalentTo(cells.ToArray());
+		Assert.Equivalent(cells, sut.Puzzle);
 	}
 }

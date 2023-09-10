@@ -1,4 +1,6 @@
-﻿namespace XenobiaSoft.Sudoku.GameState;
+﻿using System.Diagnostics;
+
+namespace XenobiaSoft.Sudoku.GameState;
 
 public class GameStateMemory : IGameStateMemory
 {
@@ -23,6 +25,11 @@ public class GameStateMemory : IGameStateMemory
 
 	public GameStateMemento Undo()
 	{
+		if (_gameState.Count <= 1)
+		{
+			Debugger.Break();
+		}
+
 		return _gameState.Pop();
 	}
 }

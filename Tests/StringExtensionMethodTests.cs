@@ -1,6 +1,4 @@
-﻿using XenobiaSoft.Sudoku;
-
-namespace UnitTests;
+﻿namespace UnitTests;
 
 public class StringExtensionMethodTests
 {

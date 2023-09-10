@@ -83,7 +83,11 @@ public class SudokuGame : ISudokuGame
 		var memento = _gameState.Undo();
 
 		Score = memento.Score;
-		Restore(memento.Cells.ToArray());
+		var cells = memento
+			.Cells
+			.Select(x => (Cell)x.Clone())
+			.ToArray();
+		Restore(cells);
 	}
 
 	private void Initialize()
