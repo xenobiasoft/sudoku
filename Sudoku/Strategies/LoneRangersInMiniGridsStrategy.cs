@@ -8,7 +8,7 @@ public class LoneRangersInMiniGridsStrategy : SolverStrategy
 	{
 		var colPos = 0;
 		var rowPos = 0;
-		var changed = false;
+		var totalScore = 0;
 
 		for (var col = 0; col < GameDimensions.Columns; col += 3)
 		{
@@ -35,11 +35,11 @@ public class LoneRangersInMiniGridsStrategy : SolverStrategy
 					var loneRangerCell = cells.GetCell(rowPos, colPos);
 					loneRangerCell.Value = number;
 					loneRangerCell.PossibleValues = string.Empty;
-					changed = true;
+					totalScore += Score;
 				}
 			}
 		}
 
-		return changed ? Score : 0;
+		return totalScore;
 	}
 }

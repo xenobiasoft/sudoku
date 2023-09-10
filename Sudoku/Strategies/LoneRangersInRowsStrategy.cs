@@ -8,7 +8,7 @@ public class LoneRangersInRowsStrategy : SolverStrategy
 	{
 		var colPos = 0;
 		var rowPos = 0;
-		var changed = false;
+		var totalScore = 0;
 
 		for (var row = 0; row < GameDimensions.Rows; row++)
 		{
@@ -36,11 +36,10 @@ public class LoneRangersInRowsStrategy : SolverStrategy
 				var loneRangerCell = cells.GetCell(rowPos, colPos);
 				loneRangerCell.Value = number;
 				loneRangerCell.PossibleValues = number.ToString();
-
-				changed = true;
+				totalScore += Score;
 			}
 		}
 
-		return changed ? Score : 0;
+		return totalScore;
 	}
 }

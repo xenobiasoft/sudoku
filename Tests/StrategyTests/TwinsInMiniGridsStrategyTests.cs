@@ -49,17 +49,19 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenACellValueIsSet_ReturnsScoreGreaterThanZero()
+	public void SolvePuzzle_WhenACellValueIsSet_ReturnsExpectedScore()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
+		var initialCellsWithValues = puzzle.Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		score.Should().Be(3);
+		var expectedScore = (puzzle.Count(x => x.Value.HasValue) - initialCellsWithValues) * 3;
+		score.Should().Be(expectedScore);
 	}
 
 	[Fact]

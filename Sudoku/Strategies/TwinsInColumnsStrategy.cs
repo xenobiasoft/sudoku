@@ -6,7 +6,7 @@ public class TwinsInColumnsStrategy : SolverStrategy
 
 	public override int Execute(Cell[] cells)
 	{
-		var changed = false;
+		var totalScore = 0;
 
 		foreach (var cell in cells)
 		{
@@ -31,12 +31,11 @@ public class TwinsInColumnsStrategy : SolverStrategy
 					if (nonTwinCell.PossibleValues.Length != 1) continue;
 
 					nonTwinCell.Value = int.Parse(nonTwinCell.PossibleValues);
-
-					changed = true;
+					totalScore += Score;
 				}
 			}
 		}
 
-		return changed ? Score : 0;
+		return totalScore;
 	}
 }

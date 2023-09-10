@@ -46,17 +46,19 @@ public class TripletsInRowsStrategyTests : BaseTestByAbstraction<TripletsInRowsS
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenACellValueIsSet_ReturnsScoreGreaterThanZero()
+	public void SolvePuzzle_WhenACellValueIsSet_ReturnsExpectedScore()
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
+		var initialCellsWithValues = puzzle.Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		score.Should().Be(4);
+		var expectedScore = (puzzle.Count(x => x.Value.HasValue) - initialCellsWithValues) * 4;
+		score.Should().Be(expectedScore);
 	}
 
 	[Fact]

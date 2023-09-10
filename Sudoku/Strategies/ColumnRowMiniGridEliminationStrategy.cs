@@ -6,7 +6,7 @@ public class ColumnRowMiniGridEliminationStrategy : SolverStrategy
 
 	public override int Execute(Cell[] cells)
 	{
-		var changed = false;
+		var totalScore = 0;
 
 		foreach (var cell in cells)
 		{
@@ -14,9 +14,9 @@ public class ColumnRowMiniGridEliminationStrategy : SolverStrategy
 
 			cell.Value = int.Parse(cell.PossibleValues);
 			cell.PossibleValues = string.Empty;
-			changed = true;
+			totalScore += Score;
 		}
 
-		return changed ? Score : 0;
+		return totalScore;
 	}
 }

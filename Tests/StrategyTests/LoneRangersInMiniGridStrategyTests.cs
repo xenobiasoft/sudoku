@@ -22,17 +22,19 @@ public class LoneRangersInMiniGridStrategyTests : BaseTestByAbstraction<LoneRang
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenACellValueIsSet_ReturnsScoreGreaterThanZero()
+	public void SolvePuzzle_WhenACellValueIsSet_ReturnsExpectedScore()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var initialCellsWithValues = puzzle.Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		score.Should().Be(2);
+		var expectedScore = (puzzle.Count(x => x.Value.HasValue) - initialCellsWithValues) * 2;
+		score.Should().Be(expectedScore);
 	}
 
 	[Fact]

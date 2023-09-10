@@ -23,17 +23,19 @@ public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<C
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenACellValueIsSet_ReturnsScoreGreaterThanZero()
+	public void SolvePuzzle_WhenACellValueIsSet_ReturnsExpectedScore()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var initialCellsWithValues = puzzle.Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		score.Should().Be(1);
+		var expectedScore = puzzle.Count(x => x.Value.HasValue) - initialCellsWithValues;
+		score.Should().Be(expectedScore);
 	}
 
 	[Fact]

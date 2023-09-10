@@ -6,7 +6,7 @@ public class TripletsInColumnsStrategy : SolverStrategy
 
 	public override int Execute(Cell[] cells)
 	{
-		var changed = false;
+		var totalScore = 0;
 
 		foreach (var cell in cells)
 		{
@@ -44,11 +44,10 @@ public class TripletsInColumnsStrategy : SolverStrategy
 				if (nonTripletCell.PossibleValues.Length != 1) continue;
 
 				nonTripletCell.Value = int.Parse(nonTripletCell.PossibleValues);
-
-				changed = true;
+				totalScore += Score;
 			}
 		}
 
-		return changed ? Score : 0;
+		return totalScore;
 	}
 }
