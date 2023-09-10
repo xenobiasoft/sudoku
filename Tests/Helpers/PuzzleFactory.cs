@@ -26,7 +26,7 @@ public class PuzzleFactory
 		return cells;
 	}
 
-	private static int?[,] RotateGrid(int?[,] values)
+	public static int?[,] RotateGrid(int?[,] values)
 	{
 		var grid = new int?[9, 9];
 

@@ -20,9 +20,9 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 		// Assert
 		Assert.Multiple(() =>
 		{
-			puzzle.GetCell(0, 0).PossibleValues.Should().Be("456");
-			puzzle.GetCell(0, 1).PossibleValues.Should().Be("456");
-			puzzle.GetCell(0, 2).PossibleValues.Should().Be("456");
+			puzzle.GetCell(0, 0).PossibleValues.Should().Be("789");
+			puzzle.GetCell(1, 0).PossibleValues.Should().Be("789");
+			puzzle.GetCell(2, 0).PossibleValues.Should().Be("789");
 		});
 	}
 
@@ -79,9 +79,9 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		puzzle.GetCell(4, 2).Value = 4;
-		puzzle.GetCell(5, 2).Value = 5;
-		puzzle.GetCell(6, 2).Value = 6;
+		puzzle.GetCell(3, 3).Value = 4;
+		puzzle.GetCell(3, 4).Value = 7;
+		puzzle.GetCell(3, 8).Value = 9;
 		var sut = ResolveSut();
 
 		// Act
@@ -94,16 +94,18 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 	private Cell[] GetTripletsPuzzle()
 	{
 		var values = new int?[,] {
-			{ null, null, null, null, 1, 2, 3, 7, 8 },
-			{ 1, 7, null, null, null, null, null, null, null },
-			{ 2, 8, null, null, null, null, null, null, null },
-			{ 3, 9, null, null, null, null, null, null, null },
-			{ 7, 1, null, null, null, null, null, null, null },
-			{ 8, 2, null, null, null, null, null, null, null },
-			{ 9, 3, null, null, null, null, null, null, null },
-			{ null, null, 3, null, null, null, null, null, null },
-			{ null, null, 9, null, null, null, null, null, null }
+			{null, null, null, null, null, null, 3, 2, 1},
+			{null, null, null, 5, null, null, 4, 3, 2},
+			{null, null, null, 6, null, null, 5, 4, 3},
+			{null, null, null, null, null, null, 6, 5, 4},
+			{null, null, null, null, null, null, 7, 6, 5},
+			{null, null, null, null, null, null, 8, 7, 6},
+			{4, 5, 6, null, null, null, 9, 8, 7},
+			{5, 6, 4, null, null, null, 1, 9, 8},
+			{6, 4, 5, null, null, null, 2, 1, 9}
 		};
+
+		values = PuzzleFactory.RotateGrid(values);
 
 		return PuzzleFactory.PopulateCells(values);
 	}
