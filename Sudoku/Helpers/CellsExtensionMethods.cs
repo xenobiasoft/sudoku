@@ -2,9 +2,6 @@
 
 public static class CellsExtensionMethods
 {
-	private const int Columns = 9;
-	private const int Rows = 9;
-	
 	public static Cell GetCell(this Cell[] cells, int row, int col)
 	{
 		return cells.First(x => x.Column == col && x.Row == row);
@@ -12,7 +9,7 @@ public static class CellsExtensionMethods
 
 	public static IEnumerable<Cell> GetColumnCells(this Cell[] cells, int col)
 	{
-		for (var row = 0; row < Rows; row++)
+		for (var row = 0; row < GameDimensions.Rows; row++)
 		{
 			yield return cells[col * 9 + row];
 		}
@@ -20,7 +17,7 @@ public static class CellsExtensionMethods
 
 	public static IEnumerable<Cell> GetRowCells(this Cell[] cells, int row)
 	{
-		for (var col = 0; col < Columns; col++)
+		for (var col = 0; col < GameDimensions.Columns; col++)
 		{
 			yield return cells[col * 9 + row];
 		}

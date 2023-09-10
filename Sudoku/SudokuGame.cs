@@ -120,6 +120,11 @@ public class SudokuGame : ISudokuGame
 
 	private void SaveGameState()
 	{
+		if (!Puzzle.IsValid())
+		{
+			throw new InvalidOperationException("The game is in an invalid state");
+		}
+
 		var clonedPuzzle = Puzzle.Select(x => (Cell)x.Clone());
 
 		_gameState.Save(new GameStateMemento(clonedPuzzle, Score));

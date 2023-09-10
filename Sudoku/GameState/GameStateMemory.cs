@@ -21,8 +21,6 @@ public class GameStateMemory : IGameStateMemory
 		_gameState.Push(gameState);
 	}
 
-	public Stack<GameStateMemento> GameState => _gameState;
-
 	public GameStateMemento Undo()
 	{
 		if (_gameState.Count <= 1)
