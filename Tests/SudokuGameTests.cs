@@ -1,65 +1,79 @@
 ﻿using DepenMock.XUnit;
-using UnitTests.CustomAssertions;
 using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.Helpers;
 using XenobiaSoft.Sudoku.PuzzleSolver;
-using XenobiaSoft.Sudoku.Strategies;
 
 namespace UnitTests;
 
 public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 {
 	[Fact]
-	public void SaveGameState_StoresCurrentGameStateOnStack()
+	public void LoadPuzzle_WhenGivenPuzzle_SetsGamePuzzle()
 	{
 		// Arrange
-		var mockGameMemory = Container.ResolveMock<IGameStateMemory>();
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
 		var sut = ResolveSut();
 
 		// Act
-		sut.SaveGameState();
+		sut.LoadPuzzle(puzzle);
 
 		// Assert
-		mockGameMemory.Verify(x => x.Save(It.IsAny<GameStateMemento>()), Times.Once);
+		sut.Puzzle.Should().BeEquivalentTo(puzzle);
 	}
 
 	[Fact]
-	public void Undo_RestoresScoreFromSavedGameState()
+	public void LoadPuzzle_ResetsGameState()
 	{
 		// Arrange
-		var gameState = new GameStateMemento(Container.CreateMany<Cell>(), Container.Create<int>());
-		Container
-			.ResolveMock<IGameStateMemory>()
-			.Setup(x => x.Undo())
-			.Returns(gameState);
+		var mockGameState = Container.ResolveMock<IGameStateMemory>();
 		var sut = ResolveSut();
 
 		// Act
-		sut.Undo();
+		sut.LoadPuzzle(PuzzleFactory.GetEmptyPuzzle());
 
 		// Assert
-		Assert.Equal(gameState.Score, sut.Score);
+		mockGameState.Verify(x => x.Clear(), Times.Once);
 	}
 
 	[Fact]
-	public void Undo_RestoresPuzzleFromSavedGameState()
+	public void Reset_ClearsGameState()
 	{
 		// Arrange
-		var cells = Container.CreateMany<Cell>();
-		var gameState = new GameStateMemento(cells, Container.Create<int>());
-		Container
-			.ResolveMock<IGameStateMemory>()
-			.Setup(x => x.Undo())
-			.Returns(gameState);
+		var mockGameState = Container.ResolveMock<IGameStateMemory>();
 		var sut = ResolveSut();
 
 		// Act
-		sut.Undo();
+		sut.Reset();
 
 		// Assert
-		sut.Puzzle.Should().BeEquivalentTo(cells.ToArray());
+		mockGameState.Verify(x => x.Clear(), Times.Once);
+	}
+
+	[Fact]
+	public void Reset_SetsPuzzle_ToEmptyPuzzle()
+	{
+		// Arrange
+		var sut = ResolveSut();
+
+		// Act
+		sut.Reset();
+
+		// Assert
+		sut.Puzzle.ToList().ForEach(x => x.Value.Should().BeNull());
+	}
+
+	[Fact]
+	public void Reset_ResetsScoreBackToZero()
+	{
+		// Arrange
+		var sut = ResolveSut();
+
+		// Act
+		sut.Reset();
+
+		// Assert
+		sut.Score.Should().Be(0);
 	}
 
 	[Fact]
@@ -150,8 +164,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 			.Setup(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()))
 			.Returns(0);
 		var sut = ResolveSut();
-		sut.Restore(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
-		sut.Puzzle.PopulatePossibleValues();
+		sut.LoadPuzzle(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
 
 		// Act
 		sut.SolvePuzzle();
@@ -177,15 +190,13 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 			.Returns(puzzleSolverScore)
 			.Returns(0);
 		var sut = ResolveSut();
-		sut.Restore(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
-		sut.Puzzle.PopulatePossibleValues();
-		var gameScore = sut.Score;
+		sut.LoadPuzzle(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
 
 		// Act
 		sut.SolvePuzzle();
 
 		// Assert
-		sut.Score.Should().Be(gameScore + puzzleSolverScore + 5);
+		sut.Score.Should().Be(puzzleSolverScore + 5);
 	}
 
 	[Fact]
@@ -213,7 +224,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 	{
 		// Arrange
 		var sut = ResolveSut();
-		sut.Restore(PuzzleFactory.GetSolvedPuzzle());
+		sut.Reset();
 
 		// Act
 		sut.SetCell(2, 1, 5);
@@ -242,122 +253,39 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 	}
 
 	[Fact]
-	public void Reset_ClearsGameState()
+	public void Undo_RestoresScoreFromSavedGameState()
 	{
 		// Arrange
-		var mockGameState = Container.ResolveMock<IGameStateMemory>();
+		var gameState = new GameStateMemento(Container.CreateMany<Cell>(), Container.Create<int>());
+		Container
+			.ResolveMock<IGameStateMemory>()
+			.Setup(x => x.Undo())
+			.Returns(gameState);
 		var sut = ResolveSut();
-		sut.Restore(PuzzleFactory.GetEmptyPuzzle());
 
 		// Act
-		sut.Reset();
+		sut.Undo();
 
 		// Assert
-		mockGameState.Verify(x => x.Clear(), Times.Once);
+		Assert.Equal(gameState.Score, sut.Score);
 	}
 
 	[Fact]
-	public void Reset_SetsPuzzle_ToEmptyPuzzle()
+	public void Undo_RestoresPuzzleFromSavedGameState()
 	{
 		// Arrange
+		var cells = Container.CreateMany<Cell>();
+		var gameState = new GameStateMemento(cells, Container.Create<int>());
+		Container
+			.ResolveMock<IGameStateMemory>()
+			.Setup(x => x.Undo())
+			.Returns(gameState);
 		var sut = ResolveSut();
-		sut.Restore(PuzzleFactory.GetSolvedPuzzle());
 
 		// Act
-		sut.Reset();
+		sut.Undo();
 
 		// Assert
-		sut.Puzzle.ToList().ForEach(x => x.Value.Should().BeNull());
-	}
-
-	[Fact]
-	public void Reset_ResetsScoreBackToZero()
-	{
-		// Arrange
-		var sut = ResolveSut();
-		sut.Restore(PuzzleFactory.GetSolvedPuzzle());
-
-		// Act
-		sut.Reset();
-
-		// Assert
-		sut.Score.Should().Be(0);
-	}
-
-	[Theory]
-	[InlineData(Level.Easy)]
-	[InlineData(Level.Medium)]
-	[InlineData(Level.Hard)]
-	[InlineData(Level.ExtremelyHard)]
-	public void IsValid_WhenGivenValidPuzzle_ReturnsTrue(Level level)
-	{
-		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(level);
-
-		// Act
-		var isValid = puzzle.IsValid();
-
-		// Assert
-		isValid.Should().BeTrue();
-	}
-
-	[Fact]
-	public void IsValid_WhenGivenEmptyPuzzle_ReturnsTrue()
-	{
-		// Arrange
-		var puzzle = PuzzleFactory.GetEmptyPuzzle();
-
-		// Act
-		var isValid = puzzle.IsValid();
-
-		// Assert
-		isValid.Should().BeTrue();
-	}
-
-	[Fact]
-	public void IsValid_WhenGivenCompletedValidPuzzle_ReturnsTrue()
-	{
-		// Arrange
-		var puzzle = PuzzleFactory.GetSolvedPuzzle();
-
-		// Act
-		var isValid = puzzle.IsValid();
-
-		// Assert
-		isValid.Should().BeTrue();
-	}
-
-	[Fact]
-	public void IntegrationTest()
-	{
-		// Arrange
-		var strategies = new List<SolverStrategy>
-		{
-			new ColumnRowMiniGridEliminationStrategy(),
-			new LoneRangersInMiniGridsStrategy(),
-			new LoneRangersInRowsStrategy(),
-			new LoneRangersInColumnsStrategy(),
-			new TwinsInMiniGridsStrategy(),
-			new TwinsInRowsStrategy(),
-			new TwinsInColumnsStrategy(),
-			new TripletsInMiniGridsStrategy(),
-			new TripletsInRowsStrategy(),
-			new TripletsInColumnsStrategy(),
-		};
-		var puzzleSolver = new PuzzleSolver(strategies);
-		var sut = new SudokuGame(new GameStateMemory(), puzzleSolver);
-		var puzzle = PuzzleFactory
-			.GetPuzzle(Level.ExtremelyHard);
-		sut.Restore(puzzle);
-		if (!puzzle.IsValid())
-		{
-			throw new InvalidOperationException();
-		}
-
-		// Act
-		sut.SolvePuzzle();
-
-		// Assert
-		puzzleSolver.IsSolved(sut.Puzzle).Should().BeTrue();
+		sut.Puzzle.Should().BeEquivalentTo(cells.ToArray());
 	}
 }

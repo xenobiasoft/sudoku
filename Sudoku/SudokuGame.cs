@@ -20,21 +20,17 @@ public class SudokuGame : ISudokuGame
 		_gameState = gameState;
 	}
 
+	public void LoadPuzzle(Cell[] puzzle)
+	{
+		Reset();
+		Restore(puzzle);
+	}
+
 	public void Reset()
 	{
 		_gameState.Clear();
 		Initialize();
 		Score = 0;
-	}
-
-	public void Restore(Cell[] cells)
-	{
-		Puzzle = cells;
-	}
-
-	public void SaveGameState()
-	{
-		_gameState.Save(new GameStateMemento(Puzzle, Score));
 	}
 
 	public void SetCell(int row, int col, int value)
@@ -91,14 +87,21 @@ public class SudokuGame : ISudokuGame
 
 	private void Initialize()
 	{
+		Puzzle = new Cell[GameDimensions.Columns * GameDimensions.Rows];
 		var index = 0;
-		for (var col = 0; col < GameDimensions.Columns; col++)
+
+		for (var row = 0; row < GameDimensions.Rows; row++)
 		{
-			for (var row = 0; row < GameDimensions.Rows; row++)
+			for (var col = 0; col < GameDimensions.Columns; col++)
 			{
 				Puzzle[index++] = new Cell(row, col);
 			}
 		}
+	}
+
+	public void Restore(Cell[] cells)
+	{
+		Puzzle = cells;
 	}
 
 	private void RetrySolvePuzzle()
@@ -108,6 +111,11 @@ public class SudokuGame : ISudokuGame
 		if (_solveAttempts >= SolveMaxAttempts) return;
 
 		SolvePuzzle();
+	}
+
+	private void SaveGameState()
+	{
+		_gameState.Save(new GameStateMemento(Puzzle, Score));
 	}
 
 	private void TryBruteForceMethod()

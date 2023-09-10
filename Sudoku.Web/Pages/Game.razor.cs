@@ -12,7 +12,7 @@ public partial class Game
 
 	protected override void OnInitialized()
 	{
-		SudokuGame.Restore(GetPuzzle());
+		SudokuGame.LoadPuzzle(GetPuzzle());
 		SudokuGame.Puzzle.PopulatePossibleValues();
 		Puzzle = SudokuGame.Puzzle;
 	}

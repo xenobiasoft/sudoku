@@ -4,7 +4,7 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests;
 
-public class GameStateMemoryTests : BaseTestByType<GameStateMemory>
+public class GameStateMemoryTests : BaseTestByAbstraction<GameStateMemory, IGameStateMemory>
 {
 	[Fact]
 	public void Push_AddsGameStateToStack()
@@ -17,7 +17,7 @@ public class GameStateMemoryTests : BaseTestByType<GameStateMemory>
 		sut.Save(gameState);
 
 		// Assert
-		sut.GameState.Count.Should().Be(1);
+		sut.IsEmpty().Should().BeFalse();
 	}
 
 	[Fact]
@@ -34,7 +34,7 @@ public class GameStateMemoryTests : BaseTestByType<GameStateMemory>
 		// Assert
 		Assert.Multiple(() =>
 		{
-			sut.GameState.Count.Should().Be(0);
+			sut.IsEmpty().Should().BeTrue();
 			actualGameState.Should().Be(gameState);
 		});
 	}
@@ -50,6 +50,6 @@ public class GameStateMemoryTests : BaseTestByType<GameStateMemory>
 		sut.Clear();
 
 		// Assert
-		sut.GameState.Count.Should().Be(0);
+		sut.IsEmpty().Should().BeTrue();
 	}
 }

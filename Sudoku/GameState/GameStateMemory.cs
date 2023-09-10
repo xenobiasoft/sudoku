@@ -9,6 +9,11 @@ public class GameStateMemory : IGameStateMemory
 		_gameState.Clear();
 	}
 
+	public bool IsEmpty()
+	{
+		return _gameState.Count == 0;
+	}
+
 	public void Save(GameStateMemento gameState)
 	{
 		_gameState.Push(gameState);
