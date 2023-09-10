@@ -25,10 +25,10 @@ public class SudokuGameIntegrationTests
 	}
 
 	[Theory]
-	[InlineData(Level.Easy, 40, 45)]
-	[InlineData(Level.Medium, 46, 49)]
-	[InlineData(Level.Hard, 50, 53)]
-	[InlineData(Level.ExtremelyHard, 54, 58)]
+	[InlineData(Level.Easy, 90, 98)]
+	[InlineData(Level.Medium, 99, 108)]
+	[InlineData(Level.Hard, 109, 115)]
+	[InlineData(Level.ExtremelyHard, 116, 135)]
 	public void SudokuGame_WhenSolvingPuzzle_ReturnsExpectedScoreForEachLevel(Level level, int minExpectedScore, int maxExpectedScore)
 	{
 		// Arrange
