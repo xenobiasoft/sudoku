@@ -50,13 +50,11 @@ public static class CellsExtensionMethods
 
 	private static string CalculatePossibleValues(this Cell[] cells, Cell cell)
 	{
-		var possibleValues = string.IsNullOrWhiteSpace(cell.PossibleValues) ? "123456789" : cell.PossibleValues;
+		var possibleValues = cells.GetColumnCells(cell.Column).Aggregate("123456789", (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));
 
-		possibleValues = cells.GetColumnCells(cell.Column).Aggregate(possibleValues, (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));
 		possibleValues = cells.GetRowCells(cell.Row).Aggregate(possibleValues, (current, rowCell) => current.Replace(rowCell.Value.GetValueOrDefault().ToString(), string.Empty));
-		possibleValues = cells.GetMiniGridCells(cell.Column, cell.Row).Aggregate(possibleValues, (current, gridCell) => current.Replace(gridCell.Value.GetValueOrDefault().ToString(), string.Empty));
 
-		return possibleValues;
+		return cells.GetMiniGridCells(cell.Row, cell.Column).Aggregate(possibleValues, (current, gridCell) => current.Replace(gridCell.Value.GetValueOrDefault().ToString(), string.Empty));
 	}
 
 	public static string[,] GetAllPossibleValues(this Cell[] cells)
@@ -91,5 +89,76 @@ public static class CellsExtensionMethods
 		}
 
 		cell.Value = int.Parse(possibleValues[0].ToString());
+	}
+
+	public static bool IsValid(this Cell[] cells)
+	{
+		foreach (var cell in cells)
+		{
+			if (!cell.Value.HasValue) continue;
+
+			var usedNumbers = new List<int?>();
+
+			foreach (var colCell in cells.GetColumnCells(cell.Column))
+			{
+				if (!colCell.Value.HasValue) continue;
+
+				if (usedNumbers.Contains(colCell.Value))
+				{
+					Console.WriteLine($"Puzzle is not valid. Column cell col:{colCell.Column}, row: {colCell.Row} has value {colCell.Value} that is already taken.");
+					return false;
+				}
+
+				usedNumbers.Add(colCell.Value);
+			}
+
+			usedNumbers.Clear();
+
+			foreach (var rowCell in cells.GetRowCells(cell.Row))
+			{
+				if (!rowCell.Value.HasValue) continue;
+
+				if (usedNumbers.Contains(rowCell.Value))
+				{
+					Console.WriteLine($"Puzzle is not valid. Row cell col:{rowCell.Column}, row: {rowCell.Row} has value {rowCell.Value} that is already taken.");
+					return false;
+				}
+
+				usedNumbers.Add(rowCell.Value);
+			}
+
+			usedNumbers.Clear();
+
+			foreach (var miniGridCell in cells.GetMiniGridCells(cell.Column, cell.Row))
+			{
+				if (!miniGridCell.Value.HasValue) continue;
+
+				if (usedNumbers.Contains(miniGridCell.Value))
+				{
+					Console.WriteLine($"Puzzle is not valid. Mini grid cell col:{miniGridCell.Column}, row: {miniGridCell.Row}  has value  {miniGridCell.Value} that is already taken.");
+					return false;
+				}
+
+				usedNumbers.Add(miniGridCell.Value);
+			}
+		}
+
+		return true;
+	}
+
+	public static void EliminatePossibleNumberFromAssociatedCells(this Cell[] cells, Cell cell)
+	{
+		cells
+			.GetMiniGridCells(cell.Row, cell.Column)
+			.ToList()
+			.ForEach(x => x.PossibleValues = x.PossibleValues.Replace(cell.Value.ToString(), string.Empty));
+		cells
+			.GetRowCells(cell.Row)
+			.ToList()
+			.ForEach(x => x.PossibleValues = x.PossibleValues.Replace(cell.Value.ToString(), string.Empty));
+		cells
+			.GetColumnCells(cell.Column)
+			.ToList()
+			.ForEach(x => x.PossibleValues = x.PossibleValues.Replace(cell.Value.ToString(), string.Empty));
 	}
 }

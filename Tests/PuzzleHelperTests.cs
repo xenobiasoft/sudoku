@@ -1,6 +1,4 @@
-﻿using XenobiaSoft.Sudoku.Helpers;
-
-namespace UnitTests;
+﻿namespace UnitTests;
 
 public class PuzzleHelperTests
 {

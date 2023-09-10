@@ -19,11 +19,11 @@ public class LoneRangersInColumnsStrategyTests : BaseTestByAbstraction<LoneRange
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.GetCell(0, 6).Value.Should().Be(9);
+		puzzle.GetCell(6, 0).Value.Should().Be(9);
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenACellValueIsSet_ReturnsScoreGreaterThanZero()
+	public void SolvePuzzle_WhenCellValueIsSet_ReturnsScoreGreaterThanZero()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
@@ -37,7 +37,21 @@ public class LoneRangersInColumnsStrategyTests : BaseTestByAbstraction<LoneRange
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsScoreOfZero()
+	public void SolvePuzzle_WhenCellValueIsSet_RemovesThatValueFromColumnCellsPossibleValues()
+	{
+		// Arrange
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var sut = ResolveSut();
+
+		// Act
+		var score = sut.SolvePuzzle(puzzle);
+
+		// Assert
+		score.Should().Be(2);
+	}
+
+	[Fact]
+	public void SolvePuzzle_WhenCellValueIsNotSet_ReturnsScoreOfZero()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetEmptyPuzzle();

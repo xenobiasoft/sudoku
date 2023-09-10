@@ -18,7 +18,7 @@ public class LoneRangersInRowsStrategyTests : BaseTestByAbstraction<LoneRangersI
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.GetCell(3, 5).Value.Should().Be(1);
+		puzzle.GetCell(2, 6).Value.Should().Be(5);
 	}
 
 	[Fact]

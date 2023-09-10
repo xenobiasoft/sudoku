@@ -22,9 +22,16 @@ public class PuzzleSolver : IPuzzleSolver
 
 	        foreach (var strategy in _strategies)
             {
+				Console.WriteLine($"Solving with {strategy.GetType().Name}");
                 score += strategy.SolvePuzzle(cells);
                 changesMade = previousScore != score;
                 previousScore = score;
+
+                if (!cells.IsValid())
+                {
+					Console.WriteLine($"Failure in solving puzzle using {strategy.GetType().Name} strategy");
+	                throw new InvalidOperationException();
+                }
 
                 if (IsSolved(cells))
                 {
@@ -64,56 +71,4 @@ public class PuzzleSolver : IPuzzleSolver
 
 	    return true;
 	}
-
-    public bool IsValid(Cell[] cells)
-    {
-	    foreach (var cell in cells)
-	    {
-		    if (!cell.Value.HasValue) continue;
-
-		    var usedNumbers = new List<int?>();
-
-		    foreach (var colCell in cells.GetColumnCells(cell.Column))
-		    {
-			    if (!colCell.Value.HasValue) continue;
-
-			    if (usedNumbers.Contains(colCell.Value))
-			    {
-				    return false;
-			    }
-
-				usedNumbers.Add(colCell.Value);
-		    }
-
-			usedNumbers.Clear();
-
-			foreach (var rowCell in cells.GetRowCells(cell.Row))
-			{
-				if (!rowCell.Value.HasValue) continue;
-
-				if (usedNumbers.Contains(rowCell.Value))
-				{
-					return false;
-				}
-
-				usedNumbers.Add(rowCell.Value);
-			}
-
-			usedNumbers.Clear();
-
-			foreach (var miniGridCell in cells.GetMiniGridCells(cell.Column, cell.Row))
-			{
-				if (!miniGridCell.Value.HasValue) continue;
-
-				if (usedNumbers.Contains(miniGridCell.Value))
-				{
-					return false;
-				}
-
-				usedNumbers.Add(miniGridCell.Value);
-			}
-	    }
-
-	    return true;
-    }
 }

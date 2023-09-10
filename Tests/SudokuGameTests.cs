@@ -157,7 +157,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		sut.SolvePuzzle();
 
 		// Assert
-		sut.Puzzle.GetCell(3, 1).Value.Should().BeOneOf(6, 7);
+		sut.Puzzle.GetCell(3, 5).Value.Should().BeOneOf(5, 9);
 	}
 
 	[Fact]
@@ -282,5 +282,82 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 
 		// Assert
 		sut.Score.Should().Be(0);
+	}
+
+	[Theory]
+	[InlineData(Level.Easy)]
+	[InlineData(Level.Medium)]
+	[InlineData(Level.Hard)]
+	[InlineData(Level.ExtremelyHard)]
+	public void IsValid_WhenGivenValidPuzzle_ReturnsTrue(Level level)
+	{
+		// Arrange
+		var puzzle = PuzzleFactory.GetPuzzle(level);
+
+		// Act
+		var isValid = puzzle.IsValid();
+
+		// Assert
+		isValid.Should().BeTrue();
+	}
+
+	[Fact]
+	public void IsValid_WhenGivenEmptyPuzzle_ReturnsTrue()
+	{
+		// Arrange
+		var puzzle = PuzzleFactory.GetEmptyPuzzle();
+
+		// Act
+		var isValid = puzzle.IsValid();
+
+		// Assert
+		isValid.Should().BeTrue();
+	}
+
+	[Fact]
+	public void IsValid_WhenGivenCompletedValidPuzzle_ReturnsTrue()
+	{
+		// Arrange
+		var puzzle = PuzzleFactory.GetSolvedPuzzle();
+
+		// Act
+		var isValid = puzzle.IsValid();
+
+		// Assert
+		isValid.Should().BeTrue();
+	}
+
+	[Fact]
+	public void IntegrationTest()
+	{
+		// Arrange
+		var strategies = new List<SolverStrategy>
+		{
+			new ColumnRowMiniGridEliminationStrategy(),
+			new LoneRangersInMiniGridsStrategy(),
+			new LoneRangersInRowsStrategy(),
+			new LoneRangersInColumnsStrategy(),
+			new TwinsInMiniGridsStrategy(),
+			new TwinsInRowsStrategy(),
+			new TwinsInColumnsStrategy(),
+			new TripletsInMiniGridsStrategy(),
+			new TripletsInRowsStrategy(),
+			new TripletsInColumnsStrategy(),
+		};
+		var puzzleSolver = new PuzzleSolver(strategies);
+		var sut = new SudokuGame(new GameStateMemory(), puzzleSolver);
+		var puzzle = PuzzleFactory
+			.GetPuzzle(Level.ExtremelyHard);
+		sut.Restore(puzzle);
+		if (!puzzle.IsValid())
+		{
+			throw new InvalidOperationException();
+		}
+
+		// Act
+		sut.SolvePuzzle();
+
+		// Assert
+		puzzleSolver.IsSolved(sut.Puzzle).Should().BeTrue();
 	}
 }

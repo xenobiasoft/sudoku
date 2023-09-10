@@ -11,7 +11,7 @@ public class TwinsInColumnsStrategyTests : BaseTestByAbstraction<TwinsInColumnsS
 	public void SolvePuzzle_WhenTwoCellsHaveSamePossibleValuesWithLengthOfTwoInColumn_ThenSetAsTwins()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium, rotateGrid: true);
 		var sut = ResolveSut();
 
 		// Act
@@ -20,8 +20,8 @@ public class TwinsInColumnsStrategyTests : BaseTestByAbstraction<TwinsInColumnsS
 		// Assert
 		Assert.Multiple(() =>
 		{
-			puzzle.GetCell(3, 7).PossibleValues.Should().Be("25");
-			puzzle.GetCell(4, 7).PossibleValues.Should().Be("25");
+			puzzle.GetCell(7, 7).PossibleValues.Should().Be("15");
+			puzzle.GetCell(8, 7).PossibleValues.Should().Be("15");
 		});
 	}
 
@@ -29,18 +29,18 @@ public class TwinsInColumnsStrategyTests : BaseTestByAbstraction<TwinsInColumnsS
 	public void SolvePuzzle_WhenTwinsAreFoundInColumn_RemovesTwinsNumbersFromOtherCells()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium, rotateGrid: true);
 		var sut = ResolveSut();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		for (var col = 0; col < 9; col++)
+		for (var row = 0; row < 9; row++)
 		{
-			if (col is 3 or 4) continue;
+			if (row is 7 or 8) continue;
 
-			puzzle.GetCell(col, 7).PossibleValues.Should().NotContain("2").And.NotContain("5");
+			puzzle.GetCell(row, 7).PossibleValues.Should().NotContain("1").And.NotContain("5");
 		}
 	}
 
@@ -48,7 +48,7 @@ public class TwinsInColumnsStrategyTests : BaseTestByAbstraction<TwinsInColumnsS
 	public void SolvePuzzle_WhenACellValueIsSet_ReturnsScoreGreaterThanZero()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium, rotateGrid: true);
 		var sut = ResolveSut();
 
 		// Act
@@ -76,8 +76,8 @@ public class TwinsInColumnsStrategyTests : BaseTestByAbstraction<TwinsInColumnsS
 	public void SolvePuzzle_WhenNonTwinCellPossibleValuesIsEmpty_ThrowsException()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-		puzzle.GetCell(5, 3).Value = 3;
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy, rotateGrid: true);
+		puzzle.GetCell(2, 4).Value = 7;
 		var sut = ResolveSut();
 
 		// Act

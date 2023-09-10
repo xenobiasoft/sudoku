@@ -4,7 +4,7 @@ namespace UnitTests.Helpers;
 
 public class PuzzleFactory
 {
-	public static Cell[] GetPuzzle(Level level)
+	public static Cell[] GetPuzzle(Level level, bool rotateGrid = false)
 	{
 		var puzzleValues = level switch
 		{
@@ -15,9 +15,30 @@ public class PuzzleFactory
 			_ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
 		};
 
+		if (rotateGrid)
+		{
+			puzzleValues = RotateGrid(puzzleValues);
+		}
+
 		var cells = PopulateCells(puzzleValues);
+		cells.PopulatePossibleValues();
 		
 		return cells;
+	}
+
+	private static int?[,] RotateGrid(int?[,] values)
+	{
+		var grid = new int?[9, 9];
+
+		for (var col = 0; col < 9; col++)
+		{
+			for (var row = 0; row < 9; row++)
+			{
+				grid[col, row] = values[row, col];
+			}
+		}
+
+		return grid;
 	}
 
 	public static Cell[] GetEmptyPuzzle()

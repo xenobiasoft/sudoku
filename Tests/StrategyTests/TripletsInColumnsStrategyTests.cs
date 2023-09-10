@@ -79,8 +79,9 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		puzzle.GetCell(6, 2).Value = 8;
-		puzzle.GetCell(4, 3).Value = 6;
+		puzzle.GetCell(4, 2).Value = 4;
+		puzzle.GetCell(5, 2).Value = 5;
+		puzzle.GetCell(6, 2).Value = 6;
 		var sut = ResolveSut();
 
 		// Act
