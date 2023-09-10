@@ -20,8 +20,8 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 		// Assert
 		Assert.Multiple(() =>
 		{
-			puzzle.GetCell(3, 2).PossibleValues.Should().Be("46");
-			puzzle.GetCell(4, 2).PossibleValues.Should().Be("46");
+			puzzle.GetCell(7, 7).PossibleValues.Should().Be("15");
+			puzzle.GetCell(7, 8).PossibleValues.Should().Be("15");
 		});
 	}
 
@@ -31,20 +31,21 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
 		var sut = ResolveSut();
+		var twinCells = new List<Cell>
+		{
+			puzzle.GetCell(7, 7),
+			puzzle.GetCell(7, 8)
+		};
 
 		// Act
 		sut.SolvePuzzle(puzzle);
 		
 		// Assert
-		for (var col = 0; col < 3; col++)
-		{
-			for (var row = 3; row < 6; row++)
-			{
-				if (col is 2 && row is 3 or 4) continue;
-
-				puzzle.GetCell(row, col).PossibleValues.Should().NotContain("4").And.NotContain("6");
-			}
-		}
+		puzzle
+			.GetMiniGridCells(twinCells.First().Row, twinCells.First().Column)
+			.Where(x => !twinCells.Contains(x))
+			.ToList()
+			.ForEach(x => x.PossibleValues.Should().NotContain("1").And.NotContain("5"));
 	}
 
 	[Fact]
@@ -83,7 +84,7 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 			{6, null, 9, 1, null, null, null, null, null},
 			{null, 8, 3, null, null, null, null, null, null},
 			{7, null, 1, 6, null, null, null, null, null},
-			{null, 7, 6, 5, null, null, null, null, null},
+			{null, 7, 6, 5, null, null, 3, 9, null},
 			{8, null, 4, null, null, null, null, null, null},
 			{1, null, 5, 7, null, null, null, null, null},
 			{null, 1, 2, 8, null, null, null, null, null},
