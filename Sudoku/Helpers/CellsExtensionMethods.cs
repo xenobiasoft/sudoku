@@ -53,7 +53,7 @@ public static class CellsExtensionMethods
 
 				if (usedNumbers.Contains(colCell.Value))
 				{
-					Console.WriteLine($"Puzzle is not valid. Column cell col:{colCell.Column}, row: {colCell.Row} has value {colCell.Value} that is already taken.");
+					Console.WriteLine($"Puzzle is not valid. Column cell row: {colCell.Row}, col:{colCell.Column} has value {colCell.Value} that is already taken.");
 					return false;
 				}
 
@@ -68,7 +68,7 @@ public static class CellsExtensionMethods
 
 				if (usedNumbers.Contains(rowCell.Value))
 				{
-					Console.WriteLine($"Puzzle is not valid. Row cell col:{rowCell.Column}, row: {rowCell.Row} has value {rowCell.Value} that is already taken.");
+					Console.WriteLine($"Puzzle is not valid. Row cell row: {rowCell.Row}, col:{rowCell.Column} has value {rowCell.Value} that is already taken.");
 					return false;
 				}
 
@@ -83,7 +83,7 @@ public static class CellsExtensionMethods
 
 				if (usedNumbers.Contains(miniGridCell.Value))
 				{
-					Console.WriteLine($"Puzzle is not valid. Mini grid cell col:{miniGridCell.Column}, row: {miniGridCell.Row}  has value  {miniGridCell.Value} that is already taken.");
+					Console.WriteLine($"Puzzle is not valid. Mini grid cell row: {miniGridCell.Row}, col:{miniGridCell.Column}  has value  {miniGridCell.Value} that is already taken.");
 					return false;
 				}
 

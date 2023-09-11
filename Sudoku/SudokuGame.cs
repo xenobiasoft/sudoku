@@ -9,9 +9,6 @@ public class SudokuGame : ISudokuGame
 	private readonly IGameStateMemory _gameState;
 	private readonly IPuzzleSolver _puzzleSolver;
 
-	private const int SolveMaxAttempts = 50;
-	private int _solveAttempts;
-
 	public int Score { get; private set; }
 	public Cell[] Puzzle { get; private set; } = new Cell[GameDimensions.Columns * GameDimensions.Rows];
 
@@ -33,7 +30,6 @@ public class SudokuGame : ISudokuGame
 		_gameState.Clear();
 		Initialize();
 		Score = 0;
-		_solveAttempts = 0;
 	}
 
 	public void SetCell(int row, int col, int value)
@@ -76,7 +72,7 @@ public class SudokuGame : ISudokuGame
 		catch (InvalidMoveException)
 		{
 			Undo();
-			RetrySolvePuzzle();
+			SolvePuzzle();
 		}
 	}
 
@@ -111,14 +107,6 @@ public class SudokuGame : ISudokuGame
 		Puzzle = cells;
 	}
 
-	private void RetrySolvePuzzle()
-	{
-		_solveAttempts++;
-		if (_solveAttempts >= SolveMaxAttempts) return;
-		
-		SolvePuzzle();
-	}
-
 	private void SaveGameState()
 	{
 		if (!Puzzle.IsValid())
@@ -136,6 +124,6 @@ public class SudokuGame : ISudokuGame
 		SaveGameState();
 		Score += 5;
 		Puzzle.SetCellWithFewestPossibleValues();
-		RetrySolvePuzzle();
+		SolvePuzzle();
 	}
 }

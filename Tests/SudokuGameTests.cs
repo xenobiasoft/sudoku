@@ -215,33 +215,6 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenUsingBruteForceMethod_MakesMaxFiftyAttempts()
-	{
-		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Hard);
-		var memento = new GameStateMemento(puzzle, Container.Create<int>());
-		Container
-			.ResolveMock<IGameStateMemory>()
-			.Setup(x => x.Undo())
-			.Returns(memento);
-		var mockPuzzleSolver = Container.ResolveMock<IPuzzleSolver>();
-		mockPuzzleSolver
-			.Setup(x => x.IsSolved(It.IsAny<Cell[]>()))
-			.Returns(false);
-		mockPuzzleSolver
-			.Setup(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()))
-			.Returns(0);
-		var sut = ResolveSut();
-		sut.LoadPuzzle(puzzle);
-
-		// Act
-		sut.SolvePuzzle();
-
-		// Assert
-		mockPuzzleSolver.Verify(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()), Times.Exactly(50));
-	}
-
-	[Fact]
 	public void SetCell_AcceptsValue_AndSetsCell()
 	{
 		// Arrange
