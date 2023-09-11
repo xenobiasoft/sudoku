@@ -100,6 +100,6 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 		void SolvePuzzle() => sut.SolvePuzzle(puzzle);
 
 		// Assert
-		Assert.Throws<InvalidOperationException>(SolvePuzzle);
+		Assert.Throws<InvalidMoveException>(SolvePuzzle);
 	}
 }

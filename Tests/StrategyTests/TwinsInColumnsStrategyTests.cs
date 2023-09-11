@@ -1,7 +1,7 @@
 ﻿using DepenMock.XUnit;
-using XenobiaSoft.Sudoku.Strategies;
-using XenobiaSoft.Sudoku;
 using UnitTests.Helpers;
+using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Strategies;
 
 namespace UnitTests.StrategyTests;
 
@@ -86,6 +86,6 @@ public class TwinsInColumnsStrategyTests : BaseTestByAbstraction<TwinsInColumnsS
 		void SolvePuzzle() => sut.SolvePuzzle(puzzle);
 
 		// Assert
-		Assert.Throws<InvalidOperationException>(SolvePuzzle);
+		Assert.Throws<InvalidMoveException>(SolvePuzzle);
 	}
 }

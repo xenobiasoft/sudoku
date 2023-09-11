@@ -1,4 +1,6 @@
-﻿namespace XenobiaSoft.Sudoku.Helpers;
+﻿using XenobiaSoft.Sudoku.Exceptions;
+
+namespace XenobiaSoft.Sudoku.Helpers;
 
 public static class CellsExtensionMethods
 {
@@ -116,13 +118,14 @@ public static class CellsExtensionMethods
 	{
 		var cell = cells.FindCellWithFewestPossibleValues();
 		var possibleValues = cell.PossibleValues.Randomize();
+		var rnd = new Random();
 
 		if (string.IsNullOrWhiteSpace(possibleValues))
 		{
-			throw new InvalidOperationException("An invalid move was made");
+			throw new InvalidMoveException();
 		}
 
-		cell.Value = int.Parse(possibleValues[0].ToString());
+		cell.Value = int.Parse(possibleValues[rnd.Next(possibleValues.Length)].ToString());
 	}
 
 	private static string CalculatePossibleValues(this Cell[] cells, Cell cell)

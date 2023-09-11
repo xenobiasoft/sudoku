@@ -148,14 +148,14 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenStrategyThrowsInvalidOperationException_GamePopsSavedStateOffStack()
+	public void SolvePuzzle_WhenStrategyThrowsInvalidMoveException_GamePopsSavedStateOffStack()
 	{
 		// Arrange
 		var mockGameState = Container.ResolveMock<IGameStateMemory>();
 		Container
 			.ResolveMock<IPuzzleSolver>()
 			.Setup(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()))
-			.Throws<InvalidOperationException>();
+			.Throws<InvalidMoveException>();
 		var sut = ResolveSut();
 
 		// Act
@@ -218,7 +218,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 	public void SolvePuzzle_WhenUsingBruteForceMethod_MakesMaxFiftyAttempts()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.ExtremelyHard);
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Hard);
 		var memento = new GameStateMemento(puzzle, Container.Create<int>());
 		Container
 			.ResolveMock<IGameStateMemory>()

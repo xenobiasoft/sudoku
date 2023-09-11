@@ -1,4 +1,5 @@
-﻿using XenobiaSoft.Sudoku.Strategies;
+﻿using XenobiaSoft.Sudoku.Exceptions;
+using XenobiaSoft.Sudoku.Strategies;
 
 namespace XenobiaSoft.Sudoku.PuzzleSolver;
 
@@ -30,7 +31,7 @@ public class PuzzleSolver : IPuzzleSolver
                 if (!cells.IsValid())
                 {
 					Console.WriteLine($"Failure in solving puzzle using {strategy.GetType().Name} strategy");
-	                throw new InvalidOperationException();
+	                throw new InvalidMoveException();
                 }
 
                 if (IsSolved(cells))

@@ -1,4 +1,6 @@
-﻿namespace XenobiaSoft.Sudoku.Strategies;
+﻿using XenobiaSoft.Sudoku.Exceptions;
+
+namespace XenobiaSoft.Sudoku.Strategies;
 
 public class TwinsInColumnsStrategy : SolverStrategy
 {
@@ -25,7 +27,7 @@ public class TwinsInColumnsStrategy : SolverStrategy
 
 					if (string.IsNullOrWhiteSpace(nonTwinCell.PossibleValues))
 					{
-						throw new InvalidOperationException("An invalid move was made");
+						throw new InvalidMoveException();
 					}
 
 					if (nonTwinCell.PossibleValues.Length != 1) continue;

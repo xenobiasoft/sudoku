@@ -1,4 +1,5 @@
-﻿using XenobiaSoft.Sudoku.GameState;
+﻿using XenobiaSoft.Sudoku.Exceptions;
+using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.PuzzleSolver;
 
 namespace XenobiaSoft.Sudoku;
@@ -71,7 +72,7 @@ public class SudokuGame : ISudokuGame
 				TryBruteForceMethod();
 			}
 		}
-		catch (InvalidOperationException)
+		catch (InvalidMoveException)
 		{
 			Undo();
 			RetrySolvePuzzle();
@@ -122,7 +123,7 @@ public class SudokuGame : ISudokuGame
 	{
 		if (!Puzzle.IsValid())
 		{
-			throw new InvalidOperationException("The game is in an invalid state");
+			throw new InvalidMoveException();
 		}
 
 		var clonedPuzzle = Puzzle.Select(x => (Cell)x.Clone());

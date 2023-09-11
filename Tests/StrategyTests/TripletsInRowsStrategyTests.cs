@@ -1,6 +1,7 @@
 ﻿using DepenMock.XUnit;
 using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Exceptions;
 using XenobiaSoft.Sudoku.Strategies;
 
 namespace UnitTests.StrategyTests;
@@ -100,7 +101,7 @@ public class TripletsInRowsStrategyTests : BaseTestByAbstraction<TripletsInRowsS
 		void SolvePuzzle() => sut.SolvePuzzle(puzzle);
 
 		// Assert
-		Assert.Throws<InvalidOperationException>(SolvePuzzle);
+		Assert.Throws<InvalidMoveException>(SolvePuzzle);
 	}
 
 	private Cell[] GetTripletsPuzzle()

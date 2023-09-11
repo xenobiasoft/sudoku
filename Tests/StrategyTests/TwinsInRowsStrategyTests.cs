@@ -86,6 +86,6 @@ public class TwinsInRowsStrategyTests : BaseTestByAbstraction<TwinsInRowsStrateg
 		void SolvePuzzle() => sut.SolvePuzzle(puzzle);
 
 		// Assert
-		Assert.Throws<InvalidOperationException>(SolvePuzzle);
+		Assert.Throws<InvalidMoveException>(SolvePuzzle);
 	}
 }

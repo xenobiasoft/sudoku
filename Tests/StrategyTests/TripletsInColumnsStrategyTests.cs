@@ -2,6 +2,7 @@
 using XenobiaSoft.Sudoku.Strategies;
 using XenobiaSoft.Sudoku;
 using UnitTests.Helpers;
+using XenobiaSoft.Sudoku.Exceptions;
 
 namespace UnitTests.StrategyTests;
 
@@ -90,7 +91,7 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 		void SolvePuzzle() => sut.SolvePuzzle(puzzle);
 
 		// Assert
-		Assert.Throws<InvalidOperationException>(SolvePuzzle);
+		Assert.Throws<InvalidMoveException>(SolvePuzzle);
 	}
 
 	private Cell[] GetTripletsPuzzle()

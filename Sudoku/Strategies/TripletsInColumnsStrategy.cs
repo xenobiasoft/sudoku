@@ -1,4 +1,6 @@
-﻿namespace XenobiaSoft.Sudoku.Strategies;
+﻿using XenobiaSoft.Sudoku.Exceptions;
+
+namespace XenobiaSoft.Sudoku.Strategies;
 
 public class TripletsInColumnsStrategy : SolverStrategy
 {
@@ -38,7 +40,7 @@ public class TripletsInColumnsStrategy : SolverStrategy
 
 				if (string.IsNullOrWhiteSpace(nonTripletCell.PossibleValues))
 				{
-					throw new InvalidOperationException("An invalid move was made");
+					throw new InvalidMoveException();
 				}
 
 				if (nonTripletCell.PossibleValues.Length != 1) continue;
