@@ -23,11 +23,6 @@ public class GameStateMemory : IGameStateMemory
 
 	public GameStateMemento Undo()
 	{
-		if (_gameState.Count <= 1)
-		{
-			Debugger.Break();
-		}
-
 		return _gameState.Pop();
 	}
 }

@@ -1,7 +1,7 @@
 ﻿using DepenMock.XUnit;
 using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
-using XenobiaSoft.Sudoku.PuzzleSolver;
+using XenobiaSoft.Sudoku.Solver;
 using XenobiaSoft.Sudoku.Strategies;
 
 namespace UnitTests;

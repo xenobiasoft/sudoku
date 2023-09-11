@@ -1,4 +1,4 @@
-﻿namespace XenobiaSoft.Sudoku.PuzzleSolver;
+﻿namespace XenobiaSoft.Sudoku.Solver;
 
 public interface IPuzzleSolver
 {

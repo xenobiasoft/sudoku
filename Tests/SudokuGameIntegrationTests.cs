@@ -1,8 +1,9 @@
 ﻿using UnitTests.Helpers;
 using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.PuzzleSolver;
 using XenobiaSoft.Sudoku.Strategies;
 using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Solver;
+using XenobiaSoft.Sudoku.Generator;
 
 namespace UnitTests;
 
@@ -13,7 +14,8 @@ public class SudokuGameIntegrationTests
 	{
 		// Arrange
 		var puzzleSolver = new PuzzleSolver(GetStrategies());
-		var sut = new SudokuGame(new GameStateMemory(), puzzleSolver);
+		var puzzleGenerator = new PuzzleGenerator();
+		var sut = new SudokuGame(new GameStateMemory(), puzzleSolver, puzzleGenerator);
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
 		sut.LoadPuzzle(puzzle);
 
@@ -33,7 +35,8 @@ public class SudokuGameIntegrationTests
 	{
 		// Arrange
 		var puzzleSolver = new PuzzleSolver(GetStrategies());
-		var sut = new SudokuGame(new GameStateMemory(), puzzleSolver);
+		var puzzleGenerator = new PuzzleGenerator();
+		var sut = new SudokuGame(new GameStateMemory(), puzzleSolver, puzzleGenerator);
 		var puzzle = PuzzleFactory.GetPuzzle(level);
 		sut.LoadPuzzle(puzzle);
 
@@ -45,14 +48,15 @@ public class SudokuGameIntegrationTests
 	}
 	
 	[Fact]
-	public void SudokuGame_GenerateNewPuzzle()
+	public async Task SudokuGame_GenerateNewPuzzle()
 	{
 		// Arrange
 		var puzzleSolver = new PuzzleSolver(GetStrategies());
-		var sut = new SudokuGame(new GameStateMemory(), puzzleSolver);
+		var puzzleGenerator = new PuzzleGenerator();
+		var sut = new SudokuGame(new GameStateMemory(), puzzleSolver, puzzleGenerator);
 
 		// Act
-		sut.GeneratePuzzle(Level.Easy);
+		await sut.New(Level.Easy);
 
 		// Assert
 		puzzleSolver.IsSolved(sut.Puzzle).Should().BeTrue();

@@ -1,7 +1,7 @@
 ﻿using XenobiaSoft.Sudoku.Exceptions;
 using XenobiaSoft.Sudoku.Strategies;
 
-namespace XenobiaSoft.Sudoku.PuzzleSolver;
+namespace XenobiaSoft.Sudoku.Solver;
 
 public class PuzzleSolver : IPuzzleSolver
 {

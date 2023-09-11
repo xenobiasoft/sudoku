@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.PuzzleSolver;
+using XenobiaSoft.Sudoku.Generator;
+using XenobiaSoft.Sudoku.Solver;
 using XenobiaSoft.Sudoku.Strategies;
 
 namespace XenobiaSoft.Sudoku.Helpers;
@@ -11,7 +12,8 @@ public static class ServiceCollectionExtensionMethods
 	{
 		services.AddTransient<ISudokuGame, SudokuGame>();
 		services.AddTransient<IGameStateMemory, GameStateMemory>();
-		services.AddSingleton<IPuzzleSolver, PuzzleSolver.PuzzleSolver>();
+		services.AddSingleton<IPuzzleSolver, PuzzleSolver>();
+		services.AddSingleton<IPuzzleGenerator, PuzzleGenerator>();
 
 		typeof(SolverStrategy).Assembly
 			.GetTypes()

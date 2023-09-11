@@ -2,24 +2,43 @@
 using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.PuzzleSolver;
+using XenobiaSoft.Sudoku.Generator;
+using XenobiaSoft.Sudoku.Solver;
 
 namespace UnitTests;
 
 public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 {
 	[Fact]
-	public void GeneratePuzzle_CallsSolvePuzzle_UntilSolved()
+	public async Task New_GeneratesNewPuzzle()
 	{
 		// Arrange
-		var mockPuzzleSolver = Container.ResolveMock<IPuzzleSolver>();
+		var mockPuzzleGenerator = Container.ResolveMock<IPuzzleGenerator>();
 		var sut = ResolveSut();
 
 		// Act
-		sut.GeneratePuzzle(Level.Easy);
+		await sut.New(Level.Easy);
 
 		// Assert
-		mockPuzzleSolver.Verify(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()), Times.AtLeastOnce);
+		mockPuzzleGenerator.Verify(x => x.Generate(It.IsAny<Level>()), Times.Once);
+	}
+
+	[Fact]
+	public async Task New_LoadsPuzzleThatWasGenerated()
+	{
+		// Arrange
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		Container
+			.ResolveMock<IPuzzleGenerator>()
+			.Setup(x => x.Generate(It.IsAny<Level>()))
+			.ReturnsAsync(puzzle);
+		var sut = ResolveSut();
+
+		// Act
+		await sut.New(Level.Easy);
+
+		// Assert
+		sut.Puzzle.Should().BeEquivalentTo(puzzle);
 	}
 
 	[Fact]

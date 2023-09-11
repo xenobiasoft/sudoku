@@ -2,8 +2,8 @@
 
 public interface ISudokuGame
 {
-	void GeneratePuzzle(Level level);
 	void LoadPuzzle(Cell[] puzzle);
+	Task New(Level level);
 	void Reset();
 	void SetCell(int row, int col, int value);
 	void SolvePuzzle();

@@ -1,6 +1,7 @@
 ﻿using XenobiaSoft.Sudoku.Exceptions;
 using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.PuzzleSolver;
+using XenobiaSoft.Sudoku.Generator;
+using XenobiaSoft.Sudoku.Solver;
 
 namespace XenobiaSoft.Sudoku;
 
@@ -8,20 +9,23 @@ public class SudokuGame : ISudokuGame
 {
 	private readonly IGameStateMemory _gameState;
 	private readonly IPuzzleSolver _puzzleSolver;
+	private readonly IPuzzleGenerator _puzzleGenerator;
 
 	public int Score { get; private set; }
 	public Cell[] Puzzle { get; private set; } = new Cell[GameDimensions.Columns * GameDimensions.Rows];
 
-	public SudokuGame(IGameStateMemory gameState, IPuzzleSolver puzzleSolver)
+	public SudokuGame(IGameStateMemory gameState, IPuzzleSolver puzzleSolver, IPuzzleGenerator puzzleGenerator)
 	{
+		_puzzleGenerator = puzzleGenerator;
 		_puzzleSolver = puzzleSolver;
 		_gameState = gameState;
 	}
 
-	public void GeneratePuzzle(Level level)
+	public async Task New(Level level)
 	{
-		Reset();
-		SolvePuzzle();
+		var puzzle = await _puzzleGenerator.Generate(level);
+
+		LoadPuzzle(puzzle);
 	}
 
 	public void LoadPuzzle(Cell[] puzzle)
