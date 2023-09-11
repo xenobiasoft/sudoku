@@ -60,11 +60,11 @@ public class SudokuGame : ISudokuGame
 		Puzzle.GetCell(row, col).Value = value;
 	}
 
-	public void SolvePuzzle()
+	public async Task SolvePuzzle()
 	{
 		try
 		{
-			var solverScore = _puzzleSolver.TrySolvePuzzle(Puzzle);
+			var solverScore = await _puzzleSolver.TrySolvePuzzle(Puzzle);
 
 			Score += solverScore;
 
@@ -72,17 +72,17 @@ public class SudokuGame : ISudokuGame
 
 			if (solverScore > 0)
 			{
-				SolvePuzzle();
+				await SolvePuzzle();
 			}
 			else
 			{
-				TryBruteForceMethod();
+				await TryBruteForceMethod();
 			}
 		}
 		catch (InvalidMoveException)
 		{
 			Undo();
-			SolvePuzzle();
+			await SolvePuzzle();
 		}
 	}
 
@@ -129,13 +129,13 @@ public class SudokuGame : ISudokuGame
 		_gameState.Save(new GameStateMemento(clonedPuzzle, Score));
 	}
 
-	private void TryBruteForceMethod()
+	private async Task TryBruteForceMethod()
 	{
 		Console.WriteLine($"Solving with BruteForce technique");
 		Puzzle.PopulatePossibleValues();
 		SaveGameState();
 		Score += 5;
 		Puzzle.SetCellWithFewestPossibleValues();
-		SolvePuzzle();
+		await SolvePuzzle();
 	}
 }

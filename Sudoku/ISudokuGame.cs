@@ -6,7 +6,7 @@ public interface ISudokuGame
 	Task New(Level level);
 	void Reset();
 	void SetCell(int row, int col, int value);
-	void SolvePuzzle();
+	Task SolvePuzzle();
 	void Undo();
 
 	int Score { get; }

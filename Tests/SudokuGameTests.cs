@@ -124,40 +124,40 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 	}
 
 	[Fact]
-	public void SolvePuzzle_CallsPuzzleSolver()
+	public async Task SolvePuzzle_CallsPuzzleSolver()
 	{
 		// Arrange
 		var mockPuzzleSolver = Container.ResolveMock<IPuzzleSolver>();
 		var sut = ResolveSut();
 
 		// Act
-		sut.SolvePuzzle();
+		await sut.SolvePuzzle();
 
 		// Assert
 		mockPuzzleSolver.Verify(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()), Times.Once);
 	}
 
 	[Fact]
-	public void SolvePuzzle_SetsScoreBasedOnPuzzleSolverScore()
+	public async Task SolvePuzzle_SetsScoreBasedOnPuzzleSolverScore()
 	{
 		// Arrange
 		const int expectedScore = 45;
 		Container
 			.ResolveMock<IPuzzleSolver>()
 			.Setup(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()))
-			.Returns(expectedScore);
+			.ReturnsAsync(expectedScore);
 		var sut = ResolveSut();
 		var currentScore = sut.Score;
 
 		// Act
-		sut.SolvePuzzle();
+		await sut.SolvePuzzle();
 
 		// Assert
 		sut.Score.Should().Be(currentScore + expectedScore);
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenUsingBruteForceMethod_SavesGameStateToMemento()
+	public async Task SolvePuzzle_WhenUsingBruteForceMethod_SavesGameStateToMemento()
 	{
 		// Arrange
 		Container
@@ -168,38 +168,39 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		Container
 			.ResolveMock<IPuzzleSolver>()
 			.Setup(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()))
-			.Returns(0);
+			.ReturnsAsync(0);
 		var mockGameState = Container.ResolveMock<IGameStateMemory>();
 		var sut = ResolveSut();
 		sut.LoadPuzzle(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
 
 		// Act
-		sut.SolvePuzzle();
+		await sut.SolvePuzzle();
 
 		// Assert
 		mockGameState.Verify(x => x.Save(It.IsAny<GameStateMemento>()), Times.Exactly(2));
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenStrategyThrowsInvalidMoveException_GamePopsSavedStateOffStack()
+	public async Task SolvePuzzle_WhenStrategyThrowsInvalidMoveException_GamePopsSavedStateOffStack()
 	{
 		// Arrange
 		var mockGameState = Container.ResolveMock<IGameStateMemory>();
 		Container
 			.ResolveMock<IPuzzleSolver>()
 			.SetupSequence(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()))
-			.Throws<InvalidMoveException>();
+			.Throws<InvalidMoveException>()
+			.ReturnsAsync(5);
 		var sut = ResolveSut();
 
 		// Act
-		sut.SolvePuzzle();
+		await sut.SolvePuzzle();
 
 		// Assert
 		mockGameState.Verify(x => x.Undo(), Times.Once);
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenUsingBruteForceMethod_SetsCellWithFewestPossibleValues()
+	public async Task SolvePuzzle_WhenUsingBruteForceMethod_SetsCellWithFewestPossibleValues()
 	{
 		// Arrange
 		Container
@@ -210,19 +211,19 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		Container
 			.ResolveMock<IPuzzleSolver>()
 			.Setup(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()))
-			.Returns(0);
+			.ReturnsAsync(0);
 		var sut = ResolveSut();
 		sut.LoadPuzzle(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
 
 		// Act
-		sut.SolvePuzzle();
+		await sut.SolvePuzzle();
 
 		// Assert
 		sut.Puzzle.GetCell(3, 5).Value.Should().BeOneOf(5, 9);
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenUsingBruteForceMethod_AddsFivePointsToExistingScore()
+	public async Task SolvePuzzle_WhenUsingBruteForceMethod_AddsFivePointsToExistingScore()
 	{
 		// Arrange
 		Container
@@ -235,13 +236,14 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		Container
 			.ResolveMock<IPuzzleSolver>()
 			.SetupSequence(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()))
-			.Returns(puzzleSolverScore)
-			.Returns(0);
+			.ReturnsAsync(puzzleSolverScore)
+			.ReturnsAsync(0)
+			.ReturnsAsync(0);
 		var sut = ResolveSut();
 		sut.LoadPuzzle(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
 
 		// Act
-		sut.SolvePuzzle();
+		await sut.SolvePuzzle();
 
 		// Assert
 		sut.Score.Should().Be(puzzleSolverScore + 5);

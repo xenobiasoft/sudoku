@@ -9,7 +9,7 @@ namespace UnitTests;
 public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolver>
 {
     [Fact]
-    public void TrySolvePuzzle_IfChangesWereMadeToPuzzle_ContinuesLoopingThroughStrategies()
+    public async Task TrySolvePuzzle_IfChangesWereMadeToPuzzle_ContinuesLoopingThroughStrategies()
     {
         // Arrange
         var solverStrategy = Container.ResolveMock<SolverStrategy>();
@@ -21,7 +21,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
         var sut = ResolveSut();
 
         // Act
-        sut.TrySolvePuzzle(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
+        await sut.TrySolvePuzzle(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
 
         // Assert
         solverStrategy.Verify(x => x.Execute(It.IsAny<Cell[]>()), Times.Exactly(3));

@@ -1,16 +1,16 @@
 ﻿using UnitTests.Helpers;
-using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.Strategies;
 using XenobiaSoft.Sudoku;
-using XenobiaSoft.Sudoku.Solver;
+using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Generator;
+using XenobiaSoft.Sudoku.Solver;
+using XenobiaSoft.Sudoku.Strategies;
 
 namespace UnitTests;
 
 public class SudokuGameIntegrationTests
 {
 	[Fact]
-	public void SudokuGame_WhenSolvingPuzzle_ReturnsPuzzleCompletelySolved()
+	public async Task SudokuGame_WhenSolvingPuzzle_ReturnsPuzzleCompletelySolved()
 	{
 		// Arrange
 		var puzzleSolver = new PuzzleSolver(GetStrategies());
@@ -20,7 +20,7 @@ public class SudokuGameIntegrationTests
 		sut.LoadPuzzle(puzzle);
 
 		// Act
-		sut.SolvePuzzle();
+		await sut.SolvePuzzle();
 
 		// Assert
 		puzzleSolver.IsSolved(sut.Puzzle).Should().BeTrue();
@@ -31,7 +31,7 @@ public class SudokuGameIntegrationTests
 	[InlineData(Level.Medium, 99, 108)]
 	[InlineData(Level.Hard, 109, 115)]
 	[InlineData(Level.ExtremelyHard, 116, 135)]
-	public void SudokuGame_WhenSolvingPuzzle_ReturnsExpectedScoreForEachLevel(Level level, int minExpectedScore, int maxExpectedScore)
+	public async Task SudokuGame_WhenSolvingPuzzle_ReturnsExpectedScoreForEachLevel(Level level, int minExpectedScore, int maxExpectedScore)
 	{
 		// Arrange
 		var puzzleSolver = new PuzzleSolver(GetStrategies());
@@ -41,7 +41,7 @@ public class SudokuGameIntegrationTests
 		sut.LoadPuzzle(puzzle);
 
 		// Act
-		sut.SolvePuzzle();
+		await sut.SolvePuzzle();
 
 		// Assert
 		sut.Score.Should().BeInRange(minExpectedScore, maxExpectedScore);

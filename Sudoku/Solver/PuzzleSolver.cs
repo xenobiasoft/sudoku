@@ -12,34 +12,37 @@ public class PuzzleSolver : IPuzzleSolver
 	    _strategies = strategies;
     }
 
-    public int TrySolvePuzzle(Cell[] cells)
+    public async Task<int> TrySolvePuzzle(Cell[] cells)
     {
 	    var score = 0;
         var changesMade = true;
 
-        while (changesMade)
+        await Task.Run(() =>
         {
-	        var previousScore = score;
+	        while (changesMade)
+	        {
+		        var previousScore = score;
 
-	        foreach (var strategy in _strategies)
-            {
-				Console.WriteLine($"Solving with {strategy.GetType().Name}");
-                score += strategy.SolvePuzzle(cells);
-                changesMade = previousScore != score;
-                previousScore = score;
+		        foreach (var strategy in _strategies)
+		        {
+			        Console.WriteLine($"Solving with {strategy.GetType().Name}");
+			        score += strategy.SolvePuzzle(cells);
+			        changesMade = previousScore != score;
+			        previousScore = score;
 
-                if (!cells.IsValid())
-                {
-					Console.WriteLine($"Failure in solving puzzle using {strategy.GetType().Name} strategy");
-	                throw new InvalidMoveException();
-                }
+			        if (!cells.IsValid())
+			        {
+				        Console.WriteLine($"Failure in solving puzzle using {strategy.GetType().Name} strategy");
+				        throw new InvalidMoveException();
+			        }
 
-                if (IsSolved(cells))
-                {
-	                break;
-                }
-            }
-        }
+			        if (IsSolved(cells))
+			        {
+				        break;
+			        }
+		        }
+	        }
+        });
 
         return score;
     }
