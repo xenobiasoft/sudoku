@@ -33,6 +33,7 @@ public class SudokuGame : ISudokuGame
 		_gameState.Clear();
 		Initialize();
 		Score = 0;
+		_solveAttempts = 0;
 	}
 
 	public void SetCell(int row, int col, int value)
@@ -113,9 +114,8 @@ public class SudokuGame : ISudokuGame
 	private void RetrySolvePuzzle()
 	{
 		_solveAttempts++;
-		
 		if (_solveAttempts >= SolveMaxAttempts) return;
-
+		
 		SolvePuzzle();
 	}
 
