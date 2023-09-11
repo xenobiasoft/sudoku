@@ -32,7 +32,10 @@ public class TwinsInRowsStrategy : SolverStrategy
 
 					if (nonTwinCell.PossibleValues.Length != 1) continue;
 
-					nonTwinCell.Value = int.Parse(nonTwinCell.PossibleValues);
+					var cellValue = int.Parse(nonTwinCell.PossibleValues);
+					Console.WriteLine($"Setting cell:{nonTwinCell.Row}:{nonTwinCell.Column} to value {cellValue}");
+					nonTwinCell.Value = cellValue;
+					nonTwinCell.PossibleValues = string.Empty;
 					totalScore += Score;
 				}
 			}

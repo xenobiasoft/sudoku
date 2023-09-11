@@ -34,6 +34,7 @@ public class LoneRangersInColumnsStrategy : SolverStrategy
 				if (occurrence != 1) continue;
 
 				var loneRangerCell = cells.GetCell(rowPos, colPos);
+				Console.WriteLine($"Setting cell:{loneRangerCell.Row}:{loneRangerCell.Column} to value {number}");
 				loneRangerCell.Value = number;
 				loneRangerCell.PossibleValues = string.Empty;
 

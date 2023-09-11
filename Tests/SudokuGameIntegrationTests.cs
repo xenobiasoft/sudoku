@@ -50,19 +50,9 @@ public class SudokuGameIntegrationTests
 		// Arrange
 		var puzzleSolver = new PuzzleSolver(GetStrategies());
 		var sut = new SudokuGame(new GameStateMemory(), puzzleSolver);
-		var puzzle = PuzzleFactory.GetEmptyPuzzle();
-		sut.LoadPuzzle(puzzle);
 
 		// Act
-		while (!puzzleSolver.IsSolved(puzzle))
-		{
-			sut.SolvePuzzle();
-
-			if (!puzzleSolver.IsSolved(puzzle) && puzzle.IsValid())
-			{
-				sut.LoadPuzzle(puzzle);
-			}
-		}
+		sut.GeneratePuzzle(Level.Easy);
 
 		// Assert
 		puzzleSolver.IsSolved(sut.Puzzle).Should().BeTrue();

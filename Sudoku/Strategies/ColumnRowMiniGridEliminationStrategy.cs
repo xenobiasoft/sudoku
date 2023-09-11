@@ -12,7 +12,9 @@ public class ColumnRowMiniGridEliminationStrategy : SolverStrategy
 		{
 			if (cell.Value.HasValue || cell.PossibleValues.Length != 1) continue;
 
-			cell.Value = int.Parse(cell.PossibleValues);
+			var cellValue = int.Parse(cell.PossibleValues);
+			Console.WriteLine($"Setting cell:{cell.Row}:{cell.Column} to value {cellValue}");
+			cell.Value = cellValue;
 			cell.PossibleValues = string.Empty;
 			totalScore += Score;
 		}

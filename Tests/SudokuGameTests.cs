@@ -9,6 +9,20 @@ namespace UnitTests;
 public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 {
 	[Fact]
+	public void GeneratePuzzle_CallsSolvePuzzle_UntilSolved()
+	{
+		// Arrange
+		var mockPuzzleSolver = Container.ResolveMock<IPuzzleSolver>();
+		var sut = ResolveSut();
+
+		// Act
+		sut.GeneratePuzzle(Level.Easy);
+
+		// Assert
+		mockPuzzleSolver.Verify(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()), Times.AtLeastOnce);
+	}
+
+	[Fact]
 	public void LoadPuzzle_ResetsGameState()
 	{
 		// Arrange

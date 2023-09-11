@@ -47,7 +47,10 @@ public class TripletsInMiniGridsStrategy : SolverStrategy
 
 				if (nonTripletCell.PossibleValues.Length != 1) continue;
 
-				nonTripletCell.Value = int.Parse(nonTripletCell.PossibleValues);
+				var cellValue = int.Parse(nonTripletCell.PossibleValues);
+				Console.WriteLine($"Setting cell:{nonTripletCell.Row}:{nonTripletCell.Column} to value {cellValue}");
+				nonTripletCell.Value = cellValue;
+				nonTripletCell.PossibleValues = string.Empty;
 				totalScore += Score;
 			}
 		}

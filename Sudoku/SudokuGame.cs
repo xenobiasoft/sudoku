@@ -18,6 +18,12 @@ public class SudokuGame : ISudokuGame
 		_gameState = gameState;
 	}
 
+	public void GeneratePuzzle(Level level)
+	{
+		Reset();
+		SolvePuzzle();
+	}
+
 	public void LoadPuzzle(Cell[] puzzle)
 	{
 		Reset();
@@ -121,6 +127,8 @@ public class SudokuGame : ISudokuGame
 
 	private void TryBruteForceMethod()
 	{
+		Console.WriteLine($"Solving with BruteForce technique");
+		Puzzle.PopulatePossibleValues();
 		SaveGameState();
 		Score += 5;
 		Puzzle.SetCellWithFewestPossibleValues();

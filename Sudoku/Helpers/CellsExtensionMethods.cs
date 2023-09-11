@@ -1,4 +1,5 @@
-﻿using XenobiaSoft.Sudoku.Exceptions;
+﻿using System.Diagnostics;
+using XenobiaSoft.Sudoku.Exceptions;
 
 namespace XenobiaSoft.Sudoku.Helpers;
 
@@ -11,18 +12,12 @@ public static class CellsExtensionMethods
 
 	public static IEnumerable<Cell> GetColumnCells(this Cell[] cells, int col)
 	{
-		for (var row = 0; row < GameDimensions.Rows; row++)
-		{
-			yield return cells[col * 9 + row];
-		}
+		return cells.Where(x => x.Column == col);
 	}
 
 	public static IEnumerable<Cell> GetRowCells(this Cell[] cells, int row)
 	{
-		for (var col = 0; col < GameDimensions.Columns; col++)
-		{
-			yield return cells[col * 9 + row];
-		}
+		return cells.Where(x => x.Row == row);
 	}
 
 	public static IEnumerable<Cell> GetMiniGridCells(this Cell[] cells, int row, int col)
@@ -30,13 +25,11 @@ public static class CellsExtensionMethods
 		var miniGridStartCol = PuzzleHelper.CalculateMiniGridStartCol(col);
 		var miniGridStartRow = PuzzleHelper.CalculateMiniGridStartCol(row);
 
-		for (var miniGridRow = miniGridStartRow; miniGridRow <= miniGridStartRow + 2; miniGridRow++)
-		{
-			for (var miniGridCol = miniGridStartCol; miniGridCol <= miniGridStartCol + 2; miniGridCol++)
-			{
-				yield return cells[miniGridCol * 9 + miniGridRow];
-			}
-		}
+		return cells.Where(x =>
+			x.Column >= miniGridStartCol && 
+			x.Column < miniGridStartCol + 3 && 
+			x.Row >= miniGridStartRow &&
+			x.Row < miniGridStartRow + 3);
 	}
 
 	public static bool IsValid(this Cell[] cells)
