@@ -154,7 +154,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		var mockGameState = Container.ResolveMock<IGameStateMemory>();
 		Container
 			.ResolveMock<IPuzzleSolver>()
-			.Setup(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()))
+			.SetupSequence(x => x.TrySolvePuzzle(It.IsAny<Cell[]>()))
 			.Throws<InvalidMoveException>();
 		var sut = ResolveSut();
 
@@ -162,7 +162,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		sut.SolvePuzzle();
 
 		// Assert
-		mockGameState.Verify(x => x.Undo(), Times.AtLeastOnce);
+		mockGameState.Verify(x => x.Undo(), Times.Once);
 	}
 
 	[Fact]

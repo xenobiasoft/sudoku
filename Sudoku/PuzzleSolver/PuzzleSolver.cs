@@ -36,7 +36,7 @@ public class PuzzleSolver : IPuzzleSolver
 
                 if (IsSolved(cells))
                 {
-                    return score;
+	                break;
                 }
             }
         }
