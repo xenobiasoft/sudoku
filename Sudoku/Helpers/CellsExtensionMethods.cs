@@ -144,14 +144,19 @@ public static class CellsExtensionMethods
 	{
 		var cell = cells.FindCellWithFewestPossibleValues();
 		var possibleValues = cell.PossibleValues.Randomize();
-		var rnd = new Random();
 
 		if (string.IsNullOrWhiteSpace(possibleValues))
 		{
 			throw new InvalidMoveException();
 		}
 
-		cell.Value = int.Parse(possibleValues[rnd.Next(possibleValues.Length)].ToString());
+		foreach (var possibleValue in possibleValues.ToArray())
+		{
+			var cellValue = int.Parse(possibleValue.ToString());
+			cell.Value = cellValue;
+
+			if (cells.IsValid()) break;
+		}
 	}
 
 	private static string CalculatePossibleValues(this Cell[] cells, Cell cell)

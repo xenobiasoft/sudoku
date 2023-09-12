@@ -28,9 +28,8 @@ public class SudokuPuzzleTests
 	public void GetCell_ReturnsCellThatMatchesRowColumn()
 	{
 		// Arrange
-		var rnd = new Random();
-		var col = rnd.Next(0, 9);
-		var row = rnd.Next(0, 9);
+		var col = RandomGenerator.RandomNumber(0, 9);
+		var row = RandomGenerator.RandomNumber(0, 9);
 		var sut = PuzzleFactory.GetEmptyPuzzle();
 
 		// Act
