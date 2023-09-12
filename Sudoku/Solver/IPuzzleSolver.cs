@@ -2,6 +2,5 @@
 
 public interface IPuzzleSolver
 {
-	Task<int> TrySolvePuzzle(Cell[] cells);
-	bool IsSolved(Cell[] cells);
+	Task<Cell[]> SolvePuzzle(Cell[] cells);
 }

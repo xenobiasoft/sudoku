@@ -1,78 +1,110 @@
 ﻿using XenobiaSoft.Sudoku.Exceptions;
+using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Strategies;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace XenobiaSoft.Sudoku.Solver;
 
 public class PuzzleSolver : IPuzzleSolver
 {
     private readonly IEnumerable<SolverStrategy> _strategies;
+    private readonly IGameStateMemory _gameStateMemory;
 
-    public PuzzleSolver(IEnumerable<SolverStrategy> strategies)
+    private int _score;
+    private Cell[] _puzzle;
+
+    public PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateMemory gameStateMemory)
     {
+	    _gameStateMemory = gameStateMemory;
 	    _strategies = strategies;
     }
 
-    public async Task<int> TrySolvePuzzle(Cell[] cells)
+    public async Task<Cell[]> SolvePuzzle(Cell[] cells)
     {
-	    var score = 0;
+	    _score = 0;
+	    _puzzle = cells;
         var changesMade = true;
+
+		// TODO: Refactor this. It has a high cyclomatic complexity
 
         await Task.Run(() =>
         {
 	        while (changesMade)
 	        {
-		        var previousScore = score;
+		        var previousScore = _score;
 
-		        foreach (var strategy in _strategies)
+		        try
+				{
+					Save();
+
+					foreach (var strategy in _strategies)
+					{
+						Console.WriteLine($"Solving with {strategy.GetType().Name}");
+						_score += strategy.SolvePuzzle(_puzzle);
+						changesMade = previousScore != _score;
+						previousScore = _score;
+
+						if (!_puzzle.IsValid())
+						{
+							Console.WriteLine($"Failure in solving puzzle using {strategy.GetType().Name} strategy");
+							throw new InvalidMoveException();
+						}
+
+						if (_puzzle.IsSolved())
+						{
+							break;
+						}
+					}
+
+					if (!changesMade)
+					{
+						TryBruteForceMethod();
+						changesMade = true;
+					}
+				}
+		        catch (InvalidMoveException)
 		        {
-			        Console.WriteLine($"Solving with {strategy.GetType().Name}");
-			        score += strategy.SolvePuzzle(cells);
-			        changesMade = previousScore != score;
-			        previousScore = score;
-
-			        if (!cells.IsValid())
-			        {
-				        Console.WriteLine($"Failure in solving puzzle using {strategy.GetType().Name} strategy");
-				        throw new InvalidMoveException();
-			        }
-
-			        if (IsSolved(cells))
-			        {
-				        break;
-			        }
+			        Undo();
 		        }
-	        }
+
+		        if (_puzzle.IsSolved())
+		        {
+			        break;
+		        }
+			}
         });
 
-        return score;
+        return _puzzle;
     }
 
-    public bool IsSolved(Cell[] cells)
-    {
-	    foreach (var cell in cells)
-	    {
-		    var pattern = cells.GetColumnCells(cell.Column).Aggregate("123456789", (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));
-
-		    if (pattern.Length > 0)
-		    {
-			    return false;
-		    }
-
-		    pattern = cells.GetRowCells(cell.Row).Aggregate("123456789", (current, rowCell) => current.Replace(rowCell.Value.GetValueOrDefault().ToString(), string.Empty));
-
-		    if (pattern.Length > 0)
-			{
-				return false;
-			}
-
-		    pattern = cells.GetMiniGridCells(cell.Row, cell.Column).Aggregate("123456789", (current, gridCell) => current.Replace(gridCell.Value.GetValueOrDefault().ToString(), string.Empty));
-
-		    if (pattern.Length > 0)
-			{
-				return false;
-			}
-		}
-
-	    return true;
+    private void TryBruteForceMethod()
+	{
+		Console.WriteLine($"Solving with BruteForce technique");
+		_score += 5;
+		_puzzle.PopulatePossibleValues();
+		_puzzle.SetCellWithFewestPossibleValues();
 	}
+
+    private void Save()
+    {
+	    if (!_puzzle.IsValid())
+	    {
+		    throw new InvalidMoveException();
+	    }
+
+	    var clonedPuzzle = _puzzle.Select(x => (Cell)x.Clone());
+
+	    _gameStateMemory.Save(new GameStateMemento(clonedPuzzle, _score));
+    }
+
+    private void Undo()
+    {
+	    var memento = _gameStateMemory.Undo();
+
+	    _score = memento.Score;
+	    _puzzle = memento
+		    .Cells
+		    .Select(x => (Cell)x.Clone())
+		    .ToArray();
+    }
 }

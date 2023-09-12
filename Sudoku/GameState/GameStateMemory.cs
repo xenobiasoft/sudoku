@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace XenobiaSoft.Sudoku.GameState;
+﻿namespace XenobiaSoft.Sudoku.GameState;
 
 public class GameStateMemory : IGameStateMemory
 {

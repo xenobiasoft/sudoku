@@ -1,10 +1,21 @@
-﻿using System.Diagnostics;
-using XenobiaSoft.Sudoku.Exceptions;
+﻿using XenobiaSoft.Sudoku.Exceptions;
 
 namespace XenobiaSoft.Sudoku.Helpers;
 
 public static class CellsExtensionMethods
 {
+	public static Cell FindCellWithFewestPossibleValues(this Cell[] cells)
+	{
+		var cellPossibleValues = cells
+			.Where(x => !x.Value.HasValue)
+			.OrderBy(x => x.PossibleValues.Length)
+			.ThenBy(x => x.Column)
+			.ThenBy(x => x.Row)
+			.ToList();
+
+		return cellPossibleValues.First();
+	}
+
 	public static Cell GetCell(this Cell[] cells, int row, int col)
 	{
 		return cells.First(x => x.Column == col && x.Row == row);
@@ -30,6 +41,35 @@ public static class CellsExtensionMethods
 			x.Column < miniGridStartCol + 3 && 
 			x.Row >= miniGridStartRow &&
 			x.Row < miniGridStartRow + 3);
+	}
+
+	public static bool IsSolved(this Cell[] cells)
+	{
+		foreach (var cell in cells)
+		{
+			var pattern = cells.GetColumnCells(cell.Column).Aggregate("123456789", (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));
+
+			if (pattern.Length > 0)
+			{
+				return false;
+			}
+
+			pattern = cells.GetRowCells(cell.Row).Aggregate("123456789", (current, rowCell) => current.Replace(rowCell.Value.GetValueOrDefault().ToString(), string.Empty));
+
+			if (pattern.Length > 0)
+			{
+				return false;
+			}
+
+			pattern = cells.GetMiniGridCells(cell.Row, cell.Column).Aggregate("123456789", (current, gridCell) => current.Replace(gridCell.Value.GetValueOrDefault().ToString(), string.Empty));
+
+			if (pattern.Length > 0)
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public static bool IsValid(this Cell[] cells)
@@ -95,16 +135,9 @@ public static class CellsExtensionMethods
 		}
 	}
 
-	public static Cell FindCellWithFewestPossibleValues(this Cell[] cells)
+	public static void SetCell(this Cell[] cells, int row, int column, int? value)
 	{
-		var cellPossibleValues = cells
-			.Where(x => !x.Value.HasValue)
-			.OrderBy(x => x.PossibleValues.Length)
-			.ThenBy(x => x.Column)
-			.ThenBy(x => x.Row)
-			.ToList();
-
-		return cellPossibleValues.First();
+		cells.GetCell(row, column).Value = value;
 	}
 
 	public static void SetCellWithFewestPossibleValues(this Cell[] cells)

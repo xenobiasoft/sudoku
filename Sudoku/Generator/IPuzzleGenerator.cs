@@ -3,4 +3,5 @@
 public interface IPuzzleGenerator
 {
 	Task<Cell[]> Generate(Level level);
+	Task<Cell[]> GenerateEmptyPuzzle();
 }

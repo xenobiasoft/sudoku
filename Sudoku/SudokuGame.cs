@@ -1,45 +1,38 @@
-﻿using XenobiaSoft.Sudoku.Exceptions;
-using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.Generator;
+﻿using XenobiaSoft.Sudoku.Generator;
 using XenobiaSoft.Sudoku.Solver;
 
 namespace XenobiaSoft.Sudoku;
 
 public class SudokuGame : ISudokuGame
 {
-	private readonly IGameStateMemory _gameState;
 	private readonly IPuzzleSolver _puzzleSolver;
 	private readonly IPuzzleGenerator _puzzleGenerator;
 
-	public int Score { get; private set; }
 	public Cell[] Puzzle { get; private set; } = new Cell[GameDimensions.Columns * GameDimensions.Rows];
 
-	public SudokuGame(IGameStateMemory gameState, IPuzzleSolver puzzleSolver, IPuzzleGenerator puzzleGenerator)
+	public SudokuGame(IPuzzleSolver puzzleSolver, IPuzzleGenerator puzzleGenerator)
 	{
 		_puzzleGenerator = puzzleGenerator;
 		_puzzleSolver = puzzleSolver;
-		_gameState = gameState;
 	}
 
 	public async Task New(Level level)
 	{
 		var puzzle = await _puzzleGenerator.Generate(level);
 
-		LoadPuzzle(puzzle);
+		await LoadPuzzle(puzzle);
 	}
 
-	public void LoadPuzzle(Cell[] puzzle)
+	public async Task LoadPuzzle(Cell[] puzzle)
 	{
-		Reset();
-		Restore(puzzle);
-		SaveGameState();
+		await Reset();
+
+		Puzzle = puzzle;
 	}
 
-	public void Reset()
+	public async Task Reset()
 	{
-		_gameState.Clear();
-		Initialize();
-		Score = 0;
+		Puzzle = await _puzzleGenerator.GenerateEmptyPuzzle();
 	}
 
 	public void SetCell(int row, int col, int value)
@@ -57,85 +50,11 @@ public class SudokuGame : ISudokuGame
 			throw new ArgumentException("Invalid value", nameof(value));
 		}
 		
-		Puzzle.GetCell(row, col).Value = value;
+		Puzzle.SetCell(row, col, value);
 	}
 
 	public async Task SolvePuzzle()
 	{
-		try
-		{
-			var solverScore = await _puzzleSolver.TrySolvePuzzle(Puzzle);
-
-			Score += solverScore;
-
-			if (_puzzleSolver.IsSolved(Puzzle)) return;
-
-			if (solverScore > 0)
-			{
-				await SolvePuzzle();
-			}
-			else
-			{
-				await TryBruteForceMethod();
-			}
-		}
-		catch (InvalidMoveException)
-		{
-			Undo();
-			await SolvePuzzle();
-		}
-	}
-
-	public void Undo()
-	{
-		var memento = _gameState.Undo();
-
-		Score = memento.Score;
-		var cells = memento
-			.Cells
-			.Select(x => (Cell)x.Clone())
-			.ToArray();
-		Restore(cells);
-	}
-
-	private void Initialize()
-	{
-		Puzzle = new Cell[GameDimensions.Columns * GameDimensions.Rows];
-		var index = 0;
-
-		for (var row = 0; row < GameDimensions.Rows; row++)
-		{
-			for (var col = 0; col < GameDimensions.Columns; col++)
-			{
-				Puzzle[index++] = new Cell(row, col);
-			}
-		}
-	}
-
-	public void Restore(Cell[] cells)
-	{
-		Puzzle = cells;
-	}
-
-	private void SaveGameState()
-	{
-		if (!Puzzle.IsValid())
-		{
-			throw new InvalidMoveException();
-		}
-
-		var clonedPuzzle = Puzzle.Select(x => (Cell)x.Clone());
-
-		_gameState.Save(new GameStateMemento(clonedPuzzle, Score));
-	}
-
-	private async Task TryBruteForceMethod()
-	{
-		Console.WriteLine($"Solving with BruteForce technique");
-		Puzzle.PopulatePossibleValues();
-		SaveGameState();
-		Score += 5;
-		Puzzle.SetCellWithFewestPossibleValues();
-		await SolvePuzzle();
+		Puzzle = await _puzzleSolver.SolvePuzzle(Puzzle);
 	}
 }

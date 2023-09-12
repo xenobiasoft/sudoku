@@ -12,8 +12,8 @@ public static class ServiceCollectionExtensionMethods
 	{
 		services.AddTransient<ISudokuGame, SudokuGame>();
 		services.AddTransient<IGameStateMemory, GameStateMemory>();
-		services.AddSingleton<IPuzzleSolver, PuzzleSolver>();
-		services.AddSingleton<IPuzzleGenerator, PuzzleGenerator>();
+		services.AddTransient<IPuzzleSolver, PuzzleSolver>();
+		services.AddTransient<IPuzzleGenerator, PuzzleGenerator>();
 
 		typeof(SolverStrategy).Assembly
 			.GetTypes()
