@@ -51,6 +51,8 @@ public class PuzzleGenerator : IPuzzleGenerator
 		{
 			puzzle.SetCell(rowCol.Item1, rowCol.Item2, null);
 			puzzle.SetCell(rowCol.Item1, rowCol.Item1, null);
+
+			if (puzzle.Count(x => !x.Value.HasValue) >= numberOfEmptyCells) break;
 		}
 
 		return puzzle;
