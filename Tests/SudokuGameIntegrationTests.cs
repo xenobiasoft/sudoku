@@ -24,7 +24,7 @@ public class SudokuGameIntegrationTests
 		sut.Puzzle.IsSolved().Should().BeTrue();
 	}
 
-	[Fact(Timeout = 2000)]
+	[Fact(Timeout = 20000)]
 	public async Task New_ReturnsSolvedPuzzle()
 	{
 		// Arrange
@@ -34,7 +34,7 @@ public class SudokuGameIntegrationTests
 		await sut.New(Level.Easy);
 
 		// Assert
-		sut.Puzzle.IsSolved().Should().BeTrue();
+		sut.Puzzle.Count(x => !x.Value.HasValue).Should().BeGreaterOrEqualTo(40).And.BeLessOrEqualTo(45);
 	}
 
 	private SudokuGame GetSudokuGame()

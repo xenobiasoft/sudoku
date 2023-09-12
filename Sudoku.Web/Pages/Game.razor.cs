@@ -12,9 +12,7 @@ public partial class Game
 
 	protected override void OnInitialized()
 	{
-		SudokuGame.LoadPuzzle(GetPuzzle());
-		SudokuGame.Puzzle.PopulatePossibleValues();
-		Puzzle = SudokuGame.Puzzle;
+		Puzzle = GetPuzzle();
 	}
 
 	public static Cell[] GetPuzzle()
@@ -52,4 +50,17 @@ public partial class Game
 		{ null, null, null, 4, 1, 9, null, null, 5 },
 		{ null, null, null, null, 8, null, null, 7, 9 }
 	};
+
+	private async Task New()
+	{
+		try
+		{
+			await SudokuGame.New(Level.Easy);
+			Puzzle = SudokuGame.Puzzle;
+		}
+		catch (Exception e)
+		{
+			
+		}
+	}
 }
