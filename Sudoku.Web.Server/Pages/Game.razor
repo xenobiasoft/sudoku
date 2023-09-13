@@ -1,17 +1,27 @@
 ﻿@page "/game"
 
-<h3>New Game</h3>
+<div class="container text-center float-start">
+    <div class="row">
+        <div class="col float-start">
+            <table id="grid" border="1">
+                @for (var row = 0; row < 9; row++)
+                {
+                    <tr class="gridRow">
+                        @for (var col = 0; col < 9; col++)
+                        {
+                            <td class="cell"><input type="text" maxlength="1" @bind="@Puzzle.GetCell(row, col).Value"></td>
+                        }
+                    </tr>
+                }
+            </table>
 
-<table id="grid" border="1">
-    @for (var row = 0; row < 9; row++)
-    {
-        <tr class="gridRow">
-            @for (var col = 0; col < 9; col++)
-            {
-                <td class="cell"><input type="text" maxlength="1" @bind="@Puzzle.GetCell(row, col).Value"></td>
-            }
-        </tr>
-    }
-</table>
-
-<button @onclick="New">Load</button>
+            <div class="col">
+                <div class="btn-group-vertical main-button-group" role="group">
+                    <button type="button" class="btn btn-outline-primary" @onclick="New">
+                        <i class="fa-solid fa-play"></i> New Game
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

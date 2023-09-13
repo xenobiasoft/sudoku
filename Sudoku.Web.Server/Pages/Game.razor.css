@@ -31,3 +31,14 @@
     display: block;
     border: 1px solid black;
 }
+
+.btn-group-vertical {
+    display: block;
+}
+
+.main-button-group {
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 5em;
+    max-width: 12em;
+}

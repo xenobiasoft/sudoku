@@ -64,16 +64,8 @@ public class PuzzleGenerator : IPuzzleGenerator
 		var row = RandomGenerator.RandomNumber(0, 9);
 		var col = RandomGenerator.RandomNumber(0, 9);
 
-		if (row != col)
-		{
-			randomCells.Add(new Tuple<int, int>(row, col));
-			randomCells.Add(new Tuple<int, int>(col, row));
-		}
-		else
-		{
-			randomCells.Add(new Tuple<int, int>(row, row));
-			randomCells.Add(new Tuple<int, int>(8 - row, 8 - row));
-		}
+		randomCells.Add(new Tuple<int, int>(row, col));
+		randomCells.Add(new Tuple<int, int>(8 - row, 8 - col));
 
 		return randomCells.ToArray();
 	}
