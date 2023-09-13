@@ -1,0 +1,17 @@
+﻿@page "/game"
+
+<h3>New Game</h3>
+
+<table id="grid" border="1">
+    @for (var row = 0; row < 9; row++)
+    {
+        <tr class="gridRow">
+            @for (var col = 0; col < 9; col++)
+            {
+                <td class="cell"><input type="text" maxlength="1" @bind="@Puzzle.GetCell(row, col).Value"></td>
+            }
+        </tr>
+    }
+</table>
+
+<button @onclick="New">Load</button>

@@ -20,12 +20,9 @@ public static class ServiceCollectionExtensionMethods
 			.Where(x => x.Name.EndsWith("Strategy") && !x.IsAbstract && !x.IsInterface)
 			.ToList()
 			.ForEach(x =>
-			{
-				foreach (var @interface in x.GetInterfaces())
-				{
-					services.AddTransient(@interface, x);
-				}
-			});
+            {
+                services.AddTransient(typeof(SolverStrategy), x);
+            });
 
 		return services;
 	}
