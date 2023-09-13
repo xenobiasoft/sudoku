@@ -18,21 +18,21 @@ public class SudokuGame : ISudokuGame
 
 	public async Task New(Level level)
 	{
-		var puzzle = await _puzzleGenerator.Generate(level);
+		var puzzle = await _puzzleGenerator.Generate(level).ConfigureAwait(false);
 
-		await LoadPuzzle(puzzle);
+		await LoadPuzzle(puzzle).ConfigureAwait(false);
 	}
 
 	public async Task LoadPuzzle(Cell[] puzzle)
 	{
-		await Reset();
+		await Reset().ConfigureAwait(false);
 
 		Puzzle = puzzle;
 	}
 
 	public async Task Reset()
 	{
-		Puzzle = await _puzzleGenerator.GenerateEmptyPuzzle();
+		Puzzle = await _puzzleGenerator.GenerateEmptyPuzzle().ConfigureAwait(false);
 	}
 
 	public void SetCell(int row, int col, int value)
@@ -55,6 +55,6 @@ public class SudokuGame : ISudokuGame
 
 	public async Task SolvePuzzle()
 	{
-		Puzzle = await _puzzleSolver.SolvePuzzle(Puzzle);
+		Puzzle = await _puzzleSolver.SolvePuzzle(Puzzle).ConfigureAwait(false);
 	}
 }

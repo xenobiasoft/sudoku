@@ -72,7 +72,7 @@ public class PuzzleSolver : IPuzzleSolver
 			        break;
 		        }
 			}
-        });
+        }).ConfigureAwait(false);
 
         return _puzzle;
     }
@@ -92,7 +92,7 @@ public class PuzzleSolver : IPuzzleSolver
 		    throw new InvalidMoveException();
 	    }
 
-	    var clonedPuzzle = _puzzle.Select(x => (Cell)x.Clone());
+	    var clonedPuzzle = _puzzle.Select(x => x.Copy());
 
 	    _gameStateMemory.Save(new GameStateMemento(clonedPuzzle, _score));
     }
@@ -104,7 +104,7 @@ public class PuzzleSolver : IPuzzleSolver
 	    _score = memento.Score;
 	    _puzzle = memento
 		    .Cells
-		    .Select(x => (Cell)x.Clone())
+		    .Select(x => x.Copy())
 		    .ToArray();
     }
 }

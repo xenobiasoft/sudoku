@@ -1,8 +1,10 @@
-﻿namespace XenobiaSoft.Sudoku.GameState;
+﻿using System.Diagnostics;
+
+namespace XenobiaSoft.Sudoku.GameState;
 
 public class GameStateMemory : IGameStateMemory
 {
-	private readonly Stack<GameStateMemento> _gameState = new();
+	private readonly CircularStack<GameStateMemento> _gameState = new(10);
 
 	public void Clear()
 	{
@@ -16,6 +18,13 @@ public class GameStateMemory : IGameStateMemory
 
 	public void Save(GameStateMemento gameState)
 	{
+		if (_gameState.Count > 0)
+		{
+			var previousGameState = _gameState.Peek();
+
+			if (gameState.Cells.SequenceEqual(previousGameState.Cells)) return;
+		}
+
 		_gameState.Push(gameState);
 	}
 

@@ -13,9 +13,9 @@ public class PuzzleGenerator : IPuzzleGenerator
 
 	public async Task<Cell[]> Generate(Level level)
 	{
-		var puzzle = await GenerateEmptyPuzzle();
+		var puzzle = await GenerateEmptyPuzzle().ConfigureAwait(false);
 
-		puzzle = await _puzzleSolver.SolvePuzzle(puzzle);
+		puzzle = await _puzzleSolver.SolvePuzzle(puzzle).ConfigureAwait(false);
 
 		puzzle = CreateEmptyCells(puzzle, level);
 
@@ -92,7 +92,7 @@ public class PuzzleGenerator : IPuzzleGenerator
 					puzzle[index++] = new Cell(row, col);
 				}
 			}
-		});
+		}).ConfigureAwait(false);
 
 		return puzzle;
 	}

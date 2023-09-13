@@ -1,4 +1,4 @@
-﻿using XenobiaSoft.Sudoku;
+﻿using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests;
 
@@ -16,6 +16,29 @@ public class CircularStackTests
 
 		// Assert
 		Assert.Throws<ArgumentOutOfRangeException>((Func<CircularStack<int>>)ConstructorTest);
+	}
+
+	[Fact]
+	public void Clear_EmptiesEntireStack()
+	{
+		// Arrange
+		var sut = new CircularStack<int>(5);
+		for (var i = 0; i < 5; i++)
+		{
+			sut.Push(i);
+		}
+
+		// Act
+		sut.Clear();
+
+		// Assert
+		Assert.Multiple(() =>
+		{
+			sut.Count.Should().Be(0);
+			sut.IsFull().Should().BeFalse();
+			sut.IsEmpty().Should().BeTrue();
+			sut.Count.Should().Be(0);
+		});
 	}
 
 	[Fact]

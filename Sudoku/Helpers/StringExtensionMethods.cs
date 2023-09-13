@@ -14,11 +14,6 @@ public static class StringExtensionMethods
 		}
 		var randomized = new string(charArray);
 
-		if (randomized == source)
-		{
-			source.Randomize();
-		}
-
 		return randomized;
 	}
 }

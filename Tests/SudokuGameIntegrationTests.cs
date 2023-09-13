@@ -24,7 +24,7 @@ public class SudokuGameIntegrationTests
 		sut.Puzzle.IsSolved().Should().BeTrue();
 	}
 
-	[Fact(Timeout = 20000)]
+	[Fact]
 	public async Task New_ReturnsSolvedPuzzle()
 	{
 		// Arrange

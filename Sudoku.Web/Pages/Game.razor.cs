@@ -55,12 +55,12 @@ public partial class Game
 	{
 		try
 		{
-			await SudokuGame.New(Level.Easy);
+			await SudokuGame.New(Level.Easy).ConfigureAwait(false);
 			Puzzle = SudokuGame.Puzzle;
 		}
 		catch (Exception e)
 		{
-			
+			Console.WriteLine(e);
 		}
 	}
 }
