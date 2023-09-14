@@ -2,6 +2,11 @@
 @using Sudoku.Web.Server.Components
 
 <div class="container text-center float-start">
+    <div class="btn-group" role="group">
+        <button type="button" class="btn btn-outline-primary" @onclick="New">
+            <i class="fa-solid fa-play"></i> New Game
+        </button>
+    </div>
     <div class="row">
         <div class="col float-start">
             <table id="grid" border="1">
@@ -10,17 +15,11 @@
                     <tr class="gridRow">
                         @for (var col = 0; col < 9; col++)
                         {
-                            <CellInput Column="col" Row="row" Value="Puzzle.GetCell(row, col).Value" />
+                            <CellInput Cell="@Puzzle.GetCell(row, col)" />
                         }
                     </tr>
                 }
             </table>
-
-            <div class="btn-group-vertical main-button-group" role="group">
-                <button type="button" class="btn btn-outline-primary" @onclick="New">
-                    <i class="fa-solid fa-play"></i> New Game
-                </button>
-            </div>
         </div>
     </div>
 </div>

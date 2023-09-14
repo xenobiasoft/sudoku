@@ -11,14 +11,3 @@
 .gridRow:nth-child(3n+1) {
     border-top: 3px solid #000000;
 }
-
-.btn-group-vertical {
-    display: block;
-}
-
-.main-button-group {
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 5em;
-    max-width: 12em;
-}

@@ -19,10 +19,31 @@ public class PuzzleGenerator : IPuzzleGenerator
 
 		puzzle = CreateEmptyCells(puzzle, level);
 
+        puzzle = LockCompletedCells(puzzle);
+
 		return puzzle;
 	}
 
-	private Cell[] CreateEmptyCells(Cell[] puzzle, Level level)
+    public async Task<Cell[]> GenerateEmptyPuzzle()
+    {
+        var puzzle = new Cell[GameDimensions.Columns * GameDimensions.Rows];
+        var index = 0;
+
+        await Task.Run(() =>
+        {
+            for (var row = 0; row < GameDimensions.Rows; row++)
+            {
+                for (var col = 0; col < GameDimensions.Columns; col++)
+                {
+                    puzzle[index++] = new Cell(row, col);
+                }
+            }
+        }).ConfigureAwait(false);
+
+        return puzzle;
+    }
+
+    private Cell[] CreateEmptyCells(Cell[] puzzle, Level level)
 	{
 		var numberOfEmptyCells = level switch
 		{
@@ -58,7 +79,16 @@ public class PuzzleGenerator : IPuzzleGenerator
 		return puzzle;
 	}
 
-	private Tuple<int, int>[] GetRandomCellCoordinates()
+    private Cell[] LockCompletedCells(Cell[] puzzle)
+    {
+		puzzle
+            .ToList()
+            .ForEach(x => x.Locked = x.Value.HasValue);
+
+        return puzzle;
+    }
+
+    private Tuple<int, int>[] GetRandomCellCoordinates()
 	{
 		var randomCells = new List<Tuple<int, int>>();
 		var row = RandomGenerator.RandomNumber(0, 9);
@@ -68,24 +98,5 @@ public class PuzzleGenerator : IPuzzleGenerator
 		randomCells.Add(new Tuple<int, int>(8 - row, 8 - col));
 
 		return randomCells.ToArray();
-	}
-
-	public async Task<Cell[]> GenerateEmptyPuzzle()
-	{
-		var puzzle = new Cell[GameDimensions.Columns * GameDimensions.Rows];
-		var index = 0;
-
-		await Task.Run(() =>
-		{
-			for (var row = 0; row < GameDimensions.Rows; row++)
-			{
-				for (var col = 0; col < GameDimensions.Columns; col++)
-				{
-					puzzle[index++] = new Cell(row, col);
-				}
-			}
-		}).ConfigureAwait(false);
-
-		return puzzle;
 	}
 }

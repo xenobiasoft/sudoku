@@ -1,3 +1,10 @@
 ﻿<td class="cell">
-    <input type="text" maxlength="1" @bind="Value">
+    @if (Cell.Locked)
+    {
+        <label>@Cell.Value</label>
+    }
+    else
+    {
+        <input type="text" maxlength="1" @bind="Cell.Value">
+    }
 </td>

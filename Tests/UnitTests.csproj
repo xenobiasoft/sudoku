@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sudoku.Web\Sudoku.Web.csproj" />
+    <ProjectReference Include="..\Sudoku.Web.Server\Sudoku.Web.Server.csproj" />
     <ProjectReference Include="..\Sudoku\Sudoku.csproj" />
   </ItemGroup>
 

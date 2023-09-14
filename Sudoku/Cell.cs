@@ -12,6 +12,7 @@ public record Cell
 	public int Row { get; }
 	public string PossibleValues { get; set; } = string.Empty;
 	public int? Value { get; set; }
+    public bool Locked { get; set; }
 
 	public Cell Copy()
 	{

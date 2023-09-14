@@ -59,4 +59,17 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
 		// Assert
 		puzzle.Count(x => !x.Value.HasValue).Should().BeGreaterThanOrEqualTo(minEmptyCells).And.BeLessOrEqualTo(maxEmptyCells);
 	}
+
+	[Fact]
+	public async Task Generate_WhenGeneratingPuzzle_MarksAllCellsWithValueAsLocked()
+	{
+        // Arrange
+        var sut = ResolveSut();
+
+        // Act
+        var puzzle = await sut.Generate(Level.Easy);
+
+        // Assert
+        puzzle.Where(x => x.Value.HasValue).ToList().ForEach(x => x.Locked.Should().BeTrue());
+    }
 }
