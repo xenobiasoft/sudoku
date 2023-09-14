@@ -7,48 +7,50 @@ public partial class Game
 	[Parameter]
 	public Cell[] Puzzle { get; set; }
 
+    [Parameter] 
+    public Level Level { get; set; }
+
 	[Inject]
 	public ISudokuGame SudokuGame { get; set; }
 
+    protected override async Task OnInitializedAsync()
+    {
+        await NewGame(Level.Easy);
+    }
+
     protected override void OnInitialized()
     {
-        Puzzle = GetPuzzle();
+        var values = new int?[9, 9];
+        var cells1 = new Cell[81];
+        var index = 0;
+
+        for (var col = 0; col < 9; col++)
+        {
+            for (var row = 0; row < 9; row++)
+            {
+                var cell = new Cell(row, col) { Value = values[row, col] };
+                cells1[index++] = cell;
+            }
+        }
+
+        var cells = cells1;
+
+        Puzzle = cells;
     }
 
-    private async Task New()
+    private async Task NewGame(Level level)
     {
+        Level = level;
+
         try
         {
-            await SudokuGame.New(Level.Easy).ConfigureAwait(false);
+            await SudokuGame.New(level).ConfigureAwait(false);
             Puzzle = SudokuGame.Puzzle;
         }
-        catch (Exception e)
+        catch (InvalidOperationException e)
         {
             Console.WriteLine(e);
+            await NewGame(level);
         }
     }
-
-    public static Cell[] GetPuzzle()
-	{
-		var cells = PopulateCells(new int?[9, 9]);
-
-		return cells;
-	}
-
-    public static Cell[] PopulateCells(int?[,] values)
-	{
-		var cells = new Cell[81];
-		var index = 0;
-
-		for (var col = 0; col < 9; col++)
-		{
-			for (var row = 0; row < 9; row++)
-			{
-				var cell = new Cell(row, col) { Value = values[row, col] };
-				cells[index++] = cell;
-			}
-		}
-
-		return cells;
-	}
 }

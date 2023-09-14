@@ -1,14 +1,21 @@
 ﻿@page "/game"
 @using Sudoku.Web.Server.Components
 
-<div class="container text-center float-start">
-    <div class="btn-group" role="group">
-        <button type="button" class="btn btn-outline-primary" @onclick="New">
-            <i class="fa-solid fa-play"></i> New Game
-        </button>
-    </div>
-    <div class="row">
-        <div class="col float-start">
+<div class="mat-layout-grid">
+    <div class="mat-layout-grid-inner">
+        <div class="mat-layout-grid-cell">
+            <div class="btn-group" role="group" aria-label="Game level difficulty">
+                <input type="radio" class="btn-check" name="btnLevel" id="btnLevelEasy" autocomplete="off" @onchange="() => NewGame(Level.Easy)" checked>
+                <label class="btn @(Level == Level.Easy) ? btn-primary : btn-outline-primary" for="btnLevelEasy">Easy</label>
+
+                <input type="radio" class="btn-check" name="btnLevel" id="btnLevelMedium" autocomplete="off" @onchange="() => NewGame(Level.Medium)">
+                <label class="btn @(Level == Level.Medium) ? btn-primary : btn-outline-primary" for="btnLevelMedium">Medium</label>
+
+                <input type="radio" class="btn-check" name="btnLevel" id="btnLevelHard" autocomplete="off" @onchange="() => NewGame(Level.Hard)">
+                <label class="btn @(Level == Level.Hard) ? btn-primary : btn-outline-primary" for="btnLevelHard">Hard</label>
+            </div>
+        </div>
+        <div class="mat-layout-grid-cell">
             <table id="grid" border="1">
                 @for (var row = 0; row < 9; row++)
                 {
@@ -20,6 +27,39 @@
                     </tr>
                 }
             </table>
+        </div>
+        <div class="mat-layout-grid-cell">
+            <div class="btn-toolbar" role="toobar">
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-primary">
+                        <i class="fa-solid fa-1"></i>
+                    </button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="fa-solid fa-2"></i>
+                    </button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="fa-solid fa-3"></i>
+                    </button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="fa-solid fa-4"></i>
+                    </button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="fa-solid fa-5"></i>
+                    </button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="fa-solid fa-6"></i>
+                    </button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="fa-solid fa-7"></i>
+                    </button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="fa-solid fa-8"></i>
+                    </button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="fa-solid fa-9"></i>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
