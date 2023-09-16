@@ -1,10 +1,12 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Sudoku.Web.Server.EventHandlers;
 
 namespace Sudoku.Web.Server.Pages;
 
 public partial class Game
 {
-	[Parameter]
+    private Cell _selectedCell;
+
 	public Cell[] Puzzle { get; set; }
 
     [Parameter] 
@@ -52,5 +54,15 @@ public partial class Game
             Console.WriteLine(e);
             await NewGame(level);
         }
+    }
+
+    private void HandleCellFocus(CellFocusEventArgs e)
+    {
+        _selectedCell = Puzzle.GetCell(e.Row, e.Column);
+    }
+
+    private void SetSelectedCell(int value)
+    {
+        _selectedCell.Value = value;
     }
 }

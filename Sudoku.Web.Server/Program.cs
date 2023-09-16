@@ -1,11 +1,8 @@
-using MatBlazor;
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.RegisterGameServices();
-builder.Services.AddMatBlazor();
 
 var app = builder.Build();
 

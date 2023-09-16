@@ -7,10 +7,8 @@
             <div class="btn-group" role="group" aria-label="Game level difficulty">
                 <input type="radio" class="btn-check" name="btnLevel" id="btnLevelEasy" autocomplete="off" @onchange="() => NewGame(Level.Easy)" checked>
                 <label class="btn @(Level == Level.Easy) ? btn-primary : btn-outline-primary" for="btnLevelEasy">Easy</label>
-
                 <input type="radio" class="btn-check" name="btnLevel" id="btnLevelMedium" autocomplete="off" @onchange="() => NewGame(Level.Medium)">
                 <label class="btn @(Level == Level.Medium) ? btn-primary : btn-outline-primary" for="btnLevelMedium">Medium</label>
-
                 <input type="radio" class="btn-check" name="btnLevel" id="btnLevelHard" autocomplete="off" @onchange="() => NewGame(Level.Hard)">
                 <label class="btn @(Level == Level.Hard) ? btn-primary : btn-outline-primary" for="btnLevelHard">Hard</label>
             </div>
@@ -22,7 +20,8 @@
                     <tr class="gridRow">
                         @for (var col = 0; col < 9; col++)
                         {
-                            <CellInput Cell="@Puzzle.GetCell(row, col)" />
+                            var cell = Puzzle.GetCell(row, col);
+                            <CellInput @key="cell" Cell="cell" OnCellFocus="HandleCellFocus" />
                         }
                     </tr>
                 }
@@ -31,33 +30,13 @@
         <div class="mat-layout-grid-cell">
             <div class="btn-toolbar" role="toobar">
                 <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-primary">
-                        <i class="fa-solid fa-1"></i>
-                    </button>
-                    <button type="button" class="btn btn-primary">
-                        <i class="fa-solid fa-2"></i>
-                    </button>
-                    <button type="button" class="btn btn-primary">
-                        <i class="fa-solid fa-3"></i>
-                    </button>
-                    <button type="button" class="btn btn-primary">
-                        <i class="fa-solid fa-4"></i>
-                    </button>
-                    <button type="button" class="btn btn-primary">
-                        <i class="fa-solid fa-5"></i>
-                    </button>
-                    <button type="button" class="btn btn-primary">
-                        <i class="fa-solid fa-6"></i>
-                    </button>
-                    <button type="button" class="btn btn-primary">
-                        <i class="fa-solid fa-7"></i>
-                    </button>
-                    <button type="button" class="btn btn-primary">
-                        <i class="fa-solid fa-8"></i>
-                    </button>
-                    <button type="button" class="btn btn-primary">
-                        <i class="fa-solid fa-9"></i>
-                    </button>
+                    @for (var i = 1; i <= 9; i++)
+                    {
+                        var i1 = i;
+                        <button type="button" class="btn btn-primary" @onclick="() => SetSelectedCell(i1)">
+                            <i class="fa-solid fa-@i"></i>
+                        </button>
+                    }
                 </div>
             </div>
         </div>

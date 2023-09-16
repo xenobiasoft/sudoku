@@ -4,6 +4,7 @@
 
 .cell input,
 .cell label {
+    background-color: #FAEBD7;
     border: 1px solid black;
     color: #303030;
     display: block;
@@ -17,6 +18,10 @@
 
 .cell label {
     font-weight: bold;
+}
+
+.cell input:focus {
+    background-color: #F0F8FF;
 }
 
 @media (min-width: 641px) {
