@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Sudoku.Web.Server.EventHandlers;
+using Sudoku.Web.Server.Components;
 
 namespace Sudoku.Web.Server.Pages;
 

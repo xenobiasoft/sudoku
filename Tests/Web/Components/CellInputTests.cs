@@ -1,5 +1,4 @@
 ﻿using Sudoku.Web.Server.Components;
-using Sudoku.Web.Server.EventHandlers;
 using XenobiaSoft.Sudoku;
 
 namespace UnitTests.Web.Components;

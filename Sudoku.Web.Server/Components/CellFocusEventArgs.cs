@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 
-namespace Sudoku.Web.Server.EventHandlers
+namespace Sudoku.Web.Server.Components
 {
     public class CellFocusEventArgs : FocusEventArgs
     {
