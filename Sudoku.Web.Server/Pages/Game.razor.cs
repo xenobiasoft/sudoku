@@ -48,9 +48,9 @@ public partial class Game
         }
     }
 
-    private void HandleCellFocus(CellFocusEventArgs e)
+    private void HandleCellFocus(Cell cell)
     {
-        _selectedCell = Puzzle.GetCell(e.Row, e.Column);
+        _selectedCell = cell;
     }
 
     private void SetSelectedCell(int value)

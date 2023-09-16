@@ -8,10 +8,10 @@ public partial class CellInput
     public Cell Cell { get; set; }
     
     [Parameter]
-    public EventCallback<CellFocusEventArgs> OnCellFocus { get; set; }
+    public EventCallback<Cell> OnCellFocus { get; set; }
 
     private void OnFocus()
     {
-        OnCellFocus.InvokeAsync(new CellFocusEventArgs { Column = Cell.Column, Row = Cell.Row });
+        OnCellFocus.InvokeAsync(Cell);
     }
 }
