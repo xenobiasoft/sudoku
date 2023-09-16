@@ -3,16 +3,7 @@
 
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
-        <div class="mat-layout-grid-cell">
-            <div class="btn-group" role="group" aria-label="Game level difficulty">
-                <input type="radio" class="btn-check" name="btnLevel" id="btnLevelEasy" autocomplete="off" @onchange="() => NewGame(Level.Easy)" checked>
-                <label class="btn @(Level == Level.Easy) ? btn-primary : btn-outline-primary" for="btnLevelEasy">Easy</label>
-                <input type="radio" class="btn-check" name="btnLevel" id="btnLevelMedium" autocomplete="off" @onchange="() => NewGame(Level.Medium)">
-                <label class="btn @(Level == Level.Medium) ? btn-primary : btn-outline-primary" for="btnLevelMedium">Medium</label>
-                <input type="radio" class="btn-check" name="btnLevel" id="btnLevelHard" autocomplete="off" @onchange="() => NewGame(Level.Hard)">
-                <label class="btn @(Level == Level.Hard) ? btn-primary : btn-outline-primary" for="btnLevelHard">Hard</label>
-            </div>
-        </div>
+        <DifficultyLevelOptions OnDifficultyLevelChanged="NewGame" />
         <div class="mat-layout-grid-cell">
             <table id="grid" border="1">
                 @for (var row = 0; row < 9; row++)

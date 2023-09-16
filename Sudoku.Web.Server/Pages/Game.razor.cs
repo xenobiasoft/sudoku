@@ -1,19 +1,15 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Sudoku.Web.Server.Components;
 
 namespace Sudoku.Web.Server.Pages;
 
 public partial class Game
 {
-    private Cell _selectedCell;
+    private Cell _selectedCell = new(0, 0);
 
-	public Cell[] Puzzle { get; set; }
-
-    [Parameter] 
-    public Level Level { get; set; }
+	public Cell[] Puzzle { get; set; } = new Cell[81];
 
 	[Inject]
-	public ISudokuGame SudokuGame { get; set; }
+	public ISudokuGame? SudokuGame { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -23,7 +19,7 @@ public partial class Game
     protected override void OnInitialized()
     {
         var values = new int?[9, 9];
-        var cells1 = new Cell[81];
+        var cells = new Cell[81];
         var index = 0;
 
         for (var col = 0; col < 9; col++)
@@ -31,19 +27,15 @@ public partial class Game
             for (var row = 0; row < 9; row++)
             {
                 var cell = new Cell(row, col) { Value = values[row, col] };
-                cells1[index++] = cell;
+                cells[index++] = cell;
             }
         }
-
-        var cells = cells1;
-
+        
         Puzzle = cells;
     }
 
     private async Task NewGame(Level level)
     {
-        Level = level;
-
         try
         {
             await SudokuGame.New(level).ConfigureAwait(false);

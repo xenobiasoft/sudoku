@@ -1,0 +1,14 @@
+﻿<div class="difficulty-level">
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="levelOptions" id="levelEasy" value="@Level.Easy" @onchange="OnOptionChanged" checked>
+        <label class="form-check-label" for="levelEasy">Easy</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="levelOptions" id="levelMedium" value="@Level.Medium" @onchange="OnOptionChanged">
+        <label class="form-check-label" for="levelMedium">Medium</label>
+    </div>
+    <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" name="levelOptions" id="levelHard" value="@Level.Hard" @onchange="OnOptionChanged">
+        <label class="form-check-label" for="levelHard">Hard</label>
+    </div>
+</div>
