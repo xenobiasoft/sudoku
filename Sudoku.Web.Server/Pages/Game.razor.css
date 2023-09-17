@@ -13,8 +13,3 @@
 .gridRow:nth-child(3n+1) {
     border-top: 3px solid #000000;
 }
-
-.btn-toolbar {
-    justify-content: center;
-    margin-top: 2em;
-}

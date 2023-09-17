@@ -35,7 +35,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Web\Components\" />
     <Folder Include="Web\Pages\" />
     <Folder Include="Web\Shared\" />
   </ItemGroup>

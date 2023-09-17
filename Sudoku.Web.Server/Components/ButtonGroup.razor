@@ -1,0 +1,13 @@
+﻿<div class="mat-layout-grid-cell">
+    <div class="btn-toolbar" role="toobar">
+        <div class="btn-group" role="group">
+            @for (var i = 1; i <= 9; i++)
+            {
+                var num = i;
+                <button type="button" id="@($"btn{num}")" class="btn btn-primary" @onclick="() => SetValue(num)">
+                    <i class="fa-solid fa-@i"></i>
+                </button>
+            }
+        </div>
+    </div>
+</div>
