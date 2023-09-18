@@ -21,11 +21,11 @@
 }
 
 .cell input:focus {
-    background-color: #F0F8FF;
+    background-color: #F0F8FF !important;
 }
 
 .highlight {
-    background-color: #F0F8FF !important;
+    background-color: #F0F8F0 !important;
 }
 
 @media (min-width: 641px) {

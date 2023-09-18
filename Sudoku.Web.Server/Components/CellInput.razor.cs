@@ -5,17 +5,17 @@ namespace Sudoku.Web.Server.Components;
 
 public partial class CellInput : IDisposable
 {
+    [Inject] 
+    private ICellFocusedNotificationService? NotificationService { get; set; }
+
     [Parameter] 
     public Cell Cell { get; set; } = new(0, 0);
 
-    [Parameter] 
-    public string CssClass { get; set; } = string.Empty;
-    
     [Parameter]
     public EventCallback<Cell> OnCellFocus { get; set; }
 
-    [Inject] 
-    private ICellFocusedNotificationService? NotificationService { get; set; }
+    private string CssClass { get; set; } = string.Empty;
+    private ElementReference _element;
 
     protected override void OnInitialized()
     {
@@ -24,14 +24,12 @@ public partial class CellInput : IDisposable
 
     private void HandleCellSetFocus(object? sender, Cell e)
     {
-        if (ShouldHighlight(e))
+        if (Cell == e)
         {
-            CssClass = "highlight";
+            _element.FocusAsync();
         }
-        else
-        {
-            CssClass = string.Empty;
-        }
+
+        CssClass = ShouldHighlight(e) ? "highlight" : string.Empty;
     }
 
     private void OnFocus()
