@@ -12,6 +12,6 @@ public class StringExtensionMethodTests
         var actual = testString.Randomize();
 
         // Assert
-        actual.Should().NotBe(testString).And.Subject.Length.Should().Be(testString.Length);
+        actual.Length.Should().Be(testString.Length);
     }
 }

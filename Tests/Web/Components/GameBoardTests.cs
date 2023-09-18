@@ -9,8 +9,10 @@ public class GameBoardTests : TestContext
 {
     public GameBoardTests()
     {
-        var mockNotificationService = new Mock<ICellFocusedNotificationService>();
-        Services.AddSingleton(mockNotificationService.Object);
+        var mockCellFocusNotifier = new Mock<ICellFocusedNotificationService>();
+        Services.AddSingleton(mockCellFocusNotifier.Object);
+        var mockInvalidCellNotifier = new Mock<IInvalidCellNotificationService>();
+        Services.AddSingleton(mockInvalidCellNotifier.Object);
     }
 
 	[Fact]

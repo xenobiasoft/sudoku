@@ -28,6 +28,10 @@
     background-color: #F0F8F0 !important;
 }
 
+.invalid {
+    background-color: #ffdddd !important;
+}
+
 @media (min-width: 641px) {
     .cell input,
     .cell label {

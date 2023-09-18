@@ -6,6 +6,7 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.RegisterGameServices();
 builder.Services.AddSingleton<ICellFocusedNotificationService, CellFocusedNotificationService>();
+builder.Services.AddSingleton<IInvalidCellNotificationService, InvalidCellNotificationService>();
 
 var app = builder.Build();
 

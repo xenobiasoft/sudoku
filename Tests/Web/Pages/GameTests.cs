@@ -10,7 +10,8 @@ namespace UnitTests.Web.Pages;
 public class GameTests : TestContext
 {
     private readonly Mock<ISudokuGame> _mockSudokuGame = new();
-    private readonly Mock<ICellFocusedNotificationService> _mockNotificationService = new();
+    private readonly Mock<ICellFocusedNotificationService> _mockCellFocusedNotifier = new();
+    private readonly Mock<IInvalidCellNotificationService> _mockInvalidCellNotifier = new();
 
     public GameTests()
     {
@@ -18,7 +19,8 @@ public class GameTests : TestContext
             .Setup(x => x.Puzzle)
             .Returns(PuzzleFactory.GetPuzzle(Level.Easy));
 
-        Services.AddSingleton(_mockNotificationService.Object);
+        Services.AddSingleton<IInvalidCellNotificationService>(_mockInvalidCellNotifier.Object);
+        Services.AddSingleton(_mockCellFocusedNotifier.Object);
         Services.AddTransient(x => _mockSudokuGame.Object);
     }
 
@@ -52,5 +54,22 @@ public class GameTests : TestContext
 
         // Assert
         cellInput.Cell.Value.Should().Be(3);
+    }
+
+    [Fact]
+    public async Task Game_WhenInvalidNumberIsEntered_HighlightsInvalidCells()
+    {
+        // Arrange
+        var cell = _mockSudokuGame.Object.Puzzle.GetCell(0, 2);
+        var game = RenderComponent<Game>();
+        var cellInput = game.FindComponents<CellInput>().FirstOrDefault(x => x.Instance.Cell == cell)!.Instance;
+        await game.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cell));
+        var buttonGroup = game.FindComponent<ButtonGroup>().Instance;
+
+        // Act
+        await game.InvokeAsync(() => buttonGroup.NumberClicked.InvokeAsync(5));
+
+        // Assert
+        _mockInvalidCellNotifier.Verify(x => x.Notify(It.IsAny<IEnumerable<Cell>>()), Times.Once);
     }
 }

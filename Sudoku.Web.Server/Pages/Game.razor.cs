@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Sudoku.Web.Server.Services;
 
 namespace Sudoku.Web.Server.Pages;
 
@@ -11,6 +12,9 @@ public partial class Game
 
 	[Inject]
 	public ISudokuGame? SudokuGame { get; set; }
+
+    [Inject]
+    public IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -52,6 +56,8 @@ public partial class Game
     private void SetCellValue(int value)
     {
         _selectedCell.Value = value;
+
+        InvalidCellNotificationService!.Notify(Puzzle.Validate().ToList());
     }
 
     private void SetSelectedCell(Cell cell)

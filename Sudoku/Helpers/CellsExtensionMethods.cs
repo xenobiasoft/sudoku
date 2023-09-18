@@ -110,7 +110,7 @@ public static class CellsExtensionMethods
 
 			usedNumbers.Clear();
 
-			foreach (var miniGridCell in cells.GetMiniGridCells(cell.Column, cell.Row))
+			foreach (var miniGridCell in cells.GetMiniGridCells(cell.Row, cell.Column))
 			{
 				if (!miniGridCell.Value.HasValue) continue;
 
@@ -158,6 +158,34 @@ public static class CellsExtensionMethods
 			if (cells.IsValid()) break;
 		}
 	}
+
+    public static IEnumerable<Cell> Validate(this Cell[] cells)
+    {
+		var invalidCells = new List<Cell>();
+
+        foreach (var cell in cells)
+        {
+            if (!cell.Value.HasValue) continue;
+
+			cells.GetColumnCells(cell.Column).Where(x => x != cell && x.Value == cell.Value).ToList().ForEach(x =>
+            {
+                invalidCells.Add(cell);
+                invalidCells.Add(x);
+            });
+			cells.GetRowCells(cell.Row).Where(x => x != cell && x.Value == cell.Value).ToList().ForEach(x =>
+            {
+				invalidCells.Add(cell);
+				invalidCells.Add(x);
+            });
+			cells.GetMiniGridCells(cell.Row, cell.Column).Where(x => x != cell && x.Value == cell.Value).ToList().ForEach(
+                x =>
+                {
+					invalidCells.Add(cell);
+					invalidCells.Add(x);
+                });
+        }
+        return invalidCells.Distinct();
+    }
 
 	private static string CalculatePossibleValues(this Cell[] cells, Cell cell)
 	{

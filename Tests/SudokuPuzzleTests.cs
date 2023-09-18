@@ -1,4 +1,5 @@
-﻿using UnitTests.Helpers;
+﻿using System.Reflection.Emit;
+using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 
 namespace UnitTests;
@@ -207,6 +208,27 @@ public class SudokuPuzzleTests
 		// Assert
 		puzzle.GetCell(cell.Row, cell.Column).Value.Should().BeOneOf(possibleValues);
 	}
+
+	[Fact]
+	public void Validate_WhenInvalidNumberIsEntered_ReturnsTheConflictingCells()
+    {
+        // Arrange
+        var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		puzzle.SetCell(0, 2, 5);
+
+        // Act
+        var results = puzzle.Validate().ToList();
+
+        // Assert
+		Assert.Multiple(() =>
+        {
+			results.Count.Should().Be(2);
+			results[0].Row.Should().Be(0);
+            results[0].Column.Should().Be(0);
+			results[1].Row.Should().Be(0);
+            results[1].Column.Should().Be(2);
+        });
+    }
 	
 	private static string[,] GetAllPossibleValues(Cell[] cells)
 	{
