@@ -48,6 +48,7 @@ public partial class CellInput : IDisposable
     private void OnFocus()
     {
         OnCellFocus.InvokeAsync(Cell);
+        CellFocusedNotificationService!.Notify(Cell);
     }
 
     public void Dispose()

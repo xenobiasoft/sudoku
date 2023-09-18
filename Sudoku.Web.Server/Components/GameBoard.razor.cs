@@ -15,7 +15,7 @@ namespace Sudoku.Web.Server.Components
         public EventCallback<Cell> OnCellFocus { get; set; }
 
         [Inject]
-        private ICellFocusedNotificationService NotificationService { get; set; }
+        private ICellFocusedNotificationService? NotificationService { get; set; }
 
         private async Task HandleCellFocus(Cell cell)
         {

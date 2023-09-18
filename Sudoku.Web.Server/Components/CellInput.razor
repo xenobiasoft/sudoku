@@ -5,6 +5,13 @@
     }
     else
     {
-        <input @ref="_element" class="@CssClass" type="text" maxlength="1" @bind-value="Cell.Value" @bind-value:event="onchange" @onkeypress="KeyPress" @onfocus="OnFocus" />
+        <input @ref="_element" 
+               class="@CssClass" 
+               type="text" 
+               maxlength="1" 
+               @bind-value="Cell.Value" 
+               @bind-value:event="onchange" 
+               @onkeypress="KeyPress" 
+               @onfocus="OnFocus" />
     }
 </td>
