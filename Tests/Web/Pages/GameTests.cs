@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.Pages;
+using Sudoku.Web.Server.Services;
 using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 
@@ -9,6 +10,7 @@ namespace UnitTests.Web.Pages;
 public class GameTests : TestContext
 {
     private readonly Mock<ISudokuGame> _mockSudokuGame = new();
+    private readonly Mock<ICellFocusedNotificationService> _mockNotificationService = new();
 
     public GameTests()
     {
@@ -16,6 +18,7 @@ public class GameTests : TestContext
             .Setup(x => x.Puzzle)
             .Returns(PuzzleFactory.GetPuzzle(Level.Easy));
 
+        Services.AddSingleton(_mockNotificationService.Object);
         Services.AddTransient(x => _mockSudokuGame.Object);
     }
 

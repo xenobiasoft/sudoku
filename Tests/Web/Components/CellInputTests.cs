@@ -1,10 +1,19 @@
-﻿using Sudoku.Web.Server.Components;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Sudoku.Web.Server.Components;
+using Sudoku.Web.Server.Services;
 using XenobiaSoft.Sudoku;
 
 namespace UnitTests.Web.Components;
 
 public class CellInputTests : TestContext
 {
+    private readonly Mock<ICellFocusedNotificationService> _mockNotificationService = new();
+
+    public CellInputTests()
+    {
+        Services.AddSingleton(_mockNotificationService.Object);
+    }
+
 	[Fact]
 	public void RenderingCellInput_WhenCellIsLocked_RendersLabel()
 	{

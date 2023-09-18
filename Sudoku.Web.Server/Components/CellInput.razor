@@ -1,10 +1,10 @@
 ﻿<td class="cell">
     @if (Cell.Locked)
     {
-        <label>@Cell.Value</label>
+        <label class="@CssClass">@Cell.Value</label>
     }
     else
     {
-        <input type="text" maxlength="1" @bind="Cell.Value" @onfocus="OnFocus" />
+        <input class="@CssClass" type="text" maxlength="1" @bind="Cell.Value" @onfocus="OnFocus" />
     }
 </td>

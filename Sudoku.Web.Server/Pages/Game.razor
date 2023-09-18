@@ -4,20 +4,7 @@
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
         <DifficultyLevelOptions OnDifficultyLevelChanged="NewGame" />
-        <div class="mat-layout-grid-cell" @onkeyup="KeyUp">
-            <table id="grid" border="1">
-                @for (var row = 0; row < 9; row++)
-                {
-                    <tr class="gridRow">
-                        @for (var col = 0; col < 9; col++)
-                        {
-                            var cell = Puzzle.GetCell(row, col);
-                            <CellInput @key="cell" Cell="cell" OnCellFocus="HandleCellFocus" />
-                        }
-                    </tr>
-                }
-            </table>
-        </div>
+        <GameBoard Puzzle="Puzzle" OnCellFocus="SetSelectedCell" />
         <ButtonGroup NumberClicked="SetCellValue" />
     </div>
 </div>

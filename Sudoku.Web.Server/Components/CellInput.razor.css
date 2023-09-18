@@ -24,6 +24,10 @@
     background-color: #F0F8FF;
 }
 
+.highlight {
+    background-color: #F0F8FF !important;
+}
+
 @media (min-width: 641px) {
     .cell input,
     .cell label {
