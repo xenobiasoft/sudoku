@@ -28,7 +28,7 @@ public class CellInputTests : TestContext
         var renderComponent = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
 
 		// Assert
-        renderComponent.MarkupMatches("<td class=\"cell\"><label>4</label></td>");
+        renderComponent.MarkupMatches("<td class=\"cell\"><label class=\"\">4</label></td>");
     }
 
     [Fact]
@@ -45,6 +45,6 @@ public class CellInputTests : TestContext
         var renderedComponent = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
 
         // Assert
-        renderedComponent.MarkupMatches("<td class=\"cell\"><input type=\"text\" maxlength=\"1\" value=\"7\" /></td>");
+        renderedComponent.MarkupMatches("<td class=\"cell\"><input class=\"\" type=\"text\" maxlength=\"1\" value=\"7\" /></td>");
     }
 }

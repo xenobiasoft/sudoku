@@ -25,6 +25,6 @@ public class GameBoardTests : TestContext
 
         // Assert
         cellInputs.Count.Should().Be(81);
-        cellInputs.ToList().ForEach(x => x.MarkupMatches("<td class=\"cell\"><input type=\"text\" maxlength=\"1\"></td>"));
+        cellInputs.ToList().ForEach(x => x.MarkupMatches("<td class=\"cell\"><input class=\"\" type=\"text\" maxlength=\"1\"></td>"));
     }
 }
