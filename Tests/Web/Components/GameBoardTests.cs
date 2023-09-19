@@ -13,6 +13,8 @@ public class GameBoardTests : TestContext
         Services.AddSingleton(mockCellFocusNotifier.Object);
         var mockInvalidCellNotifier = new Mock<IInvalidCellNotificationService>();
         Services.AddSingleton(mockInvalidCellNotifier.Object);
+        var mockGameNotificationService = new Mock<IGameNotificationService>();
+        Services.AddSingleton(mockGameNotificationService.Object);
     }
 
 	[Fact]

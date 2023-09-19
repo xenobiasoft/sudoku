@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Components;
+using Sudoku.Web.Server.Pages;
 using Sudoku.Web.Server.Services;
+using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 
 namespace UnitTests.Web.Components;
@@ -9,11 +11,13 @@ public class CellInputTests : TestContext
 {
     private readonly Mock<ICellFocusedNotificationService> _mockCellFocusNotifier = new();
     private readonly Mock<IInvalidCellNotificationService> _mockInvalidCellNotificationService = new();
+    private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
 
     public CellInputTests()
     {
         Services.AddSingleton(_mockCellFocusNotifier.Object);
         Services.AddSingleton(_mockInvalidCellNotificationService.Object);
+        Services.AddSingleton(_mockGameNotificationService.Object);
     }
 
 	[Fact]
@@ -95,5 +99,22 @@ public class CellInputTests : TestContext
 
         // Assert
         renderedCell.MarkupMatches("<td class=\"cell\"><input class=\"invalid\" type=\"text\" maxlength=\"1\" value=\"7\" /></td>");
+    }
+
+    [Fact]
+    public void Game_WhenPuzzleSolved_SendsGameEndedNotification()
+    {
+        // Arrange
+        var puzzle = PuzzleFactory.GetSolvedPuzzle();
+        var cell = puzzle.GetCell(0, 0);
+        var cellInput = RenderComponent<CellInput>(x => x
+            .Add(p => p.Cell, cell)
+            .Add(p => p.Puzzle, puzzle));
+
+        // Act
+        cellInput.Find("input").KeyPress(Key.NumberPad1);
+
+        // Assert
+        _mockGameNotificationService.Verify(x => x.NotifyGameEnded(), Times.Once);
     }
 }

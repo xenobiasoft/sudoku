@@ -12,6 +12,9 @@ public partial class CellInput : IDisposable
     [Inject]
     private IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
 
+    [Inject]
+    private IGameNotificationService? GameNotificationService { get; set; }
+
     [Parameter] 
     public Cell Cell { get; set; } = new(0, 0);
 
@@ -70,5 +73,10 @@ public partial class CellInput : IDisposable
         int.TryParse(e.Key, out var cellValue);
         Cell.Value = cellValue;
         InvalidCellNotificationService!.Notify(Puzzle.Validate().ToList());
+
+        if (Puzzle.IsSolved())
+        {
+            GameNotificationService!.NotifyGameEnded();
+        }
     }
 }
