@@ -62,6 +62,11 @@ public partial class Game
         _selectedCell.Value = value;
 
         InvalidCellNotificationService!.Notify(Puzzle.Validate().ToList());
+
+        if (Puzzle.IsSolved())
+        {
+            GameNotificationService!.NotifyGameEnded();
+        }
     }
 
     private void SetSelectedCell(Cell cell)

@@ -76,14 +76,35 @@ public class GameTests : TestContext
     }
 
     [Fact]
-    public async Task Game_WhenNewGame_SendsGameStartedNotification()
+    public void Game_WhenNewGame_SendsGameStartedNotification()
     {
         // Arrange
 
         // Act
-        var game = RenderComponent<Game>();
+        RenderComponent<Game>();
 
         // Assert
         _mockGameNotificationService.Verify(x => x.NotifyGameStarted(), Times.Once);
+    }
+
+    [Fact]
+    public async Task Game_WhenPuzzleSolved_SendsGameEndedNotification()
+    {
+        // Arrange
+        var puzzle = PuzzleFactory.GetSolvedPuzzle();
+        _mockSudokuGame
+            .Setup(x => x.Puzzle)
+            .Returns(puzzle);
+        var cell = puzzle.GetCell(0, 0);
+        var game = RenderComponent<Game>();
+        var cellInput = game.FindComponents<CellInput>().FirstOrDefault(x => x.Instance.Cell == cell)!.Instance;
+        await game.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cell));
+        var buttonGroup = game.FindComponent<ButtonGroup>().Instance;
+
+        // Act
+        await game.InvokeAsync(() => buttonGroup.NumberClicked.InvokeAsync(1));
+
+        // Assert
+        _mockGameNotificationService.Verify(x => x.NotifyGameEnded(), Times.Once);
     }
 }
