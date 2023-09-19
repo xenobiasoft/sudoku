@@ -11,7 +11,9 @@ public class DependencyInjectionTests
 	{
 		// Arrange
 		var services = new ServiceCollection();
-		services.RegisterGameServices();
+        services
+            .RegisterGameServices()
+            .RegisterGameServices();
 		var factory = new TestServiceProviderFactory();
 		var serviceProvider = factory.CreateServiceProvider(factory.CreateBuilder(services));
 

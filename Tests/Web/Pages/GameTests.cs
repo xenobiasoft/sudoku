@@ -12,6 +12,7 @@ public class GameTests : TestContext
     private readonly Mock<ISudokuGame> _mockSudokuGame = new();
     private readonly Mock<ICellFocusedNotificationService> _mockCellFocusedNotifier = new();
     private readonly Mock<IInvalidCellNotificationService> _mockInvalidCellNotifier = new();
+    private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
 
     public GameTests()
     {
@@ -19,8 +20,9 @@ public class GameTests : TestContext
             .Setup(x => x.Puzzle)
             .Returns(PuzzleFactory.GetPuzzle(Level.Easy));
 
-        Services.AddSingleton<IInvalidCellNotificationService>(_mockInvalidCellNotifier.Object);
+        Services.AddSingleton(_mockInvalidCellNotifier.Object);
         Services.AddSingleton(_mockCellFocusedNotifier.Object);
+        Services.AddSingleton(_mockGameNotificationService.Object);
         Services.AddTransient(x => _mockSudokuGame.Object);
     }
 
@@ -71,5 +73,17 @@ public class GameTests : TestContext
 
         // Assert
         _mockInvalidCellNotifier.Verify(x => x.Notify(It.IsAny<IEnumerable<Cell>>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Game_WhenNewGame_SendsGameStartedNotification()
+    {
+        // Arrange
+
+        // Act
+        var game = RenderComponent<Game>();
+
+        // Assert
+        _mockGameNotificationService.Verify(x => x.NotifyGameStarted(), Times.Once);
     }
 }

@@ -16,9 +16,13 @@ public partial class Game
     [Inject]
     public IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
 
+    [Inject]
+    public IGameNotificationService? GameNotificationService { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await NewGame(Level.Easy);
+        GameNotificationService!.NotifyGameStarted();
     }
 
     protected override void OnInitialized()
