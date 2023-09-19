@@ -10,7 +10,7 @@ namespace Sudoku.Web.Server.Components
         private bool _isRunning = false;
         private DateTime _startTime = DateTime.Now;
         private TimeSpan _elapseTime = TimeSpan.Zero;
-        private Timer _timer = new();
+        private readonly Timer _timer = new();
 
         [Inject] 
         private IGameNotificationService? GameNotificationService { get; set; }
@@ -34,8 +34,7 @@ namespace Sudoku.Web.Server.Components
 
         private void Start()
         {
-            if (_isRunning) return;
-
+            Reset();
             _timer.Start();
             _startTime = DateTime.Now;
             _isRunning = true;

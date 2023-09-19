@@ -5,7 +5,18 @@
     <div class="mat-layout-grid-inner">
         <DifficultyLevelOptions OnDifficultyLevelChanged="NewGame" />
         <GameTimer />
-        <GameBoard Puzzle="Puzzle" OnCellFocus="SetSelectedCell" />
+        @if (Puzzle.IsSolved())
+        {
+            <SudokuImage>
+                <div class="success-message">
+                    <span>You Won!</span>
+                </div>
+            </SudokuImage>
+        }
+        else
+        {
+            <GameBoard Puzzle="Puzzle" OnCellFocus="SetSelectedCell" />
+        }
         <ButtonGroup NumberClicked="SetCellValue" />
     </div>
 </div>

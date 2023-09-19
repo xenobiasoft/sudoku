@@ -22,7 +22,6 @@ public partial class Game
     protected override async Task OnInitializedAsync()
     {
         await NewGame(Level.Easy);
-        GameNotificationService!.NotifyGameStarted();
     }
 
     protected override void OnInitialized()
@@ -47,8 +46,9 @@ public partial class Game
     {
         try
         {
-            await SudokuGame.New(level).ConfigureAwait(false);
+            await SudokuGame!.New(level).ConfigureAwait(false);
             Puzzle = SudokuGame.Puzzle;
+            GameNotificationService!.NotifyGameStarted();
         }
         catch (InvalidOperationException e)
         {

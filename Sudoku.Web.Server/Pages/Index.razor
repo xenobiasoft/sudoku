@@ -1,11 +1,10 @@
 ﻿@page "/"
+@using Sudoku.Web.Server.Components
 
 <PageTitle>Home</PageTitle>
 
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
-        <div class="game-image-container">
-            <img alt="Sudoku" src="/images/sudoku_image.jpg"/>
-        </div>
+        <SudokuImage />
     </div>
 </div>
