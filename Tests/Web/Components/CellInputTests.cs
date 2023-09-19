@@ -51,7 +51,7 @@ public class CellInputTests : TestContext
     }
 
     [Fact]
-    public async Task GivenCell_WhenNotifiedToSetFocus_HighlightsCell()
+    public async Task CellFocusNotify_WhenCellIsInRowColumnOrMiniGrid_HighlightsCell()
     {
         // Arrange
         var cell = new Cell(0, 0)
@@ -74,7 +74,7 @@ public class CellInputTests : TestContext
     }
 
     [Fact]
-    public async Task GivenCell_WhenNotifiedCellInvalid_MarksInvalid()
+    public async Task InvalidCellNotify_WhenCellIncludedInInvalidListOfCells_MarksInvalid()
     {
         // Arrange
         var cell = new Cell(0, 0)
