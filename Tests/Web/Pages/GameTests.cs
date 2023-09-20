@@ -92,10 +92,11 @@ public class GameTests : TestContext
     {
         // Arrange
         var puzzle = PuzzleFactory.GetSolvedPuzzle();
+        var cell = puzzle.GetCell(0, 0);
+        cell.Value = null;
         _mockSudokuGame
             .Setup(x => x.Puzzle)
             .Returns(puzzle);
-        var cell = puzzle.GetCell(0, 0);
         var game = RenderComponent<Game>();
         var cellInput = game.FindComponents<CellInput>().FirstOrDefault(x => x.Instance.Cell == cell)!.Instance;
         await game.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cell));
