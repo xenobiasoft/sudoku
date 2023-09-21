@@ -1,4 +1,5 @@
 ﻿using XenobiaSoft.Sudoku.Exceptions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace XenobiaSoft.Sudoku.Helpers;
 
@@ -151,9 +152,10 @@ public static class CellsExtensionMethods
 		}
 
 		foreach (var possibleValue in possibleValues.ToArray())
-		{
+        {
 			var cellValue = int.Parse(possibleValue.ToString());
-			cell.Value = cellValue;
+            Console.WriteLine($"Setting cell:{cell.Row}:{cell.Column} to value {cellValue}");
+            cell.Value = cellValue;
 
 			if (cells.IsValid()) break;
 		}
