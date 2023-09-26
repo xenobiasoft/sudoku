@@ -5,9 +5,7 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  solution: '**/*.sln'
-  buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+  - template: variables.yml
 
 jobs:
   - job: BuildAndTest
@@ -25,8 +23,8 @@ jobs:
           command: 'restore'
           projects: '**/*.csproj'
           includeNuGetOrg: true
-          feedsToUse: 'config'
-          nugetConfigPath: './nuget.config'
+          feedsToUse: "select"
+          vstsFeed: $(vstsFeed)
       
       - task: DotNetCoreCLI@2
         displayName: dotnet test
