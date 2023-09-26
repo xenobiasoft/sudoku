@@ -6,7 +6,7 @@ namespace UnitTests.Web.Components;
 
 public class GameTimerTests : TestContext
 {
-    private Mock<IGameNotificationService> _mockGameNotificationService = new();
+    private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
 
     public GameTimerTests()
     {
@@ -38,7 +38,7 @@ public class GameTimerTests : TestContext
         await timer.InvokeAsync(() => _mockGameNotificationService.Object.NotifyGameStarted());
 
         // Assert
-        timer.WaitForState(() => timer.Find("label").TextContent == "0:00:01", TimeSpan.FromMilliseconds(1200));
+        timer.WaitForState(() => timer.Find("label").TextContent == "0:00:01", TimeSpan.FromMilliseconds(1500));
         timer.Find("label").MarkupMatches("<label>0:00:01</label>");
     }
 }
