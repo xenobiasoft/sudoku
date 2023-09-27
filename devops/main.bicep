@@ -20,7 +20,6 @@ resource sites_XenobiaSoftSudoku_web 'Microsoft.Web/sites/config@2022-09-01' = {
       'index.html'      
     ]
     netFrameworkVersion: 'v4.0'
-    linuxFxVersion: 'DOTNETCORE|7.0'
     managedPipelineMode: 'Integrated'
     virtualApplications: [
       {
