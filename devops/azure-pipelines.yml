@@ -25,6 +25,8 @@ jobs:
 
   - job: BuildAndTest
     displayName: build and run test
+    dependsOn: BuildAndDeployIaC
+    condition: succeeded()
     steps:          
       - task: UseDotNet@2
         displayName: set sdk to .NET 7
@@ -56,6 +58,8 @@ jobs:
 
   - job: Deploy
     displayName: deploy app
+    dependsOn: BuildAndTest
+    condition: succeeded()
     steps:
       - task: AzureRmWebAppDeployment@4
         inputs:

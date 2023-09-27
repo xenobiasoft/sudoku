@@ -7,9 +7,6 @@ resource sites_XenobiaSoftSudoku_resource 'Microsoft.Web/sites@2022-09-01' = {
   kind: 'app,linux'
   properties: {
     enabled: true
-    siteConfig: {
-      linuxFxVersion: 'DOTNETCORE|7.0'      
-    }    
   }
 }
 
