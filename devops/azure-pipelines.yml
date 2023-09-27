@@ -8,6 +8,21 @@ pool:
   vmImage: $(vmImageName)
 
 jobs:
+  - job: BuildAndDeployIaC
+    displayName: build and deploy IaC
+    steps:
+      - task: AzureResourceManagerTemplateDeployment@3
+        inputs:
+          deploymentScope: 'Resource Group'
+          azureResourceManagerConnection: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
+          subscriptionId: 'c0c21e76-a03c-4747-af34-0720b273ff00'
+          action: 'Create Or Update Resource Group'
+          resourceGroupName: 'rg-xenobiasoft'
+          location: 'East US'
+          templateLocation: 'Linked artifact'
+          csmFile: '/devops/main.bicep'
+          deploymentMode: 'Incremental'
+
   - job: BuildAndTest
     displayName: build and run test
     steps:          
@@ -38,3 +53,14 @@ jobs:
           command: 'build'
           projects: '**/*.csproj'
           arguments: '--configuration Release'
+
+  - job: Deploy
+    displayName: deploy app
+    steps:
+      - task: AzureRmWebAppDeployment@4
+        inputs:
+          ConnectionType: 'AzureRM'
+          azureSubscription: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
+          appType: 'webAppLinux'
+          WebAppName: 'XenobiaSoftSudoku'
+          packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
