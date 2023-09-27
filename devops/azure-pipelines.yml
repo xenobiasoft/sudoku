@@ -15,12 +15,12 @@ jobs:
         inputs:
           deploymentScope: 'Resource Group'
           azureResourceManagerConnection: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
-          subscriptionId: 'c0c21e76-a03c-4747-af34-0720b273ff00'
+          subscriptionId: $(subscriptionId)
           action: 'Create Or Update Resource Group'
-          resourceGroupName: 'rg-xenobiasoft'
-          location: 'East US'
+          resourceGroupName: $(resourceGroup)
+          location: $(location)
           templateLocation: 'Linked artifact'
-          csmFile: '/devops/main.bicep'
+          csmFile: './devops/main.bicep'
           deploymentMode: 'Incremental'
 
   - job: BuildAndTest
