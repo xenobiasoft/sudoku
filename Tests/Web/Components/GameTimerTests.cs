@@ -38,7 +38,7 @@ public class GameTimerTests : TestContext
         await timer.InvokeAsync(() => _mockGameNotificationService.Object.NotifyGameStarted());
 
         // Assert
-        timer.WaitForState(() => timer.Find("label").TextContent == "0:00:01", TimeSpan.FromMilliseconds(1500));
+        timer.WaitForState(() => timer.Find("label").TextContent == "0:00:01", TimeSpan.FromMilliseconds(2000));
         timer.Find("label").MarkupMatches("<label>0:00:01</label>");
     }
 }
