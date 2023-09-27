@@ -1,11 +1,11 @@
 trigger:
 - main
 
-pool:
-  vmImage: 'ubuntu-latest'
-
 variables:
   - template: variables.yml
+
+pool:
+  vmImage: $(vmImageName)
 
 jobs:
   - job: BuildAndTest
