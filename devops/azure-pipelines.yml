@@ -80,7 +80,7 @@ stages:
           - task: DownloadPipelineArtifact@2
             inputs:
               buildType: 'current'
-              artifactName: 'drop'
+              artifactName: 'drop.zip'
               targetPath: '$(Pipeline.Workspace)/drop'
 
           - script: pwd
