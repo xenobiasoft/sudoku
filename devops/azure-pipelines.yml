@@ -7,79 +7,86 @@ variables:
 pool:
   vmImage: $(vmImageName)
 
-jobs:
-  - job: BuildAndDeployIaC
-    displayName: build and deploy IaC
-    steps:
-      - task: AzureResourceManagerTemplateDeployment@3
-        inputs:
-          deploymentScope: 'Resource Group'
-          azureResourceManagerConnection: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
-          subscriptionId: $(subscriptionId)
-          action: 'Create Or Update Resource Group'
-          resourceGroupName: $(resourceGroup)
-          location: $(location)
-          templateLocation: 'Linked artifact'
-          csmFile: './devops/main.bicep'
-          deploymentMode: 'Incremental'
+stages:
+  - stage: IaC  
+    jobs:
+      - job: IaC
+        displayName: build and deploy IaC
+        steps:
+          - task: AzureResourceManagerTemplateDeployment@3
+            inputs:
+              deploymentScope: 'Resource Group'
+              azureResourceManagerConnection: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
+              subscriptionId: $(subscriptionId)
+              action: 'Create Or Update Resource Group'
+              resourceGroupName: $(resourceGroup)
+              location: $(location)
+              templateLocation: 'Linked artifact'
+              csmFile: './devops/main.bicep'
+              deploymentMode: 'Incremental'
 
-  - job: BuildAndTest
-    displayName: build and run test
-    dependsOn: BuildAndDeployIaC
-    condition: succeeded()
-    steps:          
-      - task: UseDotNet@2
-        displayName: set sdk to .NET 7
-        inputs:
-          packageType: sdk
-          version: "7.0.x"
+  - stage: Build
+    jobs:
+      - job: BuildAndTest
+        displayName: build and run tests
+        steps:          
+          - task: UseDotNet@2
+            displayName: set sdk to .NET 7
+            inputs:
+              packageType: sdk
+              version: "7.0.x"
 
-      - task: DotNetCoreCLI@2
-        displayName: dotnet restore
-        inputs:
-          command: 'restore'
-          projects: '**/*.csproj'
-          includeNuGetOrg: true
-          feedsToUse: "select"
-          vstsFeed: $(vstsFeed)
-      
-      - task: DotNetCoreCLI@2
-        displayName: dotnet test
-        inputs:
-          command: 'test'
-          projects: '**/UnitTests.csproj'
-
-      - task: DotNetCoreCLI@2
-        displayName: dotnet build
-        inputs:
-          command: 'build'
-          projects: '**/*.csproj'
-          arguments: '--configuration Release'
-
-      - task: DotNetCoreCLI@2
-        inputs:
-          command: 'publish'
-          publishWebProjects: true
-          arguments: '-o $(build.artifactStagingDirectory)'
-          zipAfterPublish: false
-          modifyOutputPath: false
+          - task: DotNetCoreCLI@2
+            displayName: dotnet restore
+            inputs:
+              command: 'restore'
+              projects: '**/*.csproj'
+              includeNuGetOrg: true
+              feedsToUse: "select"
+              vstsFeed: $(vstsFeed)
           
-      - task: PublishPipelineArtifact@1
-        inputs:
-          targetPath: '$(build.artifactStagingDirectory)'
-          artifact: 'drop'
-          publishLocation: 'pipeline'
+          - task: DotNetCoreCLI@2
+            displayName: dotnet test
+            inputs:
+              command: 'test'
+              projects: '**/UnitTests.csproj'
 
-  - job: Deploy
-    displayName: deploy app
-    dependsOn: BuildAndTest
-    condition: succeeded()
-    steps:
-      - task: AzureRmWebAppDeployment@4
-        inputs:
-          ConnectionType: 'AzureRM'
-          azureSubscription: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
-          appType: 'webAppLinux'
-          WebAppName: 'XenobiaSoftSudoku'
-          packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
-          RuntimeStack: 'DOTNETCORE|7.0'
+          - task: DotNetCoreCLI@2
+            displayName: dotnet build
+            inputs:
+              command: 'build'
+              projects: '**/*.csproj'
+              arguments: '--configuration Release'
+
+          - task: DotNetCoreCLI@2
+            inputs:
+              command: 'publish'
+              publishWebProjects: true
+              arguments: '-o $(build.artifactStagingDirectory)'
+              zipAfterPublish: false
+              modifyOutputPath: false
+              
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(build.artifactStagingDirectory)'
+              artifact: 'drop'
+              publishLocation: 'pipeline'
+
+  - stage: Deploy
+    jobs:
+      - job: deployToAppService
+        displayName: deploy to azure app service
+        steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              buildType: 'current'
+              artifactName: 'drop'
+              targetPath: '$(Pipeline.Workspace)/drop'
+          
+          - task: AzureWebApp@1
+            inputs:
+              azureSubscription: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
+              appType: 'webAppLinux'
+              appName: 'XenobiaSoftSudoku'
+              package: '$(Pipeline.Workspace)/drop/*.zip'
+              runtimeStack: 'DOTNETCORE|7.0'
