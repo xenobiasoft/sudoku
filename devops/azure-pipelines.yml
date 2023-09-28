@@ -68,3 +68,4 @@ jobs:
           appType: 'webAppLinux'
           WebAppName: 'XenobiaSoftSudoku'
           packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
+          RuntimeStack: 'DOTNETCORE|7.0'
