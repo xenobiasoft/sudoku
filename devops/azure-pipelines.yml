@@ -82,6 +82,14 @@ stages:
               buildType: 'current'
               artifactName: 'drop'
               targetPath: '$(Pipeline.Workspace)/drop'
+
+          - script: pwd
+            displayName: workspace directory
+            workingDirectory: '$(Pipeline.Workspace)'
+
+          - script: ls -lR
+            displayName: files in workspace directory
+            workingDirectory: '$(Pipeline.Workspace)'
           
           - task: AzureWebApp@1
             inputs:
