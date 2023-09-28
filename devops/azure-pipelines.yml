@@ -96,5 +96,5 @@ stages:
               azureSubscription: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
               appType: 'webAppLinux'
               appName: 'XenobiaSoftSudoku'
-              package: '$(Pipeline.Workspace)/drop/drop.zip'
+              package: '$(Pipeline.Workspace)/drop.zip'
               runtimeStack: 'DOTNETCORE|7.0'
