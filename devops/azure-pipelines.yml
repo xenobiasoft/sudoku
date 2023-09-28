@@ -69,7 +69,7 @@ stages:
           - task: PublishPipelineArtifact@1
             inputs:
               targetPath: '$(build.artifactStagingDirectory)'
-              artifact: 'drop'
+              artifact: 'drop.zip'
               publishLocation: 'pipeline'
 
   - stage: Deploy
