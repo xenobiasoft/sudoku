@@ -1,14 +1,15 @@
 ﻿using DepenMock.XUnit;
 using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Helpers;
 using XenobiaSoft.Sudoku.Strategies;
 
 namespace UnitTests.StrategyTests;
 
-public class LoneRangersInMiniGridStrategyTests : BaseTestByAbstraction<LoneRangersInMiniGridsStrategy, SolverStrategy>
+public class SinglesInColumnsStrategyTests : BaseTestByAbstraction<SinglesInColumnsStrategy, SolverStrategy>
 {
 	[Fact]
-	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInMiniGrid_SetValueToThatNumber()
+	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInColumn_SetValueToThatNumber()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
@@ -18,11 +19,11 @@ public class LoneRangersInMiniGridStrategyTests : BaseTestByAbstraction<LoneRang
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.GetCell(5, 2).Value.Should().Be(3);
+		puzzle.GetCell(6, 0).Value.Should().Be(9);
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenACellValueIsSet_ReturnsExpectedScore()
+	public void SolvePuzzle_WhenCellValueIsSet_ReturnsExpectedScore()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
@@ -38,7 +39,22 @@ public class LoneRangersInMiniGridStrategyTests : BaseTestByAbstraction<LoneRang
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsScoreOfZero()
+	public void SolvePuzzle_WhenCellValueIsSet_RemovesThatValueFromColumnCellsPossibleValues()
+	{
+		// Arrange
+		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var loneRangerCell = puzzle.GetCell(6, 0);
+		var sut = ResolveSut();
+
+		// Act
+		sut.SolvePuzzle(puzzle);
+
+		// Assert
+		puzzle.GetColumnCells(loneRangerCell.Column).ToList().ForEach(x => x.PossibleValues.Should().NotContain("9"));
+	}
+
+	[Fact]
+	public void SolvePuzzle_WhenCellValueIsNotSet_ReturnsScoreOfZero()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetEmptyPuzzle();

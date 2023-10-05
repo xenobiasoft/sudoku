@@ -1,6 +1,6 @@
 ﻿namespace XenobiaSoft.Sudoku.Strategies;
 
-public class LoneRangersInRowsStrategy : SolverStrategy
+public class SinglesInRowsStrategy : SolverStrategy
 {
 	private const int Score = 2;
 

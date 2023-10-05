@@ -5,10 +5,10 @@ using XenobiaSoft.Sudoku.Strategies;
 
 namespace UnitTests.StrategyTests;
 
-public class LoneRangersInRowsStrategyTests : BaseTestByAbstraction<LoneRangersInRowsStrategy, SolverStrategy>
+public class SinglesInMiniGridStrategyTests : BaseTestByAbstraction<SinglesInMiniGridsStrategy, SolverStrategy>
 {
 	[Fact]
-	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInRow_SetValueToThatNumber()
+	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInMiniGrid_SetValueToThatNumber()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
@@ -18,7 +18,7 @@ public class LoneRangersInRowsStrategyTests : BaseTestByAbstraction<LoneRangersI
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.GetCell(2, 6).Value.Should().Be(5);
+		puzzle.GetCell(5, 2).Value.Should().Be(3);
 	}
 
 	[Fact]
