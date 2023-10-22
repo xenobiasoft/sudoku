@@ -43,7 +43,7 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2022-09-01' = {
     managedPipelineMode: 'Integrated'
     virtualApplications: [
       {
-        virtualPath: '/apps/sudoku'
+        virtualPath: '/'
         physicalPath: 'site\\wwwroot'
         preloadEnabled: false
       }
