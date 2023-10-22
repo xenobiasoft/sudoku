@@ -2,7 +2,7 @@ param siteName string = 'XenobiaSoftSudoku'
 param location string = resourceGroup().location
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
-  name: '${siteName}Service'
+  name: 'XenobiaSoftServicePlan'
   location: location
   properties: {
     reserved: true
@@ -43,7 +43,7 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2022-09-01' = {
     managedPipelineMode: 'Integrated'
     virtualApplications: [
       {
-        virtualPath: '/'
+        virtualPath: '/apps/sudoku'
         physicalPath: 'site\\wwwroot'
         preloadEnabled: false
       }
