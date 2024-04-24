@@ -31,10 +31,10 @@ stages:
         displayName: build and run tests
         steps:          
           - task: UseDotNet@2
-            displayName: set sdk to .NET 7
+            displayName: set sdk to .NET 8
             inputs:
               packageType: sdk
-              version: "7.0.x"
+              version: "8.0.x"
 
           - task: DotNetCoreCLI@2
             displayName: dotnet restore
