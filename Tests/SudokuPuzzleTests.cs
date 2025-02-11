@@ -90,8 +90,8 @@ public class SudokuPuzzleTests
 			miniGridCells.Count().Should().Be(9);
 			miniGridCells.ToList().ForEach(x =>
 			{
-				x.Row.Should().BeGreaterOrEqualTo(minRow).And.BeLessOrEqualTo(maxRow);
-				x.Column.Should().BeGreaterOrEqualTo(minCol).And.BeLessOrEqualTo(maxCol);
+				x.Row.Should().BeGreaterThanOrEqualTo(minRow).And.BeLessThanOrEqualTo(maxRow);
+				x.Column.Should().BeGreaterThanOrEqualTo(minCol).And.BeLessThanOrEqualTo(maxCol);
 			});
 		});
 	}

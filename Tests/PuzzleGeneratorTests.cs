@@ -57,7 +57,7 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
 		var puzzle = await sut.Generate(level);
 
 		// Assert
-		puzzle.Count(x => !x.Value.HasValue).Should().BeGreaterThanOrEqualTo(minEmptyCells).And.BeLessOrEqualTo(maxEmptyCells);
+		puzzle.Count(x => !x.Value.HasValue).Should().BeGreaterThanOrEqualTo(minEmptyCells).And.BeLessThanOrEqualTo(maxEmptyCells);
 	}
 
 	[Fact]
