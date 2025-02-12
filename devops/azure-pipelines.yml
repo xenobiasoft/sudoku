@@ -99,4 +99,4 @@ stages:
               appType: 'webAppLinux'
               appName: 'XenobiaSoftSudoku'
               package: '$(Pipeline.Workspace)/drop/*.zip'
-              runtimeStack: 'DOTNETCORE|7.0'
+              runtimeStack: 'DOTNETCORE|8.0'
