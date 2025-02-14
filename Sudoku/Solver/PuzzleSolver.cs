@@ -1,23 +1,14 @@
 ﻿using XenobiaSoft.Sudoku.Exceptions;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Strategies;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace XenobiaSoft.Sudoku.Solver;
 
-public class PuzzleSolver : IPuzzleSolver
+public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateMemory gameStateMemory)
+    : IPuzzleSolver
 {
-    private readonly IEnumerable<SolverStrategy> _strategies;
-    private readonly IGameStateMemory _gameStateMemory;
-
     private int _score;
     private Cell[] _puzzle;
-
-    public PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateMemory gameStateMemory)
-    {
-	    _gameStateMemory = gameStateMemory;
-	    _strategies = strategies;
-    }
 
     public async Task<Cell[]> SolvePuzzle(Cell[] cells)
     {
@@ -37,7 +28,7 @@ public class PuzzleSolver : IPuzzleSolver
 				{
 					Save();
 
-					foreach (var strategy in _strategies)
+					foreach (var strategy in strategies)
 					{
 						Console.WriteLine($"Solving with {strategy.GetType().Name}");
 						_score += strategy.SolvePuzzle(_puzzle);
@@ -94,12 +85,12 @@ public class PuzzleSolver : IPuzzleSolver
 
 	    var clonedPuzzle = _puzzle.Select(x => x.Copy());
 
-	    _gameStateMemory.Save(new GameStateMemento(clonedPuzzle, _score));
+	    gameStateMemory.Save(new GameStateMemento(clonedPuzzle, _score));
     }
 
     private void Undo()
     {
-	    var memento = _gameStateMemory.Undo();
+	    var memento = gameStateMemory.Undo();
 
 	    _score = memento.Score;
 	    _puzzle = memento

@@ -3,22 +3,14 @@ using XenobiaSoft.Sudoku.Solver;
 
 namespace XenobiaSoft.Sudoku;
 
-public class SudokuGame : ISudokuGame
+public class SudokuGame(IPuzzleSolver puzzleSolver, IPuzzleGenerator puzzleGenerator)
+    : ISudokuGame
 {
-	private readonly IPuzzleSolver _puzzleSolver;
-	private readonly IPuzzleGenerator _puzzleGenerator;
+    public Cell[] Puzzle { get; private set; } = new Cell[GameDimensions.Columns * GameDimensions.Rows];
 
-	public Cell[] Puzzle { get; private set; } = new Cell[GameDimensions.Columns * GameDimensions.Rows];
-
-	public SudokuGame(IPuzzleSolver puzzleSolver, IPuzzleGenerator puzzleGenerator)
+    public async Task New(Level level)
 	{
-		_puzzleGenerator = puzzleGenerator;
-		_puzzleSolver = puzzleSolver;
-	}
-
-	public async Task New(Level level)
-	{
-		var puzzle = await _puzzleGenerator.Generate(level).ConfigureAwait(false);
+		var puzzle = await puzzleGenerator.Generate(level).ConfigureAwait(false);
 
 		await LoadPuzzle(puzzle).ConfigureAwait(false);
 	}
@@ -32,7 +24,7 @@ public class SudokuGame : ISudokuGame
 
 	public async Task Reset()
 	{
-		Puzzle = await _puzzleGenerator.GenerateEmptyPuzzle().ConfigureAwait(false);
+		Puzzle = await puzzleGenerator.GenerateEmptyPuzzle().ConfigureAwait(false);
 	}
 
 	public void SetCell(int row, int col, int value)
@@ -55,6 +47,6 @@ public class SudokuGame : ISudokuGame
 
 	public async Task SolvePuzzle()
 	{
-		Puzzle = await _puzzleSolver.SolvePuzzle(Puzzle).ConfigureAwait(false);
+		Puzzle = await puzzleSolver.SolvePuzzle(Puzzle).ConfigureAwait(false);
 	}
 }

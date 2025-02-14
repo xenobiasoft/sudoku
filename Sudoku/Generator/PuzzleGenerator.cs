@@ -2,20 +2,13 @@
 
 namespace XenobiaSoft.Sudoku.Generator;
 
-public class PuzzleGenerator : IPuzzleGenerator
+public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
 {
-	private readonly IPuzzleSolver _puzzleSolver;
-
-	public PuzzleGenerator(IPuzzleSolver puzzleSolver)
-	{
-		_puzzleSolver = puzzleSolver;
-	}
-
-	public async Task<Cell[]> Generate(Level level)
+    public async Task<Cell[]> Generate(Level level)
 	{
 		var puzzle = await GenerateEmptyPuzzle().ConfigureAwait(false);
 
-		puzzle = await _puzzleSolver.SolvePuzzle(puzzle).ConfigureAwait(false);
+		puzzle = await puzzleSolver.SolvePuzzle(puzzle).ConfigureAwait(false);
 
 		puzzle = CreateEmptyCells(puzzle, level);
 

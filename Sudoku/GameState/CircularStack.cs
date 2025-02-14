@@ -3,7 +3,6 @@
 public class CircularStack<TStackItemType>
 {
     private TStackItemType[] _buffer;
-    private int _size;
     private int _top;
 
     public CircularStack(int capacity)
@@ -17,7 +16,7 @@ public class CircularStack<TStackItemType>
         Initialize();
     }
 
-    public int Count => _size;
+    public int Count { get; private set; }
 
     public int Capacity { get; }
 
@@ -25,14 +24,14 @@ public class CircularStack<TStackItemType>
     {
         lock (_buffer)
         {
-            if (_size == Capacity)
+            if (Count == Capacity)
             {
                 _top = (_top + 1) % Capacity;
             }
             else
             {
                 _top = (_top + 1) % Capacity;
-                _size++;
+                Count++;
             }
 
             _buffer[_top] = item;
@@ -41,21 +40,21 @@ public class CircularStack<TStackItemType>
 
     public TStackItemType Pop()
     {
-        if (_size == 0)
+        if (Count == 0)
         {
             throw new InvalidOperationException("The stack is empty.");
         }
 
         var item = _buffer[_top];
         _top = (_top - 1 + Capacity) % Capacity;
-        _size--;
+        Count--;
 
         return item;
     }
 
     public TStackItemType Peek()
     {
-        if (_size == 0)
+        if (Count == 0)
         {
             throw new InvalidOperationException("The stack is empty.");
         }
@@ -65,12 +64,12 @@ public class CircularStack<TStackItemType>
 
     public bool IsEmpty()
     {
-        return _size == 0;
+        return Count == 0;
     }
 
     public bool IsFull()
     {
-        return _size == Capacity;
+        return Count == Capacity;
     }
 
     public void Clear()
@@ -81,7 +80,7 @@ public class CircularStack<TStackItemType>
     private void Initialize()
     {
         _buffer = new TStackItemType[Capacity];
-        _size = 0;
+        Count = 0;
         _top = -1;
     }
 }

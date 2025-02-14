@@ -1,13 +1,7 @@
 ﻿namespace XenobiaSoft.Sudoku.GameState;
 
-public class GameStateMemento
+public class GameStateMemento(IEnumerable<Cell> cells, int score)
 {
-	public GameStateMemento(IEnumerable<Cell> cells, int score)
-	{
-		Cells = cells;
-		Score = score;
-	}
-
-	public IEnumerable<Cell> Cells { get; private set; }
-	public int Score { get; private set; }
+    public IEnumerable<Cell> Cells { get; private set; } = cells;
+    public int Score { get; private set; } = score;
 }
