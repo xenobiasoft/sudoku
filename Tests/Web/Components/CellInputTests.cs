@@ -51,7 +51,7 @@ public class CellInputTests : TestContext
         var renderedComponent = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
 
         // Assert
-        renderedComponent.MarkupMatches("<td class=\"cell\"><input class=\"\" type=\"text\" maxlength=\"1\" value=\"7\" /></td>");
+        renderedComponent.MarkupMatches("<td class=\"cell\"><input class=\"\" type=\"text\" maxlength=\"1\" value=\"7\" readonly=\"\" /></td>");
     }
 
     [Fact]
@@ -74,7 +74,7 @@ public class CellInputTests : TestContext
         renderedCell.Render();
 
         // Assert
-        renderedCell.MarkupMatches("<td class=\"cell\"><input class=\"highlight\" type=\"text\" maxlength=\"1\" value=\"7\" /></td>");
+        renderedCell.MarkupMatches("<td class=\"cell\"><input class=\"highlight\" type=\"text\" maxlength=\"1\" value=\"7\" readonly=\"\" /></td>");
     }
 
     [Fact]
@@ -98,7 +98,7 @@ public class CellInputTests : TestContext
         renderedCell.Render();
 
         // Assert
-        renderedCell.MarkupMatches("<td class=\"cell\"><input class=\"invalid\" type=\"text\" maxlength=\"1\" value=\"7\" /></td>");
+        renderedCell.MarkupMatches("<td class=\"cell\"><input class=\"invalid\" type=\"text\" maxlength=\"1\" value=\"7\" readonly=\"\" /></td>");
     }
 
     [Fact]
