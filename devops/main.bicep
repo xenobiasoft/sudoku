@@ -8,10 +8,10 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
     reserved: true
   }
   sku: {
-    name: 'D1'
-    tier: 'Shared'
-    size: 'D1'
-    family: 'D'
+    name: 'B1'
+    tier: 'Basic'
+    size: 'B1'
+    family: 'B'
     capacity: 1
   }
   kind: 'app,linux'

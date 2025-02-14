@@ -1,5 +1,5 @@
 variables:
-  location: 'East US'
+  location: 'Central US'
   resourceGroup: 'rg-xenobiasoft'
   subscriptionId: 'c0c21e76-a03c-4747-af34-0720b273ff00'
   vstsFeed: "46043435-5797-4ef6-96f0-aab4c83d8ee4"
