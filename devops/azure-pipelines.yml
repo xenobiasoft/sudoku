@@ -15,15 +15,15 @@ stages:
         steps:
           - task: AzureResourceManagerTemplateDeployment@3
             inputs:
-              deploymentScope: 'Resource Group'
-              azureResourceManagerConnection: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
-              subscriptionId: $(subscriptionId)
-              action: 'Create Or Update Resource Group'
-              resourceGroupName: $(resourceGroup)
-              location: $(location)
-              templateLocation: 'Linked artifact'
-              csmFile: './devops/main.bicep'
-              deploymentMode: 'Incremental'
+                         deploymentScope: 'Resource Group'
+                         azureResourceManagerConnection: 'XenobiaSoft Azure Subscription($(subscriptionId))'
+                         subscriptionId: $(subscriptionId)
+                         action: 'Create Or Update Resource Group'
+                         resourceGroupName: $(resourceGroup)
+                         location: $(location)
+                         templateLocation: 'Linked artifact'
+                         csmFile: './devops/main.bicep'
+                         deploymentMode: 'Incremental'
 
   - stage: Build
     jobs:
@@ -95,7 +95,7 @@ stages:
           
           - task: AzureWebApp@1
             inputs:
-              azureSubscription: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
+              azureSubscription: 'XenobiaSoft Azure Subscription($(subscriptionId))'
               appType: 'webAppLinux'
               appName: 'XenobiaSoftSudoku'
               package: '$(Pipeline.Workspace)/drop/*.zip'
