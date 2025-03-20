@@ -15,15 +15,15 @@ stages:
         steps:
           - task: AzureResourceManagerTemplateDeployment@3
             inputs:
-                         deploymentScope: 'Resource Group'
-                         azureResourceManagerConnection: 'XenobiaSoft Azure Subscription($(subscriptionId))'
-                         subscriptionId: $(subscriptionId)
-                         action: 'Create Or Update Resource Group'
-                         resourceGroupName: $(resourceGroup)
-                         location: $(location)
-                         templateLocation: 'Linked artifact'
-                         csmFile: './devops/main.bicep'
-                         deploymentMode: 'Incremental'
+                                    deploymentScope: 'Resource Group'
+                                    azureResourceManagerConnection: 'XenobiaSoft Azure Subscription($(env:SUBSCRIPTION_ID))'
+                                    subscriptionId: $(env:SUBSCRIPTION_ID)
+                                    action: 'Create Or Update Resource Group'
+                                    resourceGroupName: $(resourceGroup)
+                                    location: $(location)
+                                    templateLocation: 'Linked artifact'
+                                    csmFile: './devops/main.bicep'
+                                    deploymentMode: 'Incremental'
 
   - stage: Build
     jobs:
@@ -43,7 +43,7 @@ stages:
               projects: '**/*.csproj'
               includeNuGetOrg: true
               feedsToUse: "select"
-              vstsFeed: $(vstsFeed)
+              vstsFeed: $(env:VSTS_FEED)
           
           - task: DotNetCoreCLI@2
             displayName: dotnet test
@@ -95,7 +95,7 @@ stages:
           
           - task: AzureWebApp@1
             inputs:
-              azureSubscription: 'XenobiaSoft Azure Subscription($(subscriptionId))'
+              azureSubscription: 'XenobiaSoft Azure Subscription($(env:SUBSCRIPTION_ID))'
               appType: 'webAppLinux'
               appName: 'XenobiaSoftSudoku'
               package: '$(Pipeline.Workspace)/drop/*.zip'

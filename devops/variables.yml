@@ -1,6 +1,4 @@
 variables:
   location: 'Central US'
   resourceGroup: 'rg-xenobiasoft'
-  subscriptionId: ${{ env.SUBSCRIPTION_ID }}
-  vstsFeed: ${{ env.VSTS_FEED }}
   vmImageName: 'ubuntu-latest'
