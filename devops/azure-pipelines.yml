@@ -17,7 +17,7 @@ stages:
             inputs:
               deploymentScope: 'Resource Group'
               azureResourceManagerConnection: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
-              subscriptionId: $(env:SUBSCRIPTION_ID)
+              subscriptionId: $(SUBSCRIPTION_ID)
               action: 'Create Or Update Resource Group'
               resourceGroupName: $(resourceGroup)
               location: $(location)
@@ -43,7 +43,7 @@ stages:
               projects: '**/*.csproj'
               includeNuGetOrg: true
               feedsToUse: "select"
-              vstsFeed: $(env:VSTS_FEED)
+              vstsFeed: $(VSTS_FEED)
           
           - task: DotNetCoreCLI@2
             displayName: dotnet test
