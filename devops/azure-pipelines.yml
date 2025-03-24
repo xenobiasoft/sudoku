@@ -19,8 +19,8 @@ stages:
               azureResourceManagerConnection: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
               subscriptionId: $(SUBSCRIPTION_ID)
               action: 'Create Or Update Resource Group'
-              resourceGroupName: $(resourceGroup)
-              location: $(location)
+              resourceGroupName: 'rg-xenobiasoft'
+              location: 'Central US'
               templateLocation: 'Linked artifact'
               csmFile: './devops/main.bicep'
               deploymentMode: 'Incremental'
@@ -57,8 +57,6 @@ stages:
               command: 'build'
               projects: '**/*.csproj'
               arguments: '--configuration Release'
-
-
 
           - task: DotNetCoreCLI@2
             inputs:
