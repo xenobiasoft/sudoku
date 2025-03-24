@@ -23,6 +23,6 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
-app.MapHealthChecks("health-check");
+app.MapHealthChecks("/health-check");
 
 app.Run();
