@@ -1,28 +1,36 @@
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorPages();
-builder.Services.AddServerSideBlazor();
-builder.Services.AddHealthChecks();
-builder.Services
-    .RegisterGameServices()
-    .RegisterBlazorGameServices();
-
-var app = builder.Build();
-
-if (!app.Environment.IsDevelopment())
+try
 {
-	app.UseExceptionHandler("/Error");
-	app.UseHsts();
+    builder.Services.AddRazorPages();
+    builder.Services.AddServerSideBlazor();
+    builder.Services.AddHealthChecks();
+    builder.Services
+        .RegisterGameServices()
+        .RegisterBlazorGameServices();
+
+    var app = builder.Build();
+
+    if (!app.Environment.IsDevelopment())
+    {
+	    app.UseExceptionHandler("/Error");
+	    app.UseHsts();
+    }
+
+    app.UseHttpsRedirection();
+
+    app.UseStaticFiles();
+
+    app.UseRouting();
+
+    app.MapBlazorHub();
+    app.MapFallbackToPage("/_Host");
+    app.MapHealthChecks("/health-check");
+
+    app.Run();
 }
-
-app.UseHttpsRedirection();
-
-app.UseStaticFiles();
-
-app.UseRouting();
-
-app.MapBlazorHub();
-app.MapFallbackToPage("/_Host");
-app.MapHealthChecks("/health-check");
-
-app.Run();
+catch (Exception ex)
+{
+    Console.WriteLine(ex);
+    throw;
+}
