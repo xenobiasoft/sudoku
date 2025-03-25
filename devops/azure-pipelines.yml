@@ -31,10 +31,10 @@ stages:
         displayName: build and run tests
         steps:          
           - task: UseDotNet@2
-            displayName: set sdk to .NET 8
+            displayName: set sdk to .NET 9
             inputs:
               packageType: sdk
-              version: "8.0.x"
+              version: "9.0.x"
 
           - task: DotNetCoreCLI@2
             displayName: dotnet restore
@@ -97,4 +97,4 @@ stages:
               appType: 'webAppLinux'
               appName: 'XenobiaSoftSudoku'
               package: '$(Pipeline.Workspace)/drop/*.zip'
-              runtimeStack: 'DOTNETCORE:8.0'
+              runtimeStack: DOTNET-ISOLATED|8.0'
