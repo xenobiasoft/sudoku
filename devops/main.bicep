@@ -23,7 +23,7 @@ resource appService 'Microsoft.Web/sites@2022-09-01' = {
   kind: 'app'
   properties: {
     enabled: true
-    linuxFxVersion: 'DOTNETCORE|8.0'
+    linuxFxVersion: 'DOTNETCORE|9.0'
     serverFarmId: appServicePlan.id
   }
 }
@@ -38,8 +38,7 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2022-09-01' = {
       'index.html'      
     ]
     httpsOnly: true
-    linuxFxVersion: 'DOTNETCORE|8.0'
-    netFrameworkVersion: 'v4.0'
+    linuxFxVersion: 'DOTNETCORE|9.0'
     managedPipelineMode: 'Integrated'
     virtualApplications: [
       {
