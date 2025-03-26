@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-namespace XenobiaSoft.Sudoku.GameState;
+﻿namespace XenobiaSoft.Sudoku.GameState;
 
 public class GameStateMemory : IGameStateMemory
 {
@@ -22,7 +20,7 @@ public class GameStateMemory : IGameStateMemory
 		{
 			var previousGameState = _gameState.Peek();
 
-			if (gameState.Cells.SequenceEqual(previousGameState.Cells)) return;
+			if (gameState.Puzzle.GetAllCells().SequenceEqual(previousGameState.Puzzle.GetAllCells())) return;
 		}
 
 		_gameState.Push(gameState);

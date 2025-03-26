@@ -229,11 +229,11 @@ public class PuzzleFactoryTests
         });
     }
 	
-	private static string[,] GetAllPossibleValues(Cell[] cells)
+	private static string[,] GetAllPossibleValues(ISudokuPuzzle puzzle)
 	{
 		var possibleValues = new string[9, 9];
 
-		cells.ToList().ForEach(x => possibleValues[x.Row, x.Column] = x.PossibleValues);
+		puzzle.GetAllCells().ToList().ForEach(x => possibleValues[x.Row, x.Column] = x.PossibleValues);
 
 		return possibleValues;
 	}

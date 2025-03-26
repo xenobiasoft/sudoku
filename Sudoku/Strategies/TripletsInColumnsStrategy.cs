@@ -6,17 +6,17 @@ public class TripletsInColumnsStrategy : SolverStrategy
 {
 	private const int Score = 4;
 
-	public override int Execute(Cell[] cells)
+	public override int Execute(ISudokuPuzzle puzzle)
 	{
 		var totalScore = 0;
 
-		foreach (var cell in cells)
+		foreach (var cell in puzzle.GetAllCells())
 		{
 			if (cell.Value.HasValue || cell.PossibleValues.Length != 3) continue;
 
 			var triplets = new List<Cell> { cell };
 
-			foreach (var colCell in cells.GetColumnCells(cell.Column).Where(x => x != cell))
+			foreach (var colCell in puzzle.GetColumnCells(cell.Column).Where(x => x != cell))
 			{
 				if (cell.PossibleValues == colCell.PossibleValues ||
 					(colCell.PossibleValues.Length == 3 &&
@@ -30,7 +30,7 @@ public class TripletsInColumnsStrategy : SolverStrategy
 
 			if (triplets.Count != 3) continue;
 
-			foreach (var nonTripletCell in cells.GetColumnCells(cell.Column))
+			foreach (var nonTripletCell in puzzle.GetColumnCells(cell.Column))
 			{
 				if (nonTripletCell.Value.HasValue || triplets.Contains(nonTripletCell)) continue;
 

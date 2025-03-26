@@ -6,7 +6,7 @@ namespace XenobiaSoft.Sudoku;
 public class SudokuGame(IPuzzleSolver puzzleSolver, IPuzzleGenerator puzzleGenerator)
     : ISudokuGame
 {
-    public Cell[] Puzzle { get; private set; } = new Cell[GameDimensions.Columns * GameDimensions.Rows];
+    public ISudokuPuzzle Puzzle { get; private set; } = new SudokuPuzzle();
 
     public async Task New(Level level)
 	{
@@ -15,7 +15,7 @@ public class SudokuGame(IPuzzleSolver puzzleSolver, IPuzzleGenerator puzzleGener
 		await LoadPuzzle(puzzle).ConfigureAwait(false);
 	}
 
-	public async Task LoadPuzzle(Cell[] puzzle)
+	public async Task LoadPuzzle(ISudokuPuzzle puzzle)
 	{
 		await Reset().ConfigureAwait(false);
 

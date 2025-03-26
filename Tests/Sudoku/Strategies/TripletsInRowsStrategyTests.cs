@@ -50,14 +50,14 @@ public class TripletsInRowsStrategyTests : BaseTestByAbstraction<TripletsInRowsS
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		var initialCellsWithValues = puzzle.Count(x => x.Value.HasValue);
+		var initialCellsWithValues = puzzle.GetAllCells().Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		var expectedScore = (puzzle.Count(x => x.Value.HasValue) - initialCellsWithValues) * 4;
+		var expectedScore = (puzzle.GetAllCells().Count(x => x.Value.HasValue) - initialCellsWithValues) * 4;
 		score.Should().Be(expectedScore);
 	}
 
@@ -103,7 +103,7 @@ public class TripletsInRowsStrategyTests : BaseTestByAbstraction<TripletsInRowsS
 		Assert.Throws<InvalidMoveException>(SolvePuzzle);
 	}
 
-	private Cell[] GetTripletsPuzzle()
+	private ISudokuPuzzle GetTripletsPuzzle()
 	{
 		var values = new int?[,] {
 			{null, null, null, null, null, null, 3, 2, 1},

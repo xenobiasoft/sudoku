@@ -6,23 +6,23 @@ public class TwinsInMiniGridsStrategy : SolverStrategy
 {
 	private const int Score = 3;
 
-	public override int Execute(Cell[] cells)
+	public override int Execute(ISudokuPuzzle puzzle)
 	{
 		var totalScore = 0;
 
-		foreach (var cell in cells)
+		foreach (var cell in puzzle.GetAllCells())
 		{
 			if (cell.Value.HasValue || cell.PossibleValues.Length != 2) continue;
 
 			var twins = new List<Cell> { cell };
 
-			foreach (var twinCell in cells.GetMiniGridCells(cell.Row, cell.Column))
+			foreach (var twinCell in puzzle.GetMiniGridCells(cell.Row, cell.Column))
 			{
 				if (cell == twinCell || cell.PossibleValues != twinCell.PossibleValues) continue;
 
 				twins.Add(twinCell);
 
-				foreach (var nonTwinCell in cells.GetMiniGridCells(cell.Row, cell.Column).Where(x => !twins.Contains(x)))
+				foreach (var nonTwinCell in puzzle.GetMiniGridCells(cell.Row, cell.Column).Where(x => !twins.Contains(x)))
 				{
 					if (nonTwinCell.Value.HasValue || nonTwinCell.PossibleValues == cell.PossibleValues) continue;
 

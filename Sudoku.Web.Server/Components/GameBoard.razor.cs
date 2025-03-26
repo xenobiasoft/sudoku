@@ -8,8 +8,7 @@ namespace Sudoku.Web.Server.Components
     {
         private Cell _selectedCell = new(0, 0);
 
-        [Parameter] 
-        public Cell[] Puzzle { get; set; } = new Cell[81];
+        [Parameter] public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
 
         [Parameter]
         public EventCallback<Cell> OnCellFocus { get; set; }

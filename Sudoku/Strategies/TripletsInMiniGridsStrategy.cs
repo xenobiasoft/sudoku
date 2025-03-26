@@ -6,17 +6,17 @@ public class TripletsInMiniGridsStrategy : SolverStrategy
 {
 	private const int Score = 4;
 
-	public override int Execute(Cell[] cells)
+	public override int Execute(ISudokuPuzzle puzzle)
 	{
 		var totalScore = 0;
 
-		foreach (var cell in cells)
+		foreach (var cell in puzzle.GetAllCells())
 		{
 			if (cell.Value.HasValue || cell.PossibleValues.Length != 3) continue;
 
 			var triplets = new List<Cell>() { cell };
 
-			foreach (var miniGridCell in cells.GetMiniGridCells(cell.Row, cell.Column).Where(x => x != cell))
+			foreach (var miniGridCell in puzzle.GetMiniGridCells(cell.Row, cell.Column).Where(x => x != cell))
 			{
 				if (miniGridCell != cell &&
 				    (
@@ -32,7 +32,7 @@ public class TripletsInMiniGridsStrategy : SolverStrategy
 
 			if (triplets.Count != 3) continue;
 
-			foreach (var nonTripletCell in cells.GetMiniGridCells(cell.Row, cell.Column))
+			foreach (var nonTripletCell in puzzle.GetMiniGridCells(cell.Row, cell.Column))
 			{
 				if (nonTripletCell.Value.HasValue || triplets.Contains(nonTripletCell)) continue;
 

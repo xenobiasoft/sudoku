@@ -26,14 +26,14 @@ public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<C
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-		var initialCellsWithValues = puzzle.Count(x => x.Value.HasValue);
+		var initialCellsWithValues = puzzle.GetAllCells().Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		var expectedScore = puzzle.Count(x => x.Value.HasValue) - initialCellsWithValues;
+		var expectedScore = puzzle.GetAllCells().Count(x => x.Value.HasValue) - initialCellsWithValues;
 		score.Should().Be(expectedScore);
 	}
 

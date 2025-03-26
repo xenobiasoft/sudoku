@@ -2,5 +2,5 @@
 
 public interface IPuzzleSolver
 {
-	Task<Cell[]> SolvePuzzle(Cell[] cells);
+	Task<ISudokuPuzzle> SolvePuzzle(ISudokuPuzzle puzzle);
 }

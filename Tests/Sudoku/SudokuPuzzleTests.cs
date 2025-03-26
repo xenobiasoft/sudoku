@@ -130,7 +130,7 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
     public void IsValid_WhenGivenValidPuzzle_ReturnsTrue(Level level)
     {
         // Arrange
-        var sut = ResolveSut();
+        var sut = PuzzleFactory.GetPuzzle(level);
 
         // Act
         var isValid = sut.IsValid();
@@ -156,8 +156,7 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
     public void IsValid_WhenGivenCompletedValidPuzzle_ReturnsTrue()
     {
         // Arrange
-        var sut = ResolveSut();
-        sut.Load(PuzzleFactory.GetSolvedPuzzle());
+        var sut = PuzzleFactory.GetSolvedPuzzle();
 
         // Act
         var isValid = sut.IsValid();
@@ -182,8 +181,7 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
             {"23","278","237","","","","36","3",""},
             {"123","1245","12345","2356","","26","1346","",""}
         };
-        var sut = ResolveSut();
-        sut.Load(PuzzleFactory.GetPuzzle(Level.Easy));
+        var sut = PuzzleFactory.GetPuzzle(Level.Easy);
 
         // Act
         sut.PopulatePossibleValues();
@@ -196,8 +194,7 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
     public void SetCellWithFewestPossibleValues_FindsCellWithFewestPossibleValues_AndSetsValueBasedOnOneOfThoseValues()
     {
         // Arrange
-        var sut = ResolveSut();
-        sut.Load(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
+        var sut = PuzzleFactory.GetPuzzle(Level.ExtremelyHard);
         sut.PopulatePossibleValues();
         var cell = sut.FindCellWithFewestPossibleValues();
         var possibleValues = cell
@@ -216,8 +213,7 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
     public void Validate_WhenInvalidNumberIsEntered_ReturnsTheConflictingCells()
     {
         // Arrange
-        var sut = ResolveSut();
-        sut.Load(PuzzleFactory.GetPuzzle(Level.Easy));
+        var sut = PuzzleFactory.GetPuzzle(Level.Easy);
         sut.SetCell(0, 2, 5);
 
         // Act

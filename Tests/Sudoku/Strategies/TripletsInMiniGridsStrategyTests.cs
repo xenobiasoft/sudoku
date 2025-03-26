@@ -56,14 +56,14 @@ public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsIn
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		var initialCellsWithValues = puzzle.Count(x => x.Value.HasValue);
+		var initialCellsWithValues = puzzle.GetAllCells().Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		var expectedScore = (puzzle.Count(x => x.Value.HasValue) - initialCellsWithValues) * 4;
+		var expectedScore = (puzzle.GetAllCells().Count(x => x.Value.HasValue) - initialCellsWithValues) * 4;
 		score.Should().Be(expectedScore);
 	}
 
@@ -81,7 +81,7 @@ public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsIn
 		score.Should().Be(0);
 	}
 
-	private Cell[] GetTripletsPuzzle()
+	private ISudokuPuzzle GetTripletsPuzzle()
 	{
 		var values = new int?[,] {
 			{ null, 4, 5, 6, 7, 8, 9, null, null },

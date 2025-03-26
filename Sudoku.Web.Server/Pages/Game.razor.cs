@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Sudoku.Web.Server.Services;
 
 namespace Sudoku.Web.Server.Pages;
@@ -8,7 +7,7 @@ public partial class Game
 {
     private Cell _selectedCell = new(0, 0);
 
-	public Cell[] Puzzle { get; set; } = new Cell[81];
+	public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
 
 	[Inject]
 	public ISudokuGame? SudokuGame { get; set; }
@@ -39,7 +38,7 @@ public partial class Game
             }
         }
         
-        Puzzle = cells;
+        Puzzle.Load(cells);
     }
 
     private async Task NewGame(Level level)
