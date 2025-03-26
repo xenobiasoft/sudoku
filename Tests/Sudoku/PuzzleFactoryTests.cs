@@ -1,10 +1,9 @@
-﻿using System.Reflection.Emit;
-using UnitTests.Helpers;
+﻿using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 
 namespace UnitTests.Sudoku;
 
-public class SudokuPuzzleTests
+public class PuzzleFactoryTests
 {
 	[Fact]
 	public void FindCellWithFewestPossibleValues_ReturnsFirstCellWithLeastPossibleValues()
