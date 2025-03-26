@@ -1,11 +1,8 @@
 trigger:
 - main
 
-variables:
-  - template: variables.yml
-
 pool:
-  vmImage: $(vmImageName)
+  vmImage: 'ubuntu-latest'
 
 stages:
   - stage: IaC  
@@ -16,7 +13,7 @@ stages:
           - task: AzureResourceManagerTemplateDeployment@3
             inputs:
               deploymentScope: 'Resource Group'
-              azureResourceManagerConnection: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
+              azureResourceManagerConnection: $(SUBSCRIPTION_CONN)
               subscriptionId: $(SUBSCRIPTION_ID)
               action: 'Create Or Update Resource Group'
               resourceGroupName: 'rg-xenobiasoft'
@@ -93,7 +90,7 @@ stages:
           
           - task: AzureWebApp@1
             inputs:
-              azureSubscription: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
+              azureSubscription: $(SUBSCRIPTION_CONN)
               appType: 'webAppLinux'
               appName: 'XenobiaSoftSudoku'
               package: '$(Pipeline.Workspace)/drop/*.zip'
