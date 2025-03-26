@@ -5,7 +5,7 @@ using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Solver;
 using XenobiaSoft.Sudoku.Strategies;
 
-namespace UnitTests.Sudoku;
+namespace UnitTests.Sudoku.Solver;
 
 public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolver>
 {

@@ -4,7 +4,7 @@ using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Generator;
 using XenobiaSoft.Sudoku.Solver;
 
-namespace UnitTests.Sudoku;
+namespace UnitTests.Sudoku.Generator;
 
 public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzzleGenerator>
 {
