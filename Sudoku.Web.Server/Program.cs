@@ -1,20 +1,32 @@
+using BlazorApplicationInsights;
+
 var builder = WebApplication.CreateBuilder(args);
 
 try
 {
+    builder
+        .Configuration
+        .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+        .AddEnvironmentVariables()
+        .AddUserSecrets<Program>();
+
     builder.Services.AddRazorPages();
     builder.Services.AddServerSideBlazor();
     builder.Services.AddHealthChecks();
     builder.Services
         .RegisterGameServices()
-        .RegisterBlazorGameServices();
+        .RegisterBlazorGameServices()
+        .AddBlazorApplicationInsights(x =>
+        {
+            x.InstrumentationKey = builder.Configuration["ApplicationInsights:InstrumentationKey"];
+        });
 
     var app = builder.Build();
 
     if (!app.Environment.IsDevelopment())
     {
-	    app.UseExceptionHandler("/Error");
-	    app.UseHsts();
+        app.UseExceptionHandler("/Error");
+        app.UseHsts();
     }
 
     app.UseHttpsRedirection();
