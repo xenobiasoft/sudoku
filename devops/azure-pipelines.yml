@@ -13,7 +13,7 @@ stages:
           - task: AzureResourceManagerTemplateDeployment@3
             inputs:
               deploymentScope: 'Resource Group'
-              azureResourceManagerConnection: $(SUBSCRIPTION_CONN)
+              azureResourceManagerConnection: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
               subscriptionId: $(SUBSCRIPTION_ID)
               action: 'Create Or Update Resource Group'
               resourceGroupName: 'rg-xenobiasoft'
@@ -90,8 +90,8 @@ stages:
           
           - task: AzureWebApp@1
             inputs:
-              azureSubscription: $(SUBSCRIPTION_CONN)
+              azureSubscription: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
               appType: 'webAppLinux'
               appName: 'XenobiaSoftSudoku'
               package: '$(Pipeline.Workspace)/drop/*.zip'
-              runtimeStack: DOTNET-ISOLATED|8.0'
+              runtimeStack: DOTNETCORE:8.0
