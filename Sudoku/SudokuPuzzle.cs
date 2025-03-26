@@ -59,21 +59,21 @@ public class SudokuPuzzle : ISudokuPuzzle
     {
         foreach (var cell in _cells)
         {
-            var pattern = _cells.GetColumnCells(cell.Column).Aggregate("123456789", (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));
+            var pattern = GetColumnCells(cell.Column).Aggregate("123456789", (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));
 
             if (pattern.Length > 0)
             {
                 return false;
             }
 
-            pattern = _cells.GetRowCells(cell.Row).Aggregate("123456789", (current, rowCell) => current.Replace(rowCell.Value.GetValueOrDefault().ToString(), string.Empty));
+            pattern = GetRowCells(cell.Row).Aggregate("123456789", (current, rowCell) => current.Replace(rowCell.Value.GetValueOrDefault().ToString(), string.Empty));
 
             if (pattern.Length > 0)
             {
                 return false;
             }
 
-            pattern = _cells.GetMiniGridCells(cell.Row, cell.Column).Aggregate("123456789", (current, gridCell) => current.Replace(gridCell.Value.GetValueOrDefault().ToString(), string.Empty));
+            pattern = GetMiniGridCells(cell.Row, cell.Column).Aggregate("123456789", (current, gridCell) => current.Replace(gridCell.Value.GetValueOrDefault().ToString(), string.Empty));
 
             if (pattern.Length > 0)
             {
@@ -92,7 +92,7 @@ public class SudokuPuzzle : ISudokuPuzzle
 
             var usedNumbers = new List<int?>();
 
-            foreach (var colCell in _cells.GetColumnCells(cell.Column))
+            foreach (var colCell in GetColumnCells(cell.Column))
             {
                 if (!colCell.Value.HasValue) continue;
 
@@ -107,7 +107,7 @@ public class SudokuPuzzle : ISudokuPuzzle
 
             usedNumbers.Clear();
 
-            foreach (var rowCell in _cells.GetRowCells(cell.Row))
+            foreach (var rowCell in GetRowCells(cell.Row))
             {
                 if (!rowCell.Value.HasValue) continue;
 
@@ -122,7 +122,7 @@ public class SudokuPuzzle : ISudokuPuzzle
 
             usedNumbers.Clear();
 
-            foreach (var miniGridCell in _cells.GetMiniGridCells(cell.Row, cell.Column))
+            foreach (var miniGridCell in GetMiniGridCells(cell.Row, cell.Column))
             {
                 if (!miniGridCell.Value.HasValue) continue;
 
@@ -157,12 +157,12 @@ public class SudokuPuzzle : ISudokuPuzzle
 
     public void SetCell(int row, int column, int? value)
     {
-        _cells.GetCell(row, column).Value = value;
+        GetCell(row, column).Value = value;
     }
 
     public void SetCellWithFewestPossibleValues()
     {
-        var cell = _cells.FindCellWithFewestPossibleValues();
+        var cell = FindCellWithFewestPossibleValues();
         var possibleValues = cell.PossibleValues.Randomize();
 
         if (string.IsNullOrWhiteSpace(possibleValues))
@@ -176,7 +176,7 @@ public class SudokuPuzzle : ISudokuPuzzle
             Console.WriteLine($"Setting cell:{cell.Row}:{cell.Column} to value {cellValue}");
             cell.Value = cellValue;
 
-            if (_cells.IsValid()) break;
+            if (IsValid()) break;
         }
     }
 
@@ -188,17 +188,17 @@ public class SudokuPuzzle : ISudokuPuzzle
         {
             if (!cell.Value.HasValue) continue;
 
-            _cells.GetColumnCells(cell.Column).Where(x => x != cell && x.Value == cell.Value).ToList().ForEach(x =>
+            GetColumnCells(cell.Column).Where(x => x != cell && x.Value == cell.Value).ToList().ForEach(x =>
             {
                 invalidCells.Add(cell);
                 invalidCells.Add(x);
             });
-            _cells.GetRowCells(cell.Row).Where(x => x != cell && x.Value == cell.Value).ToList().ForEach(x =>
+            GetRowCells(cell.Row).Where(x => x != cell && x.Value == cell.Value).ToList().ForEach(x =>
             {
                 invalidCells.Add(cell);
                 invalidCells.Add(x);
             });
-            _cells.GetMiniGridCells(cell.Row, cell.Column).Where(x => x != cell && x.Value == cell.Value).ToList().ForEach(
+            GetMiniGridCells(cell.Row, cell.Column).Where(x => x != cell && x.Value == cell.Value).ToList().ForEach(
                 x =>
                 {
                     invalidCells.Add(cell);
@@ -210,11 +210,11 @@ public class SudokuPuzzle : ISudokuPuzzle
 
     private string CalculatePossibleValues(Cell cell)
     {
-        var possibleValues = _cells.GetColumnCells(cell.Column).Aggregate("123456789", (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));
+        var possibleValues = GetColumnCells(cell.Column).Aggregate("123456789", (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));
 
-        possibleValues = _cells.GetRowCells(cell.Row).Aggregate(possibleValues, (current, rowCell) => current.Replace(rowCell.Value.GetValueOrDefault().ToString(), string.Empty));
+        possibleValues = GetRowCells(cell.Row).Aggregate(possibleValues, (current, rowCell) => current.Replace(rowCell.Value.GetValueOrDefault().ToString(), string.Empty));
 
-        return _cells.GetMiniGridCells(cell.Row, cell.Column).Aggregate(possibleValues, (current, gridCell) => current.Replace(gridCell.Value.GetValueOrDefault().ToString(), string.Empty));
+        return GetMiniGridCells(cell.Row, cell.Column).Aggregate(possibleValues, (current, gridCell) => current.Replace(gridCell.Value.GetValueOrDefault().ToString(), string.Empty));
     }
 
     private void Initialize()
