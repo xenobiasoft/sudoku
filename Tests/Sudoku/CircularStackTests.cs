@@ -1,6 +1,6 @@
 ﻿using XenobiaSoft.Sudoku.GameState;
 
-namespace UnitTests;
+namespace UnitTests.Sudoku;
 
 public class CircularStackTests
 {

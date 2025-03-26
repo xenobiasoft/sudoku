@@ -1,10 +1,9 @@
 ﻿using DepenMock.XUnit;
-using XenobiaSoft.Sudoku.Strategies;
-using XenobiaSoft.Sudoku;
 using UnitTests.Helpers;
-using XenobiaSoft.Sudoku.Exceptions;
+using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Strategies;
 
-namespace UnitTests.StrategyTests;
+namespace UnitTests.Sudoku.Strategies;
 
 public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInColumnsStrategy, SolverStrategy>
 {

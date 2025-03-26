@@ -2,7 +2,7 @@
 using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 
-namespace UnitTests;
+namespace UnitTests.Sudoku;
 
 public class SudokuPuzzleTests
 {

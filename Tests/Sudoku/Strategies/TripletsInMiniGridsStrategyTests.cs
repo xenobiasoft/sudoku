@@ -1,9 +1,9 @@
 ﻿using DepenMock.XUnit;
-using XenobiaSoft.Sudoku.Strategies;
-using XenobiaSoft.Sudoku;
 using UnitTests.Helpers;
+using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Strategies;
 
-namespace UnitTests.StrategyTests;
+namespace UnitTests.Sudoku.Strategies;
 
 public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsInMiniGridsStrategy, SolverStrategy>
 {
@@ -41,7 +41,7 @@ public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsIn
 		{
 			for (var row = 0; row < 3; row++)
 			{
-				if ((col == 0 && row == 0) || (col == 1 && row == 1) || (col == 2 && row == 2)) continue;
+				if (col == 0 && row == 0 || col == 1 && row == 1 || col == 2 && row == 2) continue;
 
 				puzzle.GetCell(row, col).PossibleValues
 					.Should().NotContain("1")

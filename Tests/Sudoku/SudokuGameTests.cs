@@ -5,7 +5,7 @@ using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Generator;
 using XenobiaSoft.Sudoku.Solver;
 
-namespace UnitTests;
+namespace UnitTests.Sudoku;
 
 public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 {

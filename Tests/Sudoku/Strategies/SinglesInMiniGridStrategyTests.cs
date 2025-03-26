@@ -3,12 +3,12 @@ using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Strategies;
 
-namespace UnitTests.StrategyTests;
+namespace UnitTests.Sudoku.Strategies;
 
-public class SinglesInRowsStrategyTests : BaseTestByAbstraction<SinglesInRowsStrategy, SolverStrategy>
+public class SinglesInMiniGridStrategyTests : BaseTestByAbstraction<SinglesInMiniGridsStrategy, SolverStrategy>
 {
 	[Fact]
-	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInRow_SetValueToThatNumber()
+	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInMiniGrid_SetValueToThatNumber()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
@@ -18,7 +18,7 @@ public class SinglesInRowsStrategyTests : BaseTestByAbstraction<SinglesInRowsStr
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.GetCell(2, 6).Value.Should().Be(5);
+		puzzle.GetCell(5, 2).Value.Should().Be(3);
 	}
 
 	[Fact]
