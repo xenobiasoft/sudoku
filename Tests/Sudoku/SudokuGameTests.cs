@@ -5,7 +5,7 @@ using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Generator;
 using XenobiaSoft.Sudoku.Solver;
 
-namespace UnitTests;
+namespace UnitTests.Sudoku;
 
 public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 {
@@ -88,7 +88,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 		await sut.SolvePuzzle();
 
 		// Assert
-		mockPuzzleSolver.Verify(x => x.SolvePuzzle(It.IsAny<Cell[]>()), Times.Once);
+		mockPuzzleSolver.Verify(x => x.SolvePuzzle(It.IsAny<ISudokuPuzzle>()), Times.Once);
 	}
 
 	[Fact]

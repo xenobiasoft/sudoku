@@ -4,11 +4,11 @@ public class ColumnRowMiniGridEliminationStrategy : SolverStrategy
 {
 	private const int Score = 1;
 
-	public override int Execute(Cell[] cells)
+	public override int Execute(ISudokuPuzzle puzzle)
 	{
 		var totalScore = 0;
 
-		foreach (var cell in cells)
+		foreach (var cell in puzzle.GetAllCells())
 		{
 			if (cell.Value.HasValue || cell.PossibleValues.Length != 1) continue;
 

@@ -4,16 +4,17 @@ using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Generator;
 using XenobiaSoft.Sudoku.Solver;
 
-namespace UnitTests;
+namespace UnitTests.Sudoku.Generator;
 
 public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzzleGenerator>
 {
 	public PuzzleGeneratorTests()
-	{
+    {
+        var solvedPuzzle = PuzzleFactory.GetSolvedPuzzle();
 		Container
 			.ResolveMock<IPuzzleSolver>()
-			.Setup(x => x.SolvePuzzle(It.IsAny<Cell[]>()))
-			.ReturnsAsync(PuzzleFactory.GetSolvedPuzzle());
+			.Setup(x => x.SolvePuzzle(It.IsAny<ISudokuPuzzle>()))
+			.ReturnsAsync(solvedPuzzle);
 	}
 
 	[Fact]
@@ -26,7 +27,7 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
 		var puzzle = await sut.GenerateEmptyPuzzle();
 
 		// Assert
-		puzzle.Should().BeEquivalentTo(PuzzleFactory.GetEmptyPuzzle());
+		puzzle.GetAllCells().Should().BeEquivalentTo(PuzzleFactory.GetEmptyPuzzle().GetAllCells());
 	}
 
 	[Fact]
@@ -40,7 +41,7 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
 		await sut.Generate(Level.Easy);
 
 		// Assert
-		puzzleSolver.Verify(x => x.SolvePuzzle(It.IsAny<Cell[]>()), Times.AtLeastOnce);
+		puzzleSolver.Verify(x => x.SolvePuzzle(It.IsAny<ISudokuPuzzle>()), Times.AtLeastOnce);
 	}
 
 	[Theory]
@@ -57,7 +58,7 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
 		var puzzle = await sut.Generate(level);
 
 		// Assert
-		puzzle.Count(x => !x.Value.HasValue).Should().BeGreaterThanOrEqualTo(minEmptyCells).And.BeLessThanOrEqualTo(maxEmptyCells);
+		puzzle.GetAllCells().Count(x => !x.Value.HasValue).Should().BeGreaterThanOrEqualTo(minEmptyCells).And.BeLessThanOrEqualTo(maxEmptyCells);
 	}
 
 	[Fact]
@@ -70,6 +71,6 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
         var puzzle = await sut.Generate(Level.Easy);
 
         // Assert
-        puzzle.Where(x => x.Value.HasValue).ToList().ForEach(x => x.Locked.Should().BeTrue());
+        puzzle.GetAllCells().Where(x => x.Value.HasValue).ToList().ForEach(x => x.Locked.Should().BeTrue());
     }
 }

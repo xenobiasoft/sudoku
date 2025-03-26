@@ -4,7 +4,7 @@ namespace XenobiaSoft.Sudoku.Generator;
 
 public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
 {
-    public async Task<Cell[]> Generate(Level level)
+    public async Task<ISudokuPuzzle> Generate(Level level)
 	{
 		var puzzle = await GenerateEmptyPuzzle().ConfigureAwait(false);
 
@@ -17,26 +17,12 @@ public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
 		return puzzle;
 	}
 
-    public async Task<Cell[]> GenerateEmptyPuzzle()
+    public async Task<ISudokuPuzzle> GenerateEmptyPuzzle()
     {
-        var puzzle = new Cell[GameDimensions.Columns * GameDimensions.Rows];
-        var index = 0;
-
-        await Task.Run(() =>
-        {
-            for (var row = 0; row < GameDimensions.Rows; row++)
-            {
-                for (var col = 0; col < GameDimensions.Columns; col++)
-                {
-                    puzzle[index++] = new Cell(row, col);
-                }
-            }
-        }).ConfigureAwait(false);
-
-        return puzzle;
+        return await Task.FromResult(new SudokuPuzzle());
     }
 
-    private Cell[] CreateEmptyCells(Cell[] puzzle, Level level)
+    private ISudokuPuzzle CreateEmptyCells(ISudokuPuzzle puzzle, Level level)
 	{
 		var numberOfEmptyCells = level switch
 		{
@@ -66,15 +52,16 @@ public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
 			puzzle.SetCell(rowCol.Item1, rowCol.Item2, null);
 			puzzle.SetCell(rowCol.Item1, rowCol.Item1, null);
 
-			if (puzzle.Count(x => !x.Value.HasValue) >= numberOfEmptyCells) break;
+			if (puzzle.GetAllCells().Count(x => !x.Value.HasValue) >= numberOfEmptyCells) break;
 		}
 
 		return puzzle;
 	}
 
-    private Cell[] LockCompletedCells(Cell[] puzzle)
+    private ISudokuPuzzle LockCompletedCells(ISudokuPuzzle puzzle)
     {
 		puzzle
+            .GetAllCells()
             .ToList()
             .ForEach(x => x.Locked = x.Value.HasValue);
 

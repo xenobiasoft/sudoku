@@ -1,4 +1,4 @@
-﻿namespace XenobiaSoft.Sudoku.Helpers;
+﻿namespace Sudoku.Web.Server.Helpers;
 
 public static class CellExtensionMethods
 {

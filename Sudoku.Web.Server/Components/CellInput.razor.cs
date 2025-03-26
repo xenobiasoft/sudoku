@@ -22,7 +22,7 @@ public partial class CellInput : IDisposable
     public EventCallback<Cell> OnCellFocus { get; set; }
 
     [Parameter]
-    public Cell[] Puzzle { get; set; } = new Cell[81];
+    public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
 
     private string CssClass { get; set; } = string.Empty;
     private ElementReference _element;

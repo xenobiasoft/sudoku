@@ -1,10 +1,9 @@
-﻿using System.Reflection.Emit;
-using UnitTests.Helpers;
+﻿using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 
-namespace UnitTests;
+namespace UnitTests.Sudoku;
 
-public class SudokuPuzzleTests
+public class PuzzleFactoryTests
 {
 	[Fact]
 	public void FindCellWithFewestPossibleValues_ReturnsFirstCellWithLeastPossibleValues()
@@ -230,11 +229,11 @@ public class SudokuPuzzleTests
         });
     }
 	
-	private static string[,] GetAllPossibleValues(Cell[] cells)
+	private static string[,] GetAllPossibleValues(ISudokuPuzzle puzzle)
 	{
 		var possibleValues = new string[9, 9];
 
-		cells.ToList().ForEach(x => possibleValues[x.Row, x.Column] = x.PossibleValues);
+		puzzle.GetAllCells().ToList().ForEach(x => possibleValues[x.Row, x.Column] = x.PossibleValues);
 
 		return possibleValues;
 	}

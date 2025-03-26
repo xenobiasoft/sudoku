@@ -6,19 +6,19 @@ public class TwinsInColumnsStrategy : SolverStrategy
 {
 	private const int Score = 3;
 
-	public override int Execute(Cell[] cells)
+	public override int Execute(ISudokuPuzzle puzzle)
 	{
 		var totalScore = 0;
 
-		foreach (var cell in cells)
+		foreach (var cell in puzzle.GetAllCells())
 		{
 			if (cell.Value.HasValue || cell.PossibleValues.Length != 2) continue;
 
-			foreach (var colCell in cells.GetColumnCells(cell.Column).Where(x => x != cell))
+			foreach (var colCell in puzzle.GetColumnCells(cell.Column).Where(x => x != cell))
 			{
 				if (cell.PossibleValues != colCell.PossibleValues) continue;
 
-				foreach (var nonTwinCell in cells.GetColumnCells(cell.Column))
+				foreach (var nonTwinCell in puzzle.GetColumnCells(cell.Column))
 				{
 					if (nonTwinCell.Value.HasValue || nonTwinCell.Row == cell.Row || nonTwinCell.Row == colCell.Row) continue;
 

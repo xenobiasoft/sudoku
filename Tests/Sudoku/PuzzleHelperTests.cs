@@ -1,4 +1,4 @@
-﻿namespace UnitTests;
+﻿namespace UnitTests.Sudoku;
 
 public class PuzzleHelperTests
 {

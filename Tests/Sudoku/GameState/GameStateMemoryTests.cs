@@ -2,7 +2,7 @@
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
 
-namespace UnitTests;
+namespace UnitTests.Sudoku.GameState;
 
 public class GameStateMemoryTests : BaseTestByAbstraction<GameStateMemory, IGameStateMemory>
 {
@@ -10,7 +10,7 @@ public class GameStateMemoryTests : BaseTestByAbstraction<GameStateMemory, IGame
 	public void Push_AddsGameStateToStack()
 	{
 		// Arrange
-		var gameState = new GameStateMemento(Container.CreateMany<Cell>(), Container.Create<int>());
+		var gameState = new GameStateMemento(Container.Create<ISudokuPuzzle>(), Container.Create<int>());
 		var sut = ResolveSut();
 
 		// Act
@@ -24,7 +24,7 @@ public class GameStateMemoryTests : BaseTestByAbstraction<GameStateMemory, IGame
 	public void Undo_PopsGameStateOffStack()
 	{
 		// Arrange
-		var gameState = new GameStateMemento(Container.CreateMany<Cell>(), Container.Create<int>());
+		var gameState = new GameStateMemento(Container.Create<ISudokuPuzzle>(), Container.Create<int>());
 		var sut = ResolveSut();
 
 		// Act

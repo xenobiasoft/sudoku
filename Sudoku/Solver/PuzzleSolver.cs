@@ -8,12 +8,12 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateMemo
     : IPuzzleSolver
 {
     private int _score;
-    private Cell[] _puzzle;
+    private ISudokuPuzzle _puzzle;
 
-    public async Task<Cell[]> SolvePuzzle(Cell[] cells)
+    public async Task<ISudokuPuzzle> SolvePuzzle(ISudokuPuzzle puzzle)
     {
 	    _score = 0;
-	    _puzzle = cells;
+	    _puzzle = puzzle;
         var changesMade = true;
 
 		// TODO: Refactor this. It has a high cyclomatic complexity
@@ -82,10 +82,8 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateMemo
 	    {
 		    throw new InvalidMoveException();
 	    }
-
-	    var clonedPuzzle = _puzzle.Select(x => x.Copy());
-
-	    gameStateMemory.Save(new GameStateMemento(clonedPuzzle, _score));
+        
+	    gameStateMemory.Save(new GameStateMemento(_puzzle, _score));
     }
 
     private void Undo()
@@ -93,9 +91,6 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateMemo
 	    var memento = gameStateMemory.Undo();
 
 	    _score = memento.Score;
-	    _puzzle = memento
-		    .Cells
-		    .Select(x => x.Copy())
-		    .ToArray();
+        _puzzle = memento.Puzzle;
     }
 }

@@ -3,7 +3,7 @@ using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Strategies;
 
-namespace UnitTests.StrategyTests;
+namespace UnitTests.Sudoku.Strategies;
 
 public class SinglesInMiniGridStrategyTests : BaseTestByAbstraction<SinglesInMiniGridsStrategy, SolverStrategy>
 {
@@ -26,14 +26,14 @@ public class SinglesInMiniGridStrategyTests : BaseTestByAbstraction<SinglesInMin
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-		var initialCellsWithValues = puzzle.Count(x => x.Value.HasValue);
+		var initialCellsWithValues = puzzle.GetAllCells().Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		var expectedScore = (puzzle.Count(x => x.Value.HasValue) - initialCellsWithValues) * 2;
+		var expectedScore = (puzzle.GetAllCells().Count(x => x.Value.HasValue) - initialCellsWithValues) * 2;
 		score.Should().Be(expectedScore);
 	}
 

@@ -4,8 +4,8 @@ namespace UnitTests.Helpers;
 
 public class PuzzleFactory
 {
-	public static Cell[] GetPuzzle(Level level, bool rotateGrid = false)
-	{
+	public static ISudokuPuzzle GetPuzzle(Level level, bool rotateGrid = false)
+    {
 		var puzzleValues = level switch
 		{
 			Level.Easy => EasyPuzzle,
@@ -20,10 +20,7 @@ public class PuzzleFactory
 			puzzleValues = RotateGrid(puzzleValues);
 		}
 
-		var cells = PopulateCells(puzzleValues);
-		cells.PopulatePossibleValues();
-		
-		return cells;
+		return PopulateCells(puzzleValues);
 	}
 
 	public static int?[,] RotateGrid(int?[,] values)
@@ -41,23 +38,20 @@ public class PuzzleFactory
 		return grid;
 	}
 
-	public static Cell[] GetEmptyPuzzle()
+	public static ISudokuPuzzle GetEmptyPuzzle()
 	{
-		var cells = PopulateCells(DefaultPuzzle);
-
-		return cells;
+		return new SudokuPuzzle();
 	}
 
-	public static Cell[] GetSolvedPuzzle()
+	public static ISudokuPuzzle GetSolvedPuzzle()
 	{
-		var cells = PopulateCells(SolvedPuzzle);
-
-		return cells;
+        return PopulateCells(SolvedPuzzle);
 	}
 
-	public static Cell[] PopulateCells(int?[,] values)
+	public static ISudokuPuzzle PopulateCells(int?[,] values)
 	{
-		var cells = new Cell[81];
+		var puzzle = new SudokuPuzzle();
+        var cells = new Cell[81];
 		var index = 0;
 
 		for (var col = 0; col < 9; col++)
@@ -69,8 +63,10 @@ public class PuzzleFactory
 			}
 		}
 
-		return cells;
-	}
+        puzzle.Load(cells);
+
+        return puzzle;
+    }
 
 	private static readonly int?[,] EasyPuzzle = {
 		{ 5, 3, null, null, 7, null, null, null, null },

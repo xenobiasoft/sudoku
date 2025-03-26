@@ -5,7 +5,7 @@ using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Solver;
 using XenobiaSoft.Sudoku.Strategies;
 
-namespace UnitTests;
+namespace UnitTests.Sudoku.Solver;
 
 public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolver>
 {
@@ -19,7 +19,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
 	        .Setup(x => x.Undo())
 	        .Returns(new GameStateMemento(PuzzleFactory.GetSolvedPuzzle(), 10));
         solverStrategy
-	        .SetupSequence(x => x.Execute(It.IsAny<Cell[]>()))
+	        .SetupSequence(x => x.Execute(It.IsAny<ISudokuPuzzle>()))
 	        .Returns(4)
 	        .Returns(4)
 	        .Throws<InvalidMoveException>();
@@ -29,7 +29,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
         await sut.SolvePuzzle(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
 
         // Assert
-        solverStrategy.Verify(x => x.Execute(It.IsAny<Cell[]>()), Times.Exactly(3));
+        solverStrategy.Verify(x => x.Execute(It.IsAny<ISudokuPuzzle>()), Times.Exactly(3));
     }
 
     [Fact]
@@ -56,7 +56,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
 			.Returns(new GameStateMemento(PuzzleFactory.GetSolvedPuzzle(), 10));
 		Container
 			.ResolveMock<SolverStrategy>()
-			.SetupSequence(x => x.Execute(It.IsAny<Cell[]>()))
+			.SetupSequence(x => x.Execute(It.IsAny<ISudokuPuzzle>()))
 			.Throws<InvalidMoveException>()
 			.Returns(0);
 		var mockGameState = Container.ResolveMock<IGameStateMemory>();

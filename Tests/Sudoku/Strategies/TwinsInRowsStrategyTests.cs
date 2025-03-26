@@ -3,7 +3,7 @@ using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Strategies;
 
-namespace UnitTests.StrategyTests;
+namespace UnitTests.Sudoku.Strategies;
 
 public class TwinsInRowsStrategyTests : BaseTestByAbstraction<TwinsInRowsStrategy, SolverStrategy>
 {
@@ -49,14 +49,14 @@ public class TwinsInRowsStrategyTests : BaseTestByAbstraction<TwinsInRowsStrateg
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
-		var initialCellsWithValues = puzzle.Count(x => x.Value.HasValue);
+		var initialCellsWithValues = puzzle.GetAllCells().Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		var expectedScore = (puzzle.Count(x => x.Value.HasValue) - initialCellsWithValues) * 3;
+		var expectedScore = (puzzle.GetAllCells().Count(x => x.Value.HasValue) - initialCellsWithValues) * 3;
 		score.Should().Be(expectedScore);
 	}
 

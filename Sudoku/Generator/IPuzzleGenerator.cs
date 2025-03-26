@@ -2,6 +2,6 @@
 
 public interface IPuzzleGenerator
 {
-	Task<Cell[]> Generate(Level level);
-	Task<Cell[]> GenerateEmptyPuzzle();
+	Task<ISudokuPuzzle> Generate(Level level);
+	Task<ISudokuPuzzle> GenerateEmptyPuzzle();
 }

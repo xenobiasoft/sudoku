@@ -1,15 +1,14 @@
 ﻿using DepenMock.XUnit;
 using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
-using XenobiaSoft.Sudoku.Helpers;
 using XenobiaSoft.Sudoku.Strategies;
 
-namespace UnitTests.StrategyTests;
+namespace UnitTests.Sudoku.Strategies;
 
-public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<ColumnRowMiniGridEliminationStrategy, SolverStrategy>
+public class SinglesInRowsStrategyTests : BaseTestByAbstraction<SinglesInRowsStrategy, SolverStrategy>
 {
 	[Fact]
-	public void SolvePuzzle_WhenOnlyOnePossibleValue_ThenValueEqualsThatNumber()
+	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInRow_SetValueToThatNumber()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
@@ -19,7 +18,7 @@ public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<C
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.GetCell(4, 4).Value.Should().Be(5);
+		puzzle.GetCell(2, 6).Value.Should().Be(5);
 	}
 
 	[Fact]
@@ -27,14 +26,14 @@ public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<C
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-		var initialCellsWithValues = puzzle.Count(x => x.Value.HasValue);
+		var initialCellsWithValues = puzzle.GetAllCells().Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		var expectedScore = puzzle.Count(x => x.Value.HasValue) - initialCellsWithValues;
+		var expectedScore = (puzzle.GetAllCells().Count(x => x.Value.HasValue) - initialCellsWithValues) * 2;
 		score.Should().Be(expectedScore);
 	}
 
@@ -42,7 +41,7 @@ public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<C
 	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsScoreOfZero()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.ExtremelyHard);
+		var puzzle = PuzzleFactory.GetEmptyPuzzle();
 		var sut = ResolveSut();
 
 		// Act

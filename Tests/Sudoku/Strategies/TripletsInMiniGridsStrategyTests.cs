@@ -1,9 +1,9 @@
 ﻿using DepenMock.XUnit;
-using XenobiaSoft.Sudoku.Strategies;
-using XenobiaSoft.Sudoku;
 using UnitTests.Helpers;
+using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Strategies;
 
-namespace UnitTests.StrategyTests;
+namespace UnitTests.Sudoku.Strategies;
 
 public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsInMiniGridsStrategy, SolverStrategy>
 {
@@ -41,7 +41,7 @@ public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsIn
 		{
 			for (var row = 0; row < 3; row++)
 			{
-				if ((col == 0 && row == 0) || (col == 1 && row == 1) || (col == 2 && row == 2)) continue;
+				if (col == 0 && row == 0 || col == 1 && row == 1 || col == 2 && row == 2) continue;
 
 				puzzle.GetCell(row, col).PossibleValues
 					.Should().NotContain("1")
@@ -56,14 +56,14 @@ public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsIn
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		var initialCellsWithValues = puzzle.Count(x => x.Value.HasValue);
+		var initialCellsWithValues = puzzle.GetAllCells().Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
 		var score = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		var expectedScore = (puzzle.Count(x => x.Value.HasValue) - initialCellsWithValues) * 4;
+		var expectedScore = (puzzle.GetAllCells().Count(x => x.Value.HasValue) - initialCellsWithValues) * 4;
 		score.Should().Be(expectedScore);
 	}
 
@@ -81,7 +81,7 @@ public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsIn
 		score.Should().Be(0);
 	}
 
-	private Cell[] GetTripletsPuzzle()
+	private ISudokuPuzzle GetTripletsPuzzle()
 	{
 		var values = new int?[,] {
 			{ null, 4, 5, 6, 7, 8, 9, null, null },
