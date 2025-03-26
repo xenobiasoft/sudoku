@@ -4,7 +4,7 @@ namespace XenobiaSoft.Sudoku;
 
 public class SudokuPuzzle : ISudokuPuzzle
 {
-    private Cell[] _cells = new Cell[GameDimensions.Columns * GameDimensions.Rows];
+    private readonly Cell[] _cells = new Cell[GameDimensions.Columns * GameDimensions.Rows];
 
     public SudokuPuzzle()
     {
@@ -141,7 +141,10 @@ public class SudokuPuzzle : ISudokuPuzzle
 
     public void Load(Cell[] cells)
     {
-        _cells = cells;
+        for (var i = 0; i < cells.Length; i++)
+        {
+            _cells[i] = cells[i].Copy();
+        }
     }
 
     public void PopulatePossibleValues()
@@ -216,14 +219,13 @@ public class SudokuPuzzle : ISudokuPuzzle
 
     private void Initialize()
     {
-        _cells = new Cell[GameDimensions.Columns * GameDimensions.Rows];
         var index = 0;
 
         for (var row = 0; row < GameDimensions.Rows; row++)
         {
             for (var col = 0; col < GameDimensions.Columns; col++)
             {
-                _cells[index++] = new Cell(row, col);
+                _cells[index++] = new Cell(row, col).Copy();
             }
         }
     }
