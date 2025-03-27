@@ -14,13 +14,14 @@ stages:
             inputs:
               deploymentScope: 'Resource Group'
               azureResourceManagerConnection: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
-              subscriptionId: $(SUBSCRIPTION_ID)
+              subscriptionId: $(subscriptionId)
               action: 'Create Or Update Resource Group'
               resourceGroupName: 'rg-xenobiasoft'
               location: 'Central US'
               templateLocation: 'Linked artifact'
               csmFile: './devops/main.bicep'
               deploymentMode: 'Incremental'
+              overrideParameters: 'sslThumbprint $(sslThumbprint)'
 
   - stage: Build
     jobs:
