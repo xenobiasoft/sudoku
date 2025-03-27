@@ -18,10 +18,6 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
     capacity: 3
   }
   kind: 'app,linux'
-  tags: {
-    environment: 'production'
-    project: 'XenobiaSoftSudoku'
-  }
 }
 
 // Web App
@@ -61,13 +57,11 @@ resource sudokuApp 'Microsoft.Web/sites@2022-09-01' = {
 resource appServiceConfig 'Microsoft.Web/sites/config@2022-09-01' = {
   parent: sudokuApp
   name: 'web'
-  location: location
   properties: {
     defaultDocuments: [
       'Default.html'
       'index.html'      
     ]
-    httpsOnly: true
     linuxFxVersion: 'DOTNETCORE:9.0'
     managedPipelineMode: 'Integrated'
     virtualApplications: [
@@ -82,26 +76,17 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2022-09-01' = {
     healthCheckPath: '/health-check'
     minimumElasticInstanceCount: 1
   }
-  tags: {
-    environment: 'production'
-    project: 'XenobiaSoftSudoku'
-  }
 }
 
 // Custom Domain Binding
 resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2024-04-01' = {
   parent: sudokuApp
   name: 'sudoku.xenobiasoft.com'
-  location: location
   properties: {
     siteName: siteName
     hostNameType: 'Verified'
     sslState: 'SniEnabled'
     thumbprint: sslThumbprint
-  }
-  tags: {
-    environment: 'production'
-    project: 'XenobiaSoftSudoku'
   }
 }
 
@@ -109,13 +94,8 @@ resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2024-04-01' =
 resource basicBinding 'Microsoft.Web/sites/hostNameBindings@2024-04-01' = {
   parent: sudokuApp
   name: '${siteName}.azurewebsites.net'
-  location: location
   properties: {
     siteName: siteName
     hostNameType: 'Verified'
-  }
-  tags: {
-    environment: 'production'
-    project: 'XenobiaSoftSudoku'
   }
 }
