@@ -50,13 +50,6 @@ resource sudokuApp 'Microsoft.Web/sites@2022-09-01' = {
       }
     ]
     serverFarmId: appServicePlan.id
-    siteConfig: {
-      numberOfWorkers: 1
-      linuxFxVersion: 'DOTNETCORE:9.0'
-      http20Enabled: true
-      minimumElasticInstanceCount: 3
-    }
-    httpsOnly: true
   }
   tags: {
     environment: 'production'
