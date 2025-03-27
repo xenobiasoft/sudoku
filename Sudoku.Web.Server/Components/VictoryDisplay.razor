@@ -1,0 +1,13 @@
+﻿@if (IsVictory)
+{
+    <div class="victory-overlay">
+        <div class="victory-modal">
+            <h1 class="victory-title">You Won!</h1>
+            <p class="victory-subtitle">@($"Time: {ElapsedTime:h\\:mm\\:ss}")</p>
+
+            <div class="victory-actions">
+                <button class="victory-button btn btn-primary" @onclick="NewGame">New Game</button>
+            </div>
+        </div>
+    </div>
+}
