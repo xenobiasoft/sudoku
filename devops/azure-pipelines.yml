@@ -68,7 +68,6 @@ stages:
             inputs:
               targetPath: '$(build.artifactStagingDirectory)'
               artifact: 'drop'
-              publishLocation: 'pipeline'
 
   - stage: Deploy
     jobs:
@@ -94,5 +93,4 @@ stages:
               azureSubscription: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
               appType: 'webAppLinux'
               appName: 'XenobiaSoftSudoku'
-              package: '$(Pipeline.Workspace)/drop/*.zip'
-              runtimeStack: DOTNETCORE:9.0
+              package: '$(Pipeline.Workspace)/**/*.zip'
