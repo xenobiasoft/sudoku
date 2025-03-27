@@ -91,11 +91,11 @@ resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2024-04-01' =
 }
 
 // Basic Binding
-resource basicBinding 'Microsoft.Web/sites/hostNameBindings@2024-04-01' = {
-  parent: sudokuApp
-  name: '${siteName}.azurewebsites.net'
-  properties: {
-    siteName: siteName
-    hostNameType: 'Verified'
-  }
-}
+// resource basicBinding 'Microsoft.Web/sites/hostNameBindings@2024-04-01' = {
+//   parent: sudokuApp
+//   name: '${siteName}.azurewebsites.net'
+//   properties: {
+//     siteName: siteName
+//     hostNameType: 'Verified'
+//   }
+// }
