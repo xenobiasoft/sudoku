@@ -35,13 +35,14 @@ public class ButtonGroupTests : TestContext
     [InlineData(7)]
     [InlineData(8)]
     [InlineData(9)]
-    public void WhenButtonClicked_SetsValueToNumber(int expected)
+    [InlineData(null)]
+    public void WhenButtonClicked_SetsValueToNumber(int? expected)
 	{
 		// Arrange
-        var actual = 0;
+        var actual = default(int?);
 		var buttonGroup = RenderComponent<ButtonGroup>(p => p
             .Add(x => x.NumberClicked, (i) => actual = i));
-        var button = buttonGroup.Find($"#btn{expected}");
+        var button = buttonGroup.Find($"#btn{expected ?? 0}");
 
 		// Act
 		button.Click();
