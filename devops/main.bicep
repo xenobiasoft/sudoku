@@ -1,7 +1,7 @@
 param siteName string = 'XenobiaSoftSudoku'
 param location string = resourceGroup().location
 param appServicePlanSku string = 'B1' // Parameterize the SKU
-param sslThumbprint
+param sslThumbprint string
 
 // App Service Plan
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
