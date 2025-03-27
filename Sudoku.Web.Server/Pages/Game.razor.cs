@@ -56,7 +56,7 @@ public partial class Game
         }
     }
 
-    private void SetCellValue(int value)
+    private void SetCellValue(int? value)
     {
         _selectedCell.Value = value;
 
