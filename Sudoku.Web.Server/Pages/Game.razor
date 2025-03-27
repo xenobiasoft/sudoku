@@ -3,20 +3,18 @@
 
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
-        <DifficultyLevelOptions OnDifficultyLevelChanged="NewGame" />
-        <GameTimer />
-        @if (Puzzle.IsSolved())
-        {
-            <SudokuImage>
-                <div class="success-message">
-                    <span>You Won!</span>
-                </div>
-            </SudokuImage>
-        }
-        else
-        {
-            <GameBoard Puzzle="Puzzle" OnCellFocus="SetSelectedCell" />
-        }
-        <ButtonGroup NumberClicked="SetCellValue" />
+        <DifficultyLevelOptions 
+            OnDifficultyLevelChanged="NewGame" />
+        <GameTimer 
+            @ref="_gameTimer" />
+        <VictoryDisplay 
+            IsVictory="@Puzzle.IsSolved()"
+            ElapsedTime="@_gameTimer.ElapsedGameTime"
+            NewGame="() => NewGame(_level)"/>
+        <GameBoard 
+            Puzzle="Puzzle" 
+            OnCellFocus="SetSelectedCell" />
+        <ButtonGroup 
+            NumberClicked="SetCellValue" />
     </div>
 </div>

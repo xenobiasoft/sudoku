@@ -108,4 +108,27 @@ public class GameTests : TestContext
         // Assert
         _mockGameNotificationService.Verify(x => x.NotifyGameEnded(), Times.Once);
     }
+
+    [Fact]
+    public async Task Game_WhenPuzzleSolved_DisplaysWinScreen()
+    {
+        // Arrange
+        var puzzle = PuzzleFactory.GetSolvedPuzzle();
+        var cell = puzzle.GetCell(0, 0);
+        cell.Value = null;
+        _mockSudokuGame
+            .Setup(x => x.Puzzle)
+            .Returns(puzzle);
+        var game = RenderComponent<Game>();
+        var cellInput = game.FindComponents<CellInput>().FirstOrDefault(x => x.Instance.Cell == cell)!.Instance;
+        await game.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cell));
+        var buttonGroup = game.FindComponent<ButtonGroup>().Instance;
+
+        // Act
+        await game.InvokeAsync(() => buttonGroup.NumberClicked.InvokeAsync(1));
+
+        // Assert
+        var victoryOverlay = game.Find(".victory-overlay");
+        Assert.NotNull(victoryOverlay);
+    }
 }
