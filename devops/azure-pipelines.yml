@@ -95,3 +95,4 @@ stages:
               appName: 'XenobiaSoftSudoku'
               package: '$(Pipeline.Workspace)/**/*.zip'
               startUpCommand: 'dotnet Sudoku.Web.Server.dll'
+              runtimeStack: DOTNETCORE:9.0
