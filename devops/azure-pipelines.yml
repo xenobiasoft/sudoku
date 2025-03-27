@@ -91,7 +91,7 @@ stages:
           - task: AzureWebApp@1
             inputs:
               azureSubscription: 'XenobiaSoft Azure Subscription(c0c21e76-a03c-4747-af34-0720b273ff00)'
-              appType: 'webAppLinux'
+              appType: 'webApp'
               appName: 'XenobiaSoftSudoku'
               package: '$(Pipeline.Workspace)/**/*.zip'
               startUpCommand: 'dotnet Sudoku.Web.Server.dll'
