@@ -1,6 +1,9 @@
 param siteName string = 'XenobiaSoftSudoku'
 param location string = resourceGroup().location
+param appServicePlanSku string = 'B1' // Parameterize the SKU
+param sslThumbprint string
 
+// App Service Plan
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: 'XenobiaSoftServicePlan'
   location: location
@@ -8,37 +11,58 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
     reserved: true
   }
   sku: {
-    name: 'B1'
+    name: appServicePlanSku
     tier: 'Basic'
-    size: 'B1'
+    size: appServicePlanSku
     family: 'B'
-    capacity: 1
+    capacity: 3
   }
   kind: 'app,linux'
 }
 
-resource appService 'Microsoft.Web/sites@2022-09-01' = {
+// Web App
+resource sudokuApp 'Microsoft.Web/sites@2022-09-01' = {
   name: siteName
   location: location
-  kind: 'app'
+  kind: 'app,linux'
   properties: {
     enabled: true
-    linuxFxVersion: 'DOTNETCORE|9.0'
+    hostNameSslStates: [
+      {
+        name: 'sudoku.xenobiasoft.com'
+        sslState: 'SniEnabled'
+        thumbprint: sslThumbprint
+        hostType: 'Standard'
+      }
+      {
+        name: 'xenobiasoftsudoku.azurewebsites.net'
+        sslState: 'Disabled'
+        hostType: 'Standard'
+      }
+      {
+        name: 'xenobiasoftsudoku.scm.azurewebsites.net'
+        sslState: 'Disabled'
+        hostType: 'Repository'
+      }
+    ]
     serverFarmId: appServicePlan.id
+  }
+  tags: {
+    environment: 'production'
+    project: 'XenobiaSoftSudoku'
   }
 }
 
+// App Service Configuration
 resource appServiceConfig 'Microsoft.Web/sites/config@2022-09-01' = {
-  parent: appService
+  parent: sudokuApp
   name: 'web'
-  location: location
   properties: {
     defaultDocuments: [
       'Default.html'
       'index.html'      
     ]
-    httpsOnly: true
-    linuxFxVersion: 'DOTNETCORE|9.0'
+    linuxFxVersion: 'DOTNETCORE:9.0'
     managedPipelineMode: 'Integrated'
     virtualApplications: [
       {
@@ -47,6 +71,31 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2022-09-01' = {
         preloadEnabled: false
       }
     ]
-    minTlsVersion: '1.2'    
+    http20Enabled: true
+    minTlsVersion: '1.2'
+    healthCheckPath: '/health-check'
+    minimumElasticInstanceCount: 1
+  }
+}
+
+// Custom Domain Binding
+resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2024-04-01' = {
+  parent: sudokuApp
+  name: 'sudoku.xenobiasoft.com'
+  properties: {
+    siteName: siteName
+    hostNameType: 'Verified'
+    sslState: 'SniEnabled'
+    thumbprint: sslThumbprint
+  }
+}
+
+// Basic Binding
+resource basicBinding 'Microsoft.Web/sites/hostNameBindings@2024-04-01' = {
+  parent: sudokuApp
+  name: '${siteName}.azurewebsites.net'
+  properties: {
+    siteName: siteName
+    hostNameType: 'Verified'
   }
 }
