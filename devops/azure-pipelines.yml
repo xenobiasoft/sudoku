@@ -21,6 +21,7 @@ stages:
               templateLocation: 'Linked artifact'
               csmFile: './devops/main.bicep'
               deploymentMode: 'Incremental'
+              overrideParameters: '-sslThumbprint $(sslThumbprint)'
 
   - stage: Build
     jobs:
