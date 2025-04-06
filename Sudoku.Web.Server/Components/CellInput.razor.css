@@ -12,8 +12,9 @@
     font-size: 30px;
     height: 36px;
     line-height: 1.3em;
+    max-width: 36px;
     text-align: center;
-    width: 36px;
+    width: 100%;
 }
 
 .cell label {
