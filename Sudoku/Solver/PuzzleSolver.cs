@@ -14,58 +14,63 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateMemo
     {
 	    _score = 0;
 	    _puzzle = puzzle;
-        var changesMade = true;
 
-		// TODO: Refactor this. It has a high cyclomatic complexity
-
-        await Task.Run(() =>
-        {
-	        while (changesMade)
-	        {
-		        var previousScore = _score;
-
-		        try
-				{
-					Save();
-
-					foreach (var strategy in strategies)
-					{
-						Console.WriteLine($"Solving with {strategy.GetType().Name}");
-						_score += strategy.SolvePuzzle(_puzzle);
-						changesMade = previousScore != _score;
-						previousScore = _score;
-
-						if (!_puzzle.IsValid())
-						{
-							Console.WriteLine($"Failure in solving puzzle using {strategy.GetType().Name} strategy");
-							throw new InvalidMoveException();
-						}
-
-						if (_puzzle.IsSolved())
-						{
-							break;
-						}
-					}
-
-					if (!changesMade)
-					{
-						TryBruteForceMethod();
-						changesMade = true;
-					}
-				}
-		        catch (InvalidMoveException)
-		        {
-			        Undo();
-		        }
-
-		        if (_puzzle.IsSolved())
-		        {
-			        break;
-		        }
-			}
-        }).ConfigureAwait(false);
+        await Task.Run(SolveLoop).ConfigureAwait(false);
 
         return _puzzle;
+    }
+
+    private void SolveLoop()
+    {
+        var changesMade = true;
+
+        while (changesMade)
+        {
+            var previousScore = _score;
+
+            try
+            {
+                Save();
+                changesMade = ApplyStrategies(previousScore);
+
+                if (!changesMade)
+                {
+                    TryBruteForceMethod();
+                    changesMade = true;
+                }
+            }
+            catch (InvalidMoveException)
+            {
+                Undo();
+            }
+
+            if (_puzzle.IsSolved())
+            {
+                break;
+            }
+        }
+    }
+
+    private bool ApplyStrategies(int previousScore)
+    {
+        foreach (var strategy in strategies)
+        {
+            Console.WriteLine($"Solving with {strategy.GetType().Name}");
+            _score += strategy.SolvePuzzle(_puzzle);
+
+            if (!_puzzle.IsValid())
+            {
+                Console.WriteLine($"Failure in solving puzzle using {strategy.GetType().Name} strategy");
+                throw new InvalidMoveException();
+            }
+
+            if (_puzzle.IsSolved())
+            {
+                break;
+            }
+        }
+
+        return previousScore != _score;
     }
 
     private void TryBruteForceMethod()
