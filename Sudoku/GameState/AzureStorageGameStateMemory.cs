@@ -4,18 +4,24 @@ namespace XenobiaSoft.Sudoku.GameState;
 
 public class AzureStorageGameStateMemory(IStorageService storageService) : IGameStateMemoryPersistence
 {
+    private const string ContainerName = "sudoku-puzzles";
+    private const string BlobName = "game-state.json";
+
     private readonly TimeSpan _saveDebounceDelay = TimeSpan.FromSeconds(1);
     private readonly SemaphoreSlim _debounceSemaphore = new(1, 1);
     private CancellationTokenSource? _debounceCts;
 
     public Task ClearAsync(string puzzleId)
     {
-        return storageService.DeleteAsync(puzzleId);
+        var blobName = GetBlobName(puzzleId);
+        return storageService.DeleteAsync(ContainerName, blobName);
     }
 
     public Task<GameStateMemento> LoadAsync(string puzzleId)
     {
-        return storageService.LoadAsync(puzzleId);
+        var blobName = GetBlobName(puzzleId);
+
+        return storageService.LoadAsync<GameStateMemento>(ContainerName, blobName);
     }
 
     public async Task SaveAsync(GameStateMemento gameState)
@@ -48,6 +54,13 @@ public class AzureStorageGameStateMemory(IStorageService storageService) : IGame
 
     private async Task SaveNowAsync(GameStateMemento gameState, CancellationToken token)
     {
-        await storageService.SaveAsync(gameState.PuzzleId, gameState, token);
+        var blobName = GetBlobName(gameState.PuzzleId);
+
+        await storageService.SaveAsync(ContainerName, blobName, gameState, token);
+    }
+
+    private string GetBlobName(string puzzleId)
+    {
+        return $"{puzzleId}/{BlobName}";
     }
 }

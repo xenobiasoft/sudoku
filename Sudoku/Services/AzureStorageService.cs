@@ -1,52 +1,54 @@
-﻿using System.Text;
-using Azure.Storage.Blobs;
-using XenobiaSoft.Sudoku.GameState;
+﻿using Azure.Storage.Blobs;
+using System.Text;
+using System.Text.Json;
 
 namespace XenobiaSoft.Sudoku.Services;
 
-public class AzureStorageService : IStorageService
+public class AzureStorageService(string connectionString) : IStorageService
 {
-    private const string ContainerName = "sudoku-puzzles";
-    private readonly BlobContainerClient _blobContainerClient;
+    private readonly BlobServiceClient _blobServiceClient = new(connectionString);
 
-
-    public AzureStorageService(string connectionString)
+    public Task DeleteAsync(string containerName, string blobName)
     {
-        _blobContainerClient = new BlobContainerClient(connectionString, ContainerName);
-        _blobContainerClient.CreateIfNotExists();
-    }
-
-    public Task DeleteAsync(string puzzleId)
-    {
-        var blobClient = _blobContainerClient.GetBlobClient(GetBlobName(puzzleId));
+        var blobClient = GetBlobClient(containerName, blobName);
         
         return blobClient.DeleteIfExistsAsync();
     }
 
-    public async Task<GameStateMemento> LoadAsync(string puzzleId)
+    public async Task<TBlobType> LoadAsync<TBlobType>(string containerName, string blobName) where TBlobType : class
     {
-        var blobClient = _blobContainerClient.GetBlobClient(GetBlobName(puzzleId));
+        var blobClient = GetBlobClient(containerName, blobName);
 
         if (!await blobClient.ExistsAsync()) return null;
 
         var download = await blobClient.DownloadContentAsync();
         var json = download.Value.Content.ToString();
 
-        return json.FromJson();
+        return JsonSerializer.Deserialize<TBlobType>(json);
 
     }
 
-    public Task SaveAsync(string puzzleId, GameStateMemento gameState, CancellationToken token)
+    public Task SaveAsync(string containerName, string blobName, object blob, CancellationToken token)
     {
-        var blobClient = _blobContainerClient.GetBlobClient(GetBlobName(puzzleId));
-        var json = gameState.ToJson();
+        var blobClient = GetBlobClient(containerName, blobName);
+        var json = JsonSerializer.Serialize(blob);
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
 
         return blobClient.UploadAsync(stream, true, token);
     }
 
-    private string GetBlobName(string puzzleId)
+    private BlobClient GetBlobClient(string containerName, string blobName)
     {
-        return $"{puzzleId}/game-state.json";
+        var containerClient = GetContainerClient(containerName);
+        return containerClient.GetBlobClient(blobName);
+    }
+
+    private BlobContainerClient GetContainerClient(string containerName)
+    {
+        var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+
+        containerClient.CreateIfNotExists();
+
+        return containerClient;
     }
 }

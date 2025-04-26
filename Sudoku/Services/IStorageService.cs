@@ -4,7 +4,7 @@ namespace XenobiaSoft.Sudoku.Services;
 
 public interface IStorageService
 {
-    Task DeleteAsync(string puzzleId);
-    Task<GameStateMemento> LoadAsync(string puzzleId);
-    Task SaveAsync(string puzzleId, GameStateMemento gameState, CancellationToken token);
+    Task DeleteAsync(string containerName, string blobName);
+    Task<TBlobType> LoadAsync<TBlobType>(string containerName, string blobName) where TBlobType : class;
+    Task SaveAsync(string containerName, string blobName, object blob, CancellationToken token);
 }

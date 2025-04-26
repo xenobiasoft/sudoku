@@ -1,4 +1,5 @@
 ﻿using DepenMock.XUnit;
+using UnitTests.Helpers;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Services;
 
@@ -6,6 +7,9 @@ namespace UnitTests.Sudoku.GameState;
 
 public class AzureStorageGameStateMemoryTests : BaseTestByAbstraction<AzureStorageGameStateMemory, IGameStateMemoryPersistence>
 {
+    private const string ContainerName = "sudoku-puzzles";
+    private const string BlobName = "game-state.json";
+
     [Fact]
     public async Task ClearAsync_ShouldCallDeleteAsync()
     {
@@ -18,7 +22,7 @@ public class AzureStorageGameStateMemoryTests : BaseTestByAbstraction<AzureStora
         await sut.ClearAsync(puzzleId);
 
         // Assert
-        storageServiceSpy.Verify(s => s.DeleteAsync(puzzleId), Times.Once);
+        storageServiceSpy.VerifyDeletesBlob(ContainerName, GetBlobName(puzzleId), Times.Once);
     }
 
     [Fact]
@@ -33,7 +37,7 @@ public class AzureStorageGameStateMemoryTests : BaseTestByAbstraction<AzureStora
         await sut.LoadAsync(puzzleId);
 
         // Assert
-        storageServiceSpy.Verify(s => s.LoadAsync(puzzleId), Times.Once);
+        storageServiceSpy.VerifyLoadsGameState(ContainerName, GetBlobName(puzzleId), Times.Once);
     }
 
     [Fact]
@@ -42,7 +46,7 @@ public class AzureStorageGameStateMemoryTests : BaseTestByAbstraction<AzureStora
         // Arrange
         var expectedGameState = Container.Create<GameStateMemento>();
         Container.ResolveMock<IStorageService>()
-            .Setup(s => s.LoadAsync(expectedGameState.PuzzleId))
+            .Setup(s => s.LoadAsync<GameStateMemento>(ContainerName, GetBlobName(expectedGameState.PuzzleId)))
             .ReturnsAsync(expectedGameState);
         var sut = ResolveSut();
 
@@ -65,6 +69,11 @@ public class AzureStorageGameStateMemoryTests : BaseTestByAbstraction<AzureStora
         await sut.SaveAsync(gameState);
 
         // Assert
-        storageServiceSpy.Verify(s => s.SaveAsync(gameState.PuzzleId, gameState, It.IsAny<CancellationToken>()), Times.Once);
+        storageServiceSpy.VerifySavesGameState(ContainerName, GetBlobName(gameState.PuzzleId), gameState, Times.Once);
+    }
+
+    private string GetBlobName(string puzzleId)
+    {
+        return $"{puzzleId}/{BlobName}";
     }
 }
