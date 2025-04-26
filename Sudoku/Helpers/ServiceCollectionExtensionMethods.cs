@@ -11,7 +11,7 @@ public static class ServiceCollectionExtensionMethods
 	public static IServiceCollection RegisterGameServices(this IServiceCollection services)
 	{
 		services.AddTransient<ISudokuGame, SudokuGame>();
-		services.AddTransient<IGameStateMemory, GameStateMemory>();
+		services.AddTransient<IGameStateMemory, InMemoryGameStateMemory>();
 		services.AddTransient<IPuzzleSolver, PuzzleSolver>();
 		services.AddTransient<IPuzzleGenerator, PuzzleGenerator>();
 

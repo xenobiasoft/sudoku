@@ -4,10 +4,10 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Sudoku.GameState;
 
-public class GameStateMemoryTests : BaseTestByAbstraction<GameStateMemory, IGameStateMemory>
+public class InMemoryGameStateMemoryTests : BaseTestByAbstraction<InMemoryGameStateMemory, IGameStateMemory>
 {
 	[Fact]
-	public void Push_AddsGameStateToStack()
+	public void Save_AddsGameStateToStack()
 	{
 		// Arrange
 		var gameState = new GameStateMemento(Container.Create<string>(), Container.Create<Cell[]>(), Container.Create<int>());
