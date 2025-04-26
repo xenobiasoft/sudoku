@@ -17,7 +17,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
         Container
 	        .ResolveMock<IGameStateMemory>()
 	        .Setup(x => x.Undo())
-	        .Returns(new GameStateMemento(PuzzleFactory.GetSolvedPuzzle(), 10));
+	        .Returns(new GameStateMemento(Container.Create<string>(), PuzzleFactory.GetSolvedPuzzle().GetAllCells(), 10));
         solverStrategy
 	        .SetupSequence(x => x.Execute(It.IsAny<ISudokuPuzzle>()))
 	        .Returns(4)
@@ -53,7 +53,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
 		Container
 			.ResolveMock<IGameStateMemory>()
 			.Setup(x => x.Undo())
-			.Returns(new GameStateMemento(PuzzleFactory.GetSolvedPuzzle(), 10));
+			.Returns(new GameStateMemento(Container.Create<string>(), PuzzleFactory.GetSolvedPuzzle().GetAllCells(), 10));
 		Container
 			.ResolveMock<SolverStrategy>()
 			.SetupSequence(x => x.Execute(It.IsAny<ISudokuPuzzle>()))

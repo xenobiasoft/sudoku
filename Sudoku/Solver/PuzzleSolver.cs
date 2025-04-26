@@ -88,7 +88,7 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateMemo
 		    throw new InvalidMoveException();
 	    }
         
-	    gameStateMemory.Save(new GameStateMemento(_puzzle, _score));
+	    gameStateMemory.Save(new GameStateMemento(_puzzle.PuzzleId, _puzzle.GetAllCells(), _score));
     }
 
     private void Undo()
@@ -96,6 +96,6 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateMemo
 	    var memento = gameStateMemory.Undo();
 
 	    _score = memento.Score;
-        _puzzle = memento.Puzzle;
+        _puzzle.Restore(memento.Board);
     }
 }

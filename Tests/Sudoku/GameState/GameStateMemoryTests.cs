@@ -10,7 +10,7 @@ public class GameStateMemoryTests : BaseTestByAbstraction<GameStateMemory, IGame
 	public void Push_AddsGameStateToStack()
 	{
 		// Arrange
-		var gameState = new GameStateMemento(Container.Create<ISudokuPuzzle>(), Container.Create<int>());
+		var gameState = new GameStateMemento(Container.Create<string>(), Container.Create<Cell[]>(), Container.Create<int>());
 		var sut = ResolveSut();
 
 		// Act
@@ -23,9 +23,9 @@ public class GameStateMemoryTests : BaseTestByAbstraction<GameStateMemory, IGame
 	[Fact]
 	public void Undo_PopsGameStateOffStack()
 	{
-		// Arrange
-		var gameState = new GameStateMemento(Container.Create<ISudokuPuzzle>(), Container.Create<int>());
-		var sut = ResolveSut();
+        // Arrange
+        var gameState = new GameStateMemento(Container.Create<string>(), Container.Create<Cell[]>(), Container.Create<int>());
+        var sut = ResolveSut();
 
 		// Act
 		sut.Save(gameState);

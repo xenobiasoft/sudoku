@@ -12,7 +12,10 @@ public interface ISudokuPuzzle
     bool IsValid();
     void Load(Cell[] cells);
     void PopulatePossibleValues();
+    void Restore(Cell[] cells);
     void SetCell(int row, int column, int? value);
     void SetCellWithFewestPossibleValues();
     IEnumerable<Cell> Validate();
+
+    string PuzzleId { get; set; }
 }
