@@ -2,7 +2,7 @@
 
 namespace XenobiaSoft.Sudoku.GameState;
 
-public class AzureStorageGameStateMemory(IStorageService storageService) : IGameStateMemoryPersistence
+public class AzureStorageGameStateMemory(IStorageService storageService) : IGameStateMemoryPersistence, IDisposable
 {
     private const string ContainerName = "sudoku-puzzles";
     private const string BlobName = "game-state.json";
@@ -62,5 +62,11 @@ public class AzureStorageGameStateMemory(IStorageService storageService) : IGame
     private string GetBlobName(string puzzleId)
     {
         return $"{puzzleId}/{BlobName}";
+    }
+
+    public void Dispose()
+    {
+        _debounceSemaphore?.Dispose();
+        _debounceCts?.Dispose();
     }
 }
