@@ -2,71 +2,150 @@
 
 namespace XenobiaSoft.Sudoku.GameState;
 
-public class AzureStorageGameStateMemory(IStorageService storageService) : IGameStateMemoryPersistence, IDisposable
+public class AzureStorageGameStateMemory(IStorageService storageService) : IPersistenceGameStateMemory, IDisposable
 {
     private const string ContainerName = "sudoku-puzzles";
-    private const string BlobName = "game-state.json";
+    private const int MaxUndoHistory = 50;
 
-    private readonly TimeSpan _saveDebounceDelay = TimeSpan.FromSeconds(1);
-    private readonly SemaphoreSlim _debounceSemaphore = new(1, 1);
-    private CancellationTokenSource? _debounceCts;
+    private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    public Task ClearAsync(string puzzleId)
+    public async Task ClearAsync(string puzzleId)
     {
-        var blobName = GetBlobName(puzzleId);
-        return storageService.DeleteAsync(ContainerName, blobName);
+        await _semaphore.WaitAsync();
+
+        try
+        {
+            await foreach (var blobItem in storageService.GetBlobNamesAsync(ContainerName, $"{puzzleId}/"))
+            {
+                await storageService.DeleteAsync(ContainerName, blobItem);
+            }
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
-    public Task<GameStateMemento> LoadAsync(string puzzleId)
+    public async Task<GameStateMemento> LoadAsync(string puzzleId)
     {
-        var blobName = GetBlobName(puzzleId);
+        await _semaphore.WaitAsync();
 
-        return storageService.LoadAsync<GameStateMemento>(ContainerName, blobName);
+        try
+        {
+            var latestBlobName = await GetLatestBlobNameAsync(puzzleId);
+
+            if (latestBlobName == null)
+            {
+                return null;
+            }
+
+            return await storageService.LoadAsync<GameStateMemento>(ContainerName, latestBlobName);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
     public async Task SaveAsync(GameStateMemento gameState)
     {
-        await DebounceSaveAsync(gameState);
-    }
-
-    private async Task DebounceSaveAsync(GameStateMemento gameState)
-    {
-        await _debounceSemaphore.WaitAsync();
+        await _semaphore.WaitAsync();
 
         try
         {
-            _debounceCts?.Cancel();
-            _debounceCts?.Dispose();
-            _debounceCts = new CancellationTokenSource();
-            try
-            {
-                await Task.Delay(_saveDebounceDelay, _debounceCts.Token);
-                await SaveNowAsync(gameState, _debounceCts.Token);
-            }
-            catch (TaskCanceledException)
-            { }
+            var nextBlobName = await GetNextBlobNameAsync(gameState.PuzzleId);
+
+            await storageService.SaveAsync(ContainerName, nextBlobName, gameState);
+            await TrimHistoryIfNeededAsync(gameState.PuzzleId);
         }
         finally
         {
-            _debounceSemaphore.Release();
+            _semaphore.Release();
         }
     }
 
-    private async Task SaveNowAsync(GameStateMemento gameState, CancellationToken token)
+    public async Task<GameStateMemento> UndoAsync(string puzzleId)
     {
-        var blobName = GetBlobName(gameState.PuzzleId);
+        await _semaphore.WaitAsync();
 
-        await storageService.SaveAsync(ContainerName, blobName, gameState, token);
+        try
+        {
+            var blobList = await GetSortedBlobNamesAsync(puzzleId);
+
+            if (blobList.Count == 0)
+            {
+                return null;
+            }
+
+            var latestBlobName = blobList.Last();
+            await storageService.DeleteAsync(ContainerName, latestBlobName);
+
+            blobList.RemoveAt(blobList.Count - 1);
+
+            if (blobList.Count == 0)
+            {
+                return null;
+            }
+
+            var previousBlobName = blobList.Last();
+
+            return await storageService.LoadAsync<GameStateMemento>(ContainerName, previousBlobName);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
     }
 
-    private string GetBlobName(string puzzleId)
+    private async Task<string?> GetLatestBlobNameAsync(string puzzleId)
     {
-        return $"{puzzleId}/{BlobName}";
+        var blobs = await GetSortedBlobNamesAsync(puzzleId);
+
+        return blobs.LastOrDefault();
+    }
+
+    private async Task<string> GetNextBlobNameAsync(string puzzleId)
+    {
+        var blobs = await GetSortedBlobNamesAsync(puzzleId);
+
+        var nextNumber = blobs.Count > 0
+            ? int.Parse(Path.GetFileNameWithoutExtension(blobs.Last()) ?? "0") + 1
+            : 1;
+
+        return $"{puzzleId}/{nextNumber:D5}.json";
+    }
+
+    private async Task<List<string>> GetSortedBlobNamesAsync(string puzzleId)
+    {
+        var blobs = new List<string>();
+
+        await foreach (var blobItem in storageService.GetBlobNamesAsync(ContainerName, blobPrefix: puzzleId))
+        {
+            blobs.Add(blobItem);
+        }
+
+        return blobs
+            .OrderBy(x => int.Parse(Path.GetFileNameWithoutExtension(x.Replace(puzzleId, string.Empty))))
+            .ToList();
+    }
+
+    private async Task TrimHistoryIfNeededAsync(string puzzleId)
+    {
+        var blobs = await GetSortedBlobNamesAsync(puzzleId);
+        if (blobs.Count > MaxUndoHistory)
+        {
+            var excess = blobs.Count - MaxUndoHistory;
+            var oldest = blobs.Take(excess);
+
+            foreach (var blobName in oldest)
+            {
+                await storageService.DeleteAsync(ContainerName, blobName);
+            }
+        }
     }
 
     public void Dispose()
     {
-        _debounceSemaphore?.Dispose();
-        _debounceCts?.Dispose();
+        _semaphore?.Dispose();
     }
 }

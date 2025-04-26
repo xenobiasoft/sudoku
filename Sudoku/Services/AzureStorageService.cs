@@ -15,6 +15,22 @@ public class AzureStorageService(string connectionString) : IStorageService
         return blobClient.DeleteIfExistsAsync();
     }
 
+    public async IAsyncEnumerable<string> GetBlobNamesAsync(string containerName, string blobPrefix)
+    {
+        var containerClient = GetContainerClient(containerName);
+        var blobs = containerClient
+            .GetBlobsAsync(prefix: blobPrefix)
+            .AsPages(null, 50);
+
+        await foreach (var page in blobs)
+        {
+            foreach (var blobItem in page.Values)
+            {
+                yield return blobItem.Name;
+            }
+        }
+    }
+
     public async Task<TBlobType> LoadAsync<TBlobType>(string containerName, string blobName) where TBlobType : class
     {
         var blobClient = GetBlobClient(containerName, blobName);
@@ -28,13 +44,13 @@ public class AzureStorageService(string connectionString) : IStorageService
 
     }
 
-    public Task SaveAsync(string containerName, string blobName, object blob, CancellationToken token)
+    public Task SaveAsync(string containerName, string blobName, object blob, bool? overwrite = false)
     {
         var blobClient = GetBlobClient(containerName, blobName);
         var json = JsonSerializer.Serialize(blob);
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
 
-        return blobClient.UploadAsync(stream, true, token);
+        return blobClient.UploadAsync(stream, overwrite.GetValueOrDefault());
     }
 
     private BlobClient GetBlobClient(string containerName, string blobName)

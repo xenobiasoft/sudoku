@@ -5,6 +5,7 @@ namespace XenobiaSoft.Sudoku.Services;
 public interface IStorageService
 {
     Task DeleteAsync(string containerName, string blobName);
+    IAsyncEnumerable<string> GetBlobNamesAsync(string containerName, string blobPrefix);
     Task<TBlobType> LoadAsync<TBlobType>(string containerName, string blobName) where TBlobType : class;
-    Task SaveAsync(string containerName, string blobName, object blob, CancellationToken token);
+    Task SaveAsync(string containerName, string blobName, object blob, bool? overwrite = false);
 }
