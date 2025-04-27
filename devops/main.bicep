@@ -15,7 +15,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
     tier: 'Basic'
     size: appServicePlanSku
     family: 'B'
-    capacity: 2
+    capacity: 3
   }
   kind: 'app,linux'
 }
