@@ -1,7 +1,7 @@
 ﻿using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Services;
 
-namespace UnitTests.Helpers;
+namespace UnitTests.Helpers.Mocks;
 
 public static class MockStorageServiceExtensions
 {

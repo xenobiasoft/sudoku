@@ -1,5 +1,6 @@
 ﻿using DepenMock.XUnit;
 using UnitTests.Helpers;
+using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Solver;
@@ -9,63 +10,66 @@ namespace UnitTests.Sudoku.Solver;
 
 public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolver>
 {
-	[Fact]
-    public async Task TrySolvePuzzle_IfChangesWereMadeToPuzzle_ContinuesLoopingThroughStrategies()
+    [Fact]
+    public async Task SolvePuzzle_ShouldUndoOnInvalidMoveException()
     {
         // Arrange
-        var solverStrategy = Container.ResolveMock<SolverStrategy>();
-        Container
-	        .ResolveMock<IGameStateMemory>()
-	        .Setup(x => x.Undo())
-	        .Returns(new GameStateMemento(Container.Create<string>(), PuzzleFactory.GetSolvedPuzzle().GetAllCells(), 10));
-        solverStrategy
-	        .SetupSequence(x => x.Execute(It.IsAny<ISudokuPuzzle>()))
-	        .Returns(4)
-	        .Returns(4)
-	        .Throws<InvalidMoveException>();
+        var mockGameStateMemory = Container.ResolveMock<IGameStateMemory>();
+        var mockPuzzle = Container.ResolveMock<ISudokuPuzzle>();
+        mockPuzzle.ThrowsInvalidMoveThenPuzzleSolved();
         var sut = ResolveSut();
 
         // Act
-        await sut.SolvePuzzle(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
+        await sut.SolvePuzzle(mockPuzzle.Object);
 
         // Assert
-        solverStrategy.Verify(x => x.Execute(It.IsAny<ISudokuPuzzle>()), Times.Exactly(3));
+        mockGameStateMemory.VerifyUndoAsyncCalled(Times.Once);
+    }
+
+    [Fact]
+    public async Task SolvePuzzle_ShouldUseBruteForceWhenStrategiesFail()
+    {
+        // Arrange
+        Container
+            .ResolveMock<SolverStrategy>()
+            .DoesNotMakeChanges();
+        var mockPuzzle = Container.ResolveMock<ISudokuPuzzle>();
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SolvePuzzle(mockPuzzle.Object);
+
+        // Assert
+        mockPuzzle.VerifyUsedBruteForce();
     }
 
     [Fact]
 	public async Task TrySolvePuzzle_SavesGameState_OnEachLoop()
-	{
-		// Arrange
-		var mockGameState = Container.ResolveMock<IGameStateMemory>();
+    {
+        // Arrange
+        var mockGameStateMemory = Container.ResolveMock<IGameStateMemory>();
 		var sut = ResolveSut();
 
 		// Act
 		await sut.SolvePuzzle(PuzzleFactory.GetSolvedPuzzle());
 
 		// Assert
-		mockGameState.Verify(x => x.Save(It.IsAny<GameStateMemento>()), Times.AtLeastOnce);
-	}
+        mockGameStateMemory.VerifySaveAsyncCalled(Times.Once);
+    }
 
-	[Fact]
+    [Fact]
 	public async Task TrySolvePuzzle_WhenStrategyThrowsInvalidMoveException_GamePopsSavedStateOffStack()
-	{
-		// Arrange
-		Container
-			.ResolveMock<IGameStateMemory>()
-			.Setup(x => x.Undo())
-			.Returns(new GameStateMemento(Container.Create<string>(), PuzzleFactory.GetSolvedPuzzle().GetAllCells(), 10));
-		Container
-			.ResolveMock<SolverStrategy>()
-			.SetupSequence(x => x.Execute(It.IsAny<ISudokuPuzzle>()))
-			.Throws<InvalidMoveException>()
-			.Returns(0);
-		var mockGameState = Container.ResolveMock<IGameStateMemory>();
+    {
+        // Arrange
+        var mockPuzzle = Container.ResolveMock<ISudokuPuzzle>();
+        mockPuzzle.ThrowsInvalidMoveThenPuzzleSolved();
+		var mockGameStateMemory = Container.ResolveMock<IGameStateMemory>();
 		var sut = ResolveSut();
 
 		// Act
-		await sut.SolvePuzzle(PuzzleFactory.GetPuzzle(Level.ExtremelyHard));
+		await sut.SolvePuzzle(mockPuzzle.Object);
 
 		// Assert
-		mockGameState.Verify(x => x.Undo(), Times.Once);
-	}
+        mockGameStateMemory.VerifyUndoAsyncCalled(Times.Once);
+    }
 }

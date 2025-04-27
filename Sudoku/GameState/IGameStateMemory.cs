@@ -2,8 +2,8 @@
 
 public interface IGameStateMemory
 {
-	void Clear();
-	bool IsEmpty();
-	void Save(GameStateMemento gameState);
-	GameStateMemento Undo();
+    Task ClearAsync(string puzzleId);
+    Task<GameStateMemento?> LoadAsync(string puzzleId);
+    Task SaveAsync(GameStateMemento gameState);
+    Task<GameStateMemento?> UndoAsync(string puzzleId);
 }

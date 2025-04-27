@@ -6,50 +6,105 @@ namespace UnitTests.Sudoku.GameState;
 
 public class InMemoryGameStateMemoryTests : BaseTestByAbstraction<InMemoryGameStateMemory, IGameStateMemory>
 {
-	[Fact]
-	public void Save_AddsGameStateToStack()
-	{
-		// Arrange
-		var gameState = new GameStateMemento(Container.Create<string>(), Container.Create<Cell[]>(), Container.Create<int>());
-		var sut = ResolveSut();
+    private const string PuzzleId = "test-puzzle";
 
-		// Act
-		sut.Save(gameState);
-
-		// Assert
-		sut.IsEmpty().Should().BeFalse();
-	}
-
-	[Fact]
-	public void Undo_PopsGameStateOffStack()
-	{
+    [Fact]
+    public async Task ClearAsync_ShouldClearGameState()
+    {
         // Arrange
-        var gameState = new GameStateMemento(Container.Create<string>(), Container.Create<Cell[]>(), Container.Create<int>());
         var sut = ResolveSut();
 
-		// Act
-		sut.Save(gameState);
-		var actualGameState = sut.Undo();
+        await sut.SaveAsync(Container.Create<GameStateMemento>());
 
-		// Assert
-		Assert.Multiple(() =>
-		{
-			sut.IsEmpty().Should().BeTrue();
-			actualGameState.Should().Be(gameState);
-		});
-	}
+        // Act
+        await sut.ClearAsync(PuzzleId);
 
-	[Fact]
-	public void Clear_ClearsGameStateStack()
-	{
-		// Arrange
-		var sut = ResolveSut();
-		sut.Save(Container.Create<GameStateMemento>());
+        // Assert
+        var result = await sut.LoadAsync(PuzzleId);
+        result.Should().BeNull();
+    }
 
-		// Act
-		sut.Clear();
+    [Fact]
+    public async Task LoadAsync_ShouldReturnNull_WhenNoGameStateExists()
+    {
+        // Arrange
+        var sut = ResolveSut();
 
-		// Assert
-		sut.IsEmpty().Should().BeTrue();
-	}
+        // Act
+        var result = await sut.LoadAsync(PuzzleId);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task LoadAsync_ShouldReturnLastSavedGameState()
+    {
+        // Arrange
+        var expectedGameState = Container.Create<GameStateMemento>();
+        var sut = ResolveSut();
+
+        await sut.SaveAsync(expectedGameState);
+
+        // Act
+        var actualGameState = await sut.LoadAsync(PuzzleId);
+
+        // Assert
+        actualGameState.Should().Be(expectedGameState);
+    }
+
+    [Fact]
+    public async Task SaveAsync_ShouldNotSaveDuplicateGameState()
+    {
+        // Arrange
+        var board = new[] { new Cell(0, 0) { Value = 1 } };
+        var gameState1 = new GameStateMemento(PuzzleId, board, 0);
+        var gameState2 = new GameStateMemento(PuzzleId, board, 0);
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SaveAsync(gameState1);
+        await sut.SaveAsync(gameState2);
+
+        // Assert
+        var result = await sut.LoadAsync(PuzzleId);
+
+        result.Should().Be(gameState1);
+    }
+
+    [Fact]
+    public async Task UndoAsync_ShouldReturnLastGameStateAndRemoveIt()
+    {
+        // Arrange
+        var gameState1 = new GameStateMemento(PuzzleId, [], 0);
+        var gameState2 = new GameStateMemento(PuzzleId, [], 1);
+        var sut = ResolveSut();
+
+        await sut.SaveAsync(gameState1);
+        await sut.SaveAsync(gameState2);
+
+        // Act
+        var undoneState = await sut.UndoAsync(PuzzleId);
+        var currentState = await sut.LoadAsync(PuzzleId);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            undoneState.Should().Be(gameState2);
+            currentState.Should().Be(gameState1);
+        });
+    }
+
+    [Fact]
+    public async Task UndoAsync_ShouldReturnNull_WhenNoGameStateExists()
+    {
+        // Arrange
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.UndoAsync(PuzzleId);
+
+        // Assert
+        result.Should().BeNull();
+    }
 }

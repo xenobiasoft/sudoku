@@ -4,34 +4,48 @@ public class InMemoryGameStateMemory : IGameStateMemory
 {
 	private readonly CircularStack<GameStateMemento> _gameState = new(15);
 
-	public void Clear()
-	{
-		_gameState.Clear();
-	}
+    public Task ClearAsync(string puzzleId)
+    {
+        _gameState.Clear();
 
-	public bool IsEmpty()
-	{
-		return _gameState.Count == 0;
-	}
+        return Task.CompletedTask;
+    }
 
-	public void Save(GameStateMemento gameState)
-	{
-		if (_gameState.Count > 0)
-		{
-			var previousGameState = _gameState.Peek();
+    public Task<GameStateMemento> LoadAsync(string puzzleId)
+    {
+        return Task.FromResult(_gameState.Count > 0 ? _gameState.Peek() : null);
+    }
 
-            if (AreBoardsEqual(gameState.Board, previousGameState.Board)) return;
+    public Task SaveAsync(GameStateMemento gameState)
+    {
+        if (_gameState.Count > 0)
+        {
+            var previousGameState = _gameState.Peek();
+
+            if (AreGameStatesEqual(gameState, previousGameState)) return Task.CompletedTask;
         }
 
-		_gameState.Push(gameState);
-	}
+        _gameState.Push(gameState);
 
-	public GameStateMemento Undo()
-	{
-		return _gameState.Pop();
-	}
+        return Task.CompletedTask;
+    }
 
-	private bool AreBoardsEqual(Cell[] board1, Cell[] board2)
+    public Task<GameStateMemento> UndoAsync(string puzzleId)
+    {
+        return _gameState.Count == 0 ? Task.FromResult<GameStateMemento>(null) : Task.FromResult(_gameState.Pop());
+    }
+
+    private bool AreGameStatesEqual(GameStateMemento gameState1, GameStateMemento gameState2)
+    {
+        if (gameState1.PuzzleId != gameState2.PuzzleId || gameState1.Score != gameState2.Score)
+        {
+            return false;
+        }
+
+        return AreBoardsEqual(gameState1.Board, gameState2.Board);
+    }
+
+    private bool AreBoardsEqual(Cell[] board1, Cell[] board2)
     {
         if (board1.Length != board2.Length) return false;
 
