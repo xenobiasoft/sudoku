@@ -4,10 +4,8 @@ using System.Text.Json;
 
 namespace XenobiaSoft.Sudoku.Services;
 
-public class AzureStorageService(string connectionString) : IStorageService
+public class AzureStorageService(BlobServiceClient blobServiceClient) : IStorageService
 {
-    private readonly BlobServiceClient _blobServiceClient = new(connectionString);
-
     public Task DeleteAsync(string containerName, string blobName)
     {
         var blobClient = GetBlobClient(containerName, blobName);
@@ -61,7 +59,7 @@ public class AzureStorageService(string connectionString) : IStorageService
 
     private BlobContainerClient GetContainerClient(string containerName)
     {
-        var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
         containerClient.CreateIfNotExists();
 
