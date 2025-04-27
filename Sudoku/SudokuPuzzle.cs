@@ -155,6 +155,15 @@ public class SudokuPuzzle : ISudokuPuzzle
         }
     }
 
+    public void Restore(Cell[] cells)
+    {
+        for (var i = 0; i < cells.Length; i++)
+        {
+            _cells[i].Value = cells[i].Value;
+            _cells[i].PossibleValues = cells[i].PossibleValues;
+        }
+    }
+
     public void SetCell(int row, int column, int? value)
     {
         GetCell(row, column).Value = value;
@@ -207,6 +216,8 @@ public class SudokuPuzzle : ISudokuPuzzle
         }
         return invalidCells.Distinct();
     }
+
+    public string PuzzleId { get; set; } = Guid.NewGuid().ToString();
 
     private string CalculatePossibleValues(Cell cell)
     {

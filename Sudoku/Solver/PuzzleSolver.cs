@@ -4,11 +4,12 @@ using XenobiaSoft.Sudoku.Strategies;
 
 namespace XenobiaSoft.Sudoku.Solver;
 
-public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateMemory gameStateMemory)
+public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, Func<string, IGameStateMemory> gameStateMemoryFactory)
     : IPuzzleSolver
 {
     private int _score;
     private ISudokuPuzzle _puzzle;
+    private readonly IGameStateMemory _gameStateMemory = gameStateMemoryFactory("InMemory");
 
     public async Task<ISudokuPuzzle> SolvePuzzle(ISudokuPuzzle puzzle)
     {
@@ -20,7 +21,7 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateMemo
         return _puzzle;
     }
 
-    private void SolveLoop()
+    private async Task SolveLoop()
     {
         var changesMade = true;
 
@@ -30,7 +31,7 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateMemo
 
             try
             {
-                Save();
+                await SaveAsync();
                 changesMade = ApplyStrategies(previousScore);
 
                 if (!changesMade)
@@ -41,11 +42,12 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateMemo
             }
             catch (InvalidMoveException)
             {
-                Undo();
+                await UndoAsync();
             }
 
             if (_puzzle.IsSolved())
             {
+                await _gameStateMemory.ClearAsync(_puzzle.PuzzleId);
                 break;
             }
         }
@@ -75,27 +77,27 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateMemo
 
     private void TryBruteForceMethod()
 	{
-		Console.WriteLine($"Solving with BruteForce technique");
+		Console.WriteLine("Solving with BruteForce technique");
 		_score += 5;
 		_puzzle.PopulatePossibleValues();
 		_puzzle.SetCellWithFewestPossibleValues();
 	}
 
-    private void Save()
+    private Task SaveAsync()
     {
 	    if (!_puzzle.IsValid())
 	    {
 		    throw new InvalidMoveException();
 	    }
         
-	    gameStateMemory.Save(new GameStateMemento(_puzzle, _score));
+	    return _gameStateMemory.SaveAsync(new GameStateMemento(_puzzle.PuzzleId, _puzzle.GetAllCells(), _score));
     }
 
-    private void Undo()
+    private async Task UndoAsync()
     {
-	    var memento = gameStateMemory.Undo();
+	    var memento = await _gameStateMemory.UndoAsync(_puzzle.PuzzleId);
 
 	    _score = memento.Score;
-        _puzzle = memento.Puzzle;
+        _puzzle.Restore(memento.Board);
     }
 }

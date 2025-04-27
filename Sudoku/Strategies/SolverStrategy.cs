@@ -2,7 +2,7 @@
 
 public abstract class SolverStrategy
 {
-	public int SolvePuzzle(ISudokuPuzzle puzzle)
+	public virtual int SolvePuzzle(ISudokuPuzzle puzzle)
 	{
 		puzzle.PopulatePossibleValues();
 
