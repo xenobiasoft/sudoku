@@ -2,7 +2,7 @@
 
 public class InMemoryGameStateMemory : IGameStateMemory
 {
-	private readonly CircularStack<GameStateMemento> _gameState = new(15);
+	private readonly CircularStack<GameStateMemento> _gameState = new(50);
 
     public GameStateMemoryType MemoryType => GameStateMemoryType.InMemory;
 

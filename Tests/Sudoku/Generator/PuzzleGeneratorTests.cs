@@ -1,5 +1,6 @@
 ﻿using DepenMock.XUnit;
 using UnitTests.Helpers;
+using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Generator;
 using XenobiaSoft.Sudoku.Solver;
@@ -27,8 +28,8 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
 		var puzzle = await sut.GenerateEmptyPuzzle();
 
 		// Assert
-		puzzle.GetAllCells().Should().BeEquivalentTo(PuzzleFactory.GetEmptyPuzzle().GetAllCells());
-	}
+        puzzle.AssertAllCellsEmpty();
+    }
 
 	[Fact]
 	public async Task Generate_SolvesEmptyPuzzle()
@@ -41,8 +42,8 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
 		await sut.Generate(Level.Easy);
 
 		// Assert
-		puzzleSolver.Verify(x => x.SolvePuzzle(It.IsAny<ISudokuPuzzle>()), Times.AtLeastOnce);
-	}
+        puzzleSolver.VerifyCallsSolvePuzzle(Times.Once);
+    }
 
 	[Theory]
 	[InlineData(Level.Easy, 40, 45)]
@@ -58,8 +59,8 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
 		var puzzle = await sut.Generate(level);
 
 		// Assert
-		puzzle.GetAllCells().Count(x => !x.Value.HasValue).Should().BeGreaterThanOrEqualTo(minEmptyCells).And.BeLessThanOrEqualTo(maxEmptyCells);
-	}
+        puzzle.AssertHasExpectedNumberEmptyCells(minEmptyCells, maxEmptyCells);
+    }
 
 	[Fact]
 	public async Task Generate_WhenGeneratingPuzzle_MarksAllCellsWithValueAsLocked()
@@ -71,6 +72,6 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
         var puzzle = await sut.Generate(Level.Easy);
 
         // Assert
-        puzzle.GetAllCells().Where(x => x.Value.HasValue).ToList().ForEach(x => x.Locked.Should().BeTrue());
+        puzzle.AssertPopulatedCellsLocked();
     }
 }
