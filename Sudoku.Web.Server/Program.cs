@@ -1,5 +1,6 @@
 using Azure.Identity;
 using BlazorApplicationInsights;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,7 +31,18 @@ try
         .RegisterBlazorGameServices()
         .AddBlazorApplicationInsights(x =>
         {
-            x.InstrumentationKey = builder.Configuration["ApplicationInsights:InstrumentationKey"];
+            x.InstrumentationKey = builder.Configuration["AppInsightsKey"];
+        })
+        .AddApplicationInsightsTelemetry(new ApplicationInsightsServiceOptions
+        {
+            ConnectionString = builder.Configuration["AppInsightsConnectionString"]
+        })
+        .AddLogging(logging =>
+        {
+            logging
+                .AddApplicationInsights()
+                .AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Information)
+                .AddFilter<ApplicationInsightsLoggerProvider>("Microsoft", LogLevel.Warning);
         });
 
     var app = builder.Build();
