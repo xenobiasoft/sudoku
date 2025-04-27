@@ -1,4 +1,5 @@
-﻿using Azure.Identity;
+﻿using System.Numerics;
+using Azure.Identity;
 using Microsoft.Extensions.Azure;
 using Sudoku.Web.Server.Services;
 using XenobiaSoft.Sudoku.GameState;
@@ -26,24 +27,26 @@ namespace Sudoku.Web.Server.Helpers
                 .AddTransient<ISudokuGame, SudokuGame>()
                 .AddTransient<IPuzzleSolver, PuzzleSolver>()
                 .AddTransient<IPuzzleGenerator, PuzzleGenerator>()
-                .AddSingleton<IStorageService, AzureStorageService>();
+                .AddSingleton<IStorageService, AzureStorageService>()
+                .AddSingleton<InMemoryGameStateMemory>()
+                .AddSingleton<AzureStorageGameStateMemory>()
+                .AddSingleton<Func<string, IGameStateMemory>>(sp => key =>
+                {
+                    return key switch
+                    {
+                        "InMemory" => sp.GetRequiredService<InMemoryGameStateMemory>(),
+                        "Persistent" => sp.GetRequiredService<AzureStorageGameStateMemory>(),
+                        _ => throw new ArgumentException($"Unknown game state memory type: {key}")
+                    };
+                });
 
-            typeof(SolverStrategy).Assembly
+            typeof(SudokuPuzzle).Assembly
                 .GetTypes()
                 .Where(x => x.Name.EndsWith("Strategy") && !x.IsAbstract && !x.IsInterface)
                 .ToList()
                 .ForEach(x =>
                 {
                     services.AddTransient(typeof(SolverStrategy), x);
-                });
-
-            typeof(SolverStrategy).Assembly
-                .GetTypes()
-                .Where(x => x.Name.EndsWith("GameStateMemory") && !x.IsAbstract && !x.IsInterface)
-                .ToList()
-                .ForEach(x =>
-                {
-                    services.AddTransient(typeof(IGameStateMemory), x);
                 });
 
             services.AddAzureClients(builder =>

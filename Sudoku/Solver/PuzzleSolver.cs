@@ -4,12 +4,12 @@ using XenobiaSoft.Sudoku.Strategies;
 
 namespace XenobiaSoft.Sudoku.Solver;
 
-public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IEnumerable<IGameStateMemory> gameStateMemoryList)
+public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, Func<string, IGameStateMemory> gameStateMemoryFactory)
     : IPuzzleSolver
 {
     private int _score;
     private ISudokuPuzzle _puzzle;
-    private readonly IGameStateMemory _gameStateMemory = gameStateMemoryList.First(x => x.MemoryType == GameStateMemoryType.InMemory);
+    private readonly IGameStateMemory _gameStateMemory = gameStateMemoryFactory("InMemory");
 
     public async Task<ISudokuPuzzle> SolvePuzzle(ISudokuPuzzle puzzle)
     {
