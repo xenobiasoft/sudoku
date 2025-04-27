@@ -4,7 +4,16 @@ namespace UnitTests.Helpers.Mocks;
 
 public static class MockSudokuPuzzleExtensions
 {
-    public static Mock<ISudokuPuzzle> ThrowsInvalidMoveThenPuzzleSolved(this Mock<ISudokuPuzzle> mock)
+    public static Mock<ISudokuPuzzle> SetupPuzzleIsSolved(this Mock<ISudokuPuzzle> mock)
+    {
+        mock
+            .Setup(x => x.IsSolved())
+            .Returns(true);
+
+        return mock;
+    }
+
+    public static Mock<ISudokuPuzzle> SetupInvalidMove(this Mock<ISudokuPuzzle> mock)
     {
         mock
             .SetupSequence(x => x.IsValid())

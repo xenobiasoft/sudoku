@@ -127,4 +127,17 @@ public class AzureStorageGameStateMemoryTests : BaseTestByAbstraction<AzureStora
         // Assert
         result.Should().Be(_gameState);
     }
+
+    [Fact]
+    public void GameStateMemoryType_ShouldBePersistence()
+    {
+        // Arrange
+        var sut = ResolveSut();
+
+        // Act
+        var type = sut.MemoryType;
+
+        // Assert
+        type.Should().Be(GameStateMemoryType.Persistence);
+    }
 }

@@ -4,6 +4,8 @@ public class InMemoryGameStateMemory : IGameStateMemory
 {
 	private readonly CircularStack<GameStateMemento> _gameState = new(15);
 
+    public GameStateMemoryType MemoryType => GameStateMemoryType.InMemory;
+
     public Task ClearAsync(string puzzleId)
     {
         _gameState.Clear();

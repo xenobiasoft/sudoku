@@ -24,8 +24,6 @@ namespace Sudoku.Web.Server.Helpers
         {
             services
                 .AddTransient<ISudokuGame, SudokuGame>()
-                .AddTransient<IGameStateMemory, InMemoryGameStateMemory>()
-                .AddTransient<IGameStateMemory, AzureStorageGameStateMemory>()
                 .AddTransient<IPuzzleSolver, PuzzleSolver>()
                 .AddTransient<IPuzzleGenerator, PuzzleGenerator>()
                 .AddSingleton<IStorageService, AzureStorageService>();
@@ -37,6 +35,15 @@ namespace Sudoku.Web.Server.Helpers
                 .ForEach(x =>
                 {
                     services.AddTransient(typeof(SolverStrategy), x);
+                });
+
+            typeof(SolverStrategy).Assembly
+                .GetTypes()
+                .Where(x => x.Name.EndsWith("GameStateMemory") && !x.IsAbstract && !x.IsInterface)
+                .ToList()
+                .ForEach(x =>
+                {
+                    services.AddTransient(typeof(IGameStateMemory), x);
                 });
 
             services.AddAzureClients(builder =>

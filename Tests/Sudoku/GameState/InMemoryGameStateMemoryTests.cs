@@ -107,4 +107,17 @@ public class InMemoryGameStateMemoryTests : BaseTestByAbstraction<InMemoryGameSt
         // Assert
         result.Should().BeNull();
     }
+
+    [Fact]
+    public void GameStateMemoryType_ShouldBeInMemory()
+    {
+        // Arrange
+        var sut = ResolveSut();
+
+        // Act
+        var type = sut.MemoryType;
+
+        // Assert
+        type.Should().Be(GameStateMemoryType.InMemory);
+    }
 }
