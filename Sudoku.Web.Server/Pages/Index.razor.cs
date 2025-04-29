@@ -7,7 +7,7 @@ namespace Sudoku.Web.Server.Pages;
 public partial class Index
 {
 	[Inject] private NavigationManager NavigationManager { get; set; } = null!;
-    [Inject] private LocalStorageService LocalStorage { get; set; } = null!;
+    [Inject] private ILocalStorageService LocalStorage { get; set; } = null!;
 
     private bool showSavedGames;
     private bool showDifficulty;

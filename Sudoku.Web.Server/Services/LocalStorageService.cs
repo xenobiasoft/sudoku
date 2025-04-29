@@ -4,7 +4,7 @@ using Sudoku.Web.Server.Models;
 
 namespace Sudoku.Web.Server.Services;
 
-public class LocalStorageService(IJSRuntime jsRuntime)
+public class LocalStorageService(IJSRuntime jsRuntime) : ILocalStorageService
 {
     private const string SavedGamesKey = "savedGames";
 
