@@ -12,5 +12,5 @@ public interface IGameStateMemory
 public enum GameStateMemoryType
 {
     InMemory,
-    Persistence
+    AzureBlobPersistence
 }

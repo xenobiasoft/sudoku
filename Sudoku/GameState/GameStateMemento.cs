@@ -13,8 +13,8 @@ public class GameStateMemento
     public GameStateMemento()
     {}
 
-    public string PuzzleId { get; set; }
+    public string PuzzleId { get; init; }
     public Cell[] Board { get; private set; }
     public int Score { get; private set; }
-    public DateTime LastUpdated { get; set; }
+    public DateTime LastUpdated { get; init; }
 }

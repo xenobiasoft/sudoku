@@ -9,7 +9,7 @@ public class AzureStorageGameStateMemory(IStorageService storageService) : IGame
 
     private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    public GameStateMemoryType MemoryType => GameStateMemoryType.Persistence;
+    public GameStateMemoryType MemoryType => GameStateMemoryType.AzureBlobPersistence;
 
     public async Task ClearAsync(string puzzleId)
     {
