@@ -17,7 +17,9 @@ public class DependencyInjectionTests
             .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
         var services = new ServiceCollection();
-        services.RegisterGameServices(configMgr);
+        services
+            .RegisterBlazorGameServices()
+            .RegisterGameServices(configMgr);
         var factory = new TestServiceProviderFactory();
         var serviceProvider = factory.CreateServiceProvider(factory.CreateBuilder(services));
 
