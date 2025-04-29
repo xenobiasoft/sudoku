@@ -5,9 +5,39 @@
 
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
-        <SudokuImage />
-        <NavLink class="nav-link" href="/game" Match="NavLinkMatch.All">
-            <i class="fa-solid fa-play"></i>&nbsp;New Game
-        </NavLink>
+        <div class="landing-page">
+            <SudokuImage/>
+            <ul class="menu">
+                <li>
+                    <Button @onclick="ToggleDifficultyOptions"><i class="fa-solid fa-play-circle"></i> Start New Game</Button>
+                </li>
+                @if (showDifficulty)
+                {
+                    <ul class="sub-menu">
+                        <li><Button @onclick="@(() => StartNewGame("Easy"))">Easy</Button></li>
+                        <li><Button @onclick="@(() => StartNewGame("Medium"))">Medium</Button></li>
+                        <li><Button @onclick="@(() => StartNewGame("Hard"))">Hard</Button></li>
+                    </ul>
+                }
+                <li>
+                    <Button @onclick="LoadSavedGames" disabled="@(!savedGames.Any())">
+                        <i class="fa-solid fa-folder-open"></i> Load Game
+                    </Button>
+                </li>
+                @if (showSavedGames && savedGames.Any())
+                {
+                    <ul class="sub-menu">
+                        @foreach (var game in savedGames.OrderByDescending(g => g.LastSaved))
+                        {
+                            <li>
+                                <Button @onclick="@(() => LoadGame(game.PuzzleId))">
+                                    Saved: @game.LastSaved.ToString("g")
+                                </Button>
+                            </li>
+                        }
+                    </ul>
+                }
+            </ul>
+        </div>
     </div>
 </div>
