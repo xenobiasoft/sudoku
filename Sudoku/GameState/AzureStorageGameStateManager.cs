@@ -28,7 +28,7 @@ public class AzureStorageGameStateManager(IStorageService storageService) : IGam
         }
     }
 
-    public async Task<GameStateMemento> LoadAsync(string puzzleId)
+    public async Task<GameStateMemory> LoadAsync(string puzzleId)
     {
         await _semaphore.WaitAsync();
 
@@ -41,7 +41,7 @@ public class AzureStorageGameStateManager(IStorageService storageService) : IGam
                 return null;
             }
 
-            return await storageService.LoadAsync<GameStateMemento>(ContainerName, latestBlobName);
+            return await storageService.LoadAsync<GameStateMemory>(ContainerName, latestBlobName);
         }
         finally
         {
@@ -49,7 +49,7 @@ public class AzureStorageGameStateManager(IStorageService storageService) : IGam
         }
     }
 
-    public async Task SaveAsync(GameStateMemento gameState)
+    public async Task SaveAsync(GameStateMemory gameState)
     {
         await _semaphore.WaitAsync();
 
@@ -66,7 +66,7 @@ public class AzureStorageGameStateManager(IStorageService storageService) : IGam
         }
     }
 
-    public async Task<GameStateMemento> UndoAsync(string puzzleId)
+    public async Task<GameStateMemory> UndoAsync(string puzzleId)
     {
         await _semaphore.WaitAsync();
 
@@ -91,7 +91,7 @@ public class AzureStorageGameStateManager(IStorageService storageService) : IGam
 
             var previousBlobName = blobList.Last();
 
-            return await storageService.LoadAsync<GameStateMemento>(ContainerName, previousBlobName);
+            return await storageService.LoadAsync<GameStateMemory>(ContainerName, previousBlobName);
         }
         finally
         {

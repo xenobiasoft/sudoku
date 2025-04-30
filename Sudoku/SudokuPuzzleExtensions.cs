@@ -4,8 +4,8 @@ namespace XenobiaSoft.Sudoku;
 
 public static class SudokuPuzzleExtensions
 {
-    public static GameStateMemento ToGameState(this ISudokuPuzzle puzzle, int score)
+    public static GameStateMemory ToGameState(this ISudokuPuzzle puzzle, int score)
     {
-        return new GameStateMemento(puzzle.PuzzleId, puzzle.GetAllCells(), score);
+        return new GameStateMemory(puzzle.PuzzleId, puzzle.GetAllCells(), score);
     }
 }

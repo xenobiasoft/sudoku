@@ -18,9 +18,9 @@ public class SudokuGame(IPuzzleGenerator puzzleGenerator, Func<string, IGameStat
         return puzzle.PuzzleId;
     }
 
-    public Task SaveAsync(GameStateMemento memento)
+    public Task SaveAsync(GameStateMemory memory)
     {
-        return _gameState.SaveAsync(memento);
+        return _gameState.SaveAsync(memory);
     }
 
     public Task DeleteAsync(string puzzleId)
@@ -28,7 +28,7 @@ public class SudokuGame(IPuzzleGenerator puzzleGenerator, Func<string, IGameStat
         return _gameState.DeleteAsync(puzzleId);
     }
 
-    public Task<GameStateMemento> LoadAsync(string puzzleId)
+    public Task<GameStateMemory> LoadAsync(string puzzleId)
 	{
         return _gameState.LoadAsync(puzzleId);
     }

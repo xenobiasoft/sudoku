@@ -13,7 +13,7 @@ public static class MockGameStateMemoryExtensions
 
     public static Mock<IGameStateManager> VerifySaveAsyncCalled(this Mock<IGameStateManager> mock, Func<Times> times)
     {
-        mock.Verify(x => x.SaveAsync(It.IsAny<GameStateMemento>()), times);
+        mock.Verify(x => x.SaveAsync(It.IsAny<GameStateMemory>()), times);
 
         return mock;
     }

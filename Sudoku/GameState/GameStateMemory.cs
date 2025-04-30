@@ -1,8 +1,8 @@
 ﻿namespace XenobiaSoft.Sudoku.GameState;
 
-public class GameStateMemento
+public class GameStateMemory
 {
-    public GameStateMemento(string puzzleId, Cell[] board, int score)
+    public GameStateMemory(string puzzleId, Cell[] board, int score)
     {
         PuzzleId = puzzleId;
         Board = board;
@@ -10,7 +10,7 @@ public class GameStateMemento
         LastUpdated = DateTime.UtcNow;
     }
 
-    public GameStateMemento()
+    public GameStateMemory()
     {}
 
     public string PuzzleId { get; init; }

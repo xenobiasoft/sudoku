@@ -90,7 +90,7 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, Func<string, I
 		    throw new InvalidMoveException();
 	    }
         
-	    return _gameStateMemory.SaveAsync(new GameStateMemento(_puzzle.PuzzleId, _puzzle.GetAllCells(), _score));
+	    return _gameStateMemory.SaveAsync(new GameStateMemory(_puzzle.PuzzleId, _puzzle.GetAllCells(), _score));
     }
 
     private async Task UndoAsync()

@@ -4,9 +4,9 @@ public interface IGameStateManager
 {
     GameStateMemoryType MemoryType { get; }
     Task DeleteAsync(string puzzleId);
-    Task<GameStateMemento?> LoadAsync(string puzzleId);
-    Task SaveAsync(GameStateMemento gameState);
-    Task<GameStateMemento?> UndoAsync(string puzzleId);
+    Task<GameStateMemory?> LoadAsync(string puzzleId);
+    Task SaveAsync(GameStateMemory gameState);
+    Task<GameStateMemory?> UndoAsync(string puzzleId);
 }
 
 public enum GameStateMemoryType

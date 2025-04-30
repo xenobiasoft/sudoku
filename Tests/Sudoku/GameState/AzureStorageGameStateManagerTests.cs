@@ -11,7 +11,7 @@ public class AzureStorageGameStateManagerTests : BaseTestByAbstraction<AzureStor
     private const string PuzzleId = "test-puzzle";
 
     private readonly Mock<IStorageService> _mockStorageService;
-    private readonly GameStateMemento _gameState;
+    private readonly GameStateMemory _gameState;
     private readonly List<string> _blobNames =
     [
         $"{PuzzleId}/00001.json",
@@ -23,7 +23,7 @@ public class AzureStorageGameStateManagerTests : BaseTestByAbstraction<AzureStor
     {
         _mockStorageService = Container.ResolveMock<IStorageService>();
         _gameState = Container
-            .Build<GameStateMemento>()
+            .Build<GameStateMemory>()
             .With(x => x.PuzzleId, PuzzleId)
             .Create();
     }
