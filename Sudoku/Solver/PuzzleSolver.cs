@@ -9,7 +9,7 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, Func<string, I
 {
     private int _score;
     private ISudokuPuzzle _puzzle;
-    private readonly IGameStateMemory _gameStateMemory = gameStateMemoryFactory("InMemory");
+    private readonly IGameStateMemory _gameStateMemory = gameStateMemoryFactory(GameStateTypes.InMemory);
 
     public async Task<ISudokuPuzzle> SolvePuzzle(ISudokuPuzzle puzzle)
     {

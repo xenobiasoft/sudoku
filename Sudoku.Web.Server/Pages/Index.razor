@@ -9,9 +9,9 @@
             <SudokuImage/>
             <ul class="menu">
                 <li>
-                    <Button @onclick="ToggleDifficultyOptions"><i class="fa-solid fa-play-circle"></i> Start New Game</Button>
+                    <Button @onclick="ToggleDifficultyOptions"><i class="fa-solid fa-play-circle"></i> Start NewGameAsync Game</Button>
                 </li>
-                @if (showDifficulty)
+                @if (_showDifficulty)
                 {
                     <ul class="sub-menu">
                         <li><Button @onclick="@(() => StartNewGame("Easy"))">Easy</Button></li>
@@ -20,14 +20,14 @@
                     </ul>
                 }
                 <li>
-                    <Button @onclick="LoadSavedGames" disabled="@(!savedGames.Any())">
+                    <Button @onclick="LoadSavedGames" disabled="@(!_savedGames.Any())">
                         <i class="fa-solid fa-folder-open"></i> Load Game
                     </Button>
                 </li>
-                @if (showSavedGames && savedGames.Any())
+                @if (_showSavedGames && _savedGames.Any())
                 {
                     <ul class="sub-menu">
-                        @foreach (var game in savedGames.OrderByDescending(g => g.LastSaved))
+                        @foreach (var game in _savedGames.OrderByDescending(g => g.LastSaved))
                         {
                             <li>
                                 <Button @onclick="@(() => LoadGame(game.PuzzleId))">

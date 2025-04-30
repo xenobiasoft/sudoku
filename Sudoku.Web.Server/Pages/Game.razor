@@ -1,16 +1,12 @@
-﻿@page "/game"
+﻿@page "/game/"
 @using Sudoku.Web.Server.Components
 
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
-        <DifficultyLevelOptions 
-            OnDifficultyLevelChanged="NewGame" />
-        <GameTimer 
-            @ref="_gameTimer" />
+        <GameTimer @ref="_gameTimer" />
         <VictoryDisplay 
             IsVictory="@Puzzle.IsSolved()"
-            ElapsedTime="@_gameTimer.ElapsedGameTime"
-            NewGame="() => NewGame(_level)"/>
+            ElapsedTime="@_gameTimer.ElapsedGameTime" />
         <GameBoard 
             Puzzle="Puzzle" 
             OnCellFocus="SetSelectedCell" />

@@ -34,8 +34,8 @@ namespace Sudoku.Web.Server.Helpers
                 {
                     return key switch
                     {
-                        "InMemory" => sp.GetRequiredService<InMemoryGameStateMemory>(),
-                        "AzurePersistent" => sp.GetRequiredService<AzureStorageGameStateMemory>(),
+                        GameStateTypes.InMemory => sp.GetRequiredService<InMemoryGameStateMemory>(),
+                        GameStateTypes.AzurePersistent => sp.GetRequiredService<AzureStorageGameStateMemory>(),
                         _ => throw new ArgumentException($"Unknown game state memory type: {key}")
                     };
                 });

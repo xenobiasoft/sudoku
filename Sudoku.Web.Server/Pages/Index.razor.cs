@@ -9,28 +9,28 @@ public partial class Index
 	[Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private ILocalStorageService LocalStorage { get; set; } = null!;
 
-    private bool showSavedGames;
-    private bool showDifficulty;
-    private List<SavedGame> savedGames = [];
+    private bool _showSavedGames;
+    private bool _showDifficulty;
+    private List<SavedGame> _savedGames = [];
 
     private void ToggleDifficultyOptions()
     {
-        showDifficulty = !showDifficulty;
+        _showDifficulty = !_showDifficulty;
     }
 
     private void StartNewGame(string difficulty)
     {
-        NavigationManager.NavigateTo($"/game/new?difficulty={difficulty}");
+        NavigationManager.NavigateTo($"/new?difficulty={difficulty}");
     }
 
     private async Task LoadSavedGames()
     {
-        savedGames = await LocalStorage.GetSavedGamesAsync();
-        showSavedGames = true;
+        _savedGames = await LocalStorage.GetSavedGamesAsync();
+        _showSavedGames = true;
     }
 
     private void LoadGame(string gameId)
     {
-        NavigationManager.NavigateTo($"/game/load/{gameId}");
+        NavigationManager.NavigateTo($"/game/{gameId}");
     }
 }
