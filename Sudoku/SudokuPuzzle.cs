@@ -143,7 +143,7 @@ public class SudokuPuzzle : ISudokuPuzzle
     {
         for (var i = 0; i < cells.Length; i++)
         {
-            _cells[i] = cells[i].Copy();
+            _cells[i] = cells[i];
         }
     }
 

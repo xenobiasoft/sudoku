@@ -97,7 +97,12 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, Func<string, I
     {
 	    var memento = await _gameStateMemory.UndoAsync(_puzzle.PuzzleId);
 
-	    _score = memento.Score;
+        if (memento == null)
+        {
+            throw new InvalidBoardException();
+        }
+
+        _score = memento.Score;
         _puzzle.Restore(memento.Board);
     }
 }

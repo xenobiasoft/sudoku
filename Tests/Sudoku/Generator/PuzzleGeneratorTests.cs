@@ -74,4 +74,19 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
         // Assert
         puzzle.AssertPopulatedCellsLocked();
     }
+
+    [Fact]
+    public async Task Generate_WhenSolverThrowsInvalidBoardException_RegeneratesBoard()
+    {
+        // Arrange
+        var mockSolver = Container.ResolveMock<IPuzzleSolver>();
+        mockSolver.ThrowInvalidBoardException();
+        var sut = ResolveSut();
+
+        // Act
+        await sut.Generate(Level.Easy);
+
+        // Assert
+        mockSolver.VerifyRetriesPuzzleGeneration();
+    }
 }

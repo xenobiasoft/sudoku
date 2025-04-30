@@ -2,8 +2,17 @@
 
 namespace UnitTests.Helpers.Mocks;
 
-public static class MockGameStateMemoryExtensions
+public static class MockGameStateManagerExtensions
 {
+    public static Mock<IGameStateManager> SetupEmptyStack(this Mock<IGameStateManager> mock)
+    {
+        mock
+            .Setup(x => x.UndoAsync(It.IsAny<string>()))
+            .ReturnsAsync((GameStateMemory?)null);
+
+        return mock;
+    }
+
     public static Mock<IGameStateManager> VerifyDeleteAsyncCalled(this Mock<IGameStateManager> mock, Func<Times> times)
     {
         mock.Verify(x => x.DeleteAsync(It.IsAny<string>()), times);

@@ -1,4 +1,5 @@
-﻿using XenobiaSoft.Sudoku.Solver;
+﻿using XenobiaSoft.Sudoku.Exceptions;
+using XenobiaSoft.Sudoku.Solver;
 
 namespace XenobiaSoft.Sudoku.Generator;
 
@@ -8,7 +9,14 @@ public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
 	{
 		var puzzle = await GenerateEmptyPuzzle().ConfigureAwait(false);
 
-		puzzle = await puzzleSolver.SolvePuzzle(puzzle).ConfigureAwait(false);
+        try
+        {
+            puzzle = await puzzleSolver.SolvePuzzle(puzzle).ConfigureAwait(false);
+        }
+        catch (InvalidBoardException)
+        {
+            return await Generate(level);
+        }
 
 		puzzle = CreateEmptyCells(puzzle, level);
 
