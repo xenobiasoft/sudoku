@@ -21,7 +21,7 @@ public class IndexPageTests : TestContext
         var component = RenderComponent<IndexPage>();
 
         // Act
-        var startNewGameButton = component.Find("button:contains('Start NewGameAsync Game')");
+        var startNewGameButton = component.Find("button:contains('Start New Game')");
         var loadGameButton = component.Find("button:contains('Load Game')");
 
         // Assert
@@ -36,7 +36,7 @@ public class IndexPageTests : TestContext
         var component = RenderComponent<IndexPage>();
 
         // Act
-        component.Find("button:contains('Start NewGameAsync Game')").Click();
+        component.Find("button:contains('Start New Game')").Click();
         var difficultyButtons = component.FindAll("button:contains('Easy'), button:contains('Medium'), button:contains('Hard')");
 
         // Assert

@@ -44,7 +44,7 @@ public class GameTests : TestContext
     }
 
     [Fact]
-    public async Task Game_WhenInvalidNumberIsEntered_HighlightsInvalidCells()
+    public async Task Game_WhenInvalidNumberIsEntered_NotifiesInvalidCell()
     {
         // Arrange
         var sut = RenderComponent<Game>();
@@ -56,7 +56,7 @@ public class GameTests : TestContext
         await sut.InvokeAsync(() => buttonGroup.NumberClicked.InvokeAsync(5));
 
         // Assert
-        _mockInvalidCellNotifier.Verify(x => x.Notify(It.IsAny<IEnumerable<Cell>>()), Times.Once);
+        _mockInvalidCellNotifier.VerifyNotificationSent(Times.Once);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class GameTests : TestContext
         await sut.InvokeAsync(() => buttonGroup.NumberClicked.InvokeAsync(1));
 
         // Assert
-        _mockGameNotificationService.Verify(x => x.NotifyGameEnded(), Times.Once);
+        _mockGameNotificationService.VerifyGameEndedSent(Times.Once);
     }
 
     [Fact]
@@ -92,5 +92,33 @@ public class GameTests : TestContext
         // Assert
         var victoryOverlay = sut.Find(".victory-overlay");
         victoryOverlay.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void OnInitializedAsync_LoadsGameState()
+    {
+        // Arrange
+        var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+        _mockGame.SetPuzzle(puzzle);
+
+        // Act
+        RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, "puzzle1"));
+
+        // Assert
+        puzzle.GetAllCells().Should().BeEquivalentTo(puzzle.GetAllCells());
+    }
+
+    [Fact]
+    public void OnInitializedAsync_LoadsPuzzle()
+    {
+        // Arrange
+        var puzzleId = "puzzle1";
+        _mockGame.SetPuzzle(PuzzleFactory.GetPuzzle(Level.Easy));
+
+        // Act
+        RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, puzzleId));
+
+        // Assert
+        _mockGame.VerifyLoadsAsync(puzzleId, Times.Once);
     }
 }

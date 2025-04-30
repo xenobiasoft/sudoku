@@ -4,16 +4,17 @@
 
 .cell input,
 .cell label {
+    align-items: center;
     background-color: #FAEBD7;
     border: 1px solid black;
     color: #303030;
-    display: block;
-    float: left;
-    font-size: 30px;
+    display: flex;
+    font-size: 1.5rem;
     height: 36px;
-    line-height: 1.3em;
+    justify-content: center;
+    line-height: 1.2em;
     max-width: 36px;
-    text-align: center;
+    padding: .25rem;
     width: 100%;
 }
 
