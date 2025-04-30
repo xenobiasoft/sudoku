@@ -1,17 +1,5 @@
 ﻿@page "/new"
-@inject NavigationManager Navigation
 
-@code {
-    [Parameter]
-    [SupplyParameterFromQuery]
-    public string Difficulty { get; set; } = "Easy";
+<h2>Generating Puzzle...</h2>
 
-    [Inject] private ISudokuGame? SudokuGame { get; set; }
-
-    protected override async Task OnInitializedAsync()
-    {
-        var puzzleId = await SudokuGame!.NewGameAsync(Difficulty.ParseLevel());
-
-        Navigation.NavigateTo($"/game/{puzzleId}");
-    }
-}
+<div class="loader"></div>

@@ -8,7 +8,7 @@ using XenobiaSoft.Sudoku;
 
 namespace UnitTests.Web.Pages;
 
-public class GameTests : TestContext
+public class GamePageTests : TestContext
 {
     private readonly Mock<IInvalidCellNotificationService> _mockInvalidCellNotifier = new();
     private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
@@ -16,7 +16,7 @@ public class GameTests : TestContext
     private readonly Mock<ISudokuPuzzle> _mockPuzzle = new();
     private readonly Mock<ISudokuGame> _mockGame = new();
 
-    public GameTests()
+    public GamePageTests()
     {
         _mockGame.SetPuzzle(PuzzleFactory.GetPuzzle(Level.Easy));
 
@@ -57,6 +57,18 @@ public class GameTests : TestContext
 
         // Assert
         _mockInvalidCellNotifier.VerifyNotificationSent(Times.Once);
+    }
+
+    [Fact]
+    public async Task Game_WhenPuzzleLoaded_SendsGameStartedNotification()
+    {
+        // Arrange
+
+        // Act
+        RenderComponent<Game>();
+
+        // Assert
+        _mockGameNotificationService.VerifyGameStartedSent(Times.Once);
     }
 
     [Fact]

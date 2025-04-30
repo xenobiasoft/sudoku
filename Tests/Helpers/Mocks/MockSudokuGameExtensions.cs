@@ -5,6 +5,15 @@ namespace UnitTests.Helpers.Mocks;
 
 public static class MockSudokuGameExtensions
 {
+    public static Mock<ISudokuGame> SetupPuzzleId(this Mock<ISudokuGame> mock, string puzzleId)
+    {
+        mock
+            .Setup(x => x.NewGameAsync(It.IsAny<Level>()))
+            .ReturnsAsync(puzzleId);
+
+        return mock;
+    }
+
     public static Mock<ISudokuGame> SetPuzzle(this Mock<ISudokuGame> mock, ISudokuPuzzle puzzle)
     {
         var gameState = new GameStateMemory(Guid.NewGuid().ToString(), puzzle.GetAllCells(), 0);
@@ -17,6 +26,13 @@ public static class MockSudokuGameExtensions
         mock
             .Setup(x => x.LoadAsync(It.IsAny<string>()))
             .ReturnsAsync(memory);
+
+        return mock;
+    }
+
+    public static Mock<ISudokuGame> VerifyGeneratesNewPuzzle(this Mock<ISudokuGame> mock, Func<Times> times)
+    {
+        mock.Verify(x => x.NewGameAsync(It.IsAny<Level>()), times);
 
         return mock;
     }

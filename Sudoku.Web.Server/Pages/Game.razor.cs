@@ -27,6 +27,8 @@ public partial class Game
         var gameState = await SudokuGame!.LoadAsync(PuzzleId!);
 
         Puzzle.Load(gameState.Board);
+
+        GameNotificationService!.NotifyGameStarted();
     }
 
     private void SetCellValue(int? value)
