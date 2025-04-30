@@ -18,7 +18,17 @@ public class SudokuGame(IPuzzleGenerator puzzleGenerator, Func<string, IGameStat
         return puzzle.PuzzleId;
     }
 
-	public Task<GameStateMemento> LoadAsync(string puzzleId)
+    public Task SaveAsync(GameStateMemento memento)
+    {
+        return _gameState.SaveAsync(memento);
+    }
+
+    public Task DeleteAsync(string puzzleId)
+    {
+        return _gameState.DeleteAsync(puzzleId);
+    }
+
+    public Task<GameStateMemento> LoadAsync(string puzzleId)
 	{
         return _gameState.LoadAsync(puzzleId);
     }

@@ -86,6 +86,6 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
         await sut.SolvePuzzle(PuzzleFactory.GetSolvedPuzzle());
 
         // Assert
-        mockGameStateMemory.VerifyClearAsyncCalled(Times.Once);
+        mockGameStateMemory.VerifyDeleteAsyncCalled(Times.Once);
     }
 }

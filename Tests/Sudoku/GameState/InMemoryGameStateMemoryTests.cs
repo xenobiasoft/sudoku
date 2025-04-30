@@ -17,7 +17,7 @@ public class InMemoryGameStateMemoryTests : BaseTestByAbstraction<InMemoryGameSt
         await sut.SaveAsync(Container.Create<GameStateMemento>());
 
         // Act
-        await sut.ClearAsync(PuzzleId);
+        await sut.DeleteAsync(PuzzleId);
 
         // Assert
         var result = await sut.LoadAsync(PuzzleId);

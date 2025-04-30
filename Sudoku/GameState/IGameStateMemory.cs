@@ -3,7 +3,7 @@
 public interface IGameStateMemory
 {
     GameStateMemoryType MemoryType { get; }
-    Task ClearAsync(string puzzleId);
+    Task DeleteAsync(string puzzleId);
     Task<GameStateMemento?> LoadAsync(string puzzleId);
     Task SaveAsync(GameStateMemento gameState);
     Task<GameStateMemento?> UndoAsync(string puzzleId);

@@ -4,9 +4,9 @@ namespace UnitTests.Helpers.Mocks;
 
 public static class MockGameStateMemoryExtensions
 {
-    public static Mock<IGameStateMemory> VerifyClearAsyncCalled(this Mock<IGameStateMemory> mock, Func<Times> times)
+    public static Mock<IGameStateMemory> VerifyDeleteAsyncCalled(this Mock<IGameStateMemory> mock, Func<Times> times)
     {
-        mock.Verify(x => x.ClearAsync(It.IsAny<string>()), times);
+        mock.Verify(x => x.DeleteAsync(It.IsAny<string>()), times);
 
         return mock;
     }

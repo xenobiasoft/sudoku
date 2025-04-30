@@ -38,7 +38,7 @@ public class AzureStorageGameStateMemoryTests : BaseTestByAbstraction<AzureStora
         var sut = ResolveSut();
 
         // Act
-        await sut.ClearAsync(PuzzleId);
+        await sut.DeleteAsync(PuzzleId);
 
         // Assert
         foreach (var blobName in _blobNames)

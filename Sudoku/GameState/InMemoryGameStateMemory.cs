@@ -6,7 +6,7 @@ public class InMemoryGameStateMemory : IGameStateMemory
 
     public GameStateMemoryType MemoryType => GameStateMemoryType.InMemory;
 
-    public Task ClearAsync(string puzzleId)
+    public Task DeleteAsync(string puzzleId)
     {
         _gameState.Clear();
 

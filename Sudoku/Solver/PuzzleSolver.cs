@@ -47,7 +47,7 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, Func<string, I
 
             if (_puzzle.IsSolved())
             {
-                await _gameStateMemory.ClearAsync(_puzzle.PuzzleId);
+                await _gameStateMemory.DeleteAsync(_puzzle.PuzzleId);
                 break;
             }
         }

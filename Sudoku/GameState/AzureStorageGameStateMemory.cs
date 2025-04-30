@@ -11,7 +11,7 @@ public class AzureStorageGameStateMemory(IStorageService storageService) : IGame
 
     public GameStateMemoryType MemoryType => GameStateMemoryType.AzureBlobPersistence;
 
-    public async Task ClearAsync(string puzzleId)
+    public async Task DeleteAsync(string puzzleId)
     {
         await _semaphore.WaitAsync();
 
