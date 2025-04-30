@@ -1,6 +1,6 @@
 ﻿namespace XenobiaSoft.Sudoku.GameState;
 
-public interface IGameStateMemory
+public interface IGameStateManager
 {
     GameStateMemoryType MemoryType { get; }
     Task DeleteAsync(string puzzleId);

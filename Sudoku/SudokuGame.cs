@@ -3,10 +3,10 @@ using XenobiaSoft.Sudoku.Generator;
 
 namespace XenobiaSoft.Sudoku;
 
-public class SudokuGame(IPuzzleGenerator puzzleGenerator, Func<string, IGameStateMemory> gameStateMemoryFactory)
+public class SudokuGame(IPuzzleGenerator puzzleGenerator, Func<string, IGameStateManager> gameStateMemoryFactory)
     : ISudokuGame
 {
-    private readonly IGameStateMemory _gameState = gameStateMemoryFactory(GameStateTypes.AzurePersistent);
+    private readonly IGameStateManager _gameState = gameStateMemoryFactory(GameStateTypes.AzurePersistent);
 
     public async Task<string> NewGameAsync(Level level)
 	{

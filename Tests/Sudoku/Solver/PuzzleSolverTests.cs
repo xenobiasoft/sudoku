@@ -14,7 +14,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
     public async Task SolvePuzzle_ShouldUndoOnInvalidMove()
     {
         // Arrange
-        var mockGameStateMemory = Container.ResolveMock<IGameStateMemory>();
+        var mockGameStateMemory = Container.ResolveMock<IGameStateManager>();
         var mockPuzzle = Container.ResolveMock<ISudokuPuzzle>();
         mockPuzzle.SetupInvalidMove();
         var sut = ResolveSut();
@@ -47,7 +47,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
 	public async Task SolvePuzzle_SavesGameState_OnEachLoop()
     {
         // Arrange
-        var mockGameStateMemory = Container.ResolveMock<IGameStateMemory>();
+        var mockGameStateMemory = Container.ResolveMock<IGameStateManager>();
 		var sut = ResolveSut();
 
 		// Act
@@ -63,7 +63,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
         // Arrange
         var mockPuzzle = Container.ResolveMock<ISudokuPuzzle>();
         mockPuzzle.SetupInvalidMove();
-		var mockGameStateMemory = Container.ResolveMock<IGameStateMemory>();
+		var mockGameStateMemory = Container.ResolveMock<IGameStateManager>();
 		var sut = ResolveSut();
 
 		// Act
@@ -79,7 +79,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
         // Arrange
         var mockPuzzle = Container.ResolveMock<ISudokuPuzzle>();
         mockPuzzle.SetupPuzzleIsSolved();
-        var mockGameStateMemory = Container.ResolveMock<IGameStateMemory>();
+        var mockGameStateMemory = Container.ResolveMock<IGameStateManager>();
         var sut = ResolveSut();
 
         // Act

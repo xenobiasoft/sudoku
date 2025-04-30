@@ -13,7 +13,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
     {
         // Arrange
         var puzzleId = Container.Create<string>();
-        var mockGameStateManager = Container.ResolveMock<IGameStateMemory>();
+        var mockGameStateManager = Container.ResolveMock<IGameStateManager>();
         var sut = ResolveSut();
 
         // Act
@@ -28,7 +28,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
     {
         // Arrange
         var puzzleId = Container.Create<string>();
-        var mockGameStateManager = Container.ResolveMock<IGameStateMemory>();
+        var mockGameStateManager = Container.ResolveMock<IGameStateManager>();
         var sut = ResolveSut();
 
         // Act
@@ -69,7 +69,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
     public async Task SaveAsync_PersistsGameStateToStorage()
     {
         // Arrange
-        var mockStorage = Container.ResolveMock<IGameStateMemory>();
+        var mockStorage = Container.ResolveMock<IGameStateManager>();
         var puzzle = Container.Create<ISudokuPuzzle>();
         var sut = ResolveSut();
 

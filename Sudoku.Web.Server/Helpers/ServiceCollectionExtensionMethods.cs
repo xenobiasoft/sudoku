@@ -28,14 +28,14 @@ namespace Sudoku.Web.Server.Helpers
                 .AddTransient<IPuzzleSolver, PuzzleSolver>()
                 .AddTransient<IPuzzleGenerator, PuzzleGenerator>()
                 .AddSingleton<IStorageService, AzureStorageService>()
-                .AddSingleton<InMemoryGameStateMemory>()
-                .AddSingleton<AzureStorageGameStateMemory>()
-                .AddSingleton<Func<string, IGameStateMemory>>(sp => key =>
+                .AddSingleton<InMemoryGameStateManager>()
+                .AddSingleton<AzureStorageGameStateManager>()
+                .AddSingleton<Func<string, IGameStateManager>>(sp => key =>
                 {
                     return key switch
                     {
-                        GameStateTypes.InMemory => sp.GetRequiredService<InMemoryGameStateMemory>(),
-                        GameStateTypes.AzurePersistent => sp.GetRequiredService<AzureStorageGameStateMemory>(),
+                        GameStateTypes.InMemory => sp.GetRequiredService<InMemoryGameStateManager>(),
+                        GameStateTypes.AzurePersistent => sp.GetRequiredService<AzureStorageGameStateManager>(),
                         _ => throw new ArgumentException($"Unknown game state memory type: {key}")
                     };
                 });
