@@ -5,26 +5,33 @@ namespace UnitTests.Helpers.Mocks;
 
 public static class MockSudokuGameExtensions
 {
-    public static Mock<ISudokuGame> SetupPuzzleId(this Mock<ISudokuGame> mock, string puzzleId)
+    public static Mock<ISudokuGame> SetLoadAsync(this Mock<ISudokuGame> mock, ISudokuPuzzle puzzle)
+    {
+        var gameState = new GameStateMemory(Guid.NewGuid().ToString(), puzzle.GetAllCells(), 0);
+
+        return mock.SetLoadAsync(gameState);
+    }
+
+    public static Mock<ISudokuGame> SetLoadAsync(this Mock<ISudokuGame> mock, GameStateMemory memory)
     {
         mock
-            .Setup(x => x.NewGameAsync(It.IsAny<Level>()))
-            .ReturnsAsync(puzzleId);
+            .Setup(x => x.LoadAsync(It.IsAny<string>()))
+            .ReturnsAsync(memory);
 
         return mock;
     }
 
-    public static Mock<ISudokuGame> SetPuzzle(this Mock<ISudokuGame> mock, ISudokuPuzzle puzzle)
+    public static Mock<ISudokuGame> SetNewAsync(this Mock<ISudokuGame> mock, ISudokuPuzzle puzzle)
     {
         var gameState = new GameStateMemory(Guid.NewGuid().ToString(), puzzle.GetAllCells(), 0);
 
-        return mock.SetPuzzle(gameState);
+        return mock.SetNewAsync(gameState);
     }
 
-    public static Mock<ISudokuGame> SetPuzzle(this Mock<ISudokuGame> mock, GameStateMemory memory)
+    public static Mock<ISudokuGame> SetNewAsync(this Mock<ISudokuGame> mock, GameStateMemory memory)
     {
         mock
-            .Setup(x => x.LoadAsync(It.IsAny<string>()))
+            .Setup(x => x.NewGameAsync(It.IsAny<Level>()))
             .ReturnsAsync(memory);
 
         return mock;

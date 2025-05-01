@@ -18,7 +18,7 @@ public class GamePageTests : TestContext
 
     public GamePageTests()
     {
-        _mockGame.SetPuzzle(PuzzleFactory.GetPuzzle(Level.Easy));
+        _mockGame.SetLoadAsync(PuzzleFactory.GetPuzzle(Level.Easy));
 
         Services.AddSingleton(_mockInvalidCellNotifier.Object);
         Services.AddSingleton(_mockGameNotificationService.Object);
@@ -75,7 +75,7 @@ public class GamePageTests : TestContext
     public async Task Game_WhenPuzzleSolved_SendsGameEndedNotification()
     {
         // Arrange
-        _mockGame.SetPuzzle(PuzzleFactory.GetSolvedPuzzle());
+        _mockGame.SetLoadAsync(PuzzleFactory.GetSolvedPuzzle());
         var sut = RenderComponent<Game>();
         var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
@@ -92,7 +92,7 @@ public class GamePageTests : TestContext
     public async Task Game_WhenPuzzleSolved_DisplaysWinScreen()
     {
         // Arrange
-        _mockGame.SetPuzzle(PuzzleFactory.GetSolvedPuzzle());
+        _mockGame.SetLoadAsync(PuzzleFactory.GetSolvedPuzzle());
         var sut = RenderComponent<Game>();
         var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
@@ -111,7 +111,7 @@ public class GamePageTests : TestContext
     {
         // Arrange
         var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-        _mockGame.SetPuzzle(puzzle);
+        _mockGame.SetLoadAsync(puzzle);
 
         // Act
         RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, "puzzle1"));
@@ -125,7 +125,7 @@ public class GamePageTests : TestContext
     {
         // Arrange
         var puzzleId = "puzzle1";
-        _mockGame.SetPuzzle(PuzzleFactory.GetPuzzle(Level.Easy));
+        _mockGame.SetLoadAsync(PuzzleFactory.GetPuzzle(Level.Easy));
 
         // Act
         RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, puzzleId));

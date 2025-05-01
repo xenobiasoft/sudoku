@@ -27,11 +27,11 @@
                 @if (_showSavedGames && _savedGames.Any())
                 {
                     <ul class="sub-menu">
-                        @foreach (var game in _savedGames.OrderByDescending(g => g.LastSaved))
+                        @foreach (var game in _savedGames.OrderByDescending(g => g.LastUpdated))
                         {
                             <li>
                                 <Button @onclick="@(() => LoadGame(game.PuzzleId))">
-                                    Saved: @game.LastSaved.ToString("g")
+                                    Saved: @game.LastUpdated.ToString("g")
                                 </Button>
                             </li>
                         }

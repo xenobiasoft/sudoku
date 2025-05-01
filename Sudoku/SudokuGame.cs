@@ -8,14 +8,13 @@ public class SudokuGame(IPuzzleGenerator puzzleGenerator, Func<string, IGameStat
 {
     private readonly IGameStateManager _gameState = gameStateMemoryFactory(GameStateTypes.AzurePersistent);
 
-    public async Task<string> NewGameAsync(Level level)
+    public async Task<GameStateMemory> NewGameAsync(Level level)
 	{
 		var puzzle = await puzzleGenerator.Generate(level).ConfigureAwait(false);
 
         var gameState = puzzle.ToGameState(0);
-        await _gameState.SaveAsync(gameState);
 
-        return puzzle.PuzzleId;
+        return gameState;
     }
 
     public Task SaveAsync(GameStateMemory memory)

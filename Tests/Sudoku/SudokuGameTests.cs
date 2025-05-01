@@ -1,4 +1,5 @@
 ﻿using DepenMock.XUnit;
+using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
@@ -53,16 +54,17 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
     }
 
     [Fact]
-    public async Task NewGameAsync_ReturnsPuzzleId()
+    public async Task NewGameAsync_ReturnsGameState()
     {
         // Arrange
+        Container.ResolveMock<IPuzzleGenerator>().SetupGenerate(PuzzleFactory.GetPuzzle(Level.Easy));
         var sut = ResolveSut();
 
         // Act
-        var puzzleId = await sut.NewGameAsync(Level.Easy);
+        var gameState = await sut.NewGameAsync(Level.Easy);
 
         // Assert
-        puzzleId.Should().NotBeNullOrEmpty();
+        gameState.VerifyNewGameState();
     }
 
     [Fact]

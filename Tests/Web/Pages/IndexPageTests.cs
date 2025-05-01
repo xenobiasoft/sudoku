@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services;
+using XenobiaSoft.Sudoku.GameState;
 using IndexPage = Sudoku.Web.Server.Pages.Index;
 
 namespace UnitTests.Web.Pages;
@@ -47,13 +47,13 @@ public class IndexPageTests : TestContext
     public void ShowsSavedGames_WhenLoadGameClicked()
     {
         // Arrange
-        var savedGames = new List<SavedGame>
+        var savedGames = new List<GameStateMemory>
         {
-            new() { PuzzleId = Guid.NewGuid().ToString(), LastSaved = DateTime.Now.AddMinutes(-10) },
-            new() { PuzzleId = Guid.NewGuid().ToString(), LastSaved = DateTime.Now.AddMinutes(-5) }
+            new() { PuzzleId = Guid.NewGuid().ToString(), LastUpdated = DateTime.Now.AddMinutes(-10) },
+            new() { PuzzleId = Guid.NewGuid().ToString(), LastUpdated = DateTime.Now.AddMinutes(-5) }
         };
         _mockLocalStorageService
-            .Setup(x => x.GetSavedGamesAsync())
+            .Setup(x => x.LoadGameStatesAsync())
             .ReturnsAsync(savedGames);
 
         var component = RenderComponent<IndexPage>();

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Pages;
 
@@ -11,7 +11,7 @@ public partial class Index
 
     private bool _showSavedGames;
     private bool _showDifficulty;
-    private List<SavedGame> _savedGames = [];
+    private List<GameStateMemory> _savedGames = [];
 
     private void ToggleDifficultyOptions()
     {
@@ -25,7 +25,7 @@ public partial class Index
 
     private async Task LoadSavedGames()
     {
-        _savedGames = await LocalStorage.GetSavedGamesAsync();
+        _savedGames = await LocalStorage.LoadGameStatesAsync();
         _showSavedGames = true;
     }
 

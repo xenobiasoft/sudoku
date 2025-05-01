@@ -1,6 +1,6 @@
-﻿using System.Text.Json;
-using Microsoft.JSInterop;
-using Sudoku.Web.Server.Models;
+﻿using Microsoft.JSInterop;
+using System.Text.Json;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Services;
 
@@ -8,7 +8,12 @@ public class LocalStorageService(IJSRuntime jsRuntime) : ILocalStorageService
 {
     private const string SavedGamesKey = "savedGames";
 
-    public async Task<List<SavedGame>> GetSavedGamesAsync()
+    public async Task DeleteGameStateAsync()
+    {
+        await jsRuntime.InvokeVoidAsync("localStorage.removeItem", SavedGamesKey);
+    }
+
+    public async Task<List<GameStateMemory>> LoadGameStatesAsync()
     {
         var json = await jsRuntime.InvokeAsync<string>("localStorage.getItem", SavedGamesKey);
 
@@ -17,20 +22,15 @@ public class LocalStorageService(IJSRuntime jsRuntime) : ILocalStorageService
             return [];
         }
 
-        return JsonSerializer.Deserialize<List<SavedGame>>(json) ?? [];
+        return JsonSerializer.Deserialize<List<GameStateMemory>>(json) ?? [];
     }
 
-    public async Task SaveGameAsync(SavedGame game)
+    public async Task SaveGameStateAsync(GameStateMemory gameState)
     {
-        var games = await GetSavedGamesAsync();
-        games.Add(game);
+        var games = await LoadGameStatesAsync();
+        games.Add(gameState);
 
         var json = JsonSerializer.Serialize(games);
         await jsRuntime.InvokeVoidAsync("localStorage.setItem", SavedGamesKey, json);
-    }
-
-    public async Task ClearSavedGamesAsync()
-    {
-        await jsRuntime.InvokeVoidAsync("localStorage.removeItem", SavedGamesKey);
     }
 }
