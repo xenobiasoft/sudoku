@@ -13,6 +13,19 @@ public partial class Index
     private bool _showDifficulty;
     private List<GameStateMemory> _savedGames = [];
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_savedGames.Any())
+        {
+            _savedGames = await LocalStorage.LoadGameStatesAsync() ?? [];
+
+            if (_savedGames.Any())
+            {
+                StateHasChanged();
+            }
+        }
+    }
+
     private void ToggleDifficultyOptions()
     {
         _showDifficulty = !_showDifficulty;
@@ -23,10 +36,9 @@ public partial class Index
         NavigationManager.NavigateTo($"/new?difficulty={difficulty}");
     }
 
-    private async Task LoadSavedGames()
+    private void ToggleDisplaySavedGames()
     {
-        _savedGames = await LocalStorage.LoadGameStatesAsync();
-        _showSavedGames = true;
+        _showSavedGames = !_showSavedGames;
     }
 
     private void LoadGame(string gameId)

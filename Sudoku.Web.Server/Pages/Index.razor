@@ -20,7 +20,7 @@
                     </ul>
                 }
                 <li>
-                    <Button @onclick="LoadSavedGames" disabled="@(!_savedGames.Any())">
+                    <Button @onclick="ToggleDisplaySavedGames" disabled="@(!_savedGames.Any())">
                         <i class="fa-solid fa-folder-open"></i> Load Game
                     </Button>
                 </li>

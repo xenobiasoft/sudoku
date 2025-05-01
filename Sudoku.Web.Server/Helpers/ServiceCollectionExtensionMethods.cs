@@ -16,6 +16,7 @@ namespace Sudoku.Web.Server.Helpers
             services.AddSingleton<ICellFocusedNotificationService, CellFocusedNotificationService>();
             services.AddSingleton<IInvalidCellNotificationService, InvalidCellNotificationService>();
             services.AddSingleton<IGameNotificationService, GameNotificationService>();
+            services.AddSingleton<IGameStateManager, AzureStorageGameStateManager>();
             services.AddScoped<ILocalStorageService, LocalStorageService>();
 
             return services;
