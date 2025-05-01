@@ -11,32 +11,26 @@
                 <li>
                     <Button @onclick="ToggleDifficultyOptions"><i class="fa-solid fa-play-circle"></i> Start New Game</Button>
                 </li>
-                @if (_showDifficulty)
-                {
-                    <ul class="sub-menu">
-                        <li><Button @onclick="@(() => StartNewGame("Easy"))">Easy</Button></li>
-                        <li><Button @onclick="@(() => StartNewGame("Medium"))">Medium</Button></li>
-                        <li><Button @onclick="@(() => StartNewGame("Hard"))">Hard</Button></li>
-                    </ul>
-                }
+                <ul class="sub-menu @(_showDifficulty ? "open" : "")">
+                    <li><Button @onclick="@(() => StartNewGame("Easy"))">Easy</Button></li>
+                    <li><Button @onclick="@(() => StartNewGame("Medium"))">Medium</Button></li>
+                    <li><Button @onclick="@(() => StartNewGame("Hard"))">Hard</Button></li>
+                </ul>
                 <li>
                     <Button @onclick="ToggleDisplaySavedGames" disabled="@(!_savedGames.Any())">
                         <i class="fa-solid fa-folder-open"></i> Load Game
                     </Button>
                 </li>
-                @if (_showSavedGames && _savedGames.Any())
-                {
-                    <ul class="sub-menu">
-                        @foreach (var game in _savedGames.OrderByDescending(g => g.LastUpdated))
-                        {
-                            <li>
-                                <Button @onclick="@(() => LoadGame(game.PuzzleId))">
-                                    Saved: @game.LastUpdated.ToLongDateString()
-                                </Button>
-                            </li>
-                        }
-                    </ul>
-                }
+                <ul class="sub-menu @(_showSavedGames ? "open" : "")">
+                    @foreach (var game in _savedGames.OrderByDescending(g => g.LastUpdated))
+                    {
+                        <li>
+                            <Button @onclick="@(() => LoadGame(game.PuzzleId))">
+                                Saved: @game.LastUpdated.ToLocalDateTime()
+                            </Button>
+                        </li>
+                    }
+                </ul>
             </ul>
         </div>
     </div>

@@ -20,6 +20,16 @@ ul.menu {
         margin: 0.25rem 0;
     }
 
+.sub-menu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out;
+}
+
+    .sub-menu.open {
+        max-height: 500px;
+    }
+
 .sub-menu li {
     margin: 0.25rem 1.5rem;
 }
