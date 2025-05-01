@@ -8,6 +8,7 @@ ul {
     display: flex;
     flex-direction: column;
     list-style-type: none;
+    padding-left: 0;
 }
 
 ul.menu {
@@ -16,8 +17,12 @@ ul.menu {
 }
 
     .menu li {
-        margin: .25rem 2.5rem;
+        margin: 0.25rem 0;
     }
+
+.sub-menu li {
+    margin: 0.25rem 1.5rem;
+}
 
 .menu button {
     background-color: transparent;

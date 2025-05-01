@@ -31,7 +31,7 @@
                         {
                             <li>
                                 <Button @onclick="@(() => LoadGame(game.PuzzleId))">
-                                    Saved: @game.LastUpdated.ToString("g")
+                                    Saved: @game.LastUpdated.ToLongDateString()
                                 </Button>
                             </li>
                         }
