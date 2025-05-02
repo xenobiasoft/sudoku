@@ -8,7 +8,15 @@ public class LocalStorageService(IJSRuntime jsRuntime) : ILocalStorageService
 {
     private const string SavedGamesKey = "savedGames";
 
-    public async Task DeleteGameStateAsync()
+    public async Task AddGameStateAsync(GameStateMemory gameState)
+    {
+        var games = await LoadGameStatesAsync();
+        games.Add(gameState);
+
+        await SaveGameStateAsync(games);
+    }
+
+    public async Task ClearGameStateAsync()
     {
         await jsRuntime.InvokeVoidAsync("localStorage.removeItem", SavedGamesKey);
     }
@@ -25,12 +33,22 @@ public class LocalStorageService(IJSRuntime jsRuntime) : ILocalStorageService
         return JsonSerializer.Deserialize<List<GameStateMemory>>(json) ?? [];
     }
 
-    public async Task SaveGameStateAsync(GameStateMemory gameState)
+    public async Task RemoveGameAsync(string gameId)
     {
         var games = await LoadGameStatesAsync();
-        games.Add(gameState);
+        var gameToRemove = games.FirstOrDefault(g => g.PuzzleId == gameId);
+        if (gameToRemove != null)
+        {
+            games.Remove(gameToRemove);
+        }
 
-        var json = JsonSerializer.Serialize(games);
+        await SaveGameStateAsync(games);
+    }
+
+    private async Task SaveGameStateAsync(IEnumerable<GameStateMemory> gameState)
+    {
+        var json = JsonSerializer.Serialize(gameState);
+
         await jsRuntime.InvokeVoidAsync("localStorage.setItem", SavedGamesKey, json);
     }
 }

@@ -8,6 +8,7 @@ public partial class Index
 {
 	[Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private ILocalStorageService LocalStorage { get; set; } = null!;
+    [Inject] private IGameStateManager GameStateManager { get; set; } = null!;
 
     private bool _showSavedGames;
     private bool _showDifficulty;
@@ -26,9 +27,16 @@ public partial class Index
         }
     }
 
-    private void ToggleDifficultyOptions()
+    private void LoadGame(string gameId)
     {
-        _showDifficulty = !_showDifficulty;
+        NavigationManager.NavigateTo($"/game/{gameId}");
+    }
+
+    private async Task DeleteGameAsync(string gameId)
+    {
+        await LocalStorage.RemoveGameAsync(gameId);
+        await GameStateManager.DeleteAsync(gameId);
+        StateHasChanged();
     }
 
     private void StartNewGame(string difficulty)
@@ -41,8 +49,8 @@ public partial class Index
         _showSavedGames = !_showSavedGames;
     }
 
-    private void LoadGame(string gameId)
+    private void ToggleDifficultyOptions()
     {
-        NavigationManager.NavigateTo($"/game/{gameId}");
+        _showDifficulty = !_showDifficulty;
     }
 }

@@ -48,3 +48,14 @@ ul.menu {
     .menu button:disabled {
         color: #ccc;
     }
+
+.del-game-icon {
+    color: #e63946;
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+}
+
+    .del-game-icon:hover {
+        color: #d62839;
+    }

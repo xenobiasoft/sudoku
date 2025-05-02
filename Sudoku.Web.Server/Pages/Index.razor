@@ -28,6 +28,7 @@
                             <Button @onclick="@(() => LoadGame(game.PuzzleId))">
                                 Saved: @game.LastUpdated.ToLocalDateTime()
                             </Button>
+                            <i class="fa-solid fa-trash del-game-icon" @onclick="@(() => DeleteGameAsync(game.PuzzleId))"></i>
                         </li>
                     }
                 </ul>

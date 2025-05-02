@@ -4,7 +4,8 @@ namespace Sudoku.Web.Server.Services;
 
 public interface ILocalStorageService
 {
-    Task DeleteGameStateAsync();
+    Task AddGameStateAsync(GameStateMemory gameState);
+    Task ClearGameStateAsync();
     Task<List<GameStateMemory>> LoadGameStatesAsync();
-    Task SaveGameStateAsync(GameStateMemory gameState);
+    Task RemoveGameAsync(string gameId);
 }
