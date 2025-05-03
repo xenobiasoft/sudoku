@@ -139,8 +139,10 @@ public class SudokuPuzzle : ISudokuPuzzle
         return true;
     }
 
-    public void Load(Cell[] cells)
+    public void Load(string puzzleId, Cell[] cells)
     {
+        PuzzleId = puzzleId;
+
         for (var i = 0; i < cells.Length; i++)
         {
             _cells[i] = cells[i];

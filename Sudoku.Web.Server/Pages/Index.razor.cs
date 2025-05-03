@@ -35,7 +35,7 @@ public partial class Index
 
     private async Task DeleteGameAsync(string gameId)
     {
-        await LocalStorage.RemoveGameAsync(gameId);
+        await LocalStorage.DeleteGameAsync(gameId);
         await GameStateManager.DeleteAsync(gameId);
         _savedGames = _savedGames.Where(x => x.PuzzleId != gameId).ToList();
         StateHasChanged();

@@ -19,7 +19,7 @@ public partial class New
         var gameState = await SudokuGame!.NewGameAsync(Difficulty.ParseLevel());
 
         await GameStateManager!.SaveAsync(gameState);
-        await LocalStorageService!.AddGameStateAsync(gameState);
+        await LocalStorageService!.SaveGameStateAsync(gameState);
 
         Navigation!.NavigateTo($"/game/{gameState.PuzzleId}");
     }

@@ -97,7 +97,7 @@ public class IndexPageTests : TestContext
         delGameElement.Click();
 
         // Assert
-        _mockLocalStorageService.Verify(x => x.RemoveGameAsync(It.IsAny<string>()), Times.Once);
+        _mockLocalStorageService.Verify(x => x.DeleteGameAsync(It.IsAny<string>()), Times.Once);
     }
 
     [Fact]

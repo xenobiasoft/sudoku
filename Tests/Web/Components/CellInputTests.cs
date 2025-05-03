@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Components;
-using Sudoku.Web.Server.Pages;
 using Sudoku.Web.Server.Services;
 using UnitTests.Helpers;
+using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Web.Components;
 
@@ -12,12 +13,14 @@ public class CellInputTests : TestContext
     private readonly Mock<ICellFocusedNotificationService> _mockCellFocusNotifier = new();
     private readonly Mock<IInvalidCellNotificationService> _mockInvalidCellNotificationService = new();
     private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
+    private readonly Mock<IGameStateManager> _mockGameStateManager = new();
 
     public CellInputTests()
     {
         Services.AddSingleton(_mockCellFocusNotifier.Object);
         Services.AddSingleton(_mockInvalidCellNotificationService.Object);
         Services.AddSingleton(_mockGameNotificationService.Object);
+        Services.AddSingleton(_mockGameStateManager.Object);
     }
 
 	[Fact]
@@ -102,7 +105,7 @@ public class CellInputTests : TestContext
     }
 
     [Fact]
-    public void Game_WhenPuzzleSolved_SendsGameEndedNotification()
+    public void CellInput_WhenPuzzleSolved_SendsGameEndedNotification()
     {
         // Arrange
         var puzzle = PuzzleFactory.GetSolvedPuzzle();
@@ -112,9 +115,27 @@ public class CellInputTests : TestContext
             .Add(p => p.Puzzle, puzzle));
 
         // Act
+        cellInput.Find("input").KeyPress(Key.NumberPad2);
         cellInput.Find("input").KeyPress(Key.NumberPad1);
 
         // Assert
         _mockGameNotificationService.Verify(x => x.NotifyGameEnded(), Times.Once);
+    }
+
+    [Fact]
+    public async Task CellInput_WhenValueEntered_SavesGameState()
+    {
+        // Arrange
+        var puzzle = PuzzleFactory.GetSolvedPuzzle();
+        var cell = puzzle.GetCell(0, 0);
+        var cellInput = RenderComponent<CellInput>(x => x
+            .Add(p => p.Cell, cell)
+            .Add(p => p.Puzzle, puzzle));
+
+        // Act
+        cellInput.Find("input").KeyPress(Key.NumberPad4);
+
+        // Assert
+        _mockGameStateManager.VerifySaveAsyncCalled(Times.Once);
     }
 }

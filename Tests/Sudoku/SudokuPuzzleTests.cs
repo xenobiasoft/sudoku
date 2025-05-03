@@ -166,6 +166,20 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
     }
 
     [Fact]
+    public void Load_SetsPuzzleIdOnCurrentPuzzle()
+    {
+        // Arrange
+        var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+        var sut = ResolveSut();
+
+        // Act
+        sut.Load(puzzle.PuzzleId, puzzle.GetAllCells());
+
+        // Assert
+        sut.PuzzleId.Should().Be(puzzle.PuzzleId);
+    }
+
+    [Fact]
     public void PopulatePossibleValues_WhenCellDoesNotHaveValue_PopulatesPossibleValues()
     {
         // Arrange

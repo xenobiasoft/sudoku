@@ -26,7 +26,7 @@ public partial class Game
     {
         var gameState = await SudokuGame!.LoadAsync(PuzzleId!);
 
-        Puzzle.Load(gameState.Board);
+        Puzzle.Load(PuzzleId, gameState.Board);
 
         GameNotificationService!.NotifyGameStarted();
     }
