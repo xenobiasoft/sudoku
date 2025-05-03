@@ -2,16 +2,16 @@
 
 namespace XenobiaSoft.Sudoku.GameState;
 
-public class AzureStorageGameStateMemory(IStorageService storageService) : IGameStateMemory, IDisposable
+public class AzureStorageGameStateManager(IStorageService storageService) : IGameStateManager, IDisposable
 {
     private const string ContainerName = "sudoku-puzzles";
     private const int MaxUndoHistory = 50;
 
     private readonly SemaphoreSlim _semaphore = new(1, 1);
 
-    public GameStateMemoryType MemoryType => GameStateMemoryType.Persistence;
+    public GameStateMemoryType MemoryType => GameStateMemoryType.AzureBlobPersistence;
 
-    public async Task ClearAsync(string puzzleId)
+    public async Task DeleteAsync(string puzzleId)
     {
         await _semaphore.WaitAsync();
 
@@ -28,7 +28,7 @@ public class AzureStorageGameStateMemory(IStorageService storageService) : IGame
         }
     }
 
-    public async Task<GameStateMemento> LoadAsync(string puzzleId)
+    public async Task<GameStateMemory> LoadAsync(string puzzleId)
     {
         await _semaphore.WaitAsync();
 
@@ -41,7 +41,7 @@ public class AzureStorageGameStateMemory(IStorageService storageService) : IGame
                 return null;
             }
 
-            return await storageService.LoadAsync<GameStateMemento>(ContainerName, latestBlobName);
+            return await storageService.LoadAsync<GameStateMemory>(ContainerName, latestBlobName);
         }
         finally
         {
@@ -49,7 +49,7 @@ public class AzureStorageGameStateMemory(IStorageService storageService) : IGame
         }
     }
 
-    public async Task SaveAsync(GameStateMemento gameState)
+    public async Task SaveAsync(GameStateMemory gameState)
     {
         await _semaphore.WaitAsync();
 
@@ -66,7 +66,7 @@ public class AzureStorageGameStateMemory(IStorageService storageService) : IGame
         }
     }
 
-    public async Task<GameStateMemento> UndoAsync(string puzzleId)
+    public async Task<GameStateMemory> UndoAsync(string puzzleId)
     {
         await _semaphore.WaitAsync();
 
@@ -91,7 +91,7 @@ public class AzureStorageGameStateMemory(IStorageService storageService) : IGame
 
             var previousBlobName = blobList.Last();
 
-            return await storageService.LoadAsync<GameStateMemento>(ContainerName, previousBlobName);
+            return await storageService.LoadAsync<GameStateMemory>(ContainerName, previousBlobName);
         }
         finally
         {

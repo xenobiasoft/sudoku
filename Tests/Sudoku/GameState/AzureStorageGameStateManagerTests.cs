@@ -5,13 +5,13 @@ using XenobiaSoft.Sudoku.Services;
 
 namespace UnitTests.Sudoku.GameState;
 
-public class AzureStorageGameStateMemoryTests : BaseTestByAbstraction<AzureStorageGameStateMemory, IGameStateMemory>
+public class AzureStorageGameStateManagerTests : BaseTestByAbstraction<AzureStorageGameStateManager, IGameStateManager>
 {
     private const string ContainerName = "sudoku-puzzles";
     private const string PuzzleId = "test-puzzle";
 
     private readonly Mock<IStorageService> _mockStorageService;
-    private readonly GameStateMemento _gameState;
+    private readonly GameStateMemory _gameState;
     private readonly List<string> _blobNames =
     [
         $"{PuzzleId}/00001.json",
@@ -19,11 +19,11 @@ public class AzureStorageGameStateMemoryTests : BaseTestByAbstraction<AzureStora
         $"{PuzzleId}/00003.json"
     ];
 
-    public AzureStorageGameStateMemoryTests()
+    public AzureStorageGameStateManagerTests()
     {
         _mockStorageService = Container.ResolveMock<IStorageService>();
         _gameState = Container
-            .Build<GameStateMemento>()
+            .Build<GameStateMemory>()
             .With(x => x.PuzzleId, PuzzleId)
             .Create();
     }
@@ -38,7 +38,7 @@ public class AzureStorageGameStateMemoryTests : BaseTestByAbstraction<AzureStora
         var sut = ResolveSut();
 
         // Act
-        await sut.ClearAsync(PuzzleId);
+        await sut.DeleteAsync(PuzzleId);
 
         // Assert
         foreach (var blobName in _blobNames)
@@ -138,6 +138,6 @@ public class AzureStorageGameStateMemoryTests : BaseTestByAbstraction<AzureStora
         var type = sut.MemoryType;
 
         // Assert
-        type.Should().Be(GameStateMemoryType.Persistence);
+        type.Should().Be(GameStateMemoryType.AzureBlobPersistence);
     }
 }

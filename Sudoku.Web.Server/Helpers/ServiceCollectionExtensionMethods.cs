@@ -1,5 +1,4 @@
-﻿using System.Numerics;
-using Azure.Identity;
+﻿using Azure.Identity;
 using Microsoft.Extensions.Azure;
 using Sudoku.Web.Server.Services;
 using XenobiaSoft.Sudoku.GameState;
@@ -17,6 +16,8 @@ namespace Sudoku.Web.Server.Helpers
             services.AddSingleton<ICellFocusedNotificationService, CellFocusedNotificationService>();
             services.AddSingleton<IInvalidCellNotificationService, InvalidCellNotificationService>();
             services.AddSingleton<IGameNotificationService, GameNotificationService>();
+            services.AddSingleton<IGameStateManager, AzureStorageGameStateManager>();
+            services.AddScoped<ILocalStorageService, LocalStorageService>();
 
             return services;
         }
@@ -28,14 +29,14 @@ namespace Sudoku.Web.Server.Helpers
                 .AddTransient<IPuzzleSolver, PuzzleSolver>()
                 .AddTransient<IPuzzleGenerator, PuzzleGenerator>()
                 .AddSingleton<IStorageService, AzureStorageService>()
-                .AddSingleton<InMemoryGameStateMemory>()
-                .AddSingleton<AzureStorageGameStateMemory>()
-                .AddSingleton<Func<string, IGameStateMemory>>(sp => key =>
+                .AddSingleton<InMemoryGameStateManager>()
+                .AddSingleton<AzureStorageGameStateManager>()
+                .AddSingleton<Func<string, IGameStateManager>>(sp => key =>
                 {
                     return key switch
                     {
-                        "InMemory" => sp.GetRequiredService<InMemoryGameStateMemory>(),
-                        "Persistent" => sp.GetRequiredService<AzureStorageGameStateMemory>(),
+                        GameStateTypes.InMemory => sp.GetRequiredService<InMemoryGameStateManager>(),
+                        GameStateTypes.AzurePersistent => sp.GetRequiredService<AzureStorageGameStateManager>(),
                         _ => throw new ArgumentException($"Unknown game state memory type: {key}")
                     };
                 });

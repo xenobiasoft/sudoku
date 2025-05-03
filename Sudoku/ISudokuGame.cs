@@ -1,12 +1,11 @@
-﻿namespace XenobiaSoft.Sudoku;
+﻿using XenobiaSoft.Sudoku.GameState;
+
+namespace XenobiaSoft.Sudoku;
 
 public interface ISudokuGame
 {
-	Task LoadPuzzle(ISudokuPuzzle puzzle);
-	Task New(Level level);
-	Task Reset();
-	void SetCell(int row, int col, int value);
-	Task SolvePuzzle();
-
-	ISudokuPuzzle Puzzle { get; }
+    Task DeleteAsync(string puzzleId);
+    Task<GameStateMemory> LoadAsync(string puzzleId);
+    Task<GameStateMemory> NewGameAsync(Level level);
+    Task SaveAsync(GameStateMemory memory);
 }

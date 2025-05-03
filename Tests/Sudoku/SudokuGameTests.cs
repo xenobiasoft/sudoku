@@ -1,126 +1,84 @@
 ﻿using DepenMock.XUnit;
 using UnitTests.Helpers;
+using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Generator;
-using XenobiaSoft.Sudoku.Solver;
 
 namespace UnitTests.Sudoku;
 
 public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 {
-	public SudokuGameTests()
-	{
-		Container
-			.ResolveMock<IPuzzleGenerator>()
-			.Setup(x => x.GenerateEmptyPuzzle())
-			.ReturnsAsync(PuzzleFactory.GetEmptyPuzzle);
-	}
+    [Fact]
+    public async Task DeleteAsync_DeletesGameStateFromStorage()
+    {
+        // Arrange
+        var puzzleId = Container.Create<string>();
+        var mockGameStateManager = Container.ResolveMock<IGameStateManager>();
+        var sut = ResolveSut();
 
-	[Fact]
-	public async Task New_GeneratesNewPuzzle()
-	{
-		// Arrange
-		var mockPuzzleGenerator = Container.ResolveMock<IPuzzleGenerator>();
-		var sut = ResolveSut();
+        // Act
+        await sut.DeleteAsync(puzzleId);
 
-		// Act
-		await sut.New(Level.Easy);
+        // Assert
+        mockGameStateManager.VerifyDeleteAsyncCalled(Times.Once);
+    }
 
-		// Assert
-		mockPuzzleGenerator.Verify(x => x.Generate(It.IsAny<Level>()), Times.Once);
-	}
+    [Fact]
+    public async Task LoadAsync_LoadsGameStateFromGameStateManager()
+    {
+        // Arrange
+        var puzzleId = Container.Create<string>();
+        var mockGameStateManager = Container.ResolveMock<IGameStateManager>();
+        var sut = ResolveSut();
 
-	[Fact]
-	public async Task New_LoadsPuzzleThatWasGenerated()
-	{
-		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-		Container
-			.ResolveMock<IPuzzleGenerator>()
-			.Setup(x => x.Generate(It.IsAny<Level>()))
-			.ReturnsAsync(puzzle);
-		var sut = ResolveSut();
+        // Act
+        await sut.LoadAsync(puzzleId);
 
-		// Act
-		await sut.New(Level.Easy);
+        // Assert
+        mockGameStateManager.Verify(x => x.LoadAsync(puzzleId), Times.Once);
+    }
 
-		// Assert
-		sut.Puzzle.Should().BeEquivalentTo(puzzle);
-	}
+    [Fact]
+    public async Task NewGameAsync_GeneratesNewPuzzle()
+    {
+        // Arrange
+        var mockPuzzleGenerator = Container.ResolveMock<IPuzzleGenerator>();
+        var sut = ResolveSut();
 
-	[Fact]
-	public async Task LoadPuzzle_SetsGamePuzzle()
-	{
-		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-		var sut = ResolveSut();
+        // Act
+        await sut.NewGameAsync(Level.Easy);
 
-		// Act
-		await sut.LoadPuzzle(puzzle);
+        // Assert
+        mockPuzzleGenerator.Verify(x => x.Generate(It.IsAny<Level>()), Times.Once);
+    }
 
-		// Assert
-		Assert.Equivalent(puzzle, sut.Puzzle);
-	}
+    [Fact]
+    public async Task NewGameAsync_ReturnsGameState()
+    {
+        // Arrange
+        Container.ResolveMock<IPuzzleGenerator>().SetupGenerate(PuzzleFactory.GetPuzzle(Level.Easy));
+        var sut = ResolveSut();
 
-	[Fact]
-	public async Task Reset_GetsEmptyPuzzle_FromGenerator()
-	{
-		// Arrange
-		var mockPuzzleGenerator = Container.ResolveMock<IPuzzleGenerator>();
-		var sut = ResolveSut();
+        // Act
+        var gameState = await sut.NewGameAsync(Level.Easy);
 
-		// Act
-		await sut.Reset();
+        // Assert
+        gameState.VerifyNewGameState();
+    }
 
-		// Assert
-		mockPuzzleGenerator.Verify(x => x.GenerateEmptyPuzzle(), Times.Once);
-	}
+    [Fact]
+    public async Task SaveAsync_PersistsGameStateToStorage()
+    {
+        // Arrange
+        var mockStorage = Container.ResolveMock<IGameStateManager>();
+        var puzzle = Container.Create<ISudokuPuzzle>();
+        var sut = ResolveSut();
 
-	[Fact]
-	public async Task SolvePuzzle_CallsPuzzleSolver()
-	{
-		// Arrange
-		var mockPuzzleSolver = Container.ResolveMock<IPuzzleSolver>();
-		var sut = ResolveSut();
+        // Act
+        await sut.SaveAsync(puzzle.ToGameState(0));
 
-		// Act
-		await sut.SolvePuzzle();
-
-		// Assert
-		mockPuzzleSolver.Verify(x => x.SolvePuzzle(It.IsAny<ISudokuPuzzle>()), Times.Once);
-	}
-
-	[Fact]
-	public void SetCell_AcceptsValue_AndSetsCell()
-	{
-		// Arrange
-		var sut = ResolveSut();
-		sut.Reset();
-
-		// Act
-		sut.SetCell(2, 1, 5);
-
-		// Assert
-		sut.Puzzle.GetCell(2, 1).Value.Should().Be(5);
-	}
-
-	[Theory]
-	[InlineData(5, 9, 6, "Invalid column (Parameter 'col')")]
-	[InlineData(9, 5, 6, "Invalid row (Parameter 'row')")]
-	[InlineData(1, 3, 10, "Invalid value (Parameter 'value')")]
-	[InlineData(5, -1, 6, "Invalid column (Parameter 'col')")]
-	[InlineData(-1, 5, 6, "Invalid row (Parameter 'row')")]
-	[InlineData(1, 3, -1, "Invalid value (Parameter 'value')")]
-	public void SetCell_WhenGivenInvalidNumber_ThrowsInvalidArgumentException(int row, int col, int value, string expectedMessage)
-	{
-		// Arrange
-		var sut = ResolveSut();
-
-		// Act
-		void SetCell() => sut.SetCell(row, col, value);
-
-		// Assert
-		Assert.Throws<ArgumentException>(SetCell).Message.Should().Be(expectedMessage);
-	}
+        // Assert
+        mockStorage.VerifySaveAsyncCalled(Times.Once);
+    }
 }

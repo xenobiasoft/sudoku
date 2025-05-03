@@ -1,52 +1,34 @@
-﻿using XenobiaSoft.Sudoku.Generator;
-using XenobiaSoft.Sudoku.Solver;
+﻿using XenobiaSoft.Sudoku.GameState;
+using XenobiaSoft.Sudoku.Generator;
 
 namespace XenobiaSoft.Sudoku;
 
-public class SudokuGame(IPuzzleSolver puzzleSolver, IPuzzleGenerator puzzleGenerator)
+public class SudokuGame(IPuzzleGenerator puzzleGenerator, Func<string, IGameStateManager> gameStateMemoryFactory)
     : ISudokuGame
 {
-    public ISudokuPuzzle Puzzle { get; private set; } = new SudokuPuzzle();
+    private readonly IGameStateManager _gameState = gameStateMemoryFactory(GameStateTypes.AzurePersistent);
 
-    public async Task New(Level level)
+    public async Task<GameStateMemory> NewGameAsync(Level level)
 	{
 		var puzzle = await puzzleGenerator.Generate(level).ConfigureAwait(false);
 
-		await LoadPuzzle(puzzle).ConfigureAwait(false);
-	}
+        var gameState = puzzle.ToGameState(0);
 
-	public async Task LoadPuzzle(ISudokuPuzzle puzzle)
+        return gameState;
+    }
+
+    public Task SaveAsync(GameStateMemory memory)
+    {
+        return _gameState.SaveAsync(memory);
+    }
+
+    public Task DeleteAsync(string puzzleId)
+    {
+        return _gameState.DeleteAsync(puzzleId);
+    }
+
+    public Task<GameStateMemory> LoadAsync(string puzzleId)
 	{
-		await Reset().ConfigureAwait(false);
-
-		Puzzle = puzzle;
-	}
-
-	public async Task Reset()
-	{
-		Puzzle = await puzzleGenerator.GenerateEmptyPuzzle().ConfigureAwait(false);
-	}
-
-	public void SetCell(int row, int col, int value)
-	{
-		if (col is < 0 or > 8)
-		{
-			throw new ArgumentException("Invalid column", nameof(col));
-		}
-		if (row is < 0 or > 8)
-		{
-			throw new ArgumentException("Invalid row", nameof(row));
-		}
-		if (value is < 0 or > 9)
-		{
-			throw new ArgumentException("Invalid value", nameof(value));
-		}
-		
-		Puzzle.SetCell(row, col, value);
-	}
-
-	public async Task SolvePuzzle()
-	{
-		Puzzle = await puzzleSolver.SolvePuzzle(Puzzle).ConfigureAwait(false);
-	}
+        return _gameState.LoadAsync(puzzleId);
+    }
 }

@@ -1,4 +1,5 @@
-﻿.mat-layout-grid {
+﻿.game-view {
+    margin: 0 auto;
     max-width: 430px;
 }
 

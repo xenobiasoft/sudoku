@@ -40,26 +40,32 @@ public class CircularStack<TStackItemType>
 
     public TStackItemType Pop()
     {
-        if (Count == 0)
+        lock (_buffer)
         {
-            throw new InvalidOperationException("The stack is empty.");
+            if (Count == 0)
+            {
+                throw new InvalidOperationException("The stack is empty.");
+            }
+
+            var item = _buffer[_top];
+            _top = (_top - 1 + Capacity) % Capacity;
+            Count--;
+
+            return item;
         }
-
-        var item = _buffer[_top];
-        _top = (_top - 1 + Capacity) % Capacity;
-        Count--;
-
-        return item;
     }
 
     public TStackItemType Peek()
     {
-        if (Count == 0)
+        lock (_buffer)
         {
-            throw new InvalidOperationException("The stack is empty.");
-        }
+            if (Count == 0)
+            {
+                throw new InvalidOperationException("The stack is empty.");
+            }
 
-        return _buffer[_top];
+            return _buffer[_top];
+        }
     }
 
     public bool IsEmpty()

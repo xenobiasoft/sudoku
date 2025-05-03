@@ -7,10 +7,11 @@ namespace Sudoku.Web.Server.Pages;
 public partial class Game
 {
     private Cell _selectedCell = new(0, 0);
-    private Level _level = Level.Easy;
     private GameTimer _gameTimer = new();
 
     public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
+
+    [Parameter] public string? PuzzleId { get; set; }
 
     [Inject]
 	public ISudokuGame? SudokuGame { get; set; }
@@ -23,41 +24,11 @@ public partial class Game
 
     protected override async Task OnInitializedAsync()
     {
-        await NewGame(Level.Easy);
-    }
+        var gameState = await SudokuGame!.LoadAsync(PuzzleId!);
 
-    protected override void OnInitialized()
-    {
-        var values = new int?[9, 9];
-        var cells = new Cell[81];
-        var index = 0;
+        Puzzle.Load(gameState.Board);
 
-        for (var col = 0; col < 9; col++)
-        {
-            for (var row = 0; row < 9; row++)
-            {
-                var cell = new Cell(row, col) { Value = values[row, col] };
-                cells[index++] = cell;
-            }
-        }
-        
-        Puzzle.Load(cells);
-    }
-
-    private async Task NewGame(Level level)
-    {
-        try
-        {
-            _level = level;
-            await SudokuGame!.New(level).ConfigureAwait(false);
-            Puzzle = SudokuGame.Puzzle;
-            GameNotificationService!.NotifyGameStarted();
-        }
-        catch (InvalidOperationException e)
-        {
-            Console.WriteLine(e);
-            await NewGame(level);
-        }
+        GameNotificationService!.NotifyGameStarted();
     }
 
     private void SetCellValue(int? value)

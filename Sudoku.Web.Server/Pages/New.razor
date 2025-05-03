@@ -1,0 +1,11 @@
+﻿@page "/new/{difficulty}"
+
+<div class="loading-container">
+    <h2>Generating @Difficulty level puzzle...</h2>
+    <div class="sudoku-loader">
+        @foreach (var digit in Digits)
+        {
+            <span>@digit</span>
+        }
+    </div>
+</div>
