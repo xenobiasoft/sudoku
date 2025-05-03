@@ -18,12 +18,8 @@ public partial class Index
     {
         if (!_savedGames.Any())
         {
-            _savedGames = await LocalStorage.LoadGameStatesAsync() ?? [];
-
-            if (_savedGames.Any())
-            {
-                StateHasChanged();
-            }
+            await LoadGamesAsync();
+            StateHasChanged();
         }
     }
 
@@ -32,16 +28,22 @@ public partial class Index
         NavigationManager.NavigateTo($"/game/{gameId}");
     }
 
+    private async Task LoadGamesAsync()
+    {
+        _savedGames = await LocalStorage.LoadGameStatesAsync() ?? [];
+    }
+
     private async Task DeleteGameAsync(string gameId)
     {
         await LocalStorage.RemoveGameAsync(gameId);
         await GameStateManager.DeleteAsync(gameId);
+        _savedGames = _savedGames.Where(x => x.PuzzleId != gameId).ToList();
         StateHasChanged();
     }
 
     private void StartNewGame(string difficulty)
     {
-        NavigationManager.NavigateTo($"/new?difficulty={difficulty}");
+        NavigationManager.NavigateTo($"/new/{difficulty}");
     }
 
     private void ToggleDisplaySavedGames()
