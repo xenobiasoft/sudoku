@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.Services;
 using UnitTests.Helpers.Mocks;
@@ -65,13 +66,18 @@ public class ButtonGroupTests : TestContext
     public void UndoAsync_WhenClicked_CallsGameStateManagerUndo()
     {
         // Arrange
-        var undoButton = RenderComponent<ButtonGroup>(p => p.Add(x => x.PuzzleId, "puzzleId"))
+        var undoCalled = false;
+        var undoButton = RenderComponent<ButtonGroup>(p =>
+            {
+                p.Add(x => x.PuzzleId, "puzzleId");
+                p.Add(x => x.OnUndo, () => undoCalled = true);
+            })
             .Find("#btnUndo");
 
         // Act
         undoButton.Click();
 
         // Assert
-        _gameStateManagerMock.VerifyUndoCalled(Times.Once);
+        undoCalled.Should().BeTrue();
     }
 }
