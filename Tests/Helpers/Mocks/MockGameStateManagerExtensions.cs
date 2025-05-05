@@ -36,4 +36,11 @@ public static class MockGameStateManagerExtensions
 
         return mock;
     }
+
+    public static Mock<IGameStateManager> VerifyUndoCalled(this Mock<IGameStateManager> mock, Func<Times> times)
+    {
+        mock.Verify(x => x.UndoAsync(It.IsAny<string>()), times);
+
+        return mock;
+    }
 }
