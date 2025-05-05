@@ -13,14 +13,14 @@ public class CellInputTests : TestContext
     private readonly Mock<ICellFocusedNotificationService> _mockCellFocusNotifier = new();
     private readonly Mock<IInvalidCellNotificationService> _mockInvalidCellNotificationService = new();
     private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
-    private readonly Mock<IGameStateManager> _mockGameStateManager = new();
+    private readonly Mock<IGameStateManager> _mockGameStorageManager = new();
 
     public CellInputTests()
     {
         Services.AddSingleton(_mockCellFocusNotifier.Object);
         Services.AddSingleton(_mockInvalidCellNotificationService.Object);
         Services.AddSingleton(_mockGameNotificationService.Object);
-        Services.AddSingleton(_mockGameStateManager.Object);
+        Services.AddSingleton(_mockGameStorageManager.Object);
     }
 
 	[Fact]
@@ -136,6 +136,6 @@ public class CellInputTests : TestContext
         cellInput.Find("input").KeyPress(Key.NumberPad4);
 
         // Assert
-        _mockGameStateManager.VerifySaveAsyncCalled(Times.Once);
+        _mockGameStorageManager.VerifySaveAsyncCalled(Times.Once);
     }
 }

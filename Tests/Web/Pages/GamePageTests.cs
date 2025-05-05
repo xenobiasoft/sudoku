@@ -5,7 +5,6 @@ using Sudoku.Web.Server.Services;
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
-using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Web.Pages;
 
@@ -13,10 +12,7 @@ public class GamePageTests : TestContext
 {
     private readonly Mock<IInvalidCellNotificationService> _mockInvalidCellNotifier = new();
     private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
-    private readonly Mock<ICellFocusedNotificationService> _mockCellFocusedNotificationService = new();
-    private readonly Mock<ISudokuPuzzle> _mockPuzzle = new();
     private readonly Mock<ISudokuGame> _mockGame = new();
-    private readonly Mock<IGameStateManager> _mockGameStateManager = new();
 
     public GamePageTests()
     {
@@ -24,10 +20,10 @@ public class GamePageTests : TestContext
 
         Services.AddSingleton(_mockInvalidCellNotifier.Object);
         Services.AddSingleton(_mockGameNotificationService.Object);
-        Services.AddSingleton(_mockCellFocusedNotificationService.Object);
-        Services.AddSingleton(_mockPuzzle.Object);
         Services.AddSingleton(_mockGame.Object);
-        Services.AddSingleton(_mockGameStateManager.Object);
+        Services.AddSingleton(new Mock<ICellFocusedNotificationService>().Object);
+        Services.AddSingleton(new Mock<ISudokuPuzzle>().Object);
+        Services.AddSingleton(new Mock<IGameStateManager>().Object);
     }
 
     [Fact]

@@ -4,7 +4,7 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Sudoku.GameState;
 
-public class InMemoryGameStateManagerTests : BaseTestByAbstraction<InMemoryGameStateManager, IGameStateManager>
+public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameStateStorage, IGameStateStorage>
 {
     private const string PuzzleId = "test-puzzle";
 

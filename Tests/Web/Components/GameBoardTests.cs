@@ -2,7 +2,6 @@
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.Services;
 using UnitTests.Helpers;
-using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Web.Components;
 

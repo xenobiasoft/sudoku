@@ -1,6 +1,6 @@
 ﻿namespace XenobiaSoft.Sudoku.GameState;
 
-public class InMemoryGameStateManager : IGameStateManager
+public class InMemoryGameStateStorage : IGameStateStorage
 {
 	private readonly CircularStack<GameStateMemory> _gameState = new(50);
 

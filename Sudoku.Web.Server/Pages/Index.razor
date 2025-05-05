@@ -17,21 +17,24 @@
                     <li><Button @onclick="@(() => StartNewGame("Hard"))">Hard</Button></li>
                 </ul>
                 <li>
-                    <Button @onclick="ToggleDisplaySavedGames" disabled="@(!_savedGames.Any())">
+                    <Button @onclick="ToggleDisplaySavedGames" disabled="@(_savedGames == null || !_savedGames.Any())">
                         <i class="fa-solid fa-folder-open"></i> Load Game
                     </Button>
                 </li>
                 <ul class="sub-menu @(_showSavedGames ? "open" : "")">
-                    @foreach (var game in _savedGames.OrderByDescending(g => g.LastUpdated))
+                    @if (_savedGames != null)
                     {
-                        <li>
-                            <Button @onclick="() => LoadGame(game.PuzzleId)">
-                                Saved: @game.LastUpdated.ToLocalDateTime()
-                            </Button>
-                            <button @onclick="() => DeleteGameAsync(game.PuzzleId)">
-                                <i class="fa-solid fa-trash del-game-icon"></i>
-                            </button>
-                        </li>
+                        foreach (var game in _savedGames.OrderByDescending(g => g.LastUpdated))
+                        {
+                            <li>
+                                <Button @onclick="() => LoadGame(game.PuzzleId)">
+                                    Saved: @game.LastUpdated.ToLocalDateTime()
+                                </Button>
+                                <button @onclick="() => DeleteGameAsync(game.PuzzleId)">
+                                    <i class="fa-solid fa-trash del-game-icon"></i>
+                                </button>
+                            </li>
+                        }
                     }
                 </ul>
             </ul>

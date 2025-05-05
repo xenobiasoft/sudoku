@@ -10,7 +10,7 @@ public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageSer
     public async Task<GameStateMemory?> LoadGameAsync(string gameId)
     {
         var games = await LoadGameStatesAsync();
-        var foundGame = games.Find(x => x.PuzzleId == gameId);
+        var foundGame = games.ToList().Find(x => x.PuzzleId == gameId);
 
         return foundGame;
     }

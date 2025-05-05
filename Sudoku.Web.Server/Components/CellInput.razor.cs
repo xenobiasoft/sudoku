@@ -10,7 +10,7 @@ public partial class CellInput : IDisposable
     [Inject] private ICellFocusedNotificationService? CellFocusedNotificationService { get; set; }
     [Inject] private IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
     [Inject] private IGameNotificationService? GameNotificationService { get; set; }
-    [Inject] private IGameStateManager? GameStateManager { get; set; }
+    [Inject] private IGameStateManager? GameStorageManager { get; set; }
 
     [Parameter] 
     public Cell Cell { get; set; } = new(0, 0);
@@ -79,7 +79,7 @@ public partial class CellInput : IDisposable
                 GameNotificationService!.NotifyGameEnded();
             }
 
-            await GameStateManager!.SaveAsync(Puzzle.ToGameState(0));
+            await GameStorageManager!.SaveGameAsync(Puzzle.ToGameState(0));
         }
     }
 }

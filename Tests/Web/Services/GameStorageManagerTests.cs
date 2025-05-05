@@ -5,14 +5,14 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Web.Services;
 
-public class GameStorageManagerTests : BaseTestByAbstraction<GameStorageManager, IGameStorageManager>
+public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, IGameStateManager>
 {
-    private readonly Mock<IGameStateManager> _mockGameStateManager;
+    private readonly Mock<IGameStateStorage> _mockGameStateManager;
     private readonly Mock<ILocalStorageService> _mockLocalStorageService;
 
     public GameStorageManagerTests()
     {
-        _mockGameStateManager = Container.ResolveMock<IGameStateManager>();
+        _mockGameStateManager = Container.ResolveMock<IGameStateStorage>();
         _mockLocalStorageService = Container.ResolveMock<ILocalStorageService>();
     }
 
@@ -71,6 +71,19 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStorageManager,
 
         // Assert
         _mockGameStateManager.VerifyLoadAsyncCalled(Times.Once);
+    }
+
+    [Fact]
+    public async Task LoadGamesAsync_LoadsGamesFromGameStateManager()
+    {
+        // Arrange
+        var sut = ResolveSut();
+
+        // Act
+        await sut.LoadGamesAsync();
+
+        // Assert
+        _mockLocalStorageService.VerifyLoadGamesAsyncCalled(Times.Once);
     }
 
     [Fact]

@@ -5,26 +5,22 @@ using Sudoku.Web.Server.Services;
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
-using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Web.Pages;
 
 public class NewPageTests : TestContext
 {
-    private readonly Mock<IGameStateManager> _mockGameStateManager;
-    private readonly Mock<ILocalStorageService> _mockLocalStorageService;
     private readonly Mock<ISudokuGame> _mockSudokuGame;
+    private readonly Mock<IGameStateManager>? _mockGameStorageManager;
 
     public NewPageTests()
     {
         _mockSudokuGame = new Mock<ISudokuGame>();
-        _mockLocalStorageService = new Mock<ILocalStorageService>();
-        _mockGameStateManager = new Mock<IGameStateManager>();
+        _mockGameStorageManager = new Mock<IGameStateManager>();
 
         _mockSudokuGame.SetNewAsync(PuzzleFactory.GetPuzzle(Level.Easy));
 
-        Services.AddSingleton(_mockGameStateManager.Object);
-        Services.AddSingleton(_mockLocalStorageService.Object);
+        Services.AddSingleton(_mockGameStorageManager.Object);
         Services.AddSingleton(_mockSudokuGame.Object);
     }
 
@@ -41,7 +37,7 @@ public class NewPageTests : TestContext
     }
 
     [Fact]
-    public void OnInitializedAsync_SavesGameStateToPersistentStorage()
+    public void OnInitializedAsync_SavesGameState()
     {
         // Arrange
 
@@ -49,19 +45,7 @@ public class NewPageTests : TestContext
         RenderComponent<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
 
         // Assert
-        _mockGameStateManager.VerifySaveAsyncCalled(Times.Once);
-    }
-
-    [Fact]
-    public void OnInitializedAsync_SavesGameStateToLocalStorage()
-    {
-        // Arrange
-
-        // Act
-        RenderComponent<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
-
-        // Assert
-        _mockLocalStorageService.VerifySaveGameAsyncCalled(Times.Once);
+        _mockGameStorageManager!.VerifySaveAsyncCalled(Times.Once);
     }
 
     [Fact]
