@@ -5,9 +5,9 @@ namespace Sudoku.Web.Server.Components
 {
     public partial class ButtonGroup
     {
-        [Inject] public IGameStateManager? GameStateManager { get; set; }
         [Parameter] public EventCallback<int?> NumberClicked { get; set; }
         [Parameter] public string? PuzzleId { get; set; }
+        [Parameter] public EventCallback OnUndo { get; set; }
 
         private async Task SetValue(int? value)
         {
@@ -16,8 +16,7 @@ namespace Sudoku.Web.Server.Components
 
         private async Task Undo()
         {
-            await GameStateManager!.UndoAsync(PuzzleId!);
-            StateHasChanged();
+            await OnUndo.InvokeAsync();
         }
     }
 }

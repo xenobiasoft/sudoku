@@ -8,19 +8,22 @@ public partial class Game
 {
     private Cell _selectedCell = new(0, 0);
     private GameTimer _gameTimer = new();
+    
+    [Parameter] public string? PuzzleId { get; set; }
+    [Inject] public ISudokuGame? SudokuGame { get; set; }
+    [Inject] public IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
+    [Inject] public IGameNotificationService? GameNotificationService { get; set; }
+    [Inject] private ICellFocusedNotificationService? NotificationService { get; set; }
+    [Inject] public IGameStateManager? GameStateManager { get; set; }
+
+    public async Task HandleUndo()
+    {
+        var gameState = await GameStateManager!.UndoAsync(PuzzleId!);
+        Puzzle.Load(gameState.PuzzleId, gameState.Board);
+        StateHasChanged();
+    }
 
     public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
-
-    [Parameter] public string? PuzzleId { get; set; }
-
-    [Inject]
-	public ISudokuGame? SudokuGame { get; set; }
-
-    [Inject]
-    public IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
-
-    [Inject]
-    public IGameNotificationService? GameNotificationService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

@@ -9,12 +9,8 @@ namespace Sudoku.Web.Server.Components
         private Cell _selectedCell = new(0, 0);
 
         [Parameter] public ISudokuPuzzle? Puzzle { get; set; }
-
-        [Parameter]
-        public EventCallback<Cell> OnCellFocus { get; set; }
-
-        [Inject]
-        private ICellFocusedNotificationService? NotificationService { get; set; }
+        [Parameter] public EventCallback<Cell> OnCellFocus { get; set; }
+        [Parameter] public ICellFocusedNotificationService? NotificationService { get; set; }
 
         private async Task HandleCellFocus(Cell cell)
         {
