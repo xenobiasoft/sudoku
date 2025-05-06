@@ -63,7 +63,7 @@ public class PuzzleFactory
 			}
 		}
 
-        puzzle.Load(cells);
+        puzzle.Load(puzzle.PuzzleId, cells);
 
         return puzzle;
     }

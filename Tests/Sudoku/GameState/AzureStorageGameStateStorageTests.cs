@@ -5,7 +5,7 @@ using XenobiaSoft.Sudoku.Services;
 
 namespace UnitTests.Sudoku.GameState;
 
-public class AzureStorageGameStateManagerTests : BaseTestByAbstraction<AzureStorageGameStateManager, IGameStateManager>
+public class AzureStorageGameStateStorageTests : BaseTestByAbstraction<AzureBlobGameStateStorage, IGameStateStorage>
 {
     private const string ContainerName = "sudoku-puzzles";
     private const string PuzzleId = "test-puzzle";
@@ -19,7 +19,7 @@ public class AzureStorageGameStateManagerTests : BaseTestByAbstraction<AzureStor
         $"{PuzzleId}/00003.json"
     ];
 
-    public AzureStorageGameStateManagerTests()
+    public AzureStorageGameStateStorageTests()
     {
         _mockStorageService = Container.ResolveMock<IStorageService>();
         _gameState = Container

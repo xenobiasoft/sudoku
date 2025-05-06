@@ -1,19 +1,16 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Sudoku.Web.Server.Services;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Components;
 
 public partial class CellInput : IDisposable
 {
-    [Inject] 
-    private ICellFocusedNotificationService? CellFocusedNotificationService { get; set; }
-
-    [Inject]
-    private IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
-
-    [Inject]
-    private IGameNotificationService? GameNotificationService { get; set; }
+    [Inject] private ICellFocusedNotificationService? CellFocusedNotificationService { get; set; }
+    [Inject] private IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
+    [Inject] private IGameNotificationService? GameNotificationService { get; set; }
+    [Inject] private IGameStateManager? GameStorageManager { get; set; }
 
     [Parameter] 
     public Cell Cell { get; set; } = new(0, 0);
@@ -22,7 +19,7 @@ public partial class CellInput : IDisposable
     public EventCallback<Cell> OnCellFocus { get; set; }
 
     [Parameter]
-    public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
+    public ISudokuPuzzle? Puzzle { get; set; }
 
     private string CssClass { get; set; } = string.Empty;
     private ElementReference _element;
@@ -68,15 +65,21 @@ public partial class CellInput : IDisposable
                Cell.IsInSameMiniGrid(cell));
     }
 
-    private void KeyPress(KeyboardEventArgs e)
+    private async Task KeyPressAsync(KeyboardEventArgs e)
     {
         int.TryParse(e.Key, out var cellValue);
-        Cell.Value = cellValue;
-        InvalidCellNotificationService!.Notify(Puzzle.Validate().ToList());
 
-        if (Puzzle.IsSolved())
+        if (cellValue != Cell.Value)
         {
-            GameNotificationService!.NotifyGameEnded();
+            Cell.Value = cellValue;
+            InvalidCellNotificationService!.Notify(Puzzle.Validate().ToList());
+
+            if (Puzzle.IsSolved())
+            {
+                GameNotificationService!.NotifyGameEnded();
+            }
+
+            await GameStorageManager!.SaveGameAsync(Puzzle.ToGameState(0));
         }
     }
 }

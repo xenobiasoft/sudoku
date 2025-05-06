@@ -10,7 +10,7 @@ public interface ISudokuPuzzle
     IEnumerable<Cell> GetMiniGridCells(int row, int col);
     bool IsSolved();
     bool IsValid();
-    void Load(Cell[] cells);
+    void Load(string puzzleId, Cell[] cells);
     void PopulatePossibleValues();
     void Restore(Cell[] cells);
     void SetCell(int row, int column, int? value);

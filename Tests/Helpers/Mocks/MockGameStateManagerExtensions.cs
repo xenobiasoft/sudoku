@@ -1,33 +1,43 @@
-﻿using XenobiaSoft.Sudoku.GameState;
+﻿using Sudoku.Web.Server.Services;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Helpers.Mocks;
 
 public static class MockGameStateManagerExtensions
 {
-    public static Mock<IGameStateManager> SetupEmptyStack(this Mock<IGameStateManager> mock)
+    public static Mock<IGameStateManager> SetupLoadGameAsync(this Mock<IGameStateManager> mock, GameStateMemory gameState)
     {
         mock
-            .Setup(x => x.UndoAsync(It.IsAny<string>()))
-            .ReturnsAsync((GameStateMemory?)null);
+            .Setup(x => x.LoadGameAsync(It.IsAny<string>()))
+            .ReturnsAsync(gameState);
 
         return mock;
     }
 
-    public static Mock<IGameStateManager> VerifyDeleteAsyncCalled(this Mock<IGameStateManager> mock, Func<Times> times)
+    public static Mock<IGameStateManager> SetupLoadGamesAsync(this Mock<IGameStateManager> mock, IEnumerable<GameStateMemory> gameStates)
     {
-        mock.Verify(x => x.DeleteAsync(It.IsAny<string>()), times);
+        mock
+            .Setup(x => x.LoadGamesAsync())
+            .ReturnsAsync(gameStates.ToList);
+
+        return mock;
+    }
+
+    public static Mock<IGameStateManager> VerifyDeleteGameAsyncCalled(this Mock<IGameStateManager> mock, Func<Times> times)
+    {
+        mock.Verify(x => x.DeleteGameAsync(It.IsAny<string>()), times);
 
         return mock;
     }
 
     public static Mock<IGameStateManager> VerifySaveAsyncCalled(this Mock<IGameStateManager> mock, Func<Times> times)
     {
-        mock.Verify(x => x.SaveAsync(It.IsAny<GameStateMemory>()), times);
+        mock.Verify(x => x.SaveGameAsync(It.IsAny<GameStateMemory>()), times);
 
         return mock;
     }
 
-    public static Mock<IGameStateManager> VerifyUndoAsyncCalled(this Mock<IGameStateManager> mock, Func<Times> times)
+    public static Mock<IGameStateManager> VerifyUndoCalled(this Mock<IGameStateManager> mock, Func<Times> times)
     {
         mock.Verify(x => x.UndoAsync(It.IsAny<string>()), times);
 

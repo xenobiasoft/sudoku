@@ -2,7 +2,7 @@
 
 namespace UnitTests.Helpers.Mocks;
 
-public static class MockGameNotificationService
+public static class MockGameNotificationServiceExtensions
 {
     public static Mock<IGameNotificationService> VerifyGameEndedSent(this Mock<IGameNotificationService> mock, Func<Times> times)
     {

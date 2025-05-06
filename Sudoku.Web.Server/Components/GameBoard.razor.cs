@@ -8,13 +8,9 @@ namespace Sudoku.Web.Server.Components
     {
         private Cell _selectedCell = new(0, 0);
 
-        [Parameter] public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
-
-        [Parameter]
-        public EventCallback<Cell> OnCellFocus { get; set; }
-
-        [Inject]
-        private ICellFocusedNotificationService? NotificationService { get; set; }
+        [Parameter] public ISudokuPuzzle? Puzzle { get; set; }
+        [Parameter] public EventCallback<Cell> OnCellFocus { get; set; }
+        [Parameter] public ICellFocusedNotificationService? NotificationService { get; set; }
 
         private async Task HandleCellFocus(Cell cell)
         {
@@ -43,42 +39,42 @@ namespace Sudoku.Web.Server.Components
 
         private void FocusUp()
         {
-            var cell = Puzzle
+            var cell = Puzzle!
                 .GetColumnCells(_selectedCell.Column)
                 .Where(x => !x.Locked && x.Row < _selectedCell.Row)
                 .MaxBy(x => x.Row);
 
-            NotificationService.Notify(cell);
+            NotificationService!.Notify(cell!);
         }
 
         private void FocusRight()
         {
-            var cell = Puzzle
+            var cell = Puzzle!
                 .GetRowCells(_selectedCell.Row)
                 .Where(x => !x.Locked && x.Column > _selectedCell.Column)
                 .MinBy(x => x.Column);
 
-            NotificationService.Notify(cell);
+            NotificationService!.Notify(cell!);
         }
 
         private void FocusLeft()
         {
-            var cell = Puzzle
+            var cell = Puzzle!
                 .GetRowCells(_selectedCell.Row)
                 .Where(x => !x.Locked && x.Column < _selectedCell.Column)
                 .MaxBy(x => x.Column);
 
-            NotificationService.Notify(cell);
+            NotificationService!.Notify(cell!);
         }
 
         private void FocusDown()
         {
-            var cell = Puzzle
+            var cell = Puzzle!
                 .GetColumnCells(_selectedCell.Column)
                 .Where(x => !x.Locked && x.Row > _selectedCell.Row)
                 .MinBy(x => x.Row);
 
-            NotificationService.Notify(cell);
+            NotificationService!.Notify(cell!);
         }
     }
 }

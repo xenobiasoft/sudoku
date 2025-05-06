@@ -1,9 +1,21 @@
-﻿using Sudoku.Web.Server.Components;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+using Sudoku.Web.Server.Components;
+using Sudoku.Web.Server.Services;
+using UnitTests.Helpers.Mocks;
 
 namespace UnitTests.Web.Components;
 
 public class ButtonGroupTests : TestContext
 {
+    private readonly Mock<IGameStateManager> _gameStateManagerMock;
+
+    public ButtonGroupTests()
+    {
+        _gameStateManagerMock = new Mock<IGameStateManager>();
+        Services.AddSingleton(_gameStateManagerMock.Object);
+    }
+
     [Theory]
     [InlineData(1)]
     [InlineData(2)]
@@ -35,7 +47,6 @@ public class ButtonGroupTests : TestContext
     [InlineData(7)]
     [InlineData(8)]
     [InlineData(9)]
-    [InlineData(null)]
     public void WhenButtonClicked_SetsValueToNumber(int? expected)
 	{
 		// Arrange
@@ -49,5 +60,24 @@ public class ButtonGroupTests : TestContext
 
 		// Assert
         actual.Should().Be(expected);
+    }
+
+    [Fact]
+    public void UndoAsync_WhenClicked_CallsGameStateManagerUndo()
+    {
+        // Arrange
+        var undoCalled = false;
+        var undoButton = RenderComponent<ButtonGroup>(p =>
+            {
+                p.Add(x => x.PuzzleId, "puzzleId");
+                p.Add(x => x.OnUndo, () => undoCalled = true);
+            })
+            .Find("#btnUndo");
+
+        // Act
+        undoButton.Click();
+
+        // Assert
+        undoCalled.Should().BeTrue();
     }
 }

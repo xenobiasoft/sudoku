@@ -13,11 +13,12 @@ namespace Sudoku.Web.Server.Helpers
     {
         public static IServiceCollection RegisterBlazorGameServices(this IServiceCollection services)
         {
-            services.AddSingleton<ICellFocusedNotificationService, CellFocusedNotificationService>();
-            services.AddSingleton<IInvalidCellNotificationService, InvalidCellNotificationService>();
-            services.AddSingleton<IGameNotificationService, GameNotificationService>();
-            services.AddSingleton<IGameStateManager, AzureStorageGameStateManager>();
+            services.AddScoped<ICellFocusedNotificationService, CellFocusedNotificationService>();
+            services.AddScoped<IInvalidCellNotificationService, InvalidCellNotificationService>();
+            services.AddScoped<IGameNotificationService, GameNotificationService>();
             services.AddScoped<ILocalStorageService, LocalStorageService>();
+            services.AddScoped<IGameStateManager, GameStateManager>();
+            services.AddScoped<IJsRuntimeWrapper, JsRuntimeWrapper>();
 
             return services;
         }
@@ -25,18 +26,18 @@ namespace Sudoku.Web.Server.Helpers
         public static IServiceCollection RegisterGameServices(this IServiceCollection services, ConfigurationManager config)
         {
             services
-                .AddTransient<ISudokuGame, SudokuGame>()
-                .AddTransient<IPuzzleSolver, PuzzleSolver>()
-                .AddTransient<IPuzzleGenerator, PuzzleGenerator>()
-                .AddSingleton<IStorageService, AzureStorageService>()
-                .AddSingleton<InMemoryGameStateManager>()
-                .AddSingleton<AzureStorageGameStateManager>()
-                .AddSingleton<Func<string, IGameStateManager>>(sp => key =>
+                .AddScoped<ISudokuGame, SudokuGame>()
+                .AddScoped<IPuzzleSolver, PuzzleSolver>()
+                .AddScoped<IPuzzleGenerator, PuzzleGenerator>()
+                .AddScoped<IStorageService, AzureStorageService>()
+                .AddScoped<InMemoryGameStateStorage>()
+                .AddScoped<AzureBlobGameStateStorage>()
+                .AddScoped<Func<string, IGameStateStorage>>(sp => key =>
                 {
                     return key switch
                     {
-                        GameStateTypes.InMemory => sp.GetRequiredService<InMemoryGameStateManager>(),
-                        GameStateTypes.AzurePersistent => sp.GetRequiredService<AzureStorageGameStateManager>(),
+                        GameStateTypes.InMemory => sp.GetRequiredService<InMemoryGameStateStorage>(),
+                        GameStateTypes.AzurePersistent => sp.GetRequiredService<AzureBlobGameStateStorage>(),
                         _ => throw new ArgumentException($"Unknown game state memory type: {key}")
                     };
                 });

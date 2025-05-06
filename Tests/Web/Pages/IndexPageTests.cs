@@ -8,7 +8,6 @@ namespace UnitTests.Web.Pages;
 
 public class IndexPageTests : TestContext
 {
-    private readonly Mock<ILocalStorageService> _mockLocalStorageService = new();
     private readonly Mock<IGameStateManager> _mockGameStateManager = new();
 
     public IndexPageTests()
@@ -18,9 +17,50 @@ public class IndexPageTests : TestContext
             new() { PuzzleId = Guid.NewGuid().ToString(), LastUpdated = DateTime.UtcNow.AddMinutes(-10) },
             new() { PuzzleId = Guid.NewGuid().ToString(), LastUpdated = DateTime.UtcNow.AddMinutes(-5) }
         };
-        _mockLocalStorageService.SetupLoadSavedGames(savedGames);
-        Services.AddSingleton(_mockLocalStorageService.Object);
+        _mockGameStateManager.SetupLoadGamesAsync(savedGames);
         Services.AddSingleton(_mockGameStateManager.Object);
+    }
+
+    [Fact]
+    public void DeleteGame_WhenClicked_RemovesGameFromGameStateManager()
+    {
+        // Arrange
+        var component = RenderComponent<IndexPage>();
+        var delGameElement = component.Find(".del-game-icon");
+
+        // Act
+        delGameElement.Click();
+
+        // Assert
+        _mockGameStateManager.VerifyDeleteGameAsyncCalled(Times.Once);
+    }
+
+    [Fact]
+    public void DeleteGame_RemovesGameFromList()
+    {
+        // Arrange
+        var component = RenderComponent<IndexPage>();
+        var delGameElement = component.Find(".del-game-icon");
+
+        // Act
+        delGameElement.Click();
+
+        // Assert
+        component.FindAll(".del-game-icon").Count.Should().Be(1);
+    }
+
+    [Fact]
+    public void Render_WhenSavedGamesPresent_DisplaysEachSavedGame()
+    {
+        // Arrange
+        var component = RenderComponent<IndexPage>();
+
+        // Act
+        var delGameElements = component.FindAll(".del-game-icon");
+
+
+        // Assert
+        delGameElements.Count.Should().Be(2);
     }
 
     [Fact]
@@ -61,7 +101,7 @@ public class IndexPageTests : TestContext
             new() { PuzzleId = Guid.NewGuid().ToString(), LastUpdated = DateTime.UtcNow.AddMinutes(-10) },
             new() { PuzzleId = Guid.NewGuid().ToString(), LastUpdated = DateTime.UtcNow.AddMinutes(-5) }
         };
-        _mockLocalStorageService.SetupLoadSavedGames(savedGames);
+        _mockGameStateManager.SetupLoadGamesAsync(savedGames);
         var component = RenderComponent<IndexPage>();
 
         // Act
@@ -70,61 +110,5 @@ public class IndexPageTests : TestContext
         // Assert
         var savedGameButtons = component.FindAll("button:contains('Saved:')");
         savedGameButtons.Count.Should().Be(savedGames.Count);
-    }
-
-    [Fact]
-    public void Render_WhenSavedGamesPresent_DisplaysEachSavedGame()
-    {
-        // Arrange
-        var component = RenderComponent<IndexPage>();
-
-        // Act
-        var delGameElements = component.FindAll(".del-game-icon");
-
-
-        // Assert
-        delGameElements.Count.Should().Be(2);
-    }
-
-    [Fact]
-    public void DeleteGame_WhenClicked_RemovesGameFromLocalStorage()
-    {
-        // Arrange
-        var component = RenderComponent<IndexPage>();
-        var delGameElement = component.Find(".del-game-icon");
-
-        // Act
-        delGameElement.Click();
-
-        // Assert
-        _mockLocalStorageService.Verify(x => x.RemoveGameAsync(It.IsAny<string>()), Times.Once);
-    }
-
-    [Fact]
-    public void DeleteGame_WhenClicked_RemovesGameFromGameStateManager()
-    {
-        // Arrange
-        var component = RenderComponent<IndexPage>();
-        var delGameElement = component.Find(".del-game-icon");
-
-        // Act
-        delGameElement.Click();
-
-        // Assert
-        _mockGameStateManager.Verify(x => x.DeleteAsync(It.IsAny<string>()), Times.Once);
-    }
-
-    [Fact]
-    public void DeleteGameAsync_RemovesGameFromList()
-    {
-        // Arrange
-        var component = RenderComponent<IndexPage>();
-        var delGameElement = component.Find(".del-game-icon");
-
-        // Act
-        delGameElement.Click();
-
-        // Assert
-        component.FindAll(".del-game-icon").Count.Should().Be(1);
     }
 }
