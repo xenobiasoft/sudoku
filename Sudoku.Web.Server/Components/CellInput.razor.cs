@@ -9,7 +9,6 @@ public partial class CellInput : IDisposable
 {
     [Inject] private ICellFocusedNotificationService? CellFocusedNotificationService { get; set; }
     [Inject] private IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
-    [Inject] private IGameNotificationService? GameNotificationService { get; set; }
 
     [Parameter] public Cell Cell { get; set; } = new(0, 0);
     [Parameter] public EventCallback<Cell> OnCellFocus { get; set; }
@@ -68,13 +67,6 @@ public partial class CellInput : IDisposable
         if (cellValue != Cell.Value)
         {
             Cell.Value = cellValue;
-            InvalidCellNotificationService!.Notify(Puzzle.Validate().ToList());
-
-            if (Puzzle.IsSolved())
-            {
-                GameNotificationService!.NotifyGameEnded();
-            }
-
             await OnCellChanged.InvokeAsync(new CellChangedEventArgs(Cell));
         }
     }

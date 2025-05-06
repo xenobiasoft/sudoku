@@ -104,24 +104,6 @@ public class CellInputTests : TestContext
     }
 
     [Fact]
-    public void CellInput_WhenPuzzleSolved_SendsGameEndedNotification()
-    {
-        // Arrange
-        var puzzle = PuzzleFactory.GetSolvedPuzzle();
-        var cell = puzzle.GetCell(0, 0);
-        var cellInput = RenderComponent<CellInput>(x => x
-            .Add(p => p.Cell, cell)
-            .Add(p => p.Puzzle, puzzle));
-
-        // Act
-        cellInput.Find("input").KeyPress(Key.NumberPad2);
-        cellInput.Find("input").KeyPress(Key.NumberPad1);
-
-        // Assert
-        _mockGameNotificationService.Verify(x => x.NotifyGameEnded(), Times.Once);
-    }
-
-    [Fact]
     public void CellInput_WhenValueChanged_RaisesCellChangedEvent()
     {
         // Arrange
