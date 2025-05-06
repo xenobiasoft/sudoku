@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Components;
+using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services;
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
@@ -13,14 +14,12 @@ public class CellInputTests : TestContext
     private readonly Mock<ICellFocusedNotificationService> _mockCellFocusNotifier = new();
     private readonly Mock<IInvalidCellNotificationService> _mockInvalidCellNotificationService = new();
     private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
-    private readonly Mock<IGameStateManager> _mockGameStorageManager = new();
 
     public CellInputTests()
     {
         Services.AddSingleton(_mockCellFocusNotifier.Object);
         Services.AddSingleton(_mockInvalidCellNotificationService.Object);
         Services.AddSingleton(_mockGameNotificationService.Object);
-        Services.AddSingleton(_mockGameStorageManager.Object);
     }
 
 	[Fact]
@@ -105,37 +104,25 @@ public class CellInputTests : TestContext
     }
 
     [Fact]
-    public void CellInput_WhenPuzzleSolved_SendsGameEndedNotification()
+    public void CellInput_WhenValueChanged_RaisesCellChangedEvent()
     {
         // Arrange
-        var puzzle = PuzzleFactory.GetSolvedPuzzle();
-        var cell = puzzle.GetCell(0, 0);
+        var calledArgs = (CellChangedEventArgs)null;
         var cellInput = RenderComponent<CellInput>(x => x
-            .Add(p => p.Cell, cell)
-            .Add(p => p.Puzzle, puzzle));
+            .Add(c => c.Cell, new Cell(1, 2))
+            .Add(c => c.Puzzle, PuzzleFactory.GetPuzzle(Level.Easy))
+            .Add(c => c.OnCellChanged, args => calledArgs = args));
 
         // Act
-        cellInput.Find("input").KeyPress(Key.NumberPad2);
-        cellInput.Find("input").KeyPress(Key.NumberPad1);
+        cellInput.Find("input").KeyPress(Key.NumberPad5);
 
         // Assert
-        _mockGameNotificationService.Verify(x => x.NotifyGameEnded(), Times.Once);
-    }
-
-    [Fact]
-    public async Task CellInput_WhenValueEntered_SavesGameState()
-    {
-        // Arrange
-        var puzzle = PuzzleFactory.GetSolvedPuzzle();
-        var cell = puzzle.GetCell(0, 0);
-        var cellInput = RenderComponent<CellInput>(x => x
-            .Add(p => p.Cell, cell)
-            .Add(p => p.Puzzle, puzzle));
-
-        // Act
-        cellInput.Find("input").KeyPress(Key.NumberPad4);
-
-        // Assert
-        _mockGameStorageManager.VerifySaveAsyncCalled(Times.Once);
+        Assert.Multiple(() =>
+        {
+            calledArgs.Should().NotBeNull();
+            calledArgs.Row.Should().Be(1);
+            calledArgs.Column.Should().Be(2);
+            calledArgs.Value.Should().Be(5);
+        });
     }
 }

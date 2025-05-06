@@ -10,10 +10,11 @@
                 ElapsedTime="@_gameTimer.ElapsedGameTime"/>
             <GameBoard
                 Puzzle="Puzzle"
-                OnCellFocus="SetSelectedCell"
-                NotificationService="NotificationService"/>
+                OnCellFocus="HandleSetSelectedCell"
+                OnCellChanged="HandleCellChanged"
+                NotificationService="CellFocusedNotificationService"/>
             <ButtonGroup
-                NumberClicked="SetCellValue"
+                OnNumberClicked="HandleCellValueChanged"
                 PuzzleId="@PuzzleId"
                 OnUndo="HandleUndo"/>
         </div>

@@ -1,5 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Components;
+using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Pages;
 using Sudoku.Web.Server.Services;
 using UnitTests.Helpers;
@@ -13,6 +15,7 @@ public class GamePageTests : TestContext
     private readonly Mock<IInvalidCellNotificationService> _mockInvalidCellNotifier = new();
     private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
     private readonly Mock<ISudokuGame> _mockGame = new();
+    private readonly Mock<IGameStateManager> _mockGameStateManager = new();
 
     public GamePageTests()
     {
@@ -23,7 +26,7 @@ public class GamePageTests : TestContext
         Services.AddSingleton(_mockGame.Object);
         Services.AddSingleton(new Mock<ICellFocusedNotificationService>().Object);
         Services.AddSingleton(new Mock<ISudokuPuzzle>().Object);
-        Services.AddSingleton(new Mock<IGameStateManager>().Object);
+        Services.AddSingleton(_mockGameStateManager.Object);
     }
 
     [Fact]
@@ -36,7 +39,7 @@ public class GamePageTests : TestContext
 
         // Act
         await sut.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cellInput.Cell));
-        await sut.InvokeAsync(() => buttonGroup.NumberClicked.InvokeAsync(3));
+        await sut.InvokeAsync(() => buttonGroup.OnNumberClicked.InvokeAsync(new CellValueChangedEventArgs(3)));
 
         // Assert
         cellInput.Cell.Value.Should().Be(3);
@@ -52,14 +55,14 @@ public class GamePageTests : TestContext
 
         // Act
         await sut.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cellInput.Cell));
-        await sut.InvokeAsync(() => buttonGroup.NumberClicked.InvokeAsync(5));
+        await sut.InvokeAsync(() => buttonGroup.OnNumberClicked.InvokeAsync(new CellValueChangedEventArgs(5)));
 
         // Assert
         _mockInvalidCellNotifier.VerifyNotificationSent(Times.Once);
     }
 
     [Fact]
-    public async Task Game_WhenPuzzleLoaded_SendsGameStartedNotification()
+    public void Game_WhenPuzzleLoaded_SendsGameStartedNotification()
     {
         // Arrange
 
@@ -81,7 +84,7 @@ public class GamePageTests : TestContext
 
         // Act
         await sut.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cellInput.Cell));
-        await sut.InvokeAsync(() => buttonGroup.NumberClicked.InvokeAsync(1));
+        await sut.InvokeAsync(() => buttonGroup.OnNumberClicked.InvokeAsync(new CellValueChangedEventArgs(1)));
 
         // Assert
         _mockGameNotificationService.VerifyGameEndedSent(Times.Once);
@@ -98,7 +101,7 @@ public class GamePageTests : TestContext
 
         // Act
         await sut.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cellInput.Cell));
-        await sut.InvokeAsync(() => buttonGroup.NumberClicked.InvokeAsync(1));
+        await sut.InvokeAsync(() => buttonGroup.OnNumberClicked.InvokeAsync(new CellValueChangedEventArgs(1)));
 
         // Assert
         var victoryOverlay = sut.Find(".victory-overlay");
@@ -131,5 +134,42 @@ public class GamePageTests : TestContext
 
         // Assert
         _mockGame.VerifyLoadsAsync(puzzleId, Times.Once);
+    }
+
+    [Fact]
+    public async Task HandleCellChanged_WhenGameBoardRaisesChangedEvent_ReceivesExpectedArgs()
+    {
+        // Arrange
+        CellChangedEventArgs? actualArgs = null;
+        var expectedArgs = new CellChangedEventArgs(1, 2, 5);
+        var game = RenderComponent<Game>();
+        var gameBoard = game.FindComponent<GameBoard>();
+        void OnCellChangedHandler(CellChangedEventArgs args) => actualArgs = args;
+        gameBoard.Instance.OnCellChanged = EventCallback.Factory.Create<CellChangedEventArgs>(this, OnCellChangedHandler);
+
+
+        // Act
+        await game.InvokeAsync(() =>
+            gameBoard.Instance.OnCellChanged.InvokeAsync(expectedArgs)
+        );
+
+        // Assert
+        actualArgs.Should().BeEquivalentTo(expectedArgs);
+    }
+
+    [Fact]
+    public async Task HandleCellChanged_WhenEventReceived_SavesGameState()
+    {
+        // Arrange
+        var game = RenderComponent<Game>();
+        var gameBoard = game.FindComponent<GameBoard>();
+
+        // Act
+        await game.InvokeAsync(() =>
+            gameBoard.Instance.OnCellChanged.InvokeAsync(new CellChangedEventArgs(1, 2, 5))
+        );
+
+        // Assert
+        _mockGameStateManager.VerifySaveAsyncCalled(Times.Once);
     }
 }

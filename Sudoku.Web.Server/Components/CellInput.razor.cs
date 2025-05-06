@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services;
-using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Components;
 
@@ -9,19 +9,14 @@ public partial class CellInput : IDisposable
 {
     [Inject] private ICellFocusedNotificationService? CellFocusedNotificationService { get; set; }
     [Inject] private IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
-    [Inject] private IGameNotificationService? GameNotificationService { get; set; }
-    [Inject] private IGameStateManager? GameStorageManager { get; set; }
 
-    [Parameter] 
-    public Cell Cell { get; set; } = new(0, 0);
-
-    [Parameter]
-    public EventCallback<Cell> OnCellFocus { get; set; }
-
-    [Parameter]
-    public ISudokuPuzzle? Puzzle { get; set; }
+    [Parameter] public Cell Cell { get; set; } = new(0, 0);
+    [Parameter] public EventCallback<Cell> OnCellFocus { get; set; }
+    [Parameter] public EventCallback<CellChangedEventArgs> OnCellChanged { get; set; }
+    [Parameter] public ISudokuPuzzle? Puzzle { get; set; }
 
     private string CssClass { get; set; } = string.Empty;
+
     private ElementReference _element;
 
     protected override void OnInitialized()
@@ -72,14 +67,7 @@ public partial class CellInput : IDisposable
         if (cellValue != Cell.Value)
         {
             Cell.Value = cellValue;
-            InvalidCellNotificationService!.Notify(Puzzle.Validate().ToList());
-
-            if (Puzzle.IsSolved())
-            {
-                GameNotificationService!.NotifyGameEnded();
-            }
-
-            await GameStorageManager!.SaveGameAsync(Puzzle.ToGameState(0));
+            await OnCellChanged.InvokeAsync(new CellChangedEventArgs(Cell));
         }
     }
 }
