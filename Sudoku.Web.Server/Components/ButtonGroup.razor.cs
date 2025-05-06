@@ -1,17 +1,17 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Sudoku.Web.Server.Services;
+using Sudoku.Web.Server.EventArgs;
 
 namespace Sudoku.Web.Server.Components
 {
     public partial class ButtonGroup
     {
-        [Parameter] public EventCallback<int?> NumberClicked { get; set; }
+        [Parameter] public EventCallback<CellValueChangedEventArgs> OnNumberClicked { get; set; }
         [Parameter] public string? PuzzleId { get; set; }
         [Parameter] public EventCallback OnUndo { get; set; }
 
         private async Task SetValue(int? value)
         {
-            await NumberClicked.InvokeAsync(value);
+            await OnNumberClicked.InvokeAsync(new CellValueChangedEventArgs(value.GetValueOrDefault()));
         }
 
         private async Task Undo()

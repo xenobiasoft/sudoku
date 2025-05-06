@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Components;
+using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services;
 using UnitTests.Helpers.Mocks;
 
@@ -50,16 +51,16 @@ public class ButtonGroupTests : TestContext
     public void WhenButtonClicked_SetsValueToNumber(int? expected)
 	{
 		// Arrange
-        var actual = default(int?);
+        CellValueChangedEventArgs? calledEventArgs = null;
 		var buttonGroup = RenderComponent<ButtonGroup>(p => p
-            .Add(x => x.NumberClicked, (i) => actual = i));
+            .Add(x => x.OnNumberClicked, (i) => calledEventArgs = i));
         var button = buttonGroup.Find($"#btn{expected ?? 0}");
 
 		// Act
 		button.Click();
 
 		// Assert
-        actual.Should().Be(expected);
+        calledEventArgs!.Value.Should().Be(expected);
     }
 
     [Fact]

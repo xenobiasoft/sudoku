@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services;
 
 namespace Sudoku.Web.Server.Components
@@ -9,8 +10,9 @@ namespace Sudoku.Web.Server.Components
         private Cell _selectedCell = new(0, 0);
 
         [Parameter] public ISudokuPuzzle? Puzzle { get; set; }
-        [Parameter] public EventCallback<Cell> OnCellFocus { get; set; }
         [Parameter] public ICellFocusedNotificationService? NotificationService { get; set; }
+        [Parameter] public EventCallback<Cell> OnCellFocus { set; get; }
+        [Parameter] public EventCallback<CellChangedEventArgs> OnCellChanged { get; set; }
 
         private async Task HandleCellFocus(Cell cell)
         {

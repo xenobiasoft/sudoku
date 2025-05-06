@@ -6,7 +6,11 @@
                 @for (var col = 0; col < 9; col++)
                 {
                     var cell = Puzzle.GetCell(row, col);
-                    <CellInput @key="cell" Cell="cell" OnCellFocus="HandleCellFocus" Puzzle="Puzzle" />
+                    <CellInput @key="cell" 
+                               Cell="cell" 
+                               OnCellFocus="HandleCellFocus" 
+                               Puzzle="Puzzle"
+                               OnCellChanged="OnCellChanged"/>
                 }
             </tr>
         }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Sudoku.Web.Server.Components;
+using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services;
 
 namespace Sudoku.Web.Server.Pages;
@@ -13,15 +14,8 @@ public partial class Game
     [Inject] public ISudokuGame? SudokuGame { get; set; }
     [Inject] public IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
     [Inject] public IGameNotificationService? GameNotificationService { get; set; }
-    [Inject] private ICellFocusedNotificationService? NotificationService { get; set; }
-    [Inject] public IGameStateManager? GameStateManager { get; set; }
-
-    public async Task HandleUndo()
-    {
-        var gameState = await GameStateManager!.UndoAsync(PuzzleId!);
-        Puzzle.Load(gameState.PuzzleId, gameState.Board);
-        StateHasChanged();
-    }
+    [Inject] private ICellFocusedNotificationService? CellFocusedNotificationService { get; set; }
+    [Inject] private IGameStateManager? GameStateManager { get; set; }
 
     public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
 
@@ -34,20 +28,38 @@ public partial class Game
         GameNotificationService!.NotifyGameStarted();
     }
 
-    private void SetCellValue(int? value)
+    private void HandleSetSelectedCell(Cell cell)
     {
-        _selectedCell.Value = value;
+        _selectedCell = cell;
+    }
 
+    public async Task HandleUndo()
+    {
+        var gameState = await GameStateManager!.UndoAsync(PuzzleId!);
+        Puzzle.Load(gameState.PuzzleId, gameState.Board);
+        StateHasChanged();
+    }
+
+    private Task HandleCellChanged(CellChangedEventArgs args)
+    {
+        return HandleCellUpdate(args.Row, args.Column, args.Value);
+    }
+
+    private Task HandleCellValueChanged(CellValueChangedEventArgs args)
+    {
+        return HandleCellUpdate(_selectedCell.Row, _selectedCell.Column, args.Value);
+    }
+
+    private Task HandleCellUpdate(int row, int column, int? value)
+    {
+        Puzzle.SetCell(row, column, value);
         InvalidCellNotificationService!.Notify(Puzzle.Validate().ToList());
 
         if (Puzzle.IsSolved())
         {
             GameNotificationService!.NotifyGameEnded();
         }
-    }
 
-    private void SetSelectedCell(Cell cell)
-    {
-        _selectedCell = cell;
+        return GameStateManager!.SaveGameAsync(Puzzle.ToGameState(0));
     }
 }
