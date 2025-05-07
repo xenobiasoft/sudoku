@@ -1,9 +1,19 @@
-﻿using Sudoku.Web.Server.Components;
+﻿using Bunit.TestDoubles;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+using Sudoku.Web.Server.Components;
 
 namespace UnitTests.Web.Components;
 
 public class VictoryDisplayTests : TestContext
 {
+    private readonly Mock<NavigationManager> _mockNavigationManager = new();
+
+    public VictoryDisplayTests()
+    {
+        Services.AddSingleton(_mockNavigationManager.Object);
+    }
+
     [Fact]
     public void VictoryMessageIsDisplayedWhenIsVictoryIsTrue()
     {
@@ -39,22 +49,15 @@ public class VictoryDisplayTests : TestContext
     }
 
     [Fact]
-    public void NewGameButtonIsRenderedAndClickable()
+    public void NavigatesToRoot_WhenBackToStartButtonClicked()
     {
-        // Arrange
-        var isVictory = true;
-        var newGameCalled = false;
-        void NewGame() => newGameCalled = true;
-        var sut = RenderComponent<VictoryDisplay>(parameters => parameters
-            .Add(p => p.IsVictory, isVictory)
-            .Add(p => p.NewGame, NewGame)
-        );
-        var button = sut.Find("button.victory-button");
+        // Arrange  
+        var navMan = Services.GetRequiredService<FakeNavigationManager>();
 
         // Act
-        button.Click();
+        RenderComponent<VictoryDisplay>(parameters => parameters.Add(p => p.IsVictory, true));
 
-        // Assert
-        newGameCalled.Should().BeTrue();
+        // Assert  
+        navMan.Uri.Should().Be("http://localhost/");
     }
 }
