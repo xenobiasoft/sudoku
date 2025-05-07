@@ -1,4 +1,5 @@
-﻿using XenobiaSoft.Sudoku.Services;
+﻿using XenobiaSoft.Sudoku.Exceptions;
+using XenobiaSoft.Sudoku.Services;
 
 namespace XenobiaSoft.Sudoku.GameState;
 
@@ -74,9 +75,9 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
         {
             var blobList = await GetSortedBlobNamesAsync(puzzleId);
 
-            if (blobList.Count == 0)
+            if (blobList.Count <= 1)
             {
-                return null;
+                throw new CannotUndoInitialStateException();
             }
 
             var latestBlobName = blobList.Last();
