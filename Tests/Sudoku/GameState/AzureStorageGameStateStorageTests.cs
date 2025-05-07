@@ -5,7 +5,7 @@ using XenobiaSoft.Sudoku.Services;
 
 namespace UnitTests.Sudoku.GameState;
 
-public class AzureStorageGameStateStorageTests : BaseTestByAbstraction<AzureBlobGameStateStorage, IGameStateStorage>
+public class AzureStorageGameStateStorageTests : BaseTestByAbstraction<AzureBlobGameStateStorage, IGameStateStorage<GameStateMemory>>
 {
     private const string ContainerName = "sudoku-puzzles";
     private const string PuzzleId = "test-puzzle";

@@ -30,17 +30,8 @@ namespace Sudoku.Web.Server.Helpers
                 .AddScoped<IPuzzleSolver, PuzzleSolver>()
                 .AddScoped<IPuzzleGenerator, PuzzleGenerator>()
                 .AddScoped<IStorageService, AzureStorageService>()
-                .AddScoped<InMemoryGameStateStorage>()
-                .AddScoped<AzureBlobGameStateStorage>()
-                .AddScoped<Func<string, IGameStateStorage>>(sp => key =>
-                {
-                    return key switch
-                    {
-                        GameStateTypes.InMemory => sp.GetRequiredService<InMemoryGameStateStorage>(),
-                        GameStateTypes.AzurePersistent => sp.GetRequiredService<AzureBlobGameStateStorage>(),
-                        _ => throw new ArgumentException($"Unknown game state memory type: {key}")
-                    };
-                });
+                .AddScoped<IGameStateStorage<PuzzleState>, InMemoryGameStateStorage>()
+                .AddScoped<IGameStateStorage<GameStateMemory>, AzureBlobGameStateStorage>();
 
             typeof(SudokuPuzzle).Assembly
                 .GetTypes()

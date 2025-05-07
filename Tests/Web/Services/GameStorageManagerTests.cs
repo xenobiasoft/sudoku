@@ -7,12 +7,12 @@ namespace UnitTests.Web.Services;
 
 public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, IGameStateManager>
 {
-    private readonly Mock<IGameStateStorage> _mockGameStateManager;
+    private readonly Mock<IGameStateStorage<GameStateMemory>> _mockGameStateManager;
     private readonly Mock<ILocalStorageService> _mockLocalStorageService;
 
     public GameStorageManagerTests()
     {
-        _mockGameStateManager = Container.ResolveMock<IGameStateStorage>();
+        _mockGameStateManager = Container.ResolveMock<IGameStateStorage<GameStateMemory>>();
         _mockLocalStorageService = Container.ResolveMock<ILocalStorageService>();
     }
 
@@ -91,7 +91,7 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, I
     {
         // Arrange
         var gameId = Container.Create<string>();
-        _mockLocalStorageService.SetupLoadGameAsync(gameId, new GameStateMemory { PuzzleId = gameId });
+        _mockLocalStorageService.SetupLoadGameAsync(gameId, new GameStateMemory(gameId, []));
         var sut = ResolveSut();
 
         // Act
@@ -106,7 +106,7 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, I
     {
         // Arrange
         var gameId = Container.Create<string>();
-        _mockLocalStorageService.SetupLoadGameAsync(gameId, new GameStateMemory { PuzzleId = gameId });
+        _mockLocalStorageService.SetupLoadGameAsync(gameId, new GameStateMemory(gameId, []));
         var sut = ResolveSut();
 
         // Act
