@@ -35,6 +35,10 @@ public class GameStateManager(ILocalStorageService localStorageService, IGameSta
 
     public async Task<GameStateMemory> UndoAsync(string gameId)
     {
+        var currentGameState = await LoadGameAsync(gameId);
+
+        if (currentGameState.TotalMoves <= 1) return currentGameState;
+
         var gameState = await gameStateStorage.UndoAsync(gameId);
 
         if (gameState != null)
@@ -43,5 +47,6 @@ public class GameStateManager(ILocalStorageService localStorageService, IGameSta
         }
 
         return gameState;
+
     }
 }

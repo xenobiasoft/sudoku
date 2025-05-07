@@ -6,4 +6,7 @@ namespace XenobiaSoft.Sudoku.GameState;
 public class GameStateMemory(string puzzleId, Cell[] board) : PuzzleState(puzzleId, board)
 {
     public DateTime LastUpdated { get; init; } = DateTime.UtcNow;
+    public int InvalidMoves { get; set; } = 0;
+    public int TotalMoves { get; set; } = 0;
+    public TimeSpan PlayDuration { get; set; } = TimeSpan.Zero;
 }

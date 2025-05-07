@@ -4,11 +4,11 @@ namespace UnitTests.Helpers.Mocks;
 
 public static class MockGameStateStorageExtensions
 {
-    public static Mock<IGameStateStorage<TStateMemoryType>> SetupEmptyStack<TStateMemoryType>(this Mock<IGameStateStorage<TStateMemoryType>> mock) where TStateMemoryType : PuzzleState
+    public static Mock<IGameStateStorage<TStateMemoryType>> SetupUndo<TStateMemoryType>(this Mock<IGameStateStorage<TStateMemoryType>> mock, TStateMemoryType? gameState) where TStateMemoryType : PuzzleState
     {
         mock
             .Setup(x => x.UndoAsync(It.IsAny<string>()))
-            .ReturnsAsync((TStateMemoryType?)null);
+            .ReturnsAsync(gameState);
 
         return mock;
     }
