@@ -4,6 +4,17 @@ namespace UnitTests.Helpers.Mocks;
 
 public static class MockSudokuPuzzleExtensions
 {
+    public static Mock<ISudokuPuzzle> SetupPuzzleNotInitiallySolved(this Mock<ISudokuPuzzle> mock)
+    {
+        mock
+            .SetupSequence(x => x.IsSolved())
+            .Returns(false)
+            .Returns(true)
+            .Returns(true);
+
+        return mock;
+    }
+
     public static Mock<ISudokuPuzzle> SetupPuzzleIsSolved(this Mock<ISudokuPuzzle> mock)
     {
         mock

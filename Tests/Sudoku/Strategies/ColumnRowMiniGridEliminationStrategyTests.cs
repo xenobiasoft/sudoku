@@ -22,20 +22,18 @@ public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<C
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenACellValueIsSet_ReturnsExpectedScore()
+	public void SolvePuzzle_WhenACellValueIsSet_ReturnsTrue()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-		var initialCellsWithValues = puzzle.GetAllCells().Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
-		var score = sut.SolvePuzzle(puzzle);
+		var changesMade = sut.SolvePuzzle(puzzle);
 
-		// Assert
-		var expectedScore = puzzle.GetAllCells().Count(x => x.Value.HasValue) - initialCellsWithValues;
-		score.Should().Be(expectedScore);
-	}
+        // Assert
+        changesMade.Should().BeTrue();
+    }
 
 	[Fact]
 	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsScoreOfZero()
@@ -45,9 +43,9 @@ public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<C
 		var sut = ResolveSut();
 
 		// Act
-		var score = sut.SolvePuzzle(puzzle);
+		var changesMade = sut.SolvePuzzle(puzzle);
 
-		// Assert
-		score.Should().Be(0);
-	}
+        // Assert
+        changesMade.Should().BeFalse();
+    }
 }

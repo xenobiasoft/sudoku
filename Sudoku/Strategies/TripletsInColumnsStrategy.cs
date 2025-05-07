@@ -4,13 +4,11 @@ namespace XenobiaSoft.Sudoku.Strategies;
 
 public class TripletsInColumnsStrategy : SolverStrategy
 {
-	private const int Score = 4;
-
-	public override int Execute(ISudokuPuzzle puzzle)
+	public override bool Execute(ISudokuPuzzle puzzle)
 	{
-		var totalScore = 0;
+		var changesMade = false;
 
-		foreach (var cell in puzzle.GetAllCells())
+        foreach (var cell in puzzle.GetAllCells())
 		{
 			if (cell.Value.HasValue || cell.PossibleValues.Length != 3) continue;
 
@@ -49,10 +47,10 @@ public class TripletsInColumnsStrategy : SolverStrategy
 				Console.WriteLine($"Setting cell:{nonTripletCell.Row}:{nonTripletCell.Column} to value {cellValue}");
 				nonTripletCell.Value = cellValue;
 				nonTripletCell.PossibleValues = string.Empty;
-				totalScore += Score;
-			}
+                changesMade = true;
+            }
 		}
 
-		return totalScore;
+		return changesMade;
 	}
 }

@@ -26,16 +26,14 @@ public class SinglesInMiniGridStrategyTests : BaseTestByAbstraction<SinglesInMin
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-		var initialCellsWithValues = puzzle.GetAllCells().Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
-		var score = sut.SolvePuzzle(puzzle);
+		var changesMade = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		var expectedScore = (puzzle.GetAllCells().Count(x => x.Value.HasValue) - initialCellsWithValues) * 2;
-		score.Should().Be(expectedScore);
-	}
+        changesMade.Should().BeTrue();
+    }
 
 	[Fact]
 	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsScoreOfZero()
@@ -45,9 +43,9 @@ public class SinglesInMiniGridStrategyTests : BaseTestByAbstraction<SinglesInMin
 		var sut = ResolveSut();
 
 		// Act
-		var score = sut.SolvePuzzle(puzzle);
+		var changesMade = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		score.Should().Be(0);
-	}
+        changesMade.Should().BeFalse();
+    }
 }

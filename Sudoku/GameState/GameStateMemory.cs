@@ -5,11 +5,10 @@ namespace XenobiaSoft.Sudoku.GameState;
 public class GameStateMemory
 {
     [JsonConstructor]
-    public GameStateMemory(string puzzleId, Cell[] board, int score)
+    public GameStateMemory(string puzzleId, Cell[] board)
     {
         PuzzleId = puzzleId;
         Board = board;
-        Score = score;
         LastUpdated = DateTime.UtcNow;
     }
 
@@ -18,6 +17,5 @@ public class GameStateMemory
 
     public string PuzzleId { get; init; }
     public Cell[] Board { get; set; }
-    public int Score { get; private set; }
     public DateTime LastUpdated { get; init; }
 }
