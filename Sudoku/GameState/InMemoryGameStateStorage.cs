@@ -39,7 +39,7 @@ public class InMemoryGameStateStorage : IGameStateStorage
 
     private bool AreGameStatesEqual(GameStateMemory gameState1, GameStateMemory gameState2)
     {
-        if (gameState1.PuzzleId != gameState2.PuzzleId || gameState1.Score != gameState2.Score)
+        if (gameState1.PuzzleId != gameState2.PuzzleId)
         {
             return false;
         }

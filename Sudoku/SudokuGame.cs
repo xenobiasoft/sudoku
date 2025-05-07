@@ -12,7 +12,7 @@ public class SudokuGame(IPuzzleGenerator puzzleGenerator, Func<string, IGameStat
 	{
 		var puzzle = await puzzleGenerator.Generate(level).ConfigureAwait(false);
 
-        var gameState = puzzle.ToGameState(0);
+        var gameState = puzzle.ToGameState();
 
         return gameState;
     }

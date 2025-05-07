@@ -60,6 +60,6 @@ public partial class Game
             GameNotificationService!.NotifyGameEnded();
         }
 
-        return GameStateManager!.SaveGameAsync(Puzzle.ToGameState(0));
+        return GameStateManager!.SaveGameAsync(Puzzle.ToGameState());
     }
 }

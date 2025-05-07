@@ -13,4 +13,13 @@ public static class GameStateMemoryExtensions
 
         return gameState;
     }
+
+    public static GameStateMemory AssertAreEquivalent(this GameStateMemory gameState, GameStateMemory other)
+    {
+        gameState.PuzzleId.Should().Be(other.PuzzleId);
+        gameState.LastUpdated.Should().BeCloseTo(other.LastUpdated, TimeSpan.FromSeconds(1));
+        gameState.Board.Count(cell => cell.Value.HasValue).Should().BeInRange(30, 58);
+
+        return gameState;
+    }
 }

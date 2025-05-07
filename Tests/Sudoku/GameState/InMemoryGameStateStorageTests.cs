@@ -1,4 +1,5 @@
 ﻿using DepenMock.XUnit;
+using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
 
@@ -58,8 +59,8 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
     {
         // Arrange
         var board = new[] { new Cell(0, 0) { Value = 1 } };
-        var gameState1 = new GameStateMemory(PuzzleId, board, 0);
-        var gameState2 = new GameStateMemory(PuzzleId, board, 0);
+        var gameState1 = new GameStateMemory(PuzzleId, board);
+        var gameState2 = new GameStateMemory(PuzzleId, board);
         var sut = ResolveSut();
 
         // Act
@@ -76,8 +77,8 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
     public async Task UndoAsync_ShouldReturnLastGameStateAndRemoveIt()
     {
         // Arrange
-        var gameState1 = new GameStateMemory(PuzzleId, [], 0);
-        var gameState2 = new GameStateMemory(PuzzleId, [], 1);
+        var gameState1 = PuzzleFactory.GetPuzzle(Level.Easy).ToGameState();
+        var gameState2 = PuzzleFactory.GetPuzzle(Level.Easy).ToGameState();
         var sut = ResolveSut();
 
         await sut.SaveAsync(gameState1);
@@ -90,8 +91,8 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
         // Assert
         Assert.Multiple(() =>
         {
-            undoneState.Should().Be(gameState2);
-            currentState.Should().Be(gameState1);
+            undoneState.AssertAreEquivalent(gameState2);
+            currentState.AssertAreEquivalent(gameState1);
         });
     }
 
