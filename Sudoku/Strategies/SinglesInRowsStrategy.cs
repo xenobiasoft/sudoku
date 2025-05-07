@@ -2,13 +2,11 @@
 
 public class SinglesInRowsStrategy : SolverStrategy
 {
-	private const int Score = 2;
-
-	public override int Execute(ISudokuPuzzle puzzle)
+	public override bool Execute(ISudokuPuzzle puzzle)
 	{
 		var colPos = 0;
 		var rowPos = 0;
-		var totalScore = 0;
+        var changesMade = false;
 
 		for (var row = 0; row < GameDimensions.Rows; row++)
 		{
@@ -37,10 +35,10 @@ public class SinglesInRowsStrategy : SolverStrategy
 				Console.WriteLine($"Setting cell:{loneRangerCell.Row}:{loneRangerCell.Column} to value {number}");
 				loneRangerCell.Value = number;
 				loneRangerCell.PossibleValues = number.ToString();
-				totalScore += Score;
-			}
+				changesMade = true;
+            }
 		}
 
-		return totalScore;
+		return changesMade;
 	}
 }

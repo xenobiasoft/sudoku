@@ -4,13 +4,11 @@ namespace XenobiaSoft.Sudoku.Strategies;
 
 public class TwinsInRowsStrategy : SolverStrategy
 {
-	private const int Score = 3;
-
-	public override int Execute(ISudokuPuzzle puzzle)
+	public override bool Execute(ISudokuPuzzle puzzle)
 	{
-		var totalScore = 0;
+		var changesMade = false;
 
-		foreach (var cell in puzzle.GetAllCells())
+        foreach (var cell in puzzle.GetAllCells())
 		{
 			if (cell.Value.HasValue || cell.PossibleValues.Length != 2) continue;
 
@@ -36,11 +34,11 @@ public class TwinsInRowsStrategy : SolverStrategy
 					Console.WriteLine($"Setting cell:{nonTwinCell.Row}:{nonTwinCell.Column} to value {cellValue}");
 					nonTwinCell.Value = cellValue;
 					nonTwinCell.PossibleValues = string.Empty;
-					totalScore += Score;
-				}
+					changesMade = true;
+                }
 			}
 		}
 
-		return totalScore;
+		return changesMade;
 	}
 }

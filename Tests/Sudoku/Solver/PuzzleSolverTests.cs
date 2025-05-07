@@ -34,6 +34,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
             .ResolveMock<SolverStrategy>()
             .DoesNotMakeChanges();
         var mockPuzzle = Container.ResolveMock<ISudokuPuzzle>();
+        mockPuzzle.SetupPuzzleNotInitiallySolved();
         var sut = ResolveSut();
 
         // Act

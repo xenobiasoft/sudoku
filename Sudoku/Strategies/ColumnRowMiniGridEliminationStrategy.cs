@@ -2,13 +2,11 @@
 
 public class ColumnRowMiniGridEliminationStrategy : SolverStrategy
 {
-	private const int Score = 1;
-
-	public override int Execute(ISudokuPuzzle puzzle)
+	public override bool Execute(ISudokuPuzzle puzzle)
 	{
-		var totalScore = 0;
+		var changesMade = false;
 
-		foreach (var cell in puzzle.GetAllCells())
+        foreach (var cell in puzzle.GetAllCells())
 		{
 			if (cell.Value.HasValue || cell.PossibleValues.Length != 1) continue;
 
@@ -16,9 +14,9 @@ public class ColumnRowMiniGridEliminationStrategy : SolverStrategy
 			Console.WriteLine($"Setting cell:{cell.Row}:{cell.Column} to value {cellValue}");
 			cell.Value = cellValue;
 			cell.PossibleValues = string.Empty;
-			totalScore += Score;
-		}
+            changesMade = true;
+        }
 
-		return totalScore;
+		return changesMade;
 	}
 }

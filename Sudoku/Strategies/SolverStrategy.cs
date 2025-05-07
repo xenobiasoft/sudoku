@@ -2,12 +2,12 @@
 
 public abstract class SolverStrategy
 {
-	public virtual int SolvePuzzle(ISudokuPuzzle puzzle)
+	public virtual bool SolvePuzzle(ISudokuPuzzle puzzle)
 	{
 		puzzle.PopulatePossibleValues();
 
 		return Execute(puzzle);
 	}
 
-	public abstract int Execute(ISudokuPuzzle puzzle);
+	public abstract bool Execute(ISudokuPuzzle puzzle);
 }

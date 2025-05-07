@@ -22,20 +22,18 @@ public class SinglesInColumnsStrategyTests : BaseTestByAbstraction<SinglesInColu
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenCellValueIsSet_ReturnsExpectedScore()
+	public void SolvePuzzle_WhenCellValueIsSet_ReturnsTrue()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
-		var initialCellsWithValues = puzzle.GetAllCells().Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
-		var score = sut.SolvePuzzle(puzzle);
+		var changesMade = sut.SolvePuzzle(puzzle);
 
-		// Assert
-		var expectedScore = (puzzle.GetAllCells().Count(x => x.Value.HasValue) - initialCellsWithValues) * 2;
-		score.Should().Be(expectedScore);
-	}
+        // Assert
+        changesMade.Should().BeTrue();
+    }
 
 	[Fact]
 	public void SolvePuzzle_WhenCellValueIsSet_RemovesThatValueFromColumnCellsPossibleValues()
@@ -53,16 +51,16 @@ public class SinglesInColumnsStrategyTests : BaseTestByAbstraction<SinglesInColu
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenCellValueIsNotSet_ReturnsScoreOfZero()
+	public void SolvePuzzle_WhenCellValueIsNotSet_ReturnsFalse()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetEmptyPuzzle();
 		var sut = ResolveSut();
 
 		// Act
-		var score = sut.SolvePuzzle(puzzle);
+		var changesMade = sut.SolvePuzzle(puzzle);
 
-		// Assert
-		score.Should().Be(0);
-	}
+        // Assert
+        changesMade.Should().BeFalse();
+    }
 }

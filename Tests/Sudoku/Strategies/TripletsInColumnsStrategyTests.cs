@@ -47,34 +47,32 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenACellValueIsSet_ReturnsExpectedScore()
+	public void SolvePuzzle_WhenACellValueIsSet_ReturnsTrue()
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
-		var initialCellsWithValues = puzzle.GetAllCells().Count(x => x.Value.HasValue);
 		var sut = ResolveSut();
 
 		// Act
-		var score = sut.SolvePuzzle(puzzle);
+		var changesMade = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		var expectedScore = (puzzle.GetAllCells().Count(x => x.Value.HasValue) - initialCellsWithValues) * 4;
-		score.Should().Be(expectedScore);
-	}
+        changesMade.Should().BeTrue();
+    }
 
 	[Fact]
-	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsScoreOfZero()
+	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsFalse()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetEmptyPuzzle();
 		var sut = ResolveSut();
 
 		// Act
-		var score = sut.SolvePuzzle(puzzle);
+		var changesMade = sut.SolvePuzzle(puzzle);
 
 		// Assert
-		score.Should().Be(0);
-	}
+        changesMade.Should().BeFalse();
+    }
 
 	[Fact]
 	public void SolvePuzzle_WhenNonTripletPossibleValuesIsEmpty_ThrowsException()
