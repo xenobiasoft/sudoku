@@ -76,7 +76,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
         var sut = ResolveSut();
 
         // Act
-        await sut.SaveAsync(puzzle.ToGameState());
+        await sut.SaveAsync(It.IsAny<GameStateMemory>());
 
         // Assert
         mockStorage.VerifySaveAsyncCalled(Times.Once);

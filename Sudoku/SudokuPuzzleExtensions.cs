@@ -8,9 +8,4 @@ public static class SudokuPuzzleExtensions
     {
         return new PuzzleState(puzzle.PuzzleId, puzzle.GetAllCells());
     }
-
-    public static GameStateMemory ToGameState(this ISudokuPuzzle puzzle)
-    {
-        return new GameStateMemory(puzzle.PuzzleId, puzzle.GetAllCells());
-    }
 }

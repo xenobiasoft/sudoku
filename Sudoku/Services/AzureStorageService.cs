@@ -17,7 +17,7 @@ public class AzureStorageService(BlobServiceClient blobServiceClient) : IStorage
     {
         var containerClient = GetContainerClient(containerName);
         var blobs = containerClient
-            .GetBlobsAsync(prefix: blobPrefix)
+            .GetBlobsAsync(prefix: $"{blobPrefix}/")
             .AsPages(null, 50);
 
         await foreach (var page in blobs)

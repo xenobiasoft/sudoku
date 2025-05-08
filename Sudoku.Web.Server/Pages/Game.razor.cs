@@ -2,6 +2,7 @@
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Pages;
 
@@ -9,6 +10,7 @@ public partial class Game
 {
     private Cell _selectedCell = new(0, 0);
     private GameTimer _gameTimer = new();
+    private GameStateMemory? _currentGameState;
     
     [Parameter] public string? PuzzleId { get; set; }
     [Inject] public ISudokuGame? SudokuGame { get; set; }
@@ -21,9 +23,9 @@ public partial class Game
 
     protected override async Task OnInitializedAsync()
     {
-        var gameState = await SudokuGame!.LoadAsync(PuzzleId!);
+        _currentGameState = await SudokuGame!.LoadAsync(PuzzleId!);
 
-        Puzzle.Load(PuzzleId, gameState.Board);
+        Puzzle.Load(PuzzleId, _currentGameState.Board);
 
         GameNotificationService!.NotifyGameStarted();
     }
@@ -35,8 +37,8 @@ public partial class Game
 
     public async Task HandleUndo()
     {
-        var gameState = await GameStateManager!.UndoAsync(PuzzleId!);
-        Puzzle.Load(gameState.PuzzleId, gameState.Board);
+        _currentGameState = await GameStateManager!.UndoAsync(PuzzleId!);
+        Puzzle.Load(_currentGameState.PuzzleId, _currentGameState.Board);
         StateHasChanged();
     }
 
@@ -60,6 +62,13 @@ public partial class Game
             GameNotificationService!.NotifyGameEnded();
         }
 
-        return GameStateManager!.SaveGameAsync(Puzzle.ToGameState());
+        _currentGameState = new GameStateMemory(PuzzleId, Puzzle.GetAllCells())
+        {
+            InvalidMoves = 0,
+            TotalMoves = _currentGameState!.TotalMoves + 1,
+            PlayDuration = _gameTimer.ElapsedGameTime,
+        };
+
+        return GameStateManager!.SaveGameAsync(_currentGameState);
     }
 }
