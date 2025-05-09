@@ -10,7 +10,7 @@ public partial class Game
 {
     private Cell _selectedCell = new(0, 0);
     private GameTimer _gameTimer = new();
-    private GameStateMemory? _currentGameState;
+    private GameStateMemory? _currentGameState = new();
     
     [Parameter] public string? PuzzleId { get; set; }
     [Inject] public ISudokuGame? SudokuGame { get; set; }
