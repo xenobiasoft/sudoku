@@ -23,7 +23,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
         await sut.SolvePuzzle(mockPuzzle.Object);
 
         // Assert
-        mockGameStateStorage.VerifyUndoAsyncCalled(Times.Once);
+        mockGameStateStorage.VerifyUndoAsyncCalled(mockPuzzle.Object.PuzzleId, Times.Once);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
         await sut.SolvePuzzle(mockPuzzle.Object);
 
         // Assert
-        mockGameStateStorage.VerifyUndoAsyncCalled(Times.Once);
+        mockGameStateStorage.VerifyUndoAsyncCalled(mockPuzzle.Object.PuzzleId, Times.Once);
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
     public async Task SolvePuzzle_WhenGameStateIsEmpty_AndUndoCalled_ThrowsInvalidBoardException()
     {
         // Arrange
-        Container.ResolveMock<IGameStateStorage<PuzzleState>>().SetupUndo(null);
+        Container.ResolveMock<IGameStateStorage<PuzzleState>>().SetupUndoAsync(null);
         var mockPuzzle = Container.ResolveMock<ISudokuPuzzle>();
         mockPuzzle.SetupInvalidMove();
         var sut = ResolveSut();

@@ -27,7 +27,7 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, I
         await sut.SaveGameAsync(gameState);
 
         // Assert
-        _mockGameStateStorage.VerifySaveAsyncCalled(Times.Once);
+        _mockGameStateStorage.VerifySaveAsyncCalled(gameState, Times.Once);
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, I
         await sut.LoadGameAsync(gameId);
 
         // Assert
-        _mockGameStateStorage.VerifyLoadAsyncCalled(Times.Once);
+        _mockGameStateStorage.VerifyLoadAsyncCalled(gameId, Times.Once);
     }
 
     [Fact]
@@ -113,7 +113,7 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, I
         await sut.DeleteGameAsync(gameId);
 
         // Assert
-        _mockGameStateStorage.VerifyDeleteAsyncCalled(Times.Once);
+        _mockGameStateStorage.VerifyDeleteAsyncCalled(gameId, Times.Once);
     }
 
     [Fact]
@@ -141,7 +141,7 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, I
         await sut.SaveGameAsync(gameState);
 
         // Assert
-        _mockGameStateStorage.VerifySaveAsyncCalled(Times.Once);
+        _mockGameStateStorage.VerifySaveAsyncCalled(gameState, Times.Once);
     }
 
     [Fact]
@@ -155,7 +155,7 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, I
         await sut.UndoAsync(gameId);
 
         // Assert
-        _mockGameStateStorage.VerifyUndoAsyncCalled(Times.Once);
+        _mockGameStateStorage.VerifyUndoAsyncCalled(gameId, Times.Once);
     }
 
     [Fact]
@@ -188,6 +188,6 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, I
         await sut.UndoAsync(gameId);
 
         // Assert
-        _mockGameStateStorage.VerifyUndoAsyncCalled(Times.Never);
+        _mockGameStateStorage.VerifyUndoAsyncCalled(gameId, Times.Never);
     }
 }
