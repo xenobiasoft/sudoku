@@ -1,20 +1,17 @@
-﻿using Microsoft.AspNetCore.Components;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services;
-using UnitTests.Helpers.Mocks;
 
 namespace UnitTests.Web.Components;
 
 public class ButtonGroupTests : TestContext
 {
-    private readonly Mock<IGameStateManager> _gameStateManagerMock;
+    private readonly Mock<IGameStateManager> _mockGameStateManager = new();
 
     public ButtonGroupTests()
     {
-        _gameStateManagerMock = new Mock<IGameStateManager>();
-        Services.AddSingleton(_gameStateManagerMock.Object);
+        Services.AddSingleton(_mockGameStateManager.Object);
     }
 
     [Theory]
@@ -80,5 +77,25 @@ public class ButtonGroupTests : TestContext
 
         // Assert
         undoCalled.Should().BeTrue();
+    }
+
+    [Theory]
+    [InlineData(1, true)]
+    [InlineData(2, false)]
+    public void UndoAsync_WhenOnInitialGameState_IsDisabled(int totalMoves, bool disabled)
+    {
+        // Arrange
+        var sut = RenderComponent<ButtonGroup>(p =>
+        {
+            p.Add(x => x.PuzzleId, "puzzleId");
+            p.Add(x => x.OnUndo, () => { });
+            p.Add(x => x.TotalMoves, totalMoves);
+        });
+
+        // Act
+        var undoButton = sut.Find("#btnUndo");
+
+        // Assert
+        undoButton.HasAttribute("disabled").Should().Be(disabled);
     }
 }

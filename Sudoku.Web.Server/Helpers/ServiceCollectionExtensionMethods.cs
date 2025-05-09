@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Azure;
 using Sudoku.Web.Server.Services;
 using XenobiaSoft.Sudoku.GameState;
+using XenobiaSoft.Sudoku.GameState.Decorators;
 using XenobiaSoft.Sudoku.Generator;
 using XenobiaSoft.Sudoku.Services;
 using XenobiaSoft.Sudoku.Solver;
@@ -30,17 +31,11 @@ namespace Sudoku.Web.Server.Helpers
                 .AddScoped<IPuzzleSolver, PuzzleSolver>()
                 .AddScoped<IPuzzleGenerator, PuzzleGenerator>()
                 .AddScoped<IStorageService, AzureStorageService>()
-                .AddScoped<InMemoryGameStateStorage>()
-                .AddScoped<AzureBlobGameStateStorage>()
-                .AddScoped<Func<string, IGameStateStorage>>(sp => key =>
-                {
-                    return key switch
-                    {
-                        GameStateTypes.InMemory => sp.GetRequiredService<InMemoryGameStateStorage>(),
-                        GameStateTypes.AzurePersistent => sp.GetRequiredService<AzureBlobGameStateStorage>(),
-                        _ => throw new ArgumentException($"Unknown game state memory type: {key}")
-                    };
-                });
+                .AddScoped<IGameStateStorage<PuzzleState>, InMemoryGameStateStorage>()
+                .AddScoped<IGameStateStorage<GameStateMemory>, AzureBlobGameStateStorage>()
+                .AddScoped<IGameStateStorage<GameStateMemory>>(x =>
+                    ActivatorUtilities.CreateInstance<CachingAzureBlobGameStateStorageDecorator>(x,
+                        ActivatorUtilities.CreateInstance<AzureBlobGameStateStorage>(x)));
 
             typeof(SudokuPuzzle).Assembly
                 .GetTypes()

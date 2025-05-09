@@ -14,8 +14,8 @@ public class IndexPageTests : TestContext
     {
         var savedGames = new List<GameStateMemory>
         {
-            new() { PuzzleId = Guid.NewGuid().ToString(), LastUpdated = DateTime.UtcNow.AddMinutes(-10) },
-            new() { PuzzleId = Guid.NewGuid().ToString(), LastUpdated = DateTime.UtcNow.AddMinutes(-5) }
+            new(Guid.NewGuid().ToString(), []) { LastUpdated = DateTime.UtcNow.AddMinutes(-10) },
+            new(Guid.NewGuid().ToString(),[]) { LastUpdated = DateTime.UtcNow.AddMinutes(-5) }
         };
         _mockGameStateManager.SetupLoadGamesAsync(savedGames);
         Services.AddSingleton(_mockGameStateManager.Object);
@@ -98,8 +98,8 @@ public class IndexPageTests : TestContext
         // Arrange
         var savedGames = new List<GameStateMemory>
         {
-            new() { PuzzleId = Guid.NewGuid().ToString(), LastUpdated = DateTime.UtcNow.AddMinutes(-10) },
-            new() { PuzzleId = Guid.NewGuid().ToString(), LastUpdated = DateTime.UtcNow.AddMinutes(-5) }
+            new(Guid.NewGuid().ToString(),[]) { LastUpdated = DateTime.UtcNow.AddMinutes(-10) },
+            new(Guid.NewGuid().ToString(),[]) { LastUpdated = DateTime.UtcNow.AddMinutes(-5) }
         };
         _mockGameStateManager.SetupLoadGamesAsync(savedGames);
         var component = RenderComponent<IndexPage>();

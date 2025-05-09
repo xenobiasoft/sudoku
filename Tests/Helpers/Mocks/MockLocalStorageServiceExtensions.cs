@@ -1,5 +1,4 @@
-﻿using Moq;
-using Sudoku.Web.Server.Services;
+﻿using Sudoku.Web.Server.Services;
 using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Helpers.Mocks;
@@ -11,15 +10,6 @@ public static class MockLocalStorageServiceExtensions
         mock
             .Setup(x => x.LoadGameAsync(gameId))
             .ReturnsAsync(gameState);
-
-        return mock;
-    }
-
-    public static Mock<ILocalStorageService> SetupLoadSavedGames(this Mock<ILocalStorageService> mock, List<GameStateMemory> savedGames)
-    {
-        mock
-            .Setup(x => x.LoadGameStatesAsync())
-            .ReturnsAsync(savedGames);
 
         return mock;
     }

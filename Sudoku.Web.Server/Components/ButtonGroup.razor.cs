@@ -8,6 +8,7 @@ namespace Sudoku.Web.Server.Components
         [Parameter] public EventCallback<CellValueChangedEventArgs> OnNumberClicked { get; set; }
         [Parameter] public string? PuzzleId { get; set; }
         [Parameter] public EventCallback OnUndo { get; set; }
+        [Parameter] public int TotalMoves { get; set; }
 
         private async Task SetValue(int? value)
         {

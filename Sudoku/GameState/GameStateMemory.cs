@@ -2,20 +2,14 @@
 
 namespace XenobiaSoft.Sudoku.GameState;
 
-public class GameStateMemory
+[method: JsonConstructor]
+public class GameStateMemory(string puzzleId, Cell[] board) : PuzzleState(puzzleId, board)
 {
-    [JsonConstructor]
-    public GameStateMemory(string puzzleId, Cell[] board)
-    {
-        PuzzleId = puzzleId;
-        Board = board;
-        LastUpdated = DateTime.UtcNow;
-    }
+    public GameStateMemory() : this(string.Empty, [])
+    { }
 
-    public GameStateMemory()
-    {}
-
-    public string PuzzleId { get; init; }
-    public Cell[] Board { get; set; }
-    public DateTime LastUpdated { get; init; }
+    public DateTime LastUpdated { get; init; } = DateTime.UtcNow;
+    public int InvalidMoves { get; set; } = 0;
+    public int TotalMoves { get; set; } = 0;
+    public TimeSpan PlayDuration { get; set; } = TimeSpan.Zero;
 }

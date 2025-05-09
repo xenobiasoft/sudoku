@@ -5,7 +5,7 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Sudoku.GameState;
 
-public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameStateStorage, IGameStateStorage>
+public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameStateStorage, IGameStateStorage<PuzzleState>>
 {
     private const string PuzzleId = "test-puzzle";
 
@@ -15,7 +15,7 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
         // Arrange
         var sut = ResolveSut();
 
-        await sut.SaveAsync(Container.Create<GameStateMemory>());
+        await sut.SaveAsync(Container.Create<PuzzleState>());
 
         // Act
         await sut.DeleteAsync(PuzzleId);
@@ -42,7 +42,7 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
     public async Task LoadAsync_ShouldReturnLastSavedGameState()
     {
         // Arrange
-        var expectedGameState = Container.Create<GameStateMemory>();
+        var expectedGameState = Container.Create<PuzzleState>();
         var sut = ResolveSut();
 
         await sut.SaveAsync(expectedGameState);
@@ -59,8 +59,8 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
     {
         // Arrange
         var board = new[] { new Cell(0, 0) { Value = 1 } };
-        var gameState1 = new GameStateMemory(PuzzleId, board);
-        var gameState2 = new GameStateMemory(PuzzleId, board);
+        var gameState1 = new PuzzleState(PuzzleId, board);
+        var gameState2 = new PuzzleState(PuzzleId, board);
         var sut = ResolveSut();
 
         // Act
@@ -77,8 +77,8 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
     public async Task UndoAsync_ShouldReturnLastGameStateAndRemoveIt()
     {
         // Arrange
-        var gameState1 = PuzzleFactory.GetPuzzle(Level.Easy).ToGameState();
-        var gameState2 = PuzzleFactory.GetPuzzle(Level.Easy).ToGameState();
+        var gameState1 = PuzzleFactory.GetPuzzle(Level.Easy).ToPuzzleState();
+        var gameState2 = PuzzleFactory.GetPuzzle(Level.Easy).ToPuzzleState();
         var sut = ResolveSut();
 
         await sut.SaveAsync(gameState1);
@@ -110,7 +110,7 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
     }
 
     [Fact]
-    public void GameStateMemoryType_ShouldBeInMemory()
+    public void PuzzleStateType_ShouldBeInMemory()
     {
         // Arrange
         var sut = ResolveSut();

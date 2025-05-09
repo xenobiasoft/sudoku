@@ -28,10 +28,12 @@ public static class MockSudokuPuzzleExtensions
     {
         mock
             .SetupSequence(x => x.IsValid())
+            .Returns(true)
             .Returns(false)
             .Returns(true);
         mock
-            .Setup(x => x.IsSolved())
+            .SetupSequence(x => x.IsSolved())
+            .Returns(false)
             .Returns(true);
 
         return mock;

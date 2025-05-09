@@ -5,7 +5,7 @@ using XenobiaSoft.Sudoku.Services;
 
 namespace UnitTests.Sudoku.GameState;
 
-public class AzureStorageGameStateStorageTests : BaseTestByAbstraction<AzureBlobGameStateStorage, IGameStateStorage>
+public class AzureStorageGameStateStorageTests : BaseTestByAbstraction<AzureBlobGameStateStorage, IGameStateStorage<GameStateMemory>>
 {
     private const string ContainerName = "sudoku-puzzles";
     private const string PuzzleId = "test-puzzle";
@@ -102,7 +102,7 @@ public class AzureStorageGameStateStorageTests : BaseTestByAbstraction<AzureBlob
         // Arrange
         _mockStorageService
             .StubGetBlobNamesCall(_blobNames)
-            .StubLoadAsyncCall(_gameState); ;
+            .StubLoadAsyncCall(_gameState);
         var sut = ResolveSut();
 
         // Act
@@ -118,7 +118,7 @@ public class AzureStorageGameStateStorageTests : BaseTestByAbstraction<AzureBlob
         // Arrange
         _mockStorageService
             .StubGetBlobNamesCall(_blobNames)
-            .StubLoadAsyncCall(_gameState); ;
+            .StubLoadAsyncCall(_gameState);
         var sut = ResolveSut();
 
         // Act
@@ -126,6 +126,20 @@ public class AzureStorageGameStateStorageTests : BaseTestByAbstraction<AzureBlob
 
         // Assert
         result.Should().Be(_gameState);
+    }
+
+    [Fact]
+    public async Task UndoAsync_WhenOnInitialState_Throws()
+    {
+        // Arrange
+        _mockStorageService.StubGetBlobNamesCall([$"{PuzzleId}/00001.json"]);
+        var sut = ResolveSut();
+
+        // Act
+        Task SolvePuzzle() => sut.UndoAsync(PuzzleId);
+
+        // Assert
+        await Assert.ThrowsAsync<CannotUndoInitialStateException>(SolvePuzzle);
     }
 
     [Fact]

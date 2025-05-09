@@ -4,11 +4,10 @@ using XenobiaSoft.Sudoku.Strategies;
 
 namespace XenobiaSoft.Sudoku.Solver;
 
-public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, Func<string, IGameStateStorage> gameStateMemoryFactory)
+public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateStorage<PuzzleState> gameStateStorage)
     : IPuzzleSolver
 {
     private ISudokuPuzzle _puzzle;
-    private readonly IGameStateStorage _gameStateMemory = gameStateMemoryFactory(GameStateTypes.InMemory);
 
     public async Task<ISudokuPuzzle> SolvePuzzle(ISudokuPuzzle puzzle)
     {
@@ -48,7 +47,7 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, Func<string, I
 
         if (_puzzle.IsSolved())
         {
-            await _gameStateMemory.DeleteAsync(_puzzle.PuzzleId);
+            await gameStateStorage.DeleteAsync(_puzzle.PuzzleId);
         }
     }
 
@@ -93,12 +92,12 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, Func<string, I
             throw new InvalidMoveException();
         }
 
-        return _gameStateMemory.SaveAsync(new GameStateMemory(_puzzle.PuzzleId, _puzzle.GetAllCells()));
+        return gameStateStorage.SaveAsync(new GameStateMemory(_puzzle.PuzzleId, _puzzle.GetAllCells()));
     }
 
     private async Task UndoAsync()
     {
-        var memento = await _gameStateMemory.UndoAsync(_puzzle.PuzzleId);
+        var memento = await gameStateStorage.UndoAsync(_puzzle.PuzzleId);
 
         if (memento == null)
         {

@@ -2,14 +2,12 @@
 
 namespace Sudoku.Web.Server.Services;
 
-public class GameStateManager(ILocalStorageService localStorageService, Func<string, IGameStateStorage> gameStateStorageFactory) : IGameStateManager
+public class GameStateManager(ILocalStorageService localStorageService, IGameStateStorage<GameStateMemory> gameStateStorage) : IGameStateManager
 {
-    private readonly IGameStateStorage _gameStateStorage = gameStateStorageFactory(GameStateTypes.AzurePersistent);
-
     public async Task DeleteGameAsync(string gameId)
     {
         await localStorageService.DeleteGameAsync(gameId);
-        await _gameStateStorage.DeleteAsync(gameId);
+        await gameStateStorage.DeleteAsync(gameId);
     }
 
     public async Task<GameStateMemory?> LoadGameAsync(string gameId)
@@ -18,7 +16,7 @@ public class GameStateManager(ILocalStorageService localStorageService, Func<str
 
         if (gameState == null)
         {
-            await _gameStateStorage.LoadAsync(gameId);
+            await gameStateStorage.LoadAsync(gameId);
         }
 
         return gameState;
@@ -31,13 +29,17 @@ public class GameStateManager(ILocalStorageService localStorageService, Func<str
 
     public async Task SaveGameAsync(GameStateMemory gameState)
     {
-        await _gameStateStorage.SaveAsync(gameState);
+        await gameStateStorage.SaveAsync(gameState);
         await localStorageService.SaveGameStateAsync(gameState);
     }
 
     public async Task<GameStateMemory> UndoAsync(string gameId)
     {
-        var gameState = await _gameStateStorage.UndoAsync(gameId);
+        var currentGameState = await LoadGameAsync(gameId);
+
+        if (currentGameState.TotalMoves <= 1) return currentGameState;
+
+        var gameState = await gameStateStorage.UndoAsync(gameId);
 
         if (gameState != null)
         {
@@ -45,5 +47,6 @@ public class GameStateManager(ILocalStorageService localStorageService, Func<str
         }
 
         return gameState;
+
     }
 }

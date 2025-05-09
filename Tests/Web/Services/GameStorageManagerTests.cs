@@ -7,12 +7,12 @@ namespace UnitTests.Web.Services;
 
 public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, IGameStateManager>
 {
-    private readonly Mock<IGameStateStorage> _mockGameStateManager;
+    private readonly Mock<IGameStateStorage<GameStateMemory>> _mockGameStateStorage;
     private readonly Mock<ILocalStorageService> _mockLocalStorageService;
 
     public GameStorageManagerTests()
     {
-        _mockGameStateManager = Container.ResolveMock<IGameStateStorage>();
+        _mockGameStateStorage = Container.ResolveMock<IGameStateStorage<GameStateMemory>>();
         _mockLocalStorageService = Container.ResolveMock<ILocalStorageService>();
     }
 
@@ -27,7 +27,7 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, I
         await sut.SaveGameAsync(gameState);
 
         // Assert
-        _mockGameStateManager.VerifySaveAsyncCalled(Times.Once);
+        _mockGameStateStorage.VerifySaveAsyncCalled(Times.Once);
     }
 
     [Fact]
@@ -70,7 +70,7 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, I
         await sut.LoadGameAsync(gameId);
 
         // Assert
-        _mockGameStateManager.VerifyLoadAsyncCalled(Times.Once);
+        _mockGameStateStorage.VerifyLoadAsyncCalled(Times.Once);
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, I
     {
         // Arrange
         var gameId = Container.Create<string>();
-        _mockLocalStorageService.SetupLoadGameAsync(gameId, new GameStateMemory { PuzzleId = gameId });
+        _mockLocalStorageService.SetupLoadGameAsync(gameId, new GameStateMemory(gameId, []));
         var sut = ResolveSut();
 
         // Act
@@ -106,14 +106,14 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, I
     {
         // Arrange
         var gameId = Container.Create<string>();
-        _mockLocalStorageService.SetupLoadGameAsync(gameId, new GameStateMemory { PuzzleId = gameId });
+        _mockLocalStorageService.SetupLoadGameAsync(gameId, new GameStateMemory(gameId, []));
         var sut = ResolveSut();
 
         // Act
         await sut.DeleteGameAsync(gameId);
 
         // Assert
-        _mockGameStateManager.VerifyDeleteAsyncCalled(Times.Once);
+        _mockGameStateStorage.VerifyDeleteAsyncCalled(Times.Once);
     }
 
     [Fact]
@@ -141,22 +141,21 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, I
         await sut.SaveGameAsync(gameState);
 
         // Assert
-        _mockGameStateManager.VerifySaveAsyncCalled(Times.Once);
+        _mockGameStateStorage.VerifySaveAsyncCalled(Times.Once);
     }
 
     [Fact]
-    public async Task UndoAsync_CallsSomething()
+    public async Task UndoAsync_CallsGameStateManagerUndo()
     {
         // Arrange
         var gameId = Container.Create<string>();
-        var gameState = Container.Create<GameStateMemory>();
         var sut = ResolveSut();
 
         // Act
         await sut.UndoAsync(gameId);
 
         // Assert
-        _mockGameStateManager.VerifyUndoAsyncCalled(Times.Once);
+        _mockGameStateStorage.VerifyUndoAsyncCalled(Times.Once);
     }
 
     [Fact]
@@ -171,5 +170,24 @@ public class GameStorageManagerTests : BaseTestByAbstraction<GameStateManager, I
 
         // Assert
         _mockLocalStorageService.VerifySaveAsyncCalledWith(gameState, Times.Once);
+    }
+
+    [Fact]
+    public async Task UndoAsync_WhenOnInitialGameState_DoesNotUndoGameState()
+    {
+        // Arrange
+        var gameId = Container.Create<string>();
+        var gameState = Container
+            .Build<GameStateMemory>()
+            .With(x => x.TotalMoves, 1)
+            .Create();
+        _mockLocalStorageService.SetupLoadGameAsync(gameId, gameState);
+        var sut = ResolveSut();
+
+        // Act
+        await sut.UndoAsync(gameId);
+
+        // Assert
+        _mockGameStateStorage.VerifyUndoAsyncCalled(Times.Never);
     }
 }

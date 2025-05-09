@@ -1,8 +1,8 @@
 ﻿namespace XenobiaSoft.Sudoku.GameState;
 
-public class InMemoryGameStateStorage : IGameStateStorage
+public class InMemoryGameStateStorage : IGameStateStorage<PuzzleState>
 {
-	private readonly CircularStack<GameStateMemory> _gameState = new(50);
+	private readonly CircularStack<PuzzleState> _gameState = new(50);
 
     public GameStateMemoryType MemoryType => GameStateMemoryType.InMemory;
 
@@ -13,12 +13,12 @@ public class InMemoryGameStateStorage : IGameStateStorage
         return Task.CompletedTask;
     }
 
-    public Task<GameStateMemory> LoadAsync(string puzzleId)
+    public Task<PuzzleState> LoadAsync(string puzzleId)
     {
         return Task.FromResult(_gameState.Count > 0 ? _gameState.Peek() : null);
     }
 
-    public Task SaveAsync(GameStateMemory gameState)
+    public Task SaveAsync(PuzzleState gameState)
     {
         if (_gameState.Count > 0)
         {
@@ -32,12 +32,12 @@ public class InMemoryGameStateStorage : IGameStateStorage
         return Task.CompletedTask;
     }
 
-    public Task<GameStateMemory> UndoAsync(string puzzleId)
+    public Task<PuzzleState> UndoAsync(string puzzleId)
     {
-        return _gameState.Count == 0 ? Task.FromResult<GameStateMemory>(null) : Task.FromResult(_gameState.Pop());
+        return _gameState.Count == 0 ? Task.FromResult<PuzzleState>(null) : Task.FromResult(_gameState.Pop());
     }
 
-    private bool AreGameStatesEqual(GameStateMemory gameState1, GameStateMemory gameState2)
+    private bool AreGameStatesEqual(PuzzleState gameState1, PuzzleState gameState2)
     {
         if (gameState1.PuzzleId != gameState2.PuzzleId)
         {
