@@ -79,21 +79,23 @@ public class ButtonGroupTests : TestContext
         undoCalled.Should().BeTrue();
     }
 
-    [Fact]
-    public void UndoAsync_WhenOnInitialGameState_IsDisabled()
+    [Theory]
+    [InlineData(1, true)]
+    [InlineData(2, false)]
+    public void UndoAsync_WhenOnInitialGameState_IsDisabled(int totalMoves, bool disabled)
     {
         // Arrange
         var sut = RenderComponent<ButtonGroup>(p =>
         {
             p.Add(x => x.PuzzleId, "puzzleId");
             p.Add(x => x.OnUndo, () => { });
-            p.Add(x => x.TotalMoves, 1);
+            p.Add(x => x.TotalMoves, totalMoves);
         });
 
         // Act
         var undoButton = sut.Find("#btnUndo");
 
         // Assert
-        undoButton.GetAttribute("disabled").Should().Be("disabled");
+        undoButton.HasAttribute("disabled").Should().Be(disabled);
     }
 }
