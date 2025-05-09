@@ -8,8 +8,8 @@
                     <i class="fa-solid fa-@i"></i>
                 </button>
             }
-            <button type="button" id="btnUndo" class="btn btn-primary" @onclick="Undo" disabled="@(TotalMoves <= 1 ? "disabled" : "")">
-                <i class="fa-solid fa-undo"></i>
+            <button type="button" id="btnUndo" class="btn btn-primary" @onclick="Undo" disabled="@(TotalMoves <= 1)">
+               <i class="fa-solid fa-undo"></i>
             </button>
         </div>
     </div>

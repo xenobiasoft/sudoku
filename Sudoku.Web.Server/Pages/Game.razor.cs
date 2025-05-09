@@ -52,7 +52,7 @@ public partial class Game
         return HandleCellUpdate(_selectedCell.Row, _selectedCell.Column, args.Value);
     }
 
-    private Task HandleCellUpdate(int row, int column, int? value)
+    private async Task HandleCellUpdate(int row, int column, int? value)
     {
         Puzzle.SetCell(row, column, value);
         InvalidCellNotificationService!.Notify(Puzzle.Validate().ToList());
@@ -69,6 +69,7 @@ public partial class Game
             PlayDuration = _gameTimer.ElapsedGameTime,
         };
 
-        return GameStateManager!.SaveGameAsync(_currentGameState);
+        await GameStateManager!.SaveGameAsync(_currentGameState);
+        StateHasChanged();
     }
 }
