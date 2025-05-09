@@ -21,7 +21,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
         await sut.DeleteAsync(puzzleId);
 
         // Assert
-        mockGameStateManager.VerifyDeleteAsyncCalled(Times.Once);
+        mockGameStateManager.VerifyDeleteAsyncCalled(puzzleId, Times.Once);
     }
 
     [Fact]
@@ -71,14 +71,14 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
     public async Task SaveAsync_PersistsGameStateToStorage()
     {
         // Arrange
+        var gameState = It.IsAny<GameStateMemory>();
         var mockStorage = Container.ResolveMock<IGameStateStorage<GameStateMemory>>();
-        var puzzle = Container.Create<ISudokuPuzzle>();
         var sut = ResolveSut();
 
         // Act
-        await sut.SaveAsync(It.IsAny<GameStateMemory>());
+        await sut.SaveAsync(gameState);
 
         // Assert
-        mockStorage.VerifySaveAsyncCalled(Times.Once);
+        mockStorage.VerifySaveAsyncCalled(gameState, Times.Once);
     }
 }
