@@ -109,6 +109,23 @@ public class GamePageTests : TestContext
     }
 
     [Fact]
+    public async Task Game_WhenPuzzleSolved_DeletesGame()
+    {
+        // Arrange
+        _mockGame.SetLoadAsync(PuzzleFactory.GetSolvedPuzzle());
+        var sut = RenderComponent<Game>();
+        var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
+        var cellInput = sut.FindComponent<CellInput>().Instance;
+
+        // Act
+        await sut.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cellInput.Cell));
+        await sut.InvokeAsync(() => buttonGroup.OnNumberClicked.InvokeAsync(new CellValueChangedEventArgs(1)));
+
+        // Assert
+        _mockGameStateManager.VerifyDeleteGameAsyncCalled(sut.Instance.PuzzleId, Times.Once);
+    }
+
+    [Fact]
     public void OnInitializedAsync_LoadsGameState()
     {
         // Arrange

@@ -21,6 +21,13 @@ public static class MockGameStateManagerExtensions
         return mock;
     }
 
+    public static Mock<IGameStateManager> VerifyDeleteGameAsyncCalled(this Mock<IGameStateManager> mock, string puzzleId, Func<Times> times)
+    {
+        mock.Verify(x => x.DeleteGameAsync(puzzleId), times);
+
+        return mock;
+    }
+
     public static Mock<IGameStateManager> VerifySaveAsyncCalled(this Mock<IGameStateManager> mock, Func<Times> times)
     {
         mock.Verify(x => x.SaveGameAsync(It.IsAny<GameStateMemory>()), times);
