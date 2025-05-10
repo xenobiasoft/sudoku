@@ -5,22 +5,23 @@ using Sudoku.Web.Server.Services;
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Web.Pages;
 
 public class NewPageTests : TestContext
 {
     private readonly Mock<ISudokuGame> _mockSudokuGame;
-    private readonly Mock<IGameStateManager>? _mockGameStorageManager;
+    private readonly Mock<IGameStateManager>? _mockGameStateManager;
 
     public NewPageTests()
     {
         _mockSudokuGame = new Mock<ISudokuGame>();
-        _mockGameStorageManager = new Mock<IGameStateManager>();
+        _mockGameStateManager = new Mock<IGameStateManager>();
 
         _mockSudokuGame.SetNewAsync(PuzzleFactory.GetPuzzle(Level.Easy));
 
-        Services.AddSingleton(_mockGameStorageManager.Object);
+        Services.AddSingleton(_mockGameStateManager.Object);
         Services.AddSingleton(_mockSudokuGame.Object);
     }
 
@@ -45,7 +46,7 @@ public class NewPageTests : TestContext
         RenderComponent<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
 
         // Assert
-        _mockGameStorageManager!.VerifySaveAsyncCalled(Times.Once);
+        _mockGameStateManager!.VerifySaveAsyncCalled(Times.Once);
     }
 
     [Fact]
@@ -60,6 +61,22 @@ public class NewPageTests : TestContext
 
         // Assert
         navMan.Uri.Should().StartWith("http://localhost/game/");
+    }
+
+    [Fact]
+    public void OnInitializedAsync_SetsStartTimeOnGameState()
+    {
+        // Arrange
+        GameStateMemory? gameState = null;
+        _mockGameStateManager!
+            .Setup(m => m.SaveGameAsync(It.IsAny<GameStateMemory>()))
+            .Callback<GameStateMemory>(x => gameState = x);
+
+        // Act
+        RenderComponent<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
+
+        // Assert
+        gameState!.StartTime.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
     }
 
     [Fact]
