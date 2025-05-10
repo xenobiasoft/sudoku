@@ -1,0 +1,11 @@
+﻿<div class="saved-game-card">
+    <div class="sudoku-thumbnail" @onclick="LoadGame">
+        @foreach (var cell in Game!.Board.OrderBy(c => c.Row).ThenBy(c => c.Column))
+        {
+            <div class="cell">@cell.Value</div>
+        }
+    </div>
+    <button @onclick="DeleteGame">
+        <i class="fa-solid fa-trash del-game-icon"></i>
+    </button>
+</div>
