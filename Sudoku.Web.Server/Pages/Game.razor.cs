@@ -59,6 +59,7 @@ public partial class Game
 
         if (Puzzle.IsSolved())
         {
+            await GameStateManager!.DeleteGameAsync(PuzzleId!);
             GameNotificationService!.NotifyGameEnded();
         }
 

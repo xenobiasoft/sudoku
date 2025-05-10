@@ -14,16 +14,14 @@ public static class MockLocalStorageServiceExtensions
         return mock;
     }
 
-    public static Mock<ILocalStorageService> VerifyDeleteGameAsyncCalled(this Mock<ILocalStorageService> mock,
-        Func<Times> times)
+    public static Mock<ILocalStorageService> VerifyDeleteGameAsyncCalled(this Mock<ILocalStorageService> mock, Func<Times> times)
     {
         mock.Verify(x => x.DeleteGameAsync(It.IsAny<string>()), times);
 
         return mock;
     }
 
-    public static Mock<ILocalStorageService> VerifySaveGameAsyncCalled(this Mock<ILocalStorageService> mock,
-        Func<Times> times)
+    public static Mock<ILocalStorageService> VerifySaveGameAsyncCalled(this Mock<ILocalStorageService> mock, Func<Times> times)
     {
         mock.Verify(x => x.SaveGameStateAsync(It.IsAny<GameStateMemory>()), Times.Once);
 
