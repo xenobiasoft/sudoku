@@ -1,11 +1,13 @@
 ﻿.game-stats {
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    margin: 1rem auto 0 auto;
+    max-width: 350px;
     padding: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #f9f9f9;
 }
 
 .stat-item {

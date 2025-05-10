@@ -5,10 +5,12 @@
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
         <div class="game-view">
-            <GameTimer @ref="_gameTimer"/>
             <VictoryDisplay
                 IsVictory="@Puzzle.IsSolved()"
-                ElapsedTime="@_gameTimer.ElapsedGameTime"/>
+                ElapsedTime="@_currentGameState!.PlayDuration"/>
+            <GameStats InvalidMoves="@_currentGameState!.InvalidMoves"
+                       PlayDuration="@_currentGameState!.PlayDuration"
+                       TotalMoves="@_currentGameState!.TotalMoves"/>
             <GameBoard
                 Puzzle="Puzzle"
                 OnCellFocus="HandleSetSelectedCell"
