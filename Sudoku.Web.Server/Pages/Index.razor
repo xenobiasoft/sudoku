@@ -27,12 +27,7 @@
                         foreach (var game in _savedGames.OrderByDescending(g => g.LastUpdated))
                         {
                             <li>
-                                <Button @onclick="() => LoadGame(game.PuzzleId)">
-                                    Saved: @game.LastUpdated.ToLocalDateTime()
-                                </Button>
-                                <button @onclick="() => DeleteGameAsync(game.PuzzleId)">
-                                    <i class="fa-solid fa-trash del-game-icon"></i>
-                                </button>
+                                <GameThumbnail Game="@game" OnDeleteGame="@DeleteGameAsync" OnLoadGame="@LoadGame" />
                             </li>
                         }
                     }

@@ -108,7 +108,7 @@ public class IndexPageTests : TestContext
         component.Find("button:contains('Load Game')").Click();
 
         // Assert
-        var savedGameButtons = component.FindAll("button:contains('Saved:')");
+        var savedGameButtons = component.FindAll(".saved-game-card");
         savedGameButtons.Count.Should().Be(savedGames.Count);
     }
 }
