@@ -5,6 +5,15 @@ namespace UnitTests.Helpers.Mocks;
 
 public static class MockGameStateManagerExtensions
 {
+    public static Mock<IGameStateManager> SetupLoadGameAsync(this Mock<IGameStateManager> mock, GameStateMemory gameState)
+    {
+        mock
+            .Setup(x => x.LoadGameAsync(It.IsAny<string>()))
+            .ReturnsAsync(gameState);
+
+        return mock;
+    }
+
     public static Mock<IGameStateManager> SetupLoadGamesAsync(this Mock<IGameStateManager> mock, IEnumerable<GameStateMemory> gameStates)
     {
         mock
@@ -24,6 +33,13 @@ public static class MockGameStateManagerExtensions
     public static Mock<IGameStateManager> VerifyDeleteGameAsyncCalled(this Mock<IGameStateManager> mock, string puzzleId, Func<Times> times)
     {
         mock.Verify(x => x.DeleteGameAsync(puzzleId), times);
+
+        return mock;
+    }
+
+    public static Mock<IGameStateManager> VerifyLoadsAsync(this Mock<IGameStateManager> mock, string puzzleId, Func<Times> times)
+    {
+        mock.Verify(x => x.LoadGameAsync(puzzleId), times);
 
         return mock;
     }
