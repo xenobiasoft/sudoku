@@ -13,7 +13,6 @@ public partial class Game
     private GameStateMemory? _currentGameState = new();
     
     [Parameter] public string? PuzzleId { get; set; }
-    [Inject] public ISudokuGame? SudokuGame { get; set; }
     [Inject] public IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
     [Inject] public IGameNotificationService? GameNotificationService { get; set; }
     [Inject] private ICellFocusedNotificationService? CellFocusedNotificationService { get; set; }
@@ -23,9 +22,9 @@ public partial class Game
 
     protected override async Task OnInitializedAsync()
     {
-        _currentGameState = await SudokuGame!.LoadAsync(PuzzleId!);
-
-        Puzzle.Load(PuzzleId, _currentGameState.Board);
+        _currentGameState = UndoPreservingGamePlay(await GameStateManager!.LoadGameAsync(PuzzleId!));
+        
+        Puzzle.Load(PuzzleId, _currentGameState!.Board);
 
         GameNotificationService!.NotifyGameStarted();
     }
@@ -72,5 +71,13 @@ public partial class Game
 
         await GameStateManager!.SaveGameAsync(_currentGameState);
         StateHasChanged();
+    }
+
+    private GameStateMemory? UndoPreservingGamePlay(GameStateMemory? undoState)
+    {
+        undoState!.PlayDuration = _currentGameState!.PlayDuration;
+        undoState.LastResumeTime = _currentGameState.LastResumeTime;
+
+        return undoState;
     }
 }

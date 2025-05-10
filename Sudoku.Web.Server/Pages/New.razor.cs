@@ -16,6 +16,8 @@ public partial class New
     {
         var gameState = await SudokuGame!.NewGameAsync(Difficulty.ParseLevel());
 
+        gameState.StartTime = DateTime.UtcNow;
+
         await GameStorageManager!.SaveGameAsync(gameState);
 
         Navigation!.NavigateTo($"/game/{gameState.PuzzleId}");
