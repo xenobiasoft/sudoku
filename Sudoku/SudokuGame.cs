@@ -7,13 +7,13 @@ public class SudokuGame(IPuzzleGenerator puzzleGenerator, IGameStateStorage<Game
     : ISudokuGame
 {
     public async Task<GameStateMemory> NewGameAsync(Level level)
-	{
-		var puzzle = await puzzleGenerator.Generate(level).ConfigureAwait(false);
+    {
+        var puzzle = await puzzleGenerator.Generate(level).ConfigureAwait(false);
 
         var gameState = new GameStateMemory(puzzle.PuzzleId, puzzle.GetAllCells())
         {
             InvalidMoves = 0,
-            TotalMoves = 1,
+            TotalMoves = 0,
             PlayDuration = TimeSpan.Zero,
         };
 
@@ -31,7 +31,7 @@ public class SudokuGame(IPuzzleGenerator puzzleGenerator, IGameStateStorage<Game
     }
 
     public Task<GameStateMemory> LoadAsync(string puzzleId)
-	{
+    {
         return gameStateStorage.LoadAsync(puzzleId);
     }
 }

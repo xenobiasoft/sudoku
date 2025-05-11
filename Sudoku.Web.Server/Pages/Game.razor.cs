@@ -30,7 +30,7 @@ public partial class Game
 
         GameNotificationService!.NotifyGameStarted();
     }
-    
+
     private async ValueTask OnLocationChanging(LocationChangingContext context)
     {
         await GameStateManager!.SaveGameAsync(_currentGameState!);
@@ -86,13 +86,16 @@ public partial class Game
 
     private async Task SaveGameStateAsync()
     {
+        _currentGameState!.Pause();
         _currentGameState = new GameStateMemory(PuzzleId, Puzzle.GetAllCells())
         {
-            InvalidMoves = _currentGameState!.InvalidMoves + (Puzzle.IsValid() ? 0 : 1),
-            TotalMoves = _currentGameState!.TotalMoves + 1,
-            PlayDuration = _currentGameState.GetTotalPlayDuration(),
+            InvalidMoves = _currentGameState.InvalidMoves + (Puzzle.IsValid() ? 0 : 1),
+            TotalMoves = _currentGameState.TotalMoves + 1,
+            PlayDuration = _currentGameState.PlayDuration,
             StartTime = _currentGameState.StartTime,
+            LastResumeTime = DateTime.UtcNow
         };
+        _currentGameState.Resume();
 
         await GameStateManager!.SaveGameAsync(_currentGameState);
         StateHasChanged();
