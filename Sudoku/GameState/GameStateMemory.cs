@@ -20,7 +20,6 @@ public class GameStateMemory(string puzzleId, Cell[] board) : PuzzleState(puzzle
         if (LastResumeTime.HasValue)
         {
             PlayDuration += DateTime.UtcNow - LastResumeTime.Value;
-            LastResumeTime = null;
         }
     }
 

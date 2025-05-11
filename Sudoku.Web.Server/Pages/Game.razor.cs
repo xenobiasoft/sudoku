@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Sudoku.Web.Server.Components;
+using Microsoft.AspNetCore.Components.Routing;
 using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services;
 using XenobiaSoft.Sudoku.GameState;
@@ -9,24 +9,32 @@ namespace Sudoku.Web.Server.Pages;
 public partial class Game
 {
     private Cell _selectedCell = new(0, 0);
-    private GameTimer _gameTimer = new();
     private GameStateMemory? _currentGameState = new();
-    
+    private IDisposable? _locationChangingRegistration;
+
     [Parameter] public string? PuzzleId { get; set; }
     [Inject] public IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
     [Inject] public IGameNotificationService? GameNotificationService { get; set; }
     [Inject] private ICellFocusedNotificationService? CellFocusedNotificationService { get; set; }
     [Inject] private IGameStateManager? GameStateManager { get; set; }
+    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
 
     public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
 
     protected override async Task OnInitializedAsync()
     {
-        _currentGameState = UndoPreservingGamePlay(await GameStateManager!.LoadGameAsync(PuzzleId!));
-        
+        _locationChangingRegistration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
+        _currentGameState = await GameStateManager!.LoadGameAsync(PuzzleId!);
+        _currentGameState!.Resume();
         Puzzle.Load(PuzzleId, _currentGameState!.Board);
 
         GameNotificationService!.NotifyGameStarted();
+    }
+    
+    private async ValueTask OnLocationChanging(LocationChangingContext context)
+    {
+        await GameStateManager!.SaveGameAsync(_currentGameState!);
+        _locationChangingRegistration!.Dispose();
     }
 
     private void HandleSetSelectedCell(Cell cell)
@@ -36,7 +44,9 @@ public partial class Game
 
     public async Task HandleUndo()
     {
-        _currentGameState = await GameStateManager!.UndoAsync(PuzzleId!);
+        _currentGameState!.Pause();
+        _currentGameState = UndoPreservingGamePlay(await GameStateManager!.UndoAsync(PuzzleId!));
+        _currentGameState!.Resume();
         Puzzle.Load(_currentGameState.PuzzleId, _currentGameState.Board);
         StateHasChanged();
     }
@@ -62,22 +72,29 @@ public partial class Game
             GameNotificationService!.NotifyGameEnded();
         }
 
-        _currentGameState = new GameStateMemory(PuzzleId, Puzzle.GetAllCells())
-        {
-            InvalidMoves = 0,
-            TotalMoves = _currentGameState!.TotalMoves + 1,
-            PlayDuration = _gameTimer.ElapsedGameTime,
-        };
-
-        await GameStateManager!.SaveGameAsync(_currentGameState);
-        StateHasChanged();
+        await SaveGameStateAsync();
     }
 
     private GameStateMemory? UndoPreservingGamePlay(GameStateMemory? undoState)
     {
-        undoState!.PlayDuration = _currentGameState!.PlayDuration;
+        undoState!.PlayDuration = _currentGameState!.GetTotalPlayDuration();
         undoState.LastResumeTime = _currentGameState.LastResumeTime;
+        undoState.StartTime = _currentGameState.StartTime;
 
         return undoState;
+    }
+
+    private async Task SaveGameStateAsync()
+    {
+        _currentGameState = new GameStateMemory(PuzzleId, Puzzle.GetAllCells())
+        {
+            InvalidMoves = _currentGameState!.InvalidMoves + (Puzzle.IsValid() ? 0 : 1),
+            TotalMoves = _currentGameState!.TotalMoves + 1,
+            PlayDuration = _currentGameState.GetTotalPlayDuration(),
+            StartTime = _currentGameState.StartTime,
+        };
+
+        await GameStateManager!.SaveGameAsync(_currentGameState);
+        StateHasChanged();
     }
 }

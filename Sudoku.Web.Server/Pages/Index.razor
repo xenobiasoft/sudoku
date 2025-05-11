@@ -9,17 +9,17 @@
             <SudokuImage/>
             <ul class="menu">
                 <li>
-                    <Button @onclick="ToggleDifficultyOptions"><i class="fa-solid fa-play-circle"></i> Start New Game</Button>
+                    <button @onclick="ToggleDifficultyOptions"><i class="fa-solid fa-play-circle"></i> Start New Game</button>
                 </li>
                 <ul class="sub-menu @(_showDifficulty ? "open" : "")">
-                    <li><Button @onclick="@(() => StartNewGame("Easy"))">Easy</Button></li>
-                    <li><Button @onclick="@(() => StartNewGame("Medium"))">Medium</Button></li>
-                    <li><Button @onclick="@(() => StartNewGame("Hard"))">Hard</Button></li>
+                    <li><button @onclick="@(() => StartNewGame("Easy"))">Easy</button></li>
+                    <li><button @onclick="@(() => StartNewGame("Medium"))">Medium</button></li>
+                    <li><button @onclick="@(() => StartNewGame("Hard"))">Hard</button></li>
                 </ul>
                 <li>
-                    <Button @onclick="ToggleDisplaySavedGames" disabled="@(_savedGames == null || !_savedGames.Any())">
+                    <button @onclick="ToggleDisplaySavedGames" disabled="@(_savedGames == null || !_savedGames.Any())">
                         <i class="fa-solid fa-folder-open"></i> Load Game
-                    </Button>
+                    </button>
                 </li>
                 <ul class="sub-menu @(_showSavedGames ? "open" : "")">
                     @if (_savedGames != null)

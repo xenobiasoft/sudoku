@@ -107,7 +107,7 @@ public class CellInputTests : TestContext
     public void CellInput_WhenValueChanged_RaisesCellChangedEvent()
     {
         // Arrange
-        var calledArgs = (CellChangedEventArgs)null;
+        var calledArgs = (CellChangedEventArgs)null!;
         var cellInput = RenderComponent<CellInput>(x => x
             .Add(c => c.Cell, new Cell(1, 2))
             .Add(c => c.Puzzle, PuzzleFactory.GetPuzzle(Level.Easy))

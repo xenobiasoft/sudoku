@@ -91,8 +91,8 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
         // Assert
         Assert.Multiple(() =>
         {
-            undoneState.AssertAreEquivalent(gameState2);
-            currentState.AssertAreEquivalent(gameState1);
+            undoneState!.AssertAreEquivalent(gameState2);
+            currentState!.AssertAreEquivalent(gameState1);
         });
     }
 
