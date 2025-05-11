@@ -77,8 +77,9 @@ public partial class Game
 
     private GameStateMemory? UndoPreservingGamePlay(GameStateMemory? undoState)
     {
-        undoState!.PlayDuration = _currentGameState!.PlayDuration;
+        undoState!.PlayDuration = _currentGameState!.GetTotalPlayDuration();
         undoState.LastResumeTime = _currentGameState.LastResumeTime;
+        undoState.StartTime = _currentGameState.StartTime;
 
         return undoState;
     }

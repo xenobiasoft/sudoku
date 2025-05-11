@@ -109,6 +109,6 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
 
         // Assert
         var cachedGameState = await sut.LoadAsync(PuzzleId);
-        cachedGameState.AssertAreEquivalent(_gameState);
+        cachedGameState!.AssertAreEquivalent(_gameState);
     }
 }

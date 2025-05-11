@@ -217,8 +217,8 @@ public class GamePageTests : TestContext
         // Assert
         Assert.Multiple(() =>
         {
-            gameState.LastResumeTime.Should().Be(_loadedGameState.LastResumeTime);
-            gameState.PlayDuration.Should().Be(_loadedGameState.PlayDuration);
+            gameState.LastResumeTime.Should().BeCloseTo(_loadedGameState.LastResumeTime!.Value, TimeSpan.FromSeconds(1));
+            gameState.PlayDuration.Should().BeCloseTo(_loadedGameState.PlayDuration, TimeSpan.FromSeconds(1));
         });
     }
 }
