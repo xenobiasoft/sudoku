@@ -1,4 +1,4 @@
-﻿using Sudoku.Web.Server.Components;
+using Sudoku.Web.Server.Components;
 
 namespace UnitTests.Web.Components;
 
