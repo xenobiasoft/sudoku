@@ -9,8 +9,8 @@
                 IsVictory="@Puzzle.IsSolved()"
                 ElapsedTime="@_currentGameState!.PlayDuration"/>
             <GameStats InvalidMoves="@_currentGameState!.InvalidMoves"
-                       PlayDuration="@_currentGameState!.PlayDuration"
-                       TotalMoves="@_currentGameState!.TotalMoves"/>
+                       TotalMoves="@_currentGameState!.TotalMoves"
+                       GetPlayDuration="@(() => _currentGameState!.GetTotalPlayDuration())"/>
             <GameBoard
                 Puzzle="Puzzle"
                 OnCellFocus="HandleSetSelectedCell"
