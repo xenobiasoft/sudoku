@@ -16,7 +16,7 @@ public class GameStatsTests : TestContext
         var cut = RenderComponent<GameStats>(parameters => parameters
             .Add(p => p.TotalMoves, totalMoves)
             .Add(p => p.InvalidMoves, invalidMoves)
-            .Add(p => p.PlayDuration, playDuration)
+            .Add(p => p.GetPlayDuration, () => playDuration)
         );
 
         // Assert
@@ -44,14 +44,14 @@ public class GameStatsTests : TestContext
         var sut = RenderComponent<GameStats>(parameters => parameters
             .Add(p => p.TotalMoves, 10)
             .Add(p => p.InvalidMoves, 2)
-            .Add(p => p.PlayDuration, TimeSpan.FromMinutes(5))
+            .Add(p => p.GetPlayDuration, () => TimeSpan.FromMinutes(5))
         );
 
         // Act
         sut.SetParametersAndRender(parameters => parameters
             .Add(p => p.TotalMoves, 20)
             .Add(p => p.InvalidMoves, 4)
-            .Add(p => p.PlayDuration, TimeSpan.FromMinutes(10))
+            .Add(p => p.GetPlayDuration, () => TimeSpan.FromMinutes(10))
         );
 
         // Assert
