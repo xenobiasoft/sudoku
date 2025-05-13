@@ -1,14 +1,14 @@
 ﻿<div class="game-stats">
     <div class="stat-item">
         <span class="label">Total Moves:</span>
-        <span class="value">@TotalMoves</span>
+        <span class="value">@SessionManager.CurrentSession.TotalMoves</span>
     </div>
     <div class="stat-item">
         <span class="label">Invalid Moves:</span>
-        <span class="value">@InvalidMoves</span>
+        <span class="value">@SessionManager.CurrentSession.InvalidMoves</span>
     </div>
     <div class="stat-item">
         <span class="label">Play Duration:</span>
-        <span class="value">@GetPlayDuration().ToString(@"hh\:mm\:ss")</span>
+        <span class="value">@SessionManager.CurrentSession.PlayDuration.ToString(@"hh\:mm\:ss")</span>
     </div>
 </div>

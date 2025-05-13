@@ -14,12 +14,15 @@ namespace Sudoku.Web.Server.Helpers
     {
         public static IServiceCollection RegisterBlazorGameServices(this IServiceCollection services)
         {
-            services.AddScoped<ICellFocusedNotificationService, CellFocusedNotificationService>();
-            services.AddScoped<IInvalidCellNotificationService, InvalidCellNotificationService>();
-            services.AddScoped<IGameNotificationService, GameNotificationService>();
-            services.AddScoped<ILocalStorageService, LocalStorageService>();
-            services.AddScoped<IGameStateManager, GameStateManager>();
-            services.AddScoped<IJsRuntimeWrapper, JsRuntimeWrapper>();
+            services
+                .AddScoped<ICellFocusedNotificationService, CellFocusedNotificationService>()
+                .AddScoped<IInvalidCellNotificationService, InvalidCellNotificationService>()
+                .AddScoped<IGameNotificationService, GameNotificationService>()
+                .AddScoped<ILocalStorageService, LocalStorageService>()
+                .AddScoped<IGameStateManager, GameStateManager>()
+                .AddScoped<IJsRuntimeWrapper, JsRuntimeWrapper>()
+                .AddScoped<IGameTimer>(sp => new GameTimer(TimeSpan.FromSeconds(1)))
+                .AddScoped<IGameSessionManager, GameSessionManager>();
 
             return services;
         }
