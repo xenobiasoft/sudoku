@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Components.Routing;
 using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services;
-using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Pages;
 
@@ -16,8 +15,8 @@ public partial class Game
     [Inject] public IGameNotificationService? GameNotificationService { get; set; }
     [Inject] private ICellFocusedNotificationService? CellFocusedNotificationService { get; set; }
     [Inject] private IGameStateManager? GameStateManager { get; set; }
-    [Inject] private IGameSessionManager SessionManager { get; set; } = default!;
-    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+    [Inject] private IGameSessionManager SessionManager { get; set; } = null!;
+    [Inject] public NavigationManager NavigationManager { get; set; } = null!;
 
     public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
 
@@ -25,8 +24,8 @@ public partial class Game
     {
         _locationChangingRegistration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
         var gameState = await GameStateManager!.LoadGameAsync(PuzzleId!);
-        await SessionManager.StartNewSession(PuzzleId!, gameState.Board);
-        Puzzle.Load(PuzzleId, gameState.Board);
+        await SessionManager.StartNewSession(gameState!);
+        Puzzle.Load(gameState);
 
         GameNotificationService!.NotifyGameStarted();
     }
@@ -46,8 +45,8 @@ public partial class Game
     {
         await SessionManager.PauseSession();
         var gameState = await GameStateManager!.UndoAsync(PuzzleId!);
-        await SessionManager.StartNewSession(PuzzleId!, gameState!.Board);
-        Puzzle.Load(gameState.PuzzleId, gameState.Board);
+        await SessionManager.StartNewSession(gameState!);
+        Puzzle.Load(gameState);
         StateHasChanged();
     }
 

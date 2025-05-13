@@ -1,9 +1,11 @@
-﻿namespace Sudoku.Web.Server.Services;
+﻿using XenobiaSoft.Sudoku.GameState;
+
+namespace Sudoku.Web.Server.Services;
 
 public interface IGameSessionManager
 {
     IGameSession CurrentSession { get; }
-    Task StartNewSession(string puzzleId, Cell[] board);
+    Task StartNewSession(GameStateMemory gameState);
     Task PauseSession();
     Task ResumeSession();
     Task EndSession();

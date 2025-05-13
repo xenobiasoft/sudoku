@@ -1,4 +1,5 @@
 ﻿using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Helpers;
 
@@ -63,7 +64,7 @@ public class PuzzleFactory
 			}
 		}
 
-        puzzle.Load(puzzle.PuzzleId, cells);
+        puzzle.Load(new PuzzleState(puzzle.PuzzleId, cells));
 
         return puzzle;
     }

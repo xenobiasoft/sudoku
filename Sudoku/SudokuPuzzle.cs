@@ -1,4 +1,5 @@
 ﻿using XenobiaSoft.Sudoku.Exceptions;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace XenobiaSoft.Sudoku;
 
@@ -139,10 +140,11 @@ public class SudokuPuzzle : ISudokuPuzzle
         return true;
     }
 
-    public void Load(string puzzleId, Cell[] cells)
+    public void Load(PuzzleState state)
     {
-        PuzzleId = puzzleId;
-
+        PuzzleId = state.PuzzleId;
+        var cells = state.Board;
+        
         for (var i = 0; i < cells.Length; i++)
         {
             _cells[i] = cells[i];

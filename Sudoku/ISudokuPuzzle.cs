@@ -1,4 +1,6 @@
-﻿namespace XenobiaSoft.Sudoku;
+﻿using XenobiaSoft.Sudoku.GameState;
+
+namespace XenobiaSoft.Sudoku;
 
 public interface ISudokuPuzzle
 {
@@ -10,7 +12,7 @@ public interface ISudokuPuzzle
     IEnumerable<Cell> GetMiniGridCells(int row, int col);
     bool IsSolved();
     bool IsValid();
-    void Load(string puzzleId, Cell[] cells);
+    void Load(PuzzleState puzzleState);
     void PopulatePossibleValues();
     void Restore(Cell[] cells);
     void SetCell(int row, int column, int? value);

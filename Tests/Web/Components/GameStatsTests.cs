@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.Services;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Web.Components;
 
@@ -14,7 +15,7 @@ public class GameStatsTests : TestContext
     {
         _mockTimer = new Mock<IGameTimer>();
         _mockSessionManager = new Mock<IGameSessionManager>();
-        _session = new GameSession("test-puzzle", [], _mockTimer.Object);
+        _session = new GameSession(It.IsAny<GameStateMemory>(), _mockTimer.Object);
 
         _mockSessionManager.Setup(x => x.CurrentSession).Returns(_session);
         Services.AddSingleton(_mockSessionManager.Object);

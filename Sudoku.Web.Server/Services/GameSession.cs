@@ -1,14 +1,16 @@
-﻿namespace Sudoku.Web.Server.Services;
+﻿using XenobiaSoft.Sudoku.GameState;
+
+namespace Sudoku.Web.Server.Services;
 
 public class GameSession : IGameSession
 {
     private readonly IGameTimer _timer;
 
-    public GameSession(string puzzleId, Cell[] board, IGameTimer timer)
+    public GameSession(GameStateMemory gameState, IGameTimer timer)
     {
         _timer = timer;
-        PuzzleId = puzzleId;
-        Board = board;
+        PuzzleId = gameState.PuzzleId;
+        Board = gameState.Board;;
     }
 
     public string PuzzleId { get; }

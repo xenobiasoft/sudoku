@@ -8,9 +8,9 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
 
     public IGameSession CurrentSession => _currentSession ?? throw new InvalidOperationException("No active session");
 
-    public async Task StartNewSession(string puzzleId, Cell[] board)
+    public async Task StartNewSession(GameStateMemory gameState)
     {
-        _currentSession = new GameSession(puzzleId, board, timer);
+        _currentSession = new GameSession(gameState, timer);
         timer.Start();
         await SaveSessionAsync();
     }
