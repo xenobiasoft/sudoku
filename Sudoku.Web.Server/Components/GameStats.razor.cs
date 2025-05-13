@@ -5,7 +5,7 @@ namespace Sudoku.Web.Server.Components;
 
 public partial class GameStats : ComponentBase, IDisposable
 {
-    [Inject] private IGameSessionManager SessionManager { get; set; } = default!;
+    [Inject] private IGameSessionManager SessionManager { get; set; } = null!;
 
     [Parameter] public int TotalMoves { get; set; }
     [Parameter] public int InvalidMoves { get; set; }

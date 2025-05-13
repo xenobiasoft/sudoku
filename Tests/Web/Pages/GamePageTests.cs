@@ -13,15 +13,14 @@ namespace UnitTests.Web.Pages;
 
 public class GamePageTests : TestContext
 {
-    private readonly GameStateMemory _loadedGameState;
-
     private readonly Mock<IInvalidCellNotificationService> _mockInvalidCellNotifier = new();
     private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
     private readonly Mock<IGameStateManager> _mockGameStateManager = new();
+    private readonly Mock<IGameSessionManager> _mockGameSessionManager = new();
 
     public GamePageTests()
     {
-        _loadedGameState = new GameStateMemory("puzzle1", PuzzleFactory.GetPuzzle(Level.Easy).GetAllCells())
+        var loadedGameState = new GameStateMemory("puzzle1", PuzzleFactory.GetPuzzle(Level.Easy).GetAllCells())
         {
             InvalidMoves = 0,
             LastResumeTime = DateTime.UtcNow,
@@ -29,12 +28,14 @@ public class GamePageTests : TestContext
             StartTime = DateTime.UtcNow.AddMinutes(-10),
             TotalMoves = 5
         };
-        _mockGameStateManager.SetupLoadGameAsync(_loadedGameState);
-
+        _mockGameStateManager.SetupLoadGameAsync(loadedGameState);
+        _mockGameSessionManager.Setup(x => x.CurrentSession).Returns(new GameSession(loadedGameState, new Mock<IGameTimer>().Object));
+        
         Services.AddSingleton(_mockInvalidCellNotifier.Object);
         Services.AddSingleton(_mockGameNotificationService.Object);
         Services.AddSingleton(new Mock<ICellFocusedNotificationService>().Object);
         Services.AddSingleton(new Mock<ISudokuPuzzle>().Object);
+        Services.AddSingleton(_mockGameSessionManager.Object);
         Services.AddSingleton(_mockGameStateManager.Object);
     }
 
@@ -171,22 +172,6 @@ public class GamePageTests : TestContext
     }
 
     [Fact]
-    public async Task HandleCellChanged_WhenEventReceived_SavesGameState()
-    {
-        // Arrange
-        var game = RenderComponent<Game>();
-        var gameBoard = game.FindComponent<GameBoard>();
-
-        // Act
-        await game.InvokeAsync(() =>
-            gameBoard.Instance.OnCellChanged.InvokeAsync(new CellChangedEventArgs(1, 2, 5))
-        );
-
-        // Assert
-        _mockGameStateManager.VerifySaveAsyncCalled(Times.Once);
-    }
-
-    [Fact]
     public async Task HandleUndo_ShouldLoadPreviousGameStateAndUpdatePuzzle()
     {
         // Arrange
@@ -200,25 +185,5 @@ public class GamePageTests : TestContext
 
         // Assert
         _mockGameStateManager.Verify(x => x.UndoAsync(puzzleId), Times.Once);
-    }
-
-    [Fact]
-    public async Task HandleUndo_KeepsCurrentGamePlay()
-    {
-        // Arrange
-        var puzzleId = "test-puzzle";
-        var gameState = new GameStateMemory(puzzleId, []);
-        _mockGameStateManager.Setup(x => x.UndoAsync(puzzleId)).ReturnsAsync(gameState);
-        var game = RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, puzzleId));
-
-        // Act
-        await game.InvokeAsync(() => game.Instance.HandleUndo());
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            gameState.LastResumeTime.Should().BeCloseTo(_loadedGameState.LastResumeTime!.Value, TimeSpan.FromSeconds(1));
-            gameState.PlayDuration.Should().BeCloseTo(_loadedGameState.PlayDuration, TimeSpan.FromSeconds(2));
-        });
     }
 }

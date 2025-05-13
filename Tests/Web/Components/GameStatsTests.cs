@@ -15,7 +15,7 @@ public class GameStatsTests : TestContext
     {
         _mockTimer = new Mock<IGameTimer>();
         _mockSessionManager = new Mock<IGameSessionManager>();
-        _session = new GameSession(It.IsAny<GameStateMemory>(), _mockTimer.Object);
+        _session = new GameSession(new GameStateMemory("puzzle-id", []), _mockTimer.Object);
 
         _mockSessionManager.Setup(x => x.CurrentSession).Returns(_session);
         Services.AddSingleton(_mockSessionManager.Object);
