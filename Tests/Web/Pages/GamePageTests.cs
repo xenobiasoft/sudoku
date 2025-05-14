@@ -30,7 +30,7 @@ public class GamePageTests : TestContext
         };
         _mockGameStateManager.SetupLoadGameAsync(loadedGameState);
         _mockGameSessionManager.Setup(x => x.CurrentSession).Returns(new GameSession(loadedGameState, new Mock<IGameTimer>().Object));
-        
+
         Services.AddSingleton(_mockInvalidCellNotifier.Object);
         Services.AddSingleton(_mockGameNotificationService.Object);
         Services.AddSingleton(new Mock<ICellFocusedNotificationService>().Object);
@@ -185,5 +185,48 @@ public class GamePageTests : TestContext
 
         // Assert
         _mockGameStateManager.Verify(x => x.UndoAsync(puzzleId), Times.Once);
+    }
+    
+    [Fact]
+    public async Task Game_OnLocationChanging_PausesSession()
+    {
+        // Arrange
+        var sut = RenderComponent<Game>();
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
+
+        // Act
+        await sut.InvokeAsync(() => navigationManager.NavigateTo("/another-page"));
+
+        // Assert
+        _mockGameSessionManager.Verify(x => x.PauseSession(), Times.Once);
+    }
+
+    [Fact]
+    public void Game_VictoryDisplay_ShowsWhenPuzzleIsSolved()
+    {
+        // Arrange
+        var gameState = new GameStateMemory("puzzle1", PuzzleFactory.GetSolvedPuzzle().GetAllCells());
+        _mockGameStateManager.SetupLoadGameAsync(gameState);
+        var sut = RenderComponent<Game>();
+
+        // Act
+        var victoryDisplay = sut.FindComponent<VictoryDisplay>();
+
+        // Assert
+        victoryDisplay.Instance.IsVictory.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Game_GameBoard_OnCellFocus_UpdatesSelectedCell()
+    {
+        // Arrange
+        var sut = RenderComponent<Game>();
+        var gameBoard = sut.FindComponent<GameBoard>();
+
+        // Act
+        await sut.InvokeAsync(() => gameBoard.Instance.OnCellFocus.InvokeAsync(new Cell(1, 1)));
+
+        // Assert
+        sut.Instance.SelectedCell.Should().BeEquivalentTo(new Cell(1, 1));
     }
 }

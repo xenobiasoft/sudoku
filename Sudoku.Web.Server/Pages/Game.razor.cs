@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services;
@@ -7,7 +8,6 @@ namespace Sudoku.Web.Server.Pages;
 
 public partial class Game
 {
-    private Cell _selectedCell = new(0, 0);
     private IDisposable? _locationChangingRegistration;
 
     [Parameter] public string? PuzzleId { get; set; }
@@ -19,6 +19,7 @@ public partial class Game
     [Inject] public NavigationManager NavigationManager { get; set; } = null!;
 
     public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
+    public Cell SelectedCell { get; private set; } = new(0, 0);
 
     protected override async Task OnInitializedAsync()
     {
@@ -38,7 +39,7 @@ public partial class Game
 
     private void HandleSetSelectedCell(Cell cell)
     {
-        _selectedCell = cell;
+        SelectedCell = cell;
     }
 
     public async Task HandleUndo()
@@ -57,7 +58,7 @@ public partial class Game
 
     private Task HandleCellValueChanged(CellValueChangedEventArgs args)
     {
-        return HandleCellUpdate(_selectedCell.Row, _selectedCell.Column, args.Value);
+        return HandleCellUpdate(SelectedCell.Row, SelectedCell.Column, args.Value);
     }
 
     private async Task HandleCellUpdate(int row, int column, int? value)
