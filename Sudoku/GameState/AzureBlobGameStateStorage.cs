@@ -19,7 +19,7 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
 
         try
         {
-            await foreach (var blobItem in storageService.GetBlobNamesAsync(ContainerName, $"{puzzleId}/"))
+            await foreach (var blobItem in storageService.GetBlobNamesAsync(ContainerName, $"{puzzleId}"))
             {
                 await storageService.DeleteAsync(ContainerName, blobItem);
             }
