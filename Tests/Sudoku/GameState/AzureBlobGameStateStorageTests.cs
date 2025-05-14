@@ -80,13 +80,25 @@ public class AzureStorageGameStateStorageTests : BaseTestByAbstraction<AzureBlob
     }
 
     [Fact]
-    public async Task SaveAsync_ShouldSaveGameState()
+    public async Task SaveAsync_LoadsLatestGameState()
     {
         // Arrange
-        var expectedBlobName = $"{PuzzleId}/00004.json";
-        _mockStorageService
-            .StubGetBlobNamesCall(_blobNames)
-            .StubLoadAsyncCall(_gameState); ;
+        _mockStorageService.StubGetBlobNamesCall(_blobNames);
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SaveAsync(_gameState);
+
+        // Assert
+        _mockStorageService.VerifyLoadsGameState(ContainerName, _blobNames.Last(), Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveAsync_WhenNoPreviousGameState_ShouldSaveGameState()
+    {
+        // Arrange
+        var expectedBlobName = $"{PuzzleId}/00001.json";
+        _mockStorageService.StubGetBlobNamesCall([]);
         var sut = ResolveSut();
 
         // Act
@@ -94,6 +106,44 @@ public class AzureStorageGameStateStorageTests : BaseTestByAbstraction<AzureBlob
 
         // Assert
         _mockStorageService.VerifySavesGameState(ContainerName, expectedBlobName, _gameState, Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveAsync_WhenNewGameStateChanged_ShouldSaveGameState()
+    {
+        // Arrange
+        var expectedBlobName = $"{PuzzleId}/00004.json";
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(_gameState);
+        var gameState = Container
+            .Build<GameStateMemory>()
+            .With(x => x.PuzzleId, PuzzleId)
+            .Create();
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SaveAsync(gameState);
+
+        // Assert
+        _mockStorageService.VerifySavesGameState(ContainerName, expectedBlobName, gameState, Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveAsync_WhenNewGameStateUnchanged_ShouldNotSaveGameState()
+    {
+        // Arrange
+        var expectedBlobName = $"{PuzzleId}/00004.json";
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(_gameState);
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SaveAsync(_gameState);
+
+        // Assert
+        _mockStorageService.VerifySavesGameState(ContainerName, expectedBlobName, _gameState, Times.Never);
     }
 
     [Fact]

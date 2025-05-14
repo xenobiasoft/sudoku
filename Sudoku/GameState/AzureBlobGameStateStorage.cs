@@ -1,4 +1,5 @@
 ﻿using XenobiaSoft.Sudoku.Exceptions;
+using XenobiaSoft.Sudoku.Extensions;
 using XenobiaSoft.Sudoku.Services;
 
 namespace XenobiaSoft.Sudoku.GameState;
@@ -18,7 +19,7 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
 
         try
         {
-            await foreach (var blobItem in storageService.GetBlobNamesAsync(ContainerName, $"{puzzleId}/"))
+            await foreach (var blobItem in storageService.GetBlobNamesAsync(ContainerName, $"{puzzleId}"))
             {
                 await storageService.DeleteAsync(ContainerName, blobItem);
             }
@@ -52,6 +53,13 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
 
     public async Task SaveAsync(GameStateMemory gameState)
     {
+        var currentGameState = await LoadAsync(gameState.PuzzleId);
+
+        if (currentGameState != null && currentGameState.HasSameBoardStateAs(gameState))
+        {
+            return;
+        }
+        
         await _semaphore.WaitAsync();
 
         try

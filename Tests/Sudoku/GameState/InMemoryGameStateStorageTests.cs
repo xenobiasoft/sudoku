@@ -1,6 +1,7 @@
 ﻿using DepenMock.XUnit;
 using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Extensions;
 using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Sudoku.GameState;

@@ -1,4 +1,4 @@
-﻿namespace XenobiaSoft.Sudoku.Helpers;
+﻿namespace XenobiaSoft.Sudoku.Extensions;
 
 public static class StringExtensionMethods
 {

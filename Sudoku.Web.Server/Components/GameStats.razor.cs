@@ -1,35 +1,38 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Sudoku.Web.Server.Services;
 
 namespace Sudoku.Web.Server.Components;
 
 public partial class GameStats : ComponentBase, IDisposable
 {
+    [Inject] private IGameSessionManager SessionManager { get; set; } = null!;
+
     [Parameter] public int TotalMoves { get; set; }
     [Parameter] public int InvalidMoves { get; set; }
-    [Parameter] public Func<TimeSpan> GetPlayDuration { get; set; }
 
-    private PeriodicTimer _timer;
-    private CancellationTokenSource _cts = new();
-
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        _timer = new PeriodicTimer(TimeSpan.FromSeconds(1));
+        if (SessionManager.CurrentSession is not { } session) return;
 
-        _ = RefreshLoopAsync();
+        session.Timer.OnTick += OnTimerTick;
+        session.OnMoveRecorded += OnMoveRecorded;
     }
 
-    private async Task RefreshLoopAsync()
+    private void OnTimerTick(object? sender, TimeSpan elapsedTime)
     {
-        while (await _timer.WaitForNextTickAsync(_cts.Token))
-        {
-            InvokeAsync(StateHasChanged);
-        }
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnMoveRecorded(object? sender, System.EventArgs e)
+    {
+        InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        _cts.Cancel();
-        _cts.Dispose();
-        _timer?.Dispose();
+        if (SessionManager.CurrentSession is not { } session) return;
+
+        session.Timer.OnTick -= OnTimerTick;
+        session.OnMoveRecorded -= OnMoveRecorded;
     }
 }

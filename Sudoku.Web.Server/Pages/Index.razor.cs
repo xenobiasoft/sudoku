@@ -7,7 +7,7 @@ namespace Sudoku.Web.Server.Pages;
 public partial class Index
 {
 	[Inject] private NavigationManager NavigationManager { get; set; } = null!;
-    [Inject] private IGameStateManager? GameStorageManager { get; set; } = null!;
+    [Inject] private IGameStateManager? GameStateManager { get; set; } = null!;
 
     private bool _showSavedGames;
     private bool _showDifficulty;
@@ -29,12 +29,12 @@ public partial class Index
 
     private async Task LoadGamesAsync()
     {
-        _savedGames = await GameStorageManager!.LoadGamesAsync() ?? [];
+        _savedGames = await GameStateManager!.LoadGamesAsync() ?? [];
     }
 
     private async Task DeleteGameAsync(string gameId)
     {
-        await GameStorageManager!.DeleteGameAsync(gameId);
+        await GameStateManager!.DeleteGameAsync(gameId);
         _savedGames = _savedGames!.Where(x => x.PuzzleId != gameId).ToList();
         StateHasChanged();
     }

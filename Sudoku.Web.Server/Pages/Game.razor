@@ -7,10 +7,8 @@
         <div class="game-view">
             <VictoryDisplay
                 IsVictory="@Puzzle.IsSolved()"
-                ElapsedTime="@_currentGameState!.PlayDuration"/>
-            <GameStats InvalidMoves="@_currentGameState!.InvalidMoves"
-                       TotalMoves="@_currentGameState!.TotalMoves"
-                       GetPlayDuration="@(() => _currentGameState!.GetTotalPlayDuration())"/>
+                ElapsedTime="@SessionManager.CurrentSession.PlayDuration"/>
+            <GameStats />
             <GameBoard
                 Puzzle="Puzzle"
                 OnCellFocus="HandleSetSelectedCell"
@@ -20,7 +18,7 @@
                 OnNumberClicked="HandleCellValueChanged"
                 PuzzleId="@PuzzleId"
                 OnUndo="HandleUndo"
-                TotalMoves="_currentGameState!.TotalMoves" />
+                TotalMoves="@SessionManager.CurrentSession.TotalMoves" />
         </div>
     </div>
 </div>
