@@ -21,14 +21,17 @@ public partial class Game
     public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
     public Cell SelectedCell { get; private set; } = new(0, 0);
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (!firstRender) return;
+
         _locationChangingRegistration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
         var gameState = await GameStateManager!.LoadGameAsync(PuzzleId!);
         await SessionManager.StartNewSession(gameState!);
         Puzzle.Load(gameState);
 
         GameNotificationService!.NotifyGameStarted();
+        StateHasChanged();
     }
 
     private async ValueTask OnLocationChanging(LocationChangingContext context)
