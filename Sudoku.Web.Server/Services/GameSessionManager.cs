@@ -4,9 +4,9 @@ namespace Sudoku.Web.Server.Services;
 
 public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateManager) : IGameSessionManager
 {
-    private GameSession? _currentSession;
+    private IGameSession _currentSession = NullGameSession.Instance;
 
-    public IGameSession CurrentSession => _currentSession ?? throw new InvalidOperationException("No active session");
+    public IGameSession CurrentSession => _currentSession;
 
     public async Task StartNewSession(GameStateMemory gameState)
     {
@@ -17,32 +17,31 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
 
     public async Task PauseSession()
     {
-        if (_currentSession == null) return;
+        if (_currentSession is NullGameSession) return;
         
         timer.Pause();
         await SaveSessionAsync();
     }
 
-    public Task ResumeSession()
+    public void ResumeSession()
     {
-        if (_currentSession == null) return Task.CompletedTask;
+        if (_currentSession is NullGameSession) return;
         
         timer.Resume();
-        return Task.CompletedTask;
     }
 
     public async Task EndSession()
     {
-        if (_currentSession == null) return;
+        if (_currentSession is NullGameSession) return;
         
         timer.Pause();
         await SaveSessionAsync();
-        _currentSession = null;
+        _currentSession = NullGameSession.Instance;
     }
 
     private async Task SaveSessionAsync()
     {
-        if (_currentSession == null) return;
+        if (_currentSession is NullGameSession) return;
 
         var gameState = new GameStateMemory(_currentSession.PuzzleId, _currentSession.Board)
         {

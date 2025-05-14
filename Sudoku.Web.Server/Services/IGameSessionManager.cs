@@ -7,6 +7,6 @@ public interface IGameSessionManager
     IGameSession CurrentSession { get; }
     Task StartNewSession(GameStateMemory gameState);
     Task PauseSession();
-    Task ResumeSession();
+    void ResumeSession();
     Task EndSession();
 } 
