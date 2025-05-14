@@ -1,4 +1,5 @@
 ﻿using XenobiaSoft.Sudoku.Exceptions;
+using XenobiaSoft.Sudoku.Extensions;
 using XenobiaSoft.Sudoku.GameState;
 
 namespace XenobiaSoft.Sudoku;

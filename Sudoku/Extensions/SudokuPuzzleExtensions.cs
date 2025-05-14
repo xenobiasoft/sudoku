@@ -1,6 +1,6 @@
 ﻿using XenobiaSoft.Sudoku.GameState;
 
-namespace XenobiaSoft.Sudoku;
+namespace XenobiaSoft.Sudoku.Extensions;
 
 public static class SudokuPuzzleExtensions
 {
