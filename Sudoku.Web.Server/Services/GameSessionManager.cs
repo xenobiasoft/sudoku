@@ -39,6 +39,12 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
         _currentSession = NullGameSession.Instance;
     }
 
+    public async Task RecordMove(bool isValid)
+    {
+        _currentSession.RecordMove(isValid);
+        await SaveSessionAsync();
+    }
+
     private async Task SaveSessionAsync()
     {
         if (_currentSession is NullGameSession) return;
@@ -47,8 +53,7 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
         {
             InvalidMoves = _currentSession.InvalidMoves,
             TotalMoves = _currentSession.TotalMoves,
-            PlayDuration = _currentSession.PlayDuration,
-            StartTime = _currentSession.StartTime
+            PlayDuration = _currentSession.PlayDuration
         };
 
         await gameStateManager.SaveGameAsync(gameState);

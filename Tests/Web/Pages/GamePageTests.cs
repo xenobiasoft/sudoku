@@ -24,7 +24,6 @@ public class GamePageTests : TestContext
         {
             InvalidMoves = 0,
             PlayDuration = TimeSpan.FromMinutes(10),
-            StartTime = DateTime.UtcNow.AddMinutes(-10),
             TotalMoves = 5
         };
         _mockGameStateManager.SetupLoadGameAsync(loadedGameState);
@@ -227,5 +226,21 @@ public class GamePageTests : TestContext
 
         // Assert
         sut.Instance.SelectedCell.Should().BeEquivalentTo(new Cell(1, 1));
+    }
+
+    [Fact]
+    public async Task Game_WhenCellChanged_RecordsMove()
+    {
+        // Arrange
+        var sut = RenderComponent<Game>();
+        var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
+        var cellInput = sut.FindComponent<CellInput>().Instance;
+
+        // Act
+        await sut.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cellInput.Cell));
+        await sut.InvokeAsync(() => buttonGroup.OnNumberClicked.InvokeAsync(new CellValueChangedEventArgs(3)));
+
+        // Assert
+        _mockGameSessionManager.VerifyMoveRecorded(Times.Once);
     }
 }

@@ -9,4 +9,5 @@ public interface IGameSessionManager
     Task PauseSession();
     void ResumeSession();
     Task EndSession();
+    Task RecordMove(bool isValid);
 } 
