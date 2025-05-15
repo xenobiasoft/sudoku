@@ -1,6 +1,7 @@
 ﻿@page "/game/{puzzleId}"
 
 @using Sudoku.Web.Server.Components
+@using Sudoku.Web.Server.Services
 
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
@@ -8,7 +9,10 @@
             <VictoryDisplay
                 IsVictory="@Puzzle.IsSolved()"
                 ElapsedTime="@SessionManager.CurrentSession.PlayDuration"/>
-            <GameStats />
+            @if (SessionManager.CurrentSession is not NullGameSession)
+            {
+                <GameStats />
+            }
             <GameBoard
                 Puzzle="Puzzle"
                 OnCellFocus="HandleSetSelectedCell"

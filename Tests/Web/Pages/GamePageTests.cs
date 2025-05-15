@@ -23,7 +23,6 @@ public class GamePageTests : TestContext
         var loadedGameState = new GameStateMemory("puzzle1", PuzzleFactory.GetPuzzle(Level.Easy).GetAllCells())
         {
             InvalidMoves = 0,
-            LastResumeTime = DateTime.UtcNow,
             PlayDuration = TimeSpan.FromMinutes(10),
             StartTime = DateTime.UtcNow.AddMinutes(-10),
             TotalMoves = 5
