@@ -7,8 +7,9 @@ public partial class GameStats : ComponentBase, IDisposable
 {
     [Inject] private IGameSessionManager SessionManager { get; set; } = null!;
 
-    [Parameter] public int TotalMoves { get; set; }
-    [Parameter] public int InvalidMoves { get; set; }
+    private int _totalMoves = 0;
+    private int _invalidMoves = 0;
+    private TimeSpan _playDuration = TimeSpan.Zero;
 
     protected override void OnInitialized()
     {
@@ -20,11 +21,13 @@ public partial class GameStats : ComponentBase, IDisposable
 
     private void OnTimerTick(object? sender, TimeSpan elapsedTime)
     {
+        UpdateStats();
         InvokeAsync(StateHasChanged);
     }
 
     private void OnMoveRecorded(object? sender, System.EventArgs e)
     {
+        UpdateStats();
         InvokeAsync(StateHasChanged);
     }
 
@@ -34,5 +37,12 @@ public partial class GameStats : ComponentBase, IDisposable
 
         session.Timer.OnTick -= OnTimerTick;
         session.OnMoveRecorded -= OnMoveRecorded;
+    }
+
+    private void UpdateStats()
+    {
+        _invalidMoves = SessionManager.CurrentSession.InvalidMoves;
+        _totalMoves = SessionManager.CurrentSession.TotalMoves;
+        _playDuration = SessionManager.CurrentSession.PlayDuration;
     }
 }

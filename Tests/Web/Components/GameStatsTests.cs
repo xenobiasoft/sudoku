@@ -25,12 +25,12 @@ public class GameStatsTests : TestContext
     public void GameStats_ShouldRenderCorrectly_WithValidSession()
     {
         // Arrange
-        _session.RecordMove(true); // Total moves: 1
-        _session.RecordMove(false); // Total moves: 2, Invalid moves: 1
         _mockTimer.Setup(x => x.ElapsedTime).Returns(TimeSpan.FromMinutes(15));
+        var cut = RenderComponent<GameStats>();
 
         // Act
-        var cut = RenderComponent<GameStats>();
+        _session.RecordMove(true); // Total moves: 1
+        _session.RecordMove(false); // Total moves: 2, Invalid moves: 1
 
         // Assert
         cut.MarkupMatches(@$"
