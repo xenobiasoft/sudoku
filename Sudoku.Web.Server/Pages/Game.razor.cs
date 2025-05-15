@@ -68,7 +68,7 @@ public partial class Game
         Puzzle.SetCell(row, column, value);
         var isValid = Puzzle.IsValid();
         InvalidCellNotificationService!.Notify(Puzzle.Validate().ToList());
-        SessionManager.CurrentSession.RecordMove(isValid);
+        await SessionManager.RecordMove(isValid);
 
         if (Puzzle.IsSolved())
         {

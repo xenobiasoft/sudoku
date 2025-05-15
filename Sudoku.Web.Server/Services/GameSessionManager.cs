@@ -39,6 +39,12 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
         _currentSession = NullGameSession.Instance;
     }
 
+    public async Task RecordMove(bool isValid)
+    {
+        _currentSession.RecordMove(isValid);
+        await SaveSessionAsync();
+    }
+
     private async Task SaveSessionAsync()
     {
         if (_currentSession is NullGameSession) return;
