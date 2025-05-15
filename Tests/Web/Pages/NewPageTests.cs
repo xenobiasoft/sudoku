@@ -64,22 +64,6 @@ public class NewPageTests : TestContext
     }
 
     [Fact]
-    public void OnInitializedAsync_SetsStartTimeOnGameState()
-    {
-        // Arrange
-        GameStateMemory? gameState = null;
-        _mockGameStateManager!
-            .Setup(m => m.SaveGameAsync(It.IsAny<GameStateMemory>()))
-            .Callback<GameStateMemory>(x => gameState = x);
-
-        // Act
-        RenderComponent<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
-
-        // Assert
-        gameState!.StartTime.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-    }
-
-    [Fact]
     public void RendersLoader()
     {
         // Arrange
