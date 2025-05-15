@@ -34,7 +34,6 @@ public class GameTimer(TimeSpan tickInterval) : IGameTimer, IDisposable
             if (!_isRunning) return;
             _accumulatedTime += GetCurrentSessionTime();
             _isRunning = false;
-            DisposeTimer();
         }
     }
 
@@ -43,7 +42,7 @@ public class GameTimer(TimeSpan tickInterval) : IGameTimer, IDisposable
         lock (_lock)
         {
             if (_isRunning) return;
-            Start();
+            _isRunning = true;
         }
     }
 
