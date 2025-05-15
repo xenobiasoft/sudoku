@@ -6,9 +6,9 @@ public class GameSession(GameStateMemory gameState, IGameTimer timer) : IGameSes
 {
     public string PuzzleId { get; } = gameState.PuzzleId;
     public Cell[] Board { get; } = gameState.Board;
-    public int InvalidMoves { get; private set; }
-    public int TotalMoves { get; private set; }
-    public DateTime StartTime { get; } = DateTime.UtcNow;
+    public int InvalidMoves { get; private set; } = gameState.InvalidMoves;
+    public int TotalMoves { get; private set; } = gameState.TotalMoves;
+    public DateTime StartTime { get; } = gameState.StartTime;
     public TimeSpan PlayDuration => timer.ElapsedTime;
     public IGameTimer Timer => timer;
 
