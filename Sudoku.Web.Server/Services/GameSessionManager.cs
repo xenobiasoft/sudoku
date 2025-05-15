@@ -47,8 +47,7 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
         {
             InvalidMoves = _currentSession.InvalidMoves,
             TotalMoves = _currentSession.TotalMoves,
-            PlayDuration = _currentSession.PlayDuration,
-            StartTime = _currentSession.StartTime
+            PlayDuration = _currentSession.PlayDuration
         };
 
         await gameStateManager.SaveGameAsync(gameState);

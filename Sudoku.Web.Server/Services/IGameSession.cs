@@ -6,7 +6,6 @@ public interface IGameSession
     Cell[] Board { get; }
     int InvalidMoves { get; }
     int TotalMoves { get; }
-    DateTime StartTime { get; }
     TimeSpan PlayDuration { get; }
     IGameTimer Timer { get; }
     event EventHandler? OnMoveRecorded;

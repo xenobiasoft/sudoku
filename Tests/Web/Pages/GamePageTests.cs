@@ -24,7 +24,6 @@ public class GamePageTests : TestContext
         {
             InvalidMoves = 0,
             PlayDuration = TimeSpan.FromMinutes(10),
-            StartTime = DateTime.UtcNow.AddMinutes(-10),
             TotalMoves = 5
         };
         _mockGameStateManager.SetupLoadGameAsync(loadedGameState);
