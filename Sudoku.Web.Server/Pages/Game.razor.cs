@@ -48,7 +48,7 @@ public partial class Game
     {
         await SessionManager.PauseSession();
         var gameState = await GameStateManager!.ResetGameAsync(PuzzleId!);
-        SessionManager.ResumeSession();
+        SessionManager.ResumeSession(gameState);
         Puzzle.Load(gameState);
         StateHasChanged();
     }
@@ -57,7 +57,7 @@ public partial class Game
     {
         await SessionManager.PauseSession();
         var gameState = await GameStateManager!.UndoGameAsync(PuzzleId!);
-        SessionManager.ResumeSession();
+        SessionManager.ResumeSession(gameState);
         Puzzle.Load(gameState);
         StateHasChanged();
     }

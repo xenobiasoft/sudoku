@@ -1,4 +1,6 @@
-﻿namespace Sudoku.Web.Server.Services;
+﻿using XenobiaSoft.Sudoku.GameState;
+
+namespace Sudoku.Web.Server.Services;
 
 public interface IGameSession
 {
@@ -10,4 +12,5 @@ public interface IGameSession
     IGameTimer Timer { get; }
     event EventHandler? OnMoveRecorded;
     void RecordMove(bool isValid);
+    void ReloadBoard(GameStateMemory gameState);
 } 

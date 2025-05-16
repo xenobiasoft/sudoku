@@ -1,4 +1,6 @@
-﻿namespace Sudoku.Web.Server.Services;
+﻿using XenobiaSoft.Sudoku.GameState;
+
+namespace Sudoku.Web.Server.Services;
 
 public class NullGameSession : IGameSession
 {
@@ -15,4 +17,5 @@ public class NullGameSession : IGameSession
     public event EventHandler? OnMoveRecorded;
 
     public void RecordMove(bool isValid) { }
+    public void ReloadBoard(GameStateMemory gameState) { }
 }
