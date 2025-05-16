@@ -23,9 +23,25 @@ public static class MockStorageServiceExtensions
         return mock;
     }
 
+    public static Mock<IStorageService> StubLoadAsyncCall(this Mock<IStorageService> mock, string blobName, GameStateMemory gameState)
+    {
+        mock
+            .Setup(s => s.LoadAsync<GameStateMemory>(It.IsAny<string>(), blobName))
+            .ReturnsAsync(gameState);
+
+        return mock;
+    }
+
     public static Mock<IStorageService> VerifyDeletesBlob(this Mock<IStorageService> mock, string containerName, string blobName, Func<Times> times)
     {
         mock.Verify(s => s.DeleteAsync(containerName, blobName), times);
+
+        return mock;
+    }
+
+    public static Mock<IStorageService> VerifyGetsBlobNames(this Mock<IStorageService> mock, string containerName, string blobPrefix, Func<Times> times)
+    {
+        mock.Verify(s => s.GetBlobNamesAsync(containerName, blobPrefix), times);
 
         return mock;
     }

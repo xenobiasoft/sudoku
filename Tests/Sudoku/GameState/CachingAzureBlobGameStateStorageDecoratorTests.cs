@@ -25,7 +25,21 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
     }
 
     [Fact]
-    public async Task LoadAsync_ShouldReturnCachedGameState_WhenAlreadyCached()
+    public async Task DeleteAsync_ShouldCallDecorated_DeleteAsync()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        await sut.SaveAsync(_gameState);
+
+        // Act
+        await sut.DeleteAsync(PuzzleId);
+
+        // Assert
+        _mockDecoratedStorage.VerifyDeleteAsyncCalled(PuzzleId, Times.Once);
+    }
+
+    [Fact]
+    public async Task LoadAsync_WhenAlreadyCached_ShouldReturnCachedGameState()
     {
         // Arrange
         var sut = ResolveSut();
@@ -40,7 +54,7 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
     }
 
     [Fact]
-    public async Task LoadAsync_ShouldCallDecoratedStorage_WhenNotCached()
+    public async Task LoadAsync_WhenNotCached_ShouldCallDecoratedStorage()
     {
         // Arrange
         _mockDecoratedStorage.SetupLoadAsync(_gameState);
@@ -52,6 +66,34 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
         // Assert
         result.Should().Be(_gameState);
         _mockDecoratedStorage.Verify(x => x.LoadAsync(PuzzleId), Times.Once);
+    }
+
+    [Fact]
+    public async Task ResetAsync_ShouldCallDecorated_ResetAsync()
+    {
+        // Arrange
+        var sut = ResolveSut();
+
+        // Act
+        await sut.ResetAsync(PuzzleId);
+
+        // Assert
+        _mockDecoratedStorage.VerifyResetAsyncCalled(PuzzleId, Times.Once);
+    }
+
+    [Fact]
+    public async Task ResetAsync_ShouldUpdateCache()
+    {
+        // Arrange
+        _mockDecoratedStorage.SetupResetAsync(_gameState);
+        var sut = ResolveSut();
+
+        // Act
+        await sut.ResetAsync(PuzzleId);
+
+        // Assert
+        var cachedGameState = await sut.LoadAsync(PuzzleId);
+        cachedGameState!.AssertAreEquivalent(_gameState);
     }
 
     [Fact]
@@ -70,21 +112,7 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
     }
 
     [Fact]
-    public async Task DeleteAsync_CallsDecorated_DeleteAsync()
-    {
-        // Arrange
-        var sut = ResolveSut();
-        await sut.SaveAsync(_gameState);
-
-        // Act
-        await sut.DeleteAsync(PuzzleId);
-
-        // Assert
-        _mockDecoratedStorage.VerifyDeleteAsyncCalled(PuzzleId, Times.Once);
-    }
-
-    [Fact]
-    public async Task UndoAsync_CallsDecorated_UndoAsync()
+    public async Task UndoAsync_ShouldCallDecorated_UndoAsync()
     {
         // Arrange
         _mockDecoratedStorage.SetupUndoAsync(_gameState);

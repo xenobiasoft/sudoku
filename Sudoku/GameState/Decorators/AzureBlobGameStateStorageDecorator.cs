@@ -6,6 +6,10 @@ public abstract class AzureBlobGameStateStorageDecorator(IGameStateStorage<GameS
 
     public abstract Task DeleteAsync(string puzzleId);
     public abstract Task<GameStateMemory> LoadAsync(string puzzleId);
+
+    public abstract Task<GameStateMemory> ResetAsync(string puzzleId);
+
     public abstract Task SaveAsync(GameStateMemory gameState);
+
     public abstract Task<GameStateMemory> UndoAsync(string puzzleId);
 }

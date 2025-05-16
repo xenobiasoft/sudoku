@@ -42,7 +42,7 @@ public class GamePageTests : TestContext
     {
         // Arrange
         var sut = RenderComponent<Game>();
-        var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
+        var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
         // Act
@@ -58,7 +58,7 @@ public class GamePageTests : TestContext
     {
         // Arrange
         var sut = RenderComponent<Game>();
-        var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
+        var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
         // Act
@@ -88,7 +88,7 @@ public class GamePageTests : TestContext
         var gameState = new GameStateMemory("puzzle1", PuzzleFactory.GetSolvedPuzzle().GetAllCells());
         _mockGameStateManager.SetupLoadGameAsync(gameState);
         var sut = RenderComponent<Game>();
-        var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
+        var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
         // Act
@@ -106,7 +106,7 @@ public class GamePageTests : TestContext
         var gameState = new GameStateMemory("puzzle1", PuzzleFactory.GetSolvedPuzzle().GetAllCells());
         _mockGameStateManager.SetupLoadGameAsync(gameState);
         var sut = RenderComponent<Game>();
-        var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
+        var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
         // Act
@@ -125,7 +125,7 @@ public class GamePageTests : TestContext
         var gameState = new GameStateMemory("puzzle1", PuzzleFactory.GetSolvedPuzzle().GetAllCells());
         _mockGameStateManager.SetupLoadGameAsync(gameState);
         var sut = RenderComponent<Game>();
-        var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
+        var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
         // Act
@@ -145,7 +145,7 @@ public class GamePageTests : TestContext
         RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, "puzzle1"));
 
         // Assert
-        _mockGameStateManager.VerifyLoadsAsync("puzzle1", Times.Once);
+        _mockGameStateManager.VerifyLoadsAsyncCalled("puzzle1", Times.Once);
     }
 
     [Fact]
@@ -182,9 +182,25 @@ public class GamePageTests : TestContext
         await game.InvokeAsync(() => game.Instance.HandleUndo());
 
         // Assert
-        _mockGameStateManager.Verify(x => x.UndoAsync(puzzleId), Times.Once);
+        _mockGameStateManager.VerifyUndoAsyncCalled(puzzleId, Times.Once);
     }
-    
+
+    [Fact]
+    public async Task HandleReset_ShouldLoadInitialGameStateAndUpdatePuzzle()
+    {
+        // Arrange
+        var puzzleId = "test-puzzle";
+        var gameState = new GameStateMemory(puzzleId, []);
+        _mockGameStateManager.Setup(x => x.ResetAsync(puzzleId)).ReturnsAsync(gameState);
+        var game = RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, puzzleId));
+
+        // Act
+        await game.InvokeAsync(() => game.Instance.HandleReset());
+
+        // Assert
+        _mockGameStateManager.VerifyResetAsyncCalled(puzzleId, Times.Once);
+    }
+
     [Fact]
     public async Task Game_OnLocationChanging_PausesSession()
     {
@@ -233,7 +249,7 @@ public class GamePageTests : TestContext
     {
         // Arrange
         var sut = RenderComponent<Game>();
-        var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
+        var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
         // Act

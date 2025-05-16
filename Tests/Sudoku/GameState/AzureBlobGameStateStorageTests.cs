@@ -5,7 +5,7 @@ using XenobiaSoft.Sudoku.Services;
 
 namespace UnitTests.Sudoku.GameState;
 
-public class AzureStorageGameStateStorageTests : BaseTestByAbstraction<AzureBlobGameStateStorage, IGameStateStorage<GameStateMemory>>
+public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGameStateStorage, IGameStateStorage<GameStateMemory>>
 {
     private const string ContainerName = "sudoku-puzzles";
     private const string PuzzleId = "test-puzzle";
@@ -19,7 +19,7 @@ public class AzureStorageGameStateStorageTests : BaseTestByAbstraction<AzureBlob
         $"{PuzzleId}/00003.json"
     ];
 
-    public AzureStorageGameStateStorageTests()
+    public AzureBlobGameStateStorageTests()
     {
         _mockStorageService = Container.ResolveMock<IStorageService>();
         _gameState = Container
@@ -80,7 +80,73 @@ public class AzureStorageGameStateStorageTests : BaseTestByAbstraction<AzureBlob
     }
 
     [Fact]
-    public async Task SaveAsync_LoadsLatestGameState()
+    public async Task ResetAsync_ShouldCallResetGame()
+    {
+        // Arrange
+        _mockStorageService.StubGetBlobNamesCall(_blobNames);
+        var puzzleId = Container.Create<string>();
+        var sut = ResolveSut();
+
+        // Act
+        await sut.ResetAsync(puzzleId);
+
+        // Assert
+        _mockStorageService.VerifyGetsBlobNames(ContainerName, puzzleId, Times.Once);
+    }
+
+    [Fact]
+    public async Task ResetAsync_WhenOnInitialState_ShouldThrowException()
+    {
+        // Arrange
+        _mockStorageService.StubGetBlobNamesCall([$"{PuzzleId}/00001.json"]);
+        var sut = ResolveSut();
+
+        // Act
+        Task ResetGame() => sut.ResetAsync(PuzzleId);
+
+        // Assert
+        await Assert.ThrowsAsync<CannotResetInitialStateException>(ResetGame);
+    }
+
+    [Fact]
+    public async Task ResetAsync_ShouldDeleteAllStatesExceptInitial()
+    {
+        // Arrange
+        var deletedBlobNames = _blobNames.Skip(1);
+        _mockStorageService.StubGetBlobNamesCall(_blobNames);
+        var puzzleId = Container.Create<string>();
+        var sut = ResolveSut();
+
+        // Act
+        await sut.ResetAsync(puzzleId);
+
+        // Assert
+        foreach (var blobName in deletedBlobNames)
+        {
+            _mockStorageService.VerifyDeletesBlob(ContainerName, blobName, Times.Once);
+        }
+    }
+
+    [Fact]
+    public async Task ResetAsync_ShouldReturnInitialGameState()
+    {
+        // Arrange
+        var expected = _gameState;
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(_blobNames.First(), _gameState);
+        var puzzleId = Container.Create<string>();
+        var sut = ResolveSut();
+
+        // Act
+        var actual = await sut.ResetAsync(puzzleId);
+
+        // Assert
+        actual.Should().Be(expected);
+    }
+
+    [Fact]
+    public async Task SaveAsync_ShouldLoadLatestGameState()
     {
         // Arrange
         _mockStorageService.StubGetBlobNamesCall(_blobNames);
@@ -179,21 +245,21 @@ public class AzureStorageGameStateStorageTests : BaseTestByAbstraction<AzureBlob
     }
 
     [Fact]
-    public async Task UndoAsync_WhenOnInitialState_Throws()
+    public async Task UndoAsync_WhenOnInitialState_ShouldThrowException()
     {
         // Arrange
         _mockStorageService.StubGetBlobNamesCall([$"{PuzzleId}/00001.json"]);
         var sut = ResolveSut();
 
         // Act
-        Task SolvePuzzle() => sut.UndoAsync(PuzzleId);
+        Task UndoAsync() => sut.UndoAsync(PuzzleId);
 
         // Assert
-        await Assert.ThrowsAsync<CannotUndoInitialStateException>(SolvePuzzle);
+        await Assert.ThrowsAsync<CannotUndoInitialStateException>(UndoAsync);
     }
 
     [Fact]
-    public void GameStateMemoryType_ShouldBePersistence()
+    public void GameStateMemoryType_ShouldBeAzureBlobPersistence()
     {
         // Arrange
         var sut = ResolveSut();

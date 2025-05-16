@@ -5,11 +5,11 @@ using Sudoku.Web.Server.Services;
 
 namespace UnitTests.Web.Components;
 
-public class ButtonGroupTests : TestContext
+public class GameControlsTests : TestContext
 {
     private readonly Mock<IGameStateManager> _mockGameStateManager = new();
 
-    public ButtonGroupTests()
+    public GameControlsTests()
     {
         Services.AddSingleton(_mockGameStateManager.Object);
     }
@@ -26,13 +26,14 @@ public class ButtonGroupTests : TestContext
     [InlineData(9)]
 	public void RenderComponent_RendersNumbersCorrectly(int number)
 	{
-		// Arrange
+        // Arrange
+        var gameControls = RenderComponent<GameControls>();
 
         // Act
-        var numberButton = RenderComponent<ButtonGroup>().Find($"#btn{number}");
+        var numberButton = gameControls.Find($"#btn{number}");
 
         // Assert
-		numberButton.MarkupMatches($"<button type=\"button\" id=\"btn{number}\" class=\"btn btn-primary\"><i class=\"fa-solid fa-{number}\"></i></button>");
+		numberButton.MarkupMatches($"<button type=\"button\" id=\"btn{number}\" class=\"btn btn-primary btn-num\"><i class=\"fa-solid fa-{number}\"></i></button>");
 	}
 
 	[Theory]
@@ -49,9 +50,9 @@ public class ButtonGroupTests : TestContext
 	{
 		// Arrange
         CellValueChangedEventArgs? calledEventArgs = null;
-		var buttonGroup = RenderComponent<ButtonGroup>(p => p
+		var gameControls = RenderComponent<GameControls>(p => p
             .Add(x => x.OnNumberClicked, (i) => calledEventArgs = i));
-        var button = buttonGroup.Find($"#btn{expected ?? 0}");
+        var button = gameControls.Find($"#btn{expected ?? 0}");
 
 		// Act
 		button.Click();
@@ -65,12 +66,11 @@ public class ButtonGroupTests : TestContext
     {
         // Arrange
         var undoCalled = false;
-        var undoButton = RenderComponent<ButtonGroup>(p =>
+        var gameControls = RenderComponent<GameControls>(p =>
             {
-                p.Add(x => x.PuzzleId, "puzzleId");
                 p.Add(x => x.OnUndo, () => undoCalled = true);
-            })
-            .Find("#btnUndo");
+            });
+        var undoButton = gameControls.Find("#btnUndo");
 
         // Act
         undoButton.Click();
@@ -85,7 +85,7 @@ public class ButtonGroupTests : TestContext
     public void UndoAsync_WhenOnInitialGameState_IsDisabled(int totalMoves, bool disabled)
     {
         // Arrange
-        var sut = RenderComponent<ButtonGroup>(p =>
+        var gameControls = RenderComponent<GameControls>(p =>
         {
             p.Add(x => x.PuzzleId, "puzzleId");
             p.Add(x => x.OnUndo, () => { });
@@ -93,9 +93,27 @@ public class ButtonGroupTests : TestContext
         });
 
         // Act
-        var undoButton = sut.Find("#btnUndo");
+        var undoButton = gameControls.Find("#btnUndo");
 
         // Assert
         undoButton.HasAttribute("disabled").Should().Be(disabled);
+    }
+
+    [Fact]
+    public void ResetButton_WhenClicked_ResetsGameBoard()
+    {
+        // Arrange
+        var resetCalled = false;
+        var gameControls = RenderComponent<GameControls>(p =>
+        {
+            p.Add(x => x.OnReset, () => resetCalled = true);
+        });
+        var resetButton = gameControls.Find("#btnReset");
+
+        // Act
+        resetButton.Click();
+
+        // Assert
+        resetCalled.Should().BeTrue();
     }
 }

@@ -27,7 +27,7 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
     }
 
     [Fact]
-    public async Task LoadAsync_ShouldReturnNull_WhenNoGameStateExists()
+    public async Task LoadAsync_WhenNoGameStateExists_ShouldReturnNull()
     {
         // Arrange
         var sut = ResolveSut();
@@ -53,6 +53,39 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
 
         // Assert
         actualGameState.Should().Be(expectedGameState);
+    }
+
+    [Fact]
+    public void PuzzleStateType_ShouldBeInMemory()
+    {
+        // Arrange
+        var sut = ResolveSut();
+
+        // Act
+        var type = sut.MemoryType;
+
+        // Assert
+        type.Should().Be(GameStateMemoryType.InMemory);
+    }
+
+    [Fact]
+    public async Task ResetAsync_ShouldRemoveAllButInitialGameState()
+    {
+        // Arrange
+        var initialGameState = new PuzzleState(PuzzleId, []);
+        var sut = ResolveSut();
+        await sut.SaveAsync(initialGameState);
+
+        for (var i = 0; i < 4; i++)
+        {
+            await sut.SaveAsync(PuzzleFactory.GetPuzzle(Level.Easy).ToPuzzleState());
+        }
+
+        // Act
+        var result = await sut.ResetAsync(PuzzleId);
+
+        // Assert
+        result.Should().BeEquivalentTo(initialGameState);
     }
 
     [Fact]
@@ -98,7 +131,7 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
     }
 
     [Fact]
-    public async Task UndoAsync_ShouldReturnNull_WhenNoGameStateExists()
+    public async Task UndoAsync_WhenNoGameStateExists_ShouldReturnNull()
     {
         // Arrange
         var sut = ResolveSut();
@@ -108,18 +141,5 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
 
         // Assert
         result.Should().BeNull();
-    }
-
-    [Fact]
-    public void PuzzleStateType_ShouldBeInMemory()
-    {
-        // Arrange
-        var sut = ResolveSut();
-
-        // Act
-        var type = sut.MemoryType;
-
-        // Assert
-        type.Should().Be(GameStateMemoryType.InMemory);
     }
 }

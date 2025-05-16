@@ -1,0 +1,24 @@
+﻿.btn-toolbar {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.number-panel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+}
+
+.btn-panel {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+}
+
+.btn-num {
+    height: 3rem;
+    width: 3rem;
+}
