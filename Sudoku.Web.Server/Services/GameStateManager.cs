@@ -27,9 +27,12 @@ public class GameStateManager(ILocalStorageService localStorageService, IGameSta
         return localStorageService.LoadGameStatesAsync();
     }
 
-    public Task<GameStateMemory> ResetAsync(string gameId)
+    public async Task<GameStateMemory> ResetGameAsync(string gameId)
     {
-        return gameStateStorage.ResetAsync(gameId);
+        var gameState = await gameStateStorage.ResetAsync(gameId);
+        await localStorageService.SaveGameStateAsync(gameState!);
+
+        return gameState!;
     }
 
     public async Task SaveGameAsync(GameStateMemory gameState)
@@ -38,7 +41,7 @@ public class GameStateManager(ILocalStorageService localStorageService, IGameSta
         await localStorageService.SaveGameStateAsync(gameState);
     }
 
-    public async Task<GameStateMemory> UndoAsync(string gameId)
+    public async Task<GameStateMemory> UndoGameAsync(string gameId)
     {
         var currentGameState = await LoadGameAsync(gameId);
 

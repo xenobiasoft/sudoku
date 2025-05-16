@@ -46,7 +46,7 @@ public static class MockGameStateManagerExtensions
 
     public static Mock<IGameStateManager> VerifyResetAsyncCalled(this Mock<IGameStateManager> mock, string puzzleId, Func<Times> times)
     {
-        mock.Verify(x => x.ResetAsync(puzzleId), times);
+        mock.Verify(x => x.ResetGameAsync(puzzleId), times);
 
         return mock;
     }
@@ -60,7 +60,7 @@ public static class MockGameStateManagerExtensions
 
     public static Mock<IGameStateManager> VerifyUndoAsyncCalled(this Mock<IGameStateManager> mock, string puzzleId, Func<Times> times)
     {
-        mock.Verify(x => x.UndoAsync(puzzleId), times);
+        mock.Verify(x => x.UndoGameAsync(puzzleId), times);
 
         return mock;
     }
