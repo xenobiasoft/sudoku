@@ -44,11 +44,20 @@ public partial class Game
         SelectedCell = cell;
     }
 
+    public async Task HandleReset()
+    {
+        await SessionManager.PauseSession();
+        var gameState = await GameStateManager!.ResetAsync(PuzzleId!);
+        SessionManager.ResumeSession();
+        Puzzle.Load(gameState);
+        StateHasChanged();
+    }
+
     public async Task HandleUndo()
     {
         await SessionManager.PauseSession();
         var gameState = await GameStateManager!.UndoAsync(PuzzleId!);
-        await SessionManager.StartNewSession(gameState!);
+        SessionManager.ResumeSession();
         Puzzle.Load(gameState);
         StateHasChanged();
     }

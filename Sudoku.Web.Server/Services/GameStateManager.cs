@@ -27,6 +27,11 @@ public class GameStateManager(ILocalStorageService localStorageService, IGameSta
         return localStorageService.LoadGameStatesAsync();
     }
 
+    public Task<GameStateMemory> ResetAsync(string gameId)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task SaveGameAsync(GameStateMemory gameState)
     {
         await gameStateStorage.SaveAsync(gameState);
