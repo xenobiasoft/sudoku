@@ -3,7 +3,7 @@ using Sudoku.Web.Server.EventArgs;
 
 namespace Sudoku.Web.Server.Components
 {
-    public partial class ButtonGroup
+    public partial class GameControls
     {
         [Parameter] public EventCallback<CellValueChangedEventArgs> OnNumberClicked { get; set; }
         [Parameter] public string? PuzzleId { get; set; }

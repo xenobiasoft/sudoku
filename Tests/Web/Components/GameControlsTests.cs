@@ -5,11 +5,11 @@ using Sudoku.Web.Server.Services;
 
 namespace UnitTests.Web.Components;
 
-public class ButtonGroupTests : TestContext
+public class GameControlsTests : TestContext
 {
     private readonly Mock<IGameStateManager> _mockGameStateManager = new();
 
-    public ButtonGroupTests()
+    public GameControlsTests()
     {
         Services.AddSingleton(_mockGameStateManager.Object);
     }
@@ -29,7 +29,7 @@ public class ButtonGroupTests : TestContext
 		// Arrange
 
         // Act
-        var numberButton = RenderComponent<ButtonGroup>().Find($"#btn{number}");
+        var numberButton = RenderComponent<GameControls>().Find($"#btn{number}");
 
         // Assert
 		numberButton.MarkupMatches($"<button type=\"button\" id=\"btn{number}\" class=\"btn btn-primary\"><i class=\"fa-solid fa-{number}\"></i></button>");
@@ -49,7 +49,7 @@ public class ButtonGroupTests : TestContext
 	{
 		// Arrange
         CellValueChangedEventArgs? calledEventArgs = null;
-		var buttonGroup = RenderComponent<ButtonGroup>(p => p
+		var buttonGroup = RenderComponent<GameControls>(p => p
             .Add(x => x.OnNumberClicked, (i) => calledEventArgs = i));
         var button = buttonGroup.Find($"#btn{expected ?? 0}");
 
@@ -65,7 +65,7 @@ public class ButtonGroupTests : TestContext
     {
         // Arrange
         var undoCalled = false;
-        var undoButton = RenderComponent<ButtonGroup>(p =>
+        var undoButton = RenderComponent<GameControls>(p =>
             {
                 p.Add(x => x.PuzzleId, "puzzleId");
                 p.Add(x => x.OnUndo, () => undoCalled = true);
@@ -85,7 +85,7 @@ public class ButtonGroupTests : TestContext
     public void UndoAsync_WhenOnInitialGameState_IsDisabled(int totalMoves, bool disabled)
     {
         // Arrange
-        var sut = RenderComponent<ButtonGroup>(p =>
+        var sut = RenderComponent<GameControls>(p =>
         {
             p.Add(x => x.PuzzleId, "puzzleId");
             p.Add(x => x.OnUndo, () => { });

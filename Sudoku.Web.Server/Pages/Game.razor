@@ -6,23 +6,20 @@
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
         <div class="game-view">
-            <VictoryDisplay
-                IsVictory="@Puzzle.IsSolved()"
-                ElapsedTime="@SessionManager.CurrentSession.PlayDuration"/>
             @if (SessionManager.CurrentSession is not NullGameSession)
             {
                 <GameStats />
             }
-            <GameBoard
-                Puzzle="Puzzle"
-                OnCellFocus="HandleSetSelectedCell"
-                OnCellChanged="HandleCellChanged"
-                NotificationService="CellFocusedNotificationService"/>
-            <ButtonGroup
-                OnNumberClicked="HandleCellValueChanged"
-                PuzzleId="@PuzzleId"
-                OnUndo="HandleUndo"
-                TotalMoves="@SessionManager.CurrentSession.TotalMoves" />
+            <GameBoard Puzzle="Puzzle"
+                       OnCellFocus="HandleSetSelectedCell"
+                       OnCellChanged="HandleCellChanged"
+                       NotificationService="CellFocusedNotificationService" />
+            <GameControls OnNumberClicked="HandleCellValueChanged"
+                         PuzzleId="@PuzzleId"
+                         OnUndo="HandleUndo"
+                         TotalMoves="@SessionManager.CurrentSession.TotalMoves" />
+            <VictoryDisplay IsVictory="@Puzzle.IsSolved()"
+                            ElapsedTime="@SessionManager.CurrentSession.PlayDuration" />
         </div>
     </div>
 </div>

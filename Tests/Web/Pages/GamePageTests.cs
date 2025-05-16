@@ -42,7 +42,7 @@ public class GamePageTests : TestContext
     {
         // Arrange
         var sut = RenderComponent<Game>();
-        var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
+        var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
         // Act
@@ -58,7 +58,7 @@ public class GamePageTests : TestContext
     {
         // Arrange
         var sut = RenderComponent<Game>();
-        var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
+        var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
         // Act
@@ -88,7 +88,7 @@ public class GamePageTests : TestContext
         var gameState = new GameStateMemory("puzzle1", PuzzleFactory.GetSolvedPuzzle().GetAllCells());
         _mockGameStateManager.SetupLoadGameAsync(gameState);
         var sut = RenderComponent<Game>();
-        var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
+        var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
         // Act
@@ -106,7 +106,7 @@ public class GamePageTests : TestContext
         var gameState = new GameStateMemory("puzzle1", PuzzleFactory.GetSolvedPuzzle().GetAllCells());
         _mockGameStateManager.SetupLoadGameAsync(gameState);
         var sut = RenderComponent<Game>();
-        var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
+        var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
         // Act
@@ -125,7 +125,7 @@ public class GamePageTests : TestContext
         var gameState = new GameStateMemory("puzzle1", PuzzleFactory.GetSolvedPuzzle().GetAllCells());
         _mockGameStateManager.SetupLoadGameAsync(gameState);
         var sut = RenderComponent<Game>();
-        var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
+        var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
         // Act
@@ -233,7 +233,7 @@ public class GamePageTests : TestContext
     {
         // Arrange
         var sut = RenderComponent<Game>();
-        var buttonGroup = sut.FindComponent<ButtonGroup>().Instance;
+        var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
         // Act
