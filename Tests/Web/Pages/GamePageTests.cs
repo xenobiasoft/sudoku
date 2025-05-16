@@ -175,7 +175,7 @@ public class GamePageTests : TestContext
         // Arrange
         var puzzleId = "test-puzzle";
         var gameState = new GameStateMemory(puzzleId, []);
-        _mockGameStateManager.Setup(x => x.UndoAsync(puzzleId)).ReturnsAsync(gameState);
+        _mockGameStateManager.Setup(x => x.UndoGameAsync(puzzleId)).ReturnsAsync(gameState);
         var game = RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, puzzleId));
 
         // Act
@@ -191,7 +191,7 @@ public class GamePageTests : TestContext
         // Arrange
         var puzzleId = "test-puzzle";
         var gameState = new GameStateMemory(puzzleId, []);
-        _mockGameStateManager.Setup(x => x.ResetAsync(puzzleId)).ReturnsAsync(gameState);
+        _mockGameStateManager.Setup(x => x.ResetGameAsync(puzzleId)).ReturnsAsync(gameState);
         var game = RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, puzzleId));
 
         // Act

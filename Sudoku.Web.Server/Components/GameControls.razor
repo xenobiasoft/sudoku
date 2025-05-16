@@ -10,10 +10,10 @@
             }
         </div>
         <div class="btn-panel" role="group">
-            <button type="button" id="btnUndo" class="btn btn-primary" @onclick="Undo" disabled="@(TotalMoves <= 1)">
+            <button type="button" id="btnUndo" class="btn btn-primary" @onclick="Undo" disabled="@(TotalMoves == 0)">
                 Undo <i class="fa-solid fa-undo"></i>
             </button>
-            <button type="button" id="btnReset" class="btn btn-primary" @onclick="Reset" disabled="@(TotalMoves <= 1)">
+            <button type="button" id="btnReset" class="btn btn-primary" @onclick="Reset" disabled="@(TotalMoves == 0)">
                 Reset <i class="fa-solid fa-refresh"></i>
             </button>
         </div>

@@ -23,10 +23,12 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
         await SaveSessionAsync();
     }
 
-    public void ResumeSession()
+    public void ResumeSession(GameStateMemory gameState)
     {
         if (_currentSession is NullGameSession) return;
-        
+
+        _currentSession.ReloadBoard(gameState);
+
         _currentSession.Timer.Resume();
     }
 

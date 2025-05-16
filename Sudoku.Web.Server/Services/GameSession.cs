@@ -5,7 +5,7 @@ namespace Sudoku.Web.Server.Services;
 public class GameSession(GameStateMemory gameState, IGameTimer timer) : IGameSession
 {
     public string PuzzleId { get; } = gameState.PuzzleId;
-    public Cell[] Board { get; } = gameState.Board;
+    public Cell[] Board { get; private set; } = gameState.Board;
     public int InvalidMoves { get; private set; } = gameState.InvalidMoves;
     public int TotalMoves { get; private set; } = gameState.TotalMoves;
     public TimeSpan PlayDuration => timer.ElapsedTime;
@@ -18,5 +18,10 @@ public class GameSession(GameStateMemory gameState, IGameTimer timer) : IGameSes
         TotalMoves++;
         if (!isValid) InvalidMoves++;
         OnMoveRecorded?.Invoke(this, System.EventArgs.Empty);
+    }
+
+    public void ReloadBoard(GameStateMemory gameState)
+    {
+        Board = gameState.Board;
     }
 }

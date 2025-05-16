@@ -16,8 +16,9 @@
                        NotificationService="CellFocusedNotificationService" />
             <GameControls OnNumberClicked="HandleCellValueChanged"
                          PuzzleId="@PuzzleId"
+                         OnReset="HandleReset"
                          OnUndo="HandleUndo"
-                         TotalMoves="@SessionManager.CurrentSession.TotalMoves" />
+                         TotalMoves="@SessionManager.CurrentSession.Board.Count(x => x is { Value: not null, Locked: false })" />
             <VictoryDisplay IsVictory="@Puzzle.IsSolved()"
                             ElapsedTime="@SessionManager.CurrentSession.PlayDuration" />
         </div>

@@ -80,7 +80,8 @@ public class GameControlsTests : TestContext
     }
 
     [Theory]
-    [InlineData(1, true)]
+    [InlineData(0, true)]
+    [InlineData(1, false)]
     [InlineData(2, false)]
     public void UndoAsync_WhenOnInitialGameState_IsDisabled(int totalMoves, bool disabled)
     {
