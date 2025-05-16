@@ -18,6 +18,16 @@ public class InMemoryGameStateStorage : IGameStateStorage<PuzzleState>
         return Task.FromResult(_gameState.Count > 0 ? _gameState.Peek() : null);
     }
 
+    public async Task<PuzzleState> ResetAsync(string puzzleId)
+    {
+        while (_gameState.Count > 1)
+        {
+            await UndoAsync(puzzleId);
+        }
+
+        return _gameState.Peek();
+    }
+
     public Task SaveAsync(PuzzleState gameState)
     {
         if (_gameState.Count > 0)

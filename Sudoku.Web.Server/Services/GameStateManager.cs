@@ -29,7 +29,7 @@ public class GameStateManager(ILocalStorageService localStorageService, IGameSta
 
     public Task<GameStateMemory> ResetAsync(string gameId)
     {
-        throw new NotImplementedException();
+        return gameStateStorage.ResetAsync(gameId);
     }
 
     public async Task SaveGameAsync(GameStateMemory gameState)
@@ -46,12 +46,6 @@ public class GameStateManager(ILocalStorageService localStorageService, IGameSta
 
         var gameState = await gameStateStorage.UndoAsync(gameId);
 
-        if (gameState != null)
-        {
-            await localStorageService.SaveGameStateAsync(gameState);
-        }
-
         return gameState!;
-
     }
 }

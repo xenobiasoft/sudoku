@@ -5,6 +5,7 @@ public interface IGameStateStorage<TMemoryStateType> where TMemoryStateType : Pu
     GameStateMemoryType MemoryType { get; }
     Task DeleteAsync(string puzzleId);
     Task<TMemoryStateType?> LoadAsync(string puzzleId);
+    Task<TMemoryStateType?> ResetAsync(string puzzleId);
     Task SaveAsync(TMemoryStateType gameState);
     Task<TMemoryStateType?> UndoAsync(string puzzleId);
 }

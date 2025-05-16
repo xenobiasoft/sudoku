@@ -51,6 +51,35 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
         }
     }
 
+    public async Task<GameStateMemory> ResetAsync(string puzzleId)
+    {
+        await _semaphore.WaitAsync();
+
+        try
+        {
+            var blobList = await GetSortedBlobNamesAsync(puzzleId);
+
+            if (blobList.Count <= 1)
+            {
+                throw new CannotResetInitialStateException();
+            }
+
+            var initialBlobName = blobList.First();
+            var blobsToDelete = blobList.Where(x => x != initialBlobName);
+
+            foreach (var blobName in blobsToDelete)
+            {
+                await storageService.DeleteAsync(ContainerName, blobName);
+            }
+
+            return await storageService.LoadAsync<GameStateMemory>(ContainerName, initialBlobName);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
     public async Task SaveAsync(GameStateMemory gameState)
     {
         var currentGameState = await LoadAsync(gameState.PuzzleId);

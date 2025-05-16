@@ -28,9 +28,19 @@ public class CachingAzureBlobGameStateStorageDecorator(IGameStateStorage<GameSta
         return gameState;
     }
 
+    public override async Task<GameStateMemory> ResetAsync(string puzzleId)
+    {
+        var gameState = await decorated.ResetAsync(puzzleId);
+
+        _cache[puzzleId] = gameState;
+
+        return gameState;
+    }
+
     public override Task SaveAsync(GameStateMemory gameState)
     {
         _cache[gameState.PuzzleId] = gameState;
+
         return decorated.SaveAsync(gameState);
     }
 
