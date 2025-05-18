@@ -20,8 +20,8 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 		// Assert
 		Assert.Multiple(() =>
 		{
-			puzzle.GetCell(7, 7).PossibleValues.Should().Be("15");
-			puzzle.GetCell(7, 8).PossibleValues.Should().Be("15");
+			puzzle.GetCell(7, 7).PossibleValues.Should().BeEquivalentTo([1, 5]);
+			puzzle.GetCell(7, 8).PossibleValues.Should().BeEquivalentTo([1,5]);
 		});
 	}
 
@@ -45,7 +45,7 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 			.GetMiniGridCells(twinCells.First().Row, twinCells.First().Column)
 			.Where(x => !twinCells.Contains(x))
 			.ToList()
-			.ForEach(x => x.PossibleValues.Should().NotContain("1").And.NotContain("5"));
+			.ForEach(x => x.PossibleValues.Should().NotContain(1).And.NotContain(5));
 	}
 
 	[Fact]

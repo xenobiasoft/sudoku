@@ -10,34 +10,34 @@ public class TwinsInMiniGridsStrategy : SolverStrategy
 
         foreach (var cell in puzzle.GetAllCells())
 		{
-			if (cell.Value.HasValue || cell.PossibleValues.Length != 2) continue;
+			if (cell.Value.HasValue || cell.PossibleValues.Count != 2) continue;
 
 			var twins = new List<Cell> { cell };
 
 			foreach (var twinCell in puzzle.GetMiniGridCells(cell.Row, cell.Column))
 			{
-				if (cell == twinCell || cell.PossibleValues != twinCell.PossibleValues) continue;
+				if (cell == twinCell || !cell.PossibleValues.SequenceEqual(twinCell.PossibleValues)) continue;
 
 				twins.Add(twinCell);
 
 				foreach (var nonTwinCell in puzzle.GetMiniGridCells(cell.Row, cell.Column).Where(x => !twins.Contains(x)))
 				{
-					if (nonTwinCell.Value.HasValue || nonTwinCell.PossibleValues == cell.PossibleValues) continue;
+					if (nonTwinCell.Value.HasValue || nonTwinCell.PossibleValues.SequenceEqual(cell.PossibleValues)) continue;
 
-					nonTwinCell.PossibleValues = nonTwinCell.PossibleValues.Replace(cell.PossibleValues[0].ToString(), string.Empty);
-					nonTwinCell.PossibleValues = nonTwinCell.PossibleValues.Replace(cell.PossibleValues[1].ToString(), string.Empty);
+					nonTwinCell.PossibleValues = nonTwinCell.PossibleValues.Where(x => x != cell.PossibleValues[0]).ToList();
+					nonTwinCell.PossibleValues = nonTwinCell.PossibleValues.Where(x => x != cell.PossibleValues[1]).ToList();
 
-					if (string.IsNullOrWhiteSpace(nonTwinCell.PossibleValues))
+					if (!nonTwinCell.PossibleValues.Any())
 					{
 						throw new InvalidMoveException();
 					}
 
-					if (nonTwinCell.PossibleValues.Length != 1) continue;
+					if (nonTwinCell.PossibleValues.Count != 1) continue;
 
-					var cellValue = int.Parse(nonTwinCell.PossibleValues);
+					var cellValue = nonTwinCell.PossibleValues.First();
 					Console.WriteLine($"Setting cell:{nonTwinCell.Row}:{nonTwinCell.Column} to value {cellValue}");
 					nonTwinCell.Value = cellValue;
-					nonTwinCell.PossibleValues = string.Empty;
+					nonTwinCell.PossibleValues = [];
                     changesMade = true;
                 }
 			}

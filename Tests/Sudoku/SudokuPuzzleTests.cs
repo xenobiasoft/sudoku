@@ -13,7 +13,7 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
         // Arrange
         var expectedCell = new Cell(2, 0)
         {
-            PossibleValues = "12346789"
+            PossibleValues = [1,2,3,4,6,7,8,9]
         };
         var sut = ResolveSut();
         sut.SetCell(2, 4, 5);
@@ -184,17 +184,17 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
     public void PopulatePossibleValues_WhenCellDoesNotHaveValue_PopulatesPossibleValues()
     {
         // Arrange
-        var expectedPossibleValues = new[,]
+        var expectedPossibleValues = new List<int>[,]
         {
-            {"","","124","26","","2468","1489","1249","248"},
-            {"","247","247","","","","3478","234","2478"},
-            {"12","","","23","34","24","13457","","247"},
-            {"","125","1259","579","","147","4579","2459",""},
-            {"","25","2569","","5","","579","259",""},
-            {"","15","1359","59","","14","4589","459",""},
-            {"139","","134579","357","35","7","","","4"},
-            {"23","278","237","","","","36","3",""},
-            {"123","1245","12345","2356","","26","1346","",""}
+            {[], [], [1,2,4], [2,6], [], [2,4,6,8], [1,4,8,9], [1,2,4,9], [2,4,8]},
+            {[], [2,4,7], [2,4,7], [], [], [], [3,4,7,8], [2,3,4], [2,4,7,8]},
+            {[1,2], [], [], [2,3], [3,4], [2,4], [1,3,4,5,7], [], [2,4,7]},
+            {[], [1,2,5], [1,2,5,9], [5,7,9], [], [1,4,7], [4,5,7,9], [2,4,5,9], []},
+            {[], [2,5], [2,5,6,9], [], [5], [], [5,7,9], [2,5,9], []},
+            {[], [1,5], [1,3,5,9], [5,9], [], [1,4], [4,5,8,9], [4,5,9], []},
+            {[1,3,9], [], [1,3,4,5,7,9], [3,5,7], [3,5], [7], [], [], [4]},
+            {[2,3], [2,7,8], [2,3,7], [], [], [], [3,6], [3], []},
+            { [1,2,3], [1,2,4,5], [1,2,3,4,5], [2,3,5,6], [], [2,6], [1,3,4,6], [], []}
         };
         var sut = PuzzleFactory.GetPuzzle(Level.Easy);
 
@@ -245,9 +245,9 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
         });
     }
 
-    private static string[,] GetAllPossibleValues(Cell[] cells)
+    private static List<int>[,] GetAllPossibleValues(Cell[] cells)
     {
-        var possibleValues = new string[9, 9];
+        var possibleValues = new List<int>[9, 9];
 
         cells.ToList().ForEach(x => possibleValues[x.Row, x.Column] = x.PossibleValues);
 

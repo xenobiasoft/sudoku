@@ -47,7 +47,7 @@ public class SinglesInColumnsStrategyTests : BaseTestByAbstraction<SinglesInColu
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.GetColumnCells(loneRangerCell.Column).ToList().ForEach(x => x.PossibleValues.Should().NotContain("9"));
+		puzzle.GetColumnCells(loneRangerCell.Column).ToList().ForEach(x => x.PossibleValues.Should().NotContain(9));
 	}
 
 	[Fact]

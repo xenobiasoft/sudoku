@@ -17,7 +17,7 @@ public class SudokuPuzzle : ISudokuPuzzle
     {
         var cellPossibleValues = _cells
             .Where(x => !x.Value.HasValue)
-            .OrderBy(x => x.PossibleValues.Length)
+            .OrderBy(x => x.PossibleValues.Count)
             .ThenBy(x => x.Column)
             .ThenBy(x => x.Row)
             .ToList();
@@ -156,7 +156,7 @@ public class SudokuPuzzle : ISudokuPuzzle
     {
         foreach (var cell in _cells)
         {
-            cell.PossibleValues = cell.Value.HasValue ? string.Empty : CalculatePossibleValues(cell);
+            cell.PossibleValues = cell.Value.HasValue ? [] : CalculatePossibleValues(cell);
         }
     }
 
@@ -179,14 +179,14 @@ public class SudokuPuzzle : ISudokuPuzzle
         var cell = FindCellWithFewestPossibleValues();
         var possibleValues = cell.PossibleValues.Randomize();
 
-        if (string.IsNullOrWhiteSpace(possibleValues))
+        if (!possibleValues.Any())
         {
             throw new InvalidMoveException();
         }
 
-        foreach (var possibleValue in possibleValues.ToArray())
+        foreach (var possibleValue in possibleValues)
         {
-            var cellValue = int.Parse(possibleValue.ToString());
+            var cellValue = possibleValue;
             Console.WriteLine($"Setting cell:{cell.Row}:{cell.Column} to value {cellValue}");
             cell.Value = cellValue;
 
@@ -224,13 +224,35 @@ public class SudokuPuzzle : ISudokuPuzzle
 
     public string PuzzleId { get; set; } = Guid.NewGuid().ToString();
 
-    private string CalculatePossibleValues(Cell cell)
+    private List<int> CalculatePossibleValues(Cell cell)
     {
-        var possibleValues = GetColumnCells(cell.Column).Aggregate("123456789", (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));
+        var allValues = Enumerable.Range(1, 9).ToList();
 
-        possibleValues = GetRowCells(cell.Row).Aggregate(possibleValues, (current, rowCell) => current.Replace(rowCell.Value.GetValueOrDefault().ToString(), string.Empty));
+        foreach (var columnCell in GetColumnCells(cell.Column))
+        {
+            if (columnCell.Value.HasValue)
+            {
+                allValues.Remove(columnCell.Value.Value);
+            }
+        }
 
-        return GetMiniGridCells(cell.Row, cell.Column).Aggregate(possibleValues, (current, gridCell) => current.Replace(gridCell.Value.GetValueOrDefault().ToString(), string.Empty));
+        foreach (var rowCell in GetRowCells(cell.Row))
+        {
+            if (rowCell.Value.HasValue)
+            {
+                allValues.Remove(rowCell.Value.Value);
+            }
+        }
+
+        foreach (var gridCell in GetMiniGridCells(cell.Row, cell.Column))
+        {
+            if (gridCell.Value.HasValue)
+            {
+                allValues.Remove(gridCell.Value.Value);
+            }
+        }
+
+        return allValues;
     }
 
     private void Initialize()

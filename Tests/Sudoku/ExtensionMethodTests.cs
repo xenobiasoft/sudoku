@@ -2,18 +2,18 @@
 
 namespace UnitTests.Sudoku;
 
-public class StringExtensionMethodTests
+public class ExtensionMethodTests
 {
     [Fact]
     public void Randomize_ReturnsRandomizedString()
     {
         // Arrange
-        var testString = "abcd";
+        List<int> testArray = [1, 2, 3, 4];
 
         // Act
-        var actual = testString.Randomize();
+        var actual = testArray.Randomize();
 
         // Assert
-        actual.Length.Should().Be(testString.Length);
+        actual.Should().BeEquivalentTo(testArray);
     }
 }

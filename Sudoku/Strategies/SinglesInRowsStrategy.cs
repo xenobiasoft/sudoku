@@ -16,7 +16,7 @@ public class SinglesInRowsStrategy : SolverStrategy
 
 				foreach (var rowCell in puzzle.GetRowCells(row))
 				{
-					if (rowCell.Value.HasValue || !rowCell.PossibleValues.Contains(number.ToString())) continue;
+					if (rowCell.Value.HasValue || !rowCell.PossibleValues.Contains(number)) continue;
 
 					occurrence += 1;
 
@@ -34,7 +34,7 @@ public class SinglesInRowsStrategy : SolverStrategy
 				var loneRangerCell = puzzle.GetCell(rowPos, colPos);
 				Console.WriteLine($"Setting cell:{loneRangerCell.Row}:{loneRangerCell.Column} to value {number}");
 				loneRangerCell.Value = number;
-				loneRangerCell.PossibleValues = number.ToString();
+				loneRangerCell.PossibleValues = [];
 				changesMade = true;
             }
 		}

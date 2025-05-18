@@ -20,9 +20,9 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 		// Assert
 		Assert.Multiple(() =>
 		{
-			puzzle.GetCell(0, 0).PossibleValues.Should().Be("789");
-			puzzle.GetCell(1, 0).PossibleValues.Should().Be("789");
-			puzzle.GetCell(2, 0).PossibleValues.Should().Be("789");
+			puzzle.GetCell(0, 0).PossibleValues.Should().BeEquivalentTo([7,8,9]);
+			puzzle.GetCell(1, 0).PossibleValues.Should().BeEquivalentTo([7,8,9]);
+			puzzle.GetCell(2, 0).PossibleValues.Should().BeEquivalentTo([7,8,9]);
 		});
 	}
 
@@ -40,9 +40,9 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 		for (var row = 3; row < 9; row++)
 		{
 			puzzle.GetCell(row, 2).PossibleValues
-				.Should().NotContain("4")
-				.And.NotContain("5")
-				.And.NotContain("6");
+				.Should().NotContain(4)
+				.And.NotContain(5)
+				.And.NotContain(6);
 		}
 	}
 

@@ -20,8 +20,8 @@ public class TwinsInColumnsStrategyTests : BaseTestByAbstraction<TwinsInColumnsS
 		// Assert
 		Assert.Multiple(() =>
 		{
-			puzzle.GetCell(7, 7).PossibleValues.Should().Be("15");
-			puzzle.GetCell(8, 7).PossibleValues.Should().Be("15");
+			puzzle.GetCell(7, 7).PossibleValues.Should().BeEquivalentTo([1,5]);
+			puzzle.GetCell(8, 7).PossibleValues.Should().BeEquivalentTo([1,5]);
 		});
 	}
 
@@ -40,7 +40,7 @@ public class TwinsInColumnsStrategyTests : BaseTestByAbstraction<TwinsInColumnsS
 		{
 			if (row is 7 or 8) continue;
 
-			puzzle.GetCell(row, 7).PossibleValues.Should().NotContain("1").And.NotContain("5");
+			puzzle.GetCell(row, 7).PossibleValues.Should().NotContain(1).And.NotContain(5);
 		}
 	}
 

@@ -20,9 +20,9 @@ public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsIn
 		// Assert
 		Assert.Multiple(() =>
 		{
-			puzzle.GetCell(0, 0).PossibleValues.Should().Be("123");
-			puzzle.GetCell(1, 1).PossibleValues.Should().Be("123");
-			puzzle.GetCell(2, 2).PossibleValues.Should().Be("123");
+			puzzle.GetCell(0, 0).PossibleValues.Should().BeEquivalentTo([1,2,3]);
+			puzzle.GetCell(1, 1).PossibleValues.Should().BeEquivalentTo([1, 2, 3]);
+			puzzle.GetCell(2, 2).PossibleValues.Should().BeEquivalentTo([1,2,3]);
 		});
 	}
 
@@ -44,9 +44,9 @@ public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsIn
 				if (col == 0 && row == 0 || col == 1 && row == 1 || col == 2 && row == 2) continue;
 
 				puzzle.GetCell(row, col).PossibleValues
-					.Should().NotContain("1")
-					.And.NotContain("2")
-					.And.NotContain("3");
+					.Should().NotContain(1)
+					.And.NotContain(2)
+					.And.NotContain(3);
 			}
 		}
 	}

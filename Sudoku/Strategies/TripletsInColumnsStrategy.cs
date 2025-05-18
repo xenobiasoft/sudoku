@@ -10,16 +10,16 @@ public class TripletsInColumnsStrategy : SolverStrategy
 
         foreach (var cell in puzzle.GetAllCells())
 		{
-			if (cell.Value.HasValue || cell.PossibleValues.Length != 3) continue;
+			if (cell.Value.HasValue || cell.PossibleValues.Count != 3) continue;
 
 			var triplets = new List<Cell> { cell };
 
 			foreach (var colCell in puzzle.GetColumnCells(cell.Column).Where(x => x != cell))
 			{
 				if (cell.PossibleValues == colCell.PossibleValues ||
-					(colCell.PossibleValues.Length == 3 &&
-					 cell.PossibleValues.Contains(colCell.PossibleValues[0].ToString()) &&
-					 cell.PossibleValues.Contains(colCell.PossibleValues[1].ToString()))
+					(colCell.PossibleValues.Count == 3 &&
+					 cell.PossibleValues.Contains(colCell.PossibleValues[0]) &&
+					 cell.PossibleValues.Contains(colCell.PossibleValues[1]))
 					)
 				{
 					triplets.Add(colCell);
@@ -32,21 +32,21 @@ public class TripletsInColumnsStrategy : SolverStrategy
 			{
 				if (nonTripletCell.Value.HasValue || triplets.Contains(nonTripletCell)) continue;
 
-				nonTripletCell.PossibleValues = nonTripletCell.PossibleValues.Replace(cell.PossibleValues[0].ToString(), string.Empty);
-				nonTripletCell.PossibleValues = nonTripletCell.PossibleValues.Replace(cell.PossibleValues[1].ToString(), string.Empty);
-				nonTripletCell.PossibleValues = nonTripletCell.PossibleValues.Replace(cell.PossibleValues[2].ToString(), string.Empty);
+				nonTripletCell.PossibleValues = nonTripletCell.PossibleValues.Where(x => x != cell.PossibleValues[0]).ToList();
+				nonTripletCell.PossibleValues = nonTripletCell.PossibleValues.Where(x => x != cell.PossibleValues[1]).ToList();
+                nonTripletCell.PossibleValues = nonTripletCell.PossibleValues.Where(x => x != cell.PossibleValues[2]).ToList();
 
-				if (string.IsNullOrWhiteSpace(nonTripletCell.PossibleValues))
+                if (!nonTripletCell.PossibleValues.Any())
 				{
 					throw new InvalidMoveException();
 				}
 
-				if (nonTripletCell.PossibleValues.Length != 1) continue;
+				if (nonTripletCell.PossibleValues.Count != 1) continue;
 
-				var cellValue = int.Parse(nonTripletCell.PossibleValues);
+				var cellValue = nonTripletCell.PossibleValues.First();
 				Console.WriteLine($"Setting cell:{nonTripletCell.Row}:{nonTripletCell.Column} to value {cellValue}");
 				nonTripletCell.Value = cellValue;
-				nonTripletCell.PossibleValues = string.Empty;
+				nonTripletCell.PossibleValues = [];
                 changesMade = true;
             }
 		}
