@@ -16,6 +16,9 @@
             <button type="button" id="btnReset" class="btn btn-primary" @onclick="Reset" disabled="@(TotalMoves == 0)">
                 Reset <i class="fa-solid fa-refresh"></i>
             </button>
+            <button type="button" id="btnPencilMode" class="btn @(IsPencilMode ? "btn-primary" : "btn-outline-primary")" @onclick="TogglePencilMode">
+                Possible Values <i class="fa-solid fa-pencil"></i>
+            </button>
         </div>
     </div>
 </div>

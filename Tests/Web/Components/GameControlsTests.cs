@@ -2,6 +2,7 @@
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UnitTests.Web.Components;
 
@@ -15,28 +16,6 @@ public class GameControlsTests : TestContext
     }
 
     [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    [InlineData(3)]
-    [InlineData(4)]
-    [InlineData(5)]
-    [InlineData(6)]
-    [InlineData(7)]
-    [InlineData(8)]
-    [InlineData(9)]
-	public void RenderComponent_RendersNumbersCorrectly(int number)
-	{
-        // Arrange
-        var gameControls = RenderComponent<GameControls>();
-
-        // Act
-        var numberButton = gameControls.Find($"#btn{number}");
-
-        // Assert
-		numberButton.MarkupMatches($"<button type=\"button\" id=\"btn{number}\" class=\"btn btn-primary btn-num\"><i class=\"fa-solid fa-{number}\"></i></button>");
-	}
-
-	[Theory]
 	[InlineData(1)]
     [InlineData(2)]
     [InlineData(3)]
@@ -46,7 +25,7 @@ public class GameControlsTests : TestContext
     [InlineData(7)]
     [InlineData(8)]
     [InlineData(9)]
-    public void WhenButtonClicked_SetsValueToNumber(int? expected)
+    public void NumberButton_WhenClicked_SetsValueToNumber(int? expected)
 	{
 		// Arrange
         CellValueChangedEventArgs? calledEventArgs = null;
@@ -62,14 +41,91 @@ public class GameControlsTests : TestContext
     }
 
     [Fact]
+    public void PencilModeButton_RendersCorrectMode()
+    {
+        // Arrange
+        var gameControls = RenderComponent<GameControls>();
+
+        // Act
+        var pencilModeButton = gameControls.Find("#btnPencilMode");
+
+        // Assert
+        pencilModeButton.MarkupMatches(
+            "<button type=\"button\" id=\"btnPencilMode\" class=\"btn btn-outline-primary\">Possible Values <i class=\"fa-solid fa-pencil\"></i></button>");
+        pencilModeButton.Click();
+        pencilModeButton.MarkupMatches(
+            "<button type=\"button\" id=\"btnPencilMode\" class=\"btn btn-primary\">Possible Values <i class=\"fa-solid fa-pencil\"></i></button>");
+    }
+
+    [Fact]
+    public void PencilModeButton_WhenClicked_SendsButtonModeArgument()
+    {
+        // Arrange
+        var isPencilMode = false;
+        var gameControls = RenderComponent<GameControls>(p =>
+        {
+            p.Add(x => x.OnPencilMode, (i) => isPencilMode = i);
+        });
+        var pencilModeButton = gameControls.Find("#btnPencilMode");
+
+        // Act
+        pencilModeButton.Click();
+
+        // Assert
+        isPencilMode.Should().BeTrue();
+        pencilModeButton.Click();
+        isPencilMode.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    [InlineData(7)]
+    [InlineData(8)]
+    [InlineData(9)]
+    public void RenderComponent_RendersNumbersCorrectly(int number)
+    {
+        // Arrange
+        var gameControls = RenderComponent<GameControls>();
+
+        // Act
+        var numberButton = gameControls.Find($"#btn{number}");
+
+        // Assert
+        numberButton.MarkupMatches($"<button type=\"button\" id=\"btn{number}\" class=\"btn btn-primary btn-num\"><i class=\"fa-solid fa-{number}\"></i></button>");
+    }
+
+    [Fact]
+    public void ResetButton_WhenClicked_ResetsGameBoard()
+    {
+        // Arrange
+        var resetCalled = false;
+        var gameControls = RenderComponent<GameControls>(p =>
+        {
+            p.Add(x => x.OnReset, () => resetCalled = true);
+        });
+        var resetButton = gameControls.Find("#btnReset");
+
+        // Act
+        resetButton.Click();
+
+        // Assert
+        resetCalled.Should().BeTrue();
+    }
+
+    [Fact]
     public void UndoAsync_WhenClicked_CallsGameStateManagerUndo()
     {
         // Arrange
         var undoCalled = false;
         var gameControls = RenderComponent<GameControls>(p =>
-            {
-                p.Add(x => x.OnUndo, () => undoCalled = true);
-            });
+        {
+            p.Add(x => x.OnUndo, () => undoCalled = true);
+        });
         var undoButton = gameControls.Find("#btnUndo");
 
         // Act
@@ -98,23 +154,5 @@ public class GameControlsTests : TestContext
 
         // Assert
         undoButton.HasAttribute("disabled").Should().Be(disabled);
-    }
-
-    [Fact]
-    public void ResetButton_WhenClicked_ResetsGameBoard()
-    {
-        // Arrange
-        var resetCalled = false;
-        var gameControls = RenderComponent<GameControls>(p =>
-        {
-            p.Add(x => x.OnReset, () => resetCalled = true);
-        });
-        var resetButton = gameControls.Find("#btnReset");
-
-        // Act
-        resetButton.Click();
-
-        // Assert
-        resetCalled.Should().BeTrue();
     }
 }
