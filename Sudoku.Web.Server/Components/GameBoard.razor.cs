@@ -45,7 +45,7 @@ namespace Sudoku.Web.Server.Components
         {
             var cell = Puzzle!
                 .GetColumnCells(_selectedCell.Column)
-                .Where(x => !x.Locked && x.Row < _selectedCell.Row)
+                .Where(x => x.Row < _selectedCell.Row)
                 .MaxBy(x => x.Row);
 
             NotificationService!.Notify(cell!);
@@ -55,7 +55,7 @@ namespace Sudoku.Web.Server.Components
         {
             var cell = Puzzle!
                 .GetRowCells(_selectedCell.Row)
-                .Where(x => !x.Locked && x.Column > _selectedCell.Column)
+                .Where(x => x.Column > _selectedCell.Column)
                 .MinBy(x => x.Column);
 
             NotificationService!.Notify(cell!);
@@ -65,7 +65,7 @@ namespace Sudoku.Web.Server.Components
         {
             var cell = Puzzle!
                 .GetRowCells(_selectedCell.Row)
-                .Where(x => !x.Locked && x.Column < _selectedCell.Column)
+                .Where(x => x.Column < _selectedCell.Column)
                 .MaxBy(x => x.Column);
 
             NotificationService!.Notify(cell!);
@@ -75,7 +75,7 @@ namespace Sudoku.Web.Server.Components
         {
             var cell = Puzzle!
                 .GetColumnCells(_selectedCell.Column)
-                .Where(x => !x.Locked && x.Row > _selectedCell.Row)
+                .Where(x => x.Row > _selectedCell.Row)
                 .MinBy(x => x.Row);
 
             NotificationService!.Notify(cell!);
