@@ -47,7 +47,7 @@ public class GamePageTests : TestContext
 
         // Act
         await sut.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cellInput.Cell));
-        await sut.InvokeAsync(() => buttonGroup.OnNumberClicked.InvokeAsync(new CellValueChangedEventArgs(3)));
+        await sut.InvokeAsync(() => buttonGroup.OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(3)));
 
         // Assert
         cellInput.Cell.Value.Should().Be(3);
@@ -63,7 +63,7 @@ public class GamePageTests : TestContext
 
         // Act
         await sut.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cellInput.Cell));
-        await sut.InvokeAsync(() => buttonGroup.OnNumberClicked.InvokeAsync(new CellValueChangedEventArgs(5)));
+        await sut.InvokeAsync(() => buttonGroup.OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(5)));
 
         // Assert
         _mockInvalidCellNotifier.VerifyNotificationSent(Times.Once);
@@ -93,7 +93,7 @@ public class GamePageTests : TestContext
 
         // Act
         await sut.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cellInput.Cell));
-        await sut.InvokeAsync(() => buttonGroup.OnNumberClicked.InvokeAsync(new CellValueChangedEventArgs(1)));
+        await sut.InvokeAsync(() => buttonGroup.OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(1)));
 
         // Assert
         _mockGameNotificationService.VerifyGameEndedSent(Times.Once);
@@ -111,7 +111,7 @@ public class GamePageTests : TestContext
 
         // Act
         await sut.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cellInput.Cell));
-        await sut.InvokeAsync(() => buttonGroup.OnNumberClicked.InvokeAsync(new CellValueChangedEventArgs(1)));
+        await sut.InvokeAsync(() => buttonGroup.OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(1)));
 
         // Assert
         var victoryOverlay = sut.Find(".victory-overlay");
@@ -130,7 +130,7 @@ public class GamePageTests : TestContext
 
         // Act
         await sut.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cellInput.Cell));
-        await sut.InvokeAsync(() => buttonGroup.OnNumberClicked.InvokeAsync(new CellValueChangedEventArgs(1)));
+        await sut.InvokeAsync(() => buttonGroup.OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(1)));
 
         // Assert
         _mockGameStateManager.VerifyDeleteGameAsyncCalled(sut.Instance.PuzzleId, Times.Once);
@@ -254,7 +254,7 @@ public class GamePageTests : TestContext
 
         // Act
         await sut.InvokeAsync(() => cellInput.OnCellFocus.InvokeAsync(cellInput.Cell));
-        await sut.InvokeAsync(() => buttonGroup.OnNumberClicked.InvokeAsync(new CellValueChangedEventArgs(3)));
+        await sut.InvokeAsync(() => buttonGroup.OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(3)));
 
         // Assert
         _mockGameSessionManager.VerifyMoveRecorded(Times.Once);

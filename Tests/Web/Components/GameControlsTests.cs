@@ -25,12 +25,15 @@ public class GameControlsTests : TestContext
     [InlineData(7)]
     [InlineData(8)]
     [InlineData(9)]
-    public void NumberButton_WhenClicked_SetsValueToNumber(int? expected)
+    public void NumberButton_WhenClickedInPencilMode_RaisesEventWithValue(int? expected)
 	{
 		// Arrange
-        CellValueChangedEventArgs? calledEventArgs = null;
-		var gameControls = RenderComponent<GameControls>(p => p
-            .Add(x => x.OnNumberClicked, (i) => calledEventArgs = i));
+        CellPossibleValueChangedEventArgs? calledEventArgs = null;
+		var gameControls = RenderComponent<GameControls>(p =>
+        {
+            p.Add(x => x.IsPencilMode, true);
+            p.Add(x => x.OnPossibleValueChanged, (i) => calledEventArgs = i);
+        });
         var button = gameControls.Find($"#btn{expected ?? 0}");
 
 		// Act
@@ -40,21 +43,50 @@ public class GameControlsTests : TestContext
         calledEventArgs!.Value.Should().Be(expected);
     }
 
-    [Fact]
-    public void PencilModeButton_RendersCorrectMode()
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    [InlineData(5)]
+    [InlineData(6)]
+    [InlineData(7)]
+    [InlineData(8)]
+    [InlineData(9)]
+    public void NumberButton_WhenClickedNotInPencilMode_RaisesEventWithValue(int? expected)
     {
         // Arrange
-        var gameControls = RenderComponent<GameControls>();
+        CellValueChangedEventArgs? calledEventArgs = null;
+        var gameControls = RenderComponent<GameControls>(p =>
+        {
+            p.Add(x => x.IsPencilMode, false);
+            p.Add(x => x.OnValueChanged, (i) => calledEventArgs = i);
+        });
+        var button = gameControls.Find($"#btn{expected ?? 0}");
+
+        // Act
+        button.Click();
+
+        // Assert
+        calledEventArgs!.Value.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(false, "btn btn-outline-primary")]
+    [InlineData(true, "btn btn-primary")]
+    public void PencilModeButton_RendersCorrectMode(bool isPencilMode, string cssClass)
+    {
+        // Arrange
+        var gameControls = RenderComponent<GameControls>(p =>
+        {
+            p.Add(x => x.IsPencilMode, isPencilMode);
+        });
 
         // Act
         var pencilModeButton = gameControls.Find("#btnPencilMode");
 
         // Assert
-        pencilModeButton.MarkupMatches(
-            "<button type=\"button\" id=\"btnPencilMode\" class=\"btn btn-outline-primary\">Possible Values <i class=\"fa-solid fa-pencil\"></i></button>");
-        pencilModeButton.Click();
-        pencilModeButton.MarkupMatches(
-            "<button type=\"button\" id=\"btnPencilMode\" class=\"btn btn-primary\">Possible Values <i class=\"fa-solid fa-pencil\"></i></button>");
+        pencilModeButton.MarkupMatches($"<button type=\"button\" id=\"btnPencilMode\" class=\"{cssClass}\">Possible Values <i class=\"fa-solid fa-pencil\"></i></button>");
     }
 
     [Fact]

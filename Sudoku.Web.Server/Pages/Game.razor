@@ -13,11 +13,15 @@
             <GameBoard Puzzle="Puzzle"
                        OnCellFocus="HandleSetSelectedCell"
                        OnCellChanged="HandleCellChanged"
-                       NotificationService="CellFocusedNotificationService" />
-            <GameControls OnNumberClicked="HandleCellValueChanged"
+                       NotificationService="CellFocusedNotificationService"
+                       IsPencilMode="IsPencilMode"
+                       OnPossibleValueChanged="HandlePossibleValueChanged"/>
+            <GameControls OnValueChanged="HandleCellValueChanged"
                          PuzzleId="@PuzzleId"
                          OnReset="HandleReset"
                          OnUndo="HandleUndo"
+                         OnPencilMode="HandlePencilModeToggle"
+                         OnPossibleValueChanged="HandlePossibleValueChanged"
                          TotalMoves="@SessionManager.CurrentSession.Board.Count(x => x is { Value: not null, Locked: false })" />
             <VictoryDisplay IsVictory="@Puzzle.IsSolved()"
                             ElapsedTime="@SessionManager.CurrentSession.PlayDuration" />

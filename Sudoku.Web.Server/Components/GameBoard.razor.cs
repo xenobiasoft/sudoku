@@ -13,6 +13,8 @@ namespace Sudoku.Web.Server.Components
         [Parameter] public ICellFocusedNotificationService? NotificationService { get; set; }
         [Parameter] public EventCallback<Cell> OnCellFocus { set; get; }
         [Parameter] public EventCallback<CellChangedEventArgs> OnCellChanged { get; set; }
+        [Parameter] public EventCallback<CellPossibleValueChangedEventArgs> OnPossibleValueChanged { get; set; }
+        [Parameter] public bool IsPencilMode { get; set; }
 
         private async Task HandleCellFocus(Cell cell)
         {
