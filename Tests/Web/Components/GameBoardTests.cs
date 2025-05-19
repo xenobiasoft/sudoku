@@ -32,7 +32,20 @@ public class GameBoardTests : TestContext
 
         // Assert
         cellInputs.Count.Should().Be(81);
-        cellInputs.ToList().ForEach(x => x.MarkupMatches("<td class=\"cell\"><input class=\"\" type=\"text\" maxlength=\"1\" readonly=\"\"></td>"));
+        cellInputs.ToList().ForEach(x => x.MarkupMatches(@"<td class=""cell"" >
+                                                               <div class=""pencil-values"" >
+                                                                   <span class=""pencil-entry""></span>
+                                                                   <span class=""pencil-entry""></span>
+                                                                   <span class=""pencil-entry""></span>
+                                                                   <span class=""pencil-entry""></span>
+                                                                   <span class=""pencil-entry""></span>
+                                                                   <span class=""pencil-entry""></span>
+                                                                   <span class=""pencil-entry""></span>
+                                                                   <span class=""pencil-entry""></span>
+                                                                   <span class=""pencil-entry""></span>
+                                                               </div>
+                                                               <input class="""" type=""text"" maxlength=""1"" readonly="""">
+                                                           </td>"));
     }
 
     [Fact]

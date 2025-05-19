@@ -5,17 +5,14 @@
     }
     else
     {
-        if (IsPencilMode)
-        {
-            <div class="pencil-values">
-                @for (var i = 1; i <= 9; i++)
-                {
-                    <span class="pencil-entry">
-                        @(Cell.PossibleValues.Contains(i) ? i.ToString() : "")
-                    </span>
-                }
-            </div>
-        }
+        <div class="pencil-values">
+            @for (var i = 1; i <= 9; i++)
+            {
+                <span class="pencil-entry">
+                    @(Cell.PossibleValues.Contains(i) ? i.ToString() : "")
+                </span>
+            }
+        </div>
         <input @ref="_element" 
                class="@CssClass" 
                type="text" 
