@@ -19,7 +19,7 @@ public class SinglesInMiniGridsStrategy : SolverStrategy
 					foreach (var miniGridCell in puzzle.GetMiniGridCells(row, col))
 					{
 						if (miniGridCell.Value == number) break;
-						if (miniGridCell.Value.HasValue || !miniGridCell.PossibleValues.Contains(number.ToString())) continue;
+						if (miniGridCell.Value.HasValue || !miniGridCell.PossibleValues.Contains(number)) continue;
 
 						occurrence += 1;
 						colPos = miniGridCell.Column;
@@ -33,7 +33,7 @@ public class SinglesInMiniGridsStrategy : SolverStrategy
 					var loneRangerCell = puzzle.GetCell(rowPos, colPos);
 					Console.WriteLine($"Setting cell:{loneRangerCell.Row}:{loneRangerCell.Column} to value {number}");
 					loneRangerCell.Value = number;
-					loneRangerCell.PossibleValues = string.Empty;
+					loneRangerCell.PossibleValues = [];
                     changesMade = true;
                 }
 			}

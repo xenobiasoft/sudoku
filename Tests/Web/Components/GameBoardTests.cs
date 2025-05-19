@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Components.Web;
+using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services;
@@ -9,9 +10,11 @@ namespace UnitTests.Web.Components;
 
 public class GameBoardTests : TestContext
 {
+    private readonly Mock<ICellFocusedNotificationService> _mockCellFocusedNotificationService = new();
+
     public GameBoardTests()
     {
-        Services.AddSingleton(new Mock<ICellFocusedNotificationService>().Object);
+        Services.AddSingleton(_mockCellFocusedNotificationService.Object);
         Services.AddSingleton(new Mock<IInvalidCellNotificationService>().Object);
         Services.AddSingleton(new Mock<IGameNotificationService>().Object);
         Services.AddSingleton(new Mock<IGameStateManager>().Object);
@@ -53,5 +56,93 @@ public class GameBoardTests : TestContext
             calledArgs.Column.Should().Be(2);
             calledArgs.Value.Should().Be(5);
         });
+    }
+
+    [Fact]
+    public async Task GameBoard_FocusDown_SendsFocusToCorrectCell()
+    {
+        // Arrange
+        var puzzle = PuzzleFactory.GetEmptyPuzzle();
+        var gameBoard = RenderComponent<GameBoard>(p =>
+        {
+            p.Add(x => x.Puzzle, puzzle);
+            p.Add(x => x.NotificationService, _mockCellFocusedNotificationService.Object);
+        });
+        var cellInputs = gameBoard.FindComponents<CellInput>();
+        var cellInput = cellInputs[50];
+        var focusedCell = cellInputs[59].Instance.Cell;
+        await gameBoard.InvokeAsync(() => cellInput.Instance.OnCellFocus.InvokeAsync(cellInput.Instance.Cell));
+
+        // Act
+        await gameBoard.Find(".game-board-container").KeyUpAsync(new KeyboardEventArgs { Code = KeyCodes.DownKey });
+
+        // Assert
+        _mockCellFocusedNotificationService.Verify(s => s.Notify(focusedCell), Times.Once);
+    }
+
+    [Fact]
+    public async Task GameBoard_FocusLeft_SendsFocusToCorrectCell()
+    {
+        // Arrange
+        var puzzle = PuzzleFactory.GetEmptyPuzzle();
+        var gameBoard = RenderComponent<GameBoard>(p =>
+        {
+            p.Add(x => x.Puzzle, puzzle);
+            p.Add(x => x.NotificationService, _mockCellFocusedNotificationService.Object);
+        });
+        var cellInputs = gameBoard.FindComponents<CellInput>();
+        var cellInput = cellInputs[50];
+        var focusedCell = cellInputs[49].Instance.Cell;
+        await gameBoard.InvokeAsync(() => cellInput.Instance.OnCellFocus.InvokeAsync(cellInput.Instance.Cell));
+
+        // Act
+        await gameBoard.Find(".game-board-container").KeyUpAsync(new KeyboardEventArgs { Code = KeyCodes.LeftKey});
+
+        // Assert
+        _mockCellFocusedNotificationService.Verify(s => s.Notify(focusedCell), Times.Once);
+    }
+
+    [Fact]
+    public async Task GameBoard_FocusRight_SendsFocusToCorrectCell()
+    {
+        // Arrange
+        var puzzle = PuzzleFactory.GetEmptyPuzzle();
+        var gameBoard = RenderComponent<GameBoard>(p =>
+        {
+            p.Add(x => x.Puzzle, puzzle);
+            p.Add(x => x.NotificationService, _mockCellFocusedNotificationService.Object);
+        });
+        var cellInputs = gameBoard.FindComponents<CellInput>();
+        var cellInput = cellInputs[50];
+        var focusedCell = cellInputs[51].Instance.Cell;
+        await gameBoard.InvokeAsync(() => cellInput.Instance.OnCellFocus.InvokeAsync(cellInput.Instance.Cell));
+
+        // Act
+        await gameBoard.Find(".game-board-container").KeyUpAsync(new KeyboardEventArgs { Code = KeyCodes.RightKey });
+
+        // Assert
+        _mockCellFocusedNotificationService.Verify(s => s.Notify(focusedCell), Times.Once);
+    }
+
+    [Fact]
+    public async Task GameBoard_FocusUp_SendsFocusToCorrectCell()
+    {
+        // Arrange
+        var puzzle = PuzzleFactory.GetEmptyPuzzle();
+        var gameBoard = RenderComponent<GameBoard>(p =>
+        {
+            p.Add(x => x.Puzzle, puzzle);
+            p.Add(x => x.NotificationService, _mockCellFocusedNotificationService.Object);
+        });
+        var cellInputs = gameBoard.FindComponents<CellInput>();
+        var cellInput = cellInputs[50];
+        var focusedCell = cellInputs[41].Instance.Cell;
+        await gameBoard.InvokeAsync(() => cellInput.Instance.OnCellFocus.InvokeAsync(cellInput.Instance.Cell));
+
+        // Act
+        await gameBoard.Find(".game-board-container").KeyUpAsync(new KeyboardEventArgs { Code = KeyCodes.UpKey });
+
+        // Assert
+        _mockCellFocusedNotificationService.Verify(s => s.Notify(focusedCell), Times.Once);
     }
 }

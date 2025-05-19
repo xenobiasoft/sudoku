@@ -8,12 +8,12 @@ public class ColumnRowMiniGridEliminationStrategy : SolverStrategy
 
         foreach (var cell in puzzle.GetAllCells())
 		{
-			if (cell.Value.HasValue || cell.PossibleValues.Length != 1) continue;
+			if (cell.Value.HasValue || cell.PossibleValues.Count != 1) continue;
 
-			var cellValue = int.Parse(cell.PossibleValues);
+			var cellValue = cell.PossibleValues.First();
 			Console.WriteLine($"Setting cell:{cell.Row}:{cell.Column} to value {cellValue}");
 			cell.Value = cellValue;
-			cell.PossibleValues = string.Empty;
+			cell.PossibleValues = [];
             changesMade = true;
         }
 

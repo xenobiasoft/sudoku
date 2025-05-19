@@ -13,6 +13,8 @@ namespace Sudoku.Web.Server.Components
         [Parameter] public ICellFocusedNotificationService? NotificationService { get; set; }
         [Parameter] public EventCallback<Cell> OnCellFocus { set; get; }
         [Parameter] public EventCallback<CellChangedEventArgs> OnCellChanged { get; set; }
+        [Parameter] public EventCallback<CellPossibleValueChangedEventArgs> OnPossibleValueChanged { get; set; }
+        [Parameter] public bool IsPencilMode { get; set; }
 
         private async Task HandleCellFocus(Cell cell)
         {
@@ -43,7 +45,7 @@ namespace Sudoku.Web.Server.Components
         {
             var cell = Puzzle!
                 .GetColumnCells(_selectedCell.Column)
-                .Where(x => !x.Locked && x.Row < _selectedCell.Row)
+                .Where(x => x.Row < _selectedCell.Row)
                 .MaxBy(x => x.Row);
 
             NotificationService!.Notify(cell!);
@@ -53,7 +55,7 @@ namespace Sudoku.Web.Server.Components
         {
             var cell = Puzzle!
                 .GetRowCells(_selectedCell.Row)
-                .Where(x => !x.Locked && x.Column > _selectedCell.Column)
+                .Where(x => x.Column > _selectedCell.Column)
                 .MinBy(x => x.Column);
 
             NotificationService!.Notify(cell!);
@@ -63,7 +65,7 @@ namespace Sudoku.Web.Server.Components
         {
             var cell = Puzzle!
                 .GetRowCells(_selectedCell.Row)
-                .Where(x => !x.Locked && x.Column < _selectedCell.Column)
+                .Where(x => x.Column < _selectedCell.Column)
                 .MaxBy(x => x.Column);
 
             NotificationService!.Notify(cell!);
@@ -73,7 +75,7 @@ namespace Sudoku.Web.Server.Components
         {
             var cell = Puzzle!
                 .GetColumnCells(_selectedCell.Column)
-                .Where(x => !x.Locked && x.Row > _selectedCell.Row)
+                .Where(x => x.Row > _selectedCell.Row)
                 .MinBy(x => x.Row);
 
             NotificationService!.Notify(cell!);

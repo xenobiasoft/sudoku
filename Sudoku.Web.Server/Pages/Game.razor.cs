@@ -19,6 +19,7 @@ public partial class Game
 
     public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
     public Cell SelectedCell { get; private set; } = new(0, 0);
+    private bool IsPencilMode { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -72,7 +73,7 @@ public partial class Game
         return HandleCellUpdate(SelectedCell.Row, SelectedCell.Column, args.Value);
     }
 
-    private async Task HandleCellUpdate(int row, int column, int? value)
+    private async Task HandleCellUpdate(int row, int column, int value)
     {
         Puzzle.SetCell(row, column, value);
         var isValid = Puzzle.IsValid();
@@ -86,6 +87,29 @@ public partial class Game
             GameNotificationService!.NotifyGameEnded();
         }
 
+        StateHasChanged();
+    }
+
+    private void HandlePencilModeToggle(bool isPencilMode)
+    {
+        IsPencilMode = isPencilMode;
+        StateHasChanged();
+    }
+
+    private void HandlePossibleValueChanged(CellPossibleValueChangedEventArgs arg)
+    {
+        var possibleValues = SelectedCell.PossibleValues;
+
+        if (possibleValues.Contains(arg.Value))
+        {
+            possibleValues.Remove(arg.Value);
+        }
+        else
+        {
+            possibleValues.Add(arg.Value);
+        }
+
+        SelectedCell.PossibleValues = possibleValues;
         StateHasChanged();
     }
 }

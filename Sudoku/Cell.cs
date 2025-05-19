@@ -2,7 +2,7 @@
 
 public record Cell(int Row, int Column)
 {
-    public string PossibleValues { get; set; } = string.Empty;
+    public List<int> PossibleValues { get; set; } = new();
 	public int? Value { get; set; }
     public bool Locked { get; set; }
 

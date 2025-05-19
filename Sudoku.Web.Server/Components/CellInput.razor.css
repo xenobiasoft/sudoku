@@ -2,6 +2,10 @@
     border-left: 3px solid #000000;
 }
 
+.cell {
+    position: relative;
+}
+
 .cell input,
 .cell label {
     align-items: center;
@@ -29,7 +33,8 @@
     line-height: 1.2em;
 }
 
-    .cell input:focus {
+    .cell input:focus,
+    .cell label:focus {
         background-color: #F0F8FF !important;
     }
 
@@ -47,4 +52,25 @@
         height: 40px;
         width: 40px;
     }
+}
+
+.pencil-values {
+    display: grid;
+    font-size: 0.6rem;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    height: 100%;
+    line-height: 1rem;
+    pointer-events: none;
+    position: absolute;
+    text-align: center;
+    width: 100%;
+}
+
+.pencil-entry {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    min-height: .6rem;
+    pointer-events: none;
 }

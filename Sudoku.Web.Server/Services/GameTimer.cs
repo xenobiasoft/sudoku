@@ -72,7 +72,6 @@ public class GameTimer(TimeSpan tickInterval) : IGameTimer, IDisposable
                 if (!_isRunning || timer == null) break;
                 if (!await timer.WaitForNextTickAsync(token)) break;
                 OnTick?.Invoke(this, ElapsedTime);
-                Console.WriteLine(ElapsedTime);
             }
         }
         catch (OperationCanceledException) { }
