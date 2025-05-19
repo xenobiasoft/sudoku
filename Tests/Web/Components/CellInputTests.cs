@@ -53,7 +53,21 @@ public class CellInputTests : TestContext
         var renderedComponent = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
 
         // Assert
-        renderedComponent.MarkupMatches("<td class=\"cell\"><input class=\"\" type=\"text\" maxlength=\"1\" value=\"7\" readonly=\"\" /></td>");
+        renderedComponent.MarkupMatches(@"
+                                           <td class=""cell"">
+                                              <div class=""pencil-values"">
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                              </div>
+                                              <input class="""" type=""text"" maxlength=""1"" readonly="""" value=""7"">
+                                          </td>");
     }
 
     [Fact]
@@ -76,7 +90,21 @@ public class CellInputTests : TestContext
         renderedCell.Render();
 
         // Assert
-        renderedCell.MarkupMatches("<td class=\"cell\"><input class=\"highlight\" type=\"text\" maxlength=\"1\" value=\"7\" readonly=\"\" /></td>");
+        renderedCell.MarkupMatches(@"
+                                     <td class=""cell"">
+                                         <div class=""pencil-values"">
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                         </div>
+                                         <input class=""highlight"" type=""text"" maxlength=""1"" readonly="""" value=""7"">
+                                     </td>");
     }
 
     [Fact]
@@ -100,7 +128,21 @@ public class CellInputTests : TestContext
         renderedCell.Render();
 
         // Assert
-        renderedCell.MarkupMatches("<td class=\"cell\"><input class=\"invalid\" type=\"text\" maxlength=\"1\" value=\"7\" readonly=\"\" /></td>");
+        renderedCell.MarkupMatches(@"
+                                      <td class=""cell"">
+                                         <div class=""pencil-values"">
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                         </div>
+                                         <input class=""invalid"" type=""text"" maxlength=""1"" readonly="""" value=""7"">
+                                     </td>");
     }
 
     [Fact]
@@ -149,5 +191,85 @@ public class CellInputTests : TestContext
             calledArgs.Column.Should().Be(2);
             calledArgs.Value.Should().Be(5);
         });
+    }
+
+    [Fact]
+    public void CellInput_WhenPossibleNumbersEntered_DisplaysInCell()
+    {
+        // Arrange
+        var cell = new Cell(0, 0)
+        {
+            Locked = false,
+            PossibleValues = [1,2,7]
+        };
+
+        // Act
+        var renderedComponent = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
+
+        // Assert
+        renderedComponent.MarkupMatches(@"
+                                           <td class=""cell"">
+                                              <div class=""pencil-values"">
+                                                  <span class=""pencil-entry"">1</span>
+                                                  <span class=""pencil-entry"">2</span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry"">7</span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                              </div>
+                                              <input class="""" type=""text"" maxlength=""1"" readonly="""">
+                                          </td>");
+    }
+
+    [Fact]
+    public void CellInput_WhenValueEnteredInCellWithPossibleNumbers_ClearsPossibleNumbers()
+    {
+        // Arrange
+        var expectedBefore = @"
+           <td class=""cell"">
+              <div class=""pencil-values"">
+                  <span class=""pencil-entry"">1</span>
+                  <span class=""pencil-entry"">2</span>
+                  <span class=""pencil-entry""></span>
+                  <span class=""pencil-entry""></span>
+                  <span class=""pencil-entry""></span>
+                  <span class=""pencil-entry""></span>
+                  <span class=""pencil-entry"">7</span>
+                  <span class=""pencil-entry""></span>
+                  <span class=""pencil-entry""></span>
+              </div>
+              <input class="""" type=""text"" maxlength=""1"" readonly="""">
+          </td>";
+        var expectedAfter = @"
+           <td class=""cell"">
+              <div class=""pencil-values"">
+                  <span class=""pencil-entry""></span>
+                  <span class=""pencil-entry""></span>
+                  <span class=""pencil-entry""></span>
+                  <span class=""pencil-entry""></span>
+                  <span class=""pencil-entry""></span>
+                  <span class=""pencil-entry""></span>
+                  <span class=""pencil-entry""></span>
+                  <span class=""pencil-entry""></span>
+                  <span class=""pencil-entry""></span>
+              </div>
+              <input class="""" type=""text"" maxlength=""1"" readonly="""" value=""7"">
+          </td>";
+        var cell = new Cell(0, 0)
+        {
+            Locked = false,
+            PossibleValues = [1, 2, 7]
+        };
+        var cellInput = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
+        cellInput.MarkupMatches(expectedBefore);
+
+        // Act
+        cellInput.Find("input").KeyPress(Key.NumberPad7);
+
+        // Assert
+        cellInput.MarkupMatches(expectedAfter);
     }
 }

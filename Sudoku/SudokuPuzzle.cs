@@ -171,7 +171,10 @@ public class SudokuPuzzle : ISudokuPuzzle
 
     public void SetCell(int row, int column, int? value)
     {
-        GetCell(row, column).Value = value;
+        var cell = GetCell(row, column);
+        
+        cell.Value = value;
+        cell.PossibleValues = [];
     }
 
     public void SetCellWithFewestPossibleValues()

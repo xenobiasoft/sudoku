@@ -1,14 +1,18 @@
 ﻿<div class="game-stats">
-    <div class="stat-item">
-        <span class="label">Total Moves:</span>
-        <span class="value">@_totalMoves</span>
-    </div>
-    <div class="stat-item">
-        <span class="label">Invalid Moves:</span>
-        <span class="value">@_invalidMoves</span>
-    </div>
-    <div class="stat-item">
+    <div class="stat-header" @onclick="ToggleCollapse">
         <span class="label">Play Duration:</span>
         <span class="value">@_playDuration.ToString(@"hh\:mm\:ss")</span>
+        <i class="fa-solid @(_isCollapsed ? "fa-chevron-up" : "fa-chevron-down")"></i>
     </div>
+    @if (!_isCollapsed)
+    {
+        <div class="stat-item total-moves">
+            <span class="label">Total Moves:</span>
+            <span class="value">@_totalMoves</span>
+        </div>
+        <div class="stat-item invalid-moves">
+            <span class="label">Invalid Moves:</span>
+            <span class="value">@_invalidMoves</span>
+        </div>
+    }
 </div>
