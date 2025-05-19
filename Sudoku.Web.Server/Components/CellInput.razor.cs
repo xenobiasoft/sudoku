@@ -68,7 +68,6 @@ public partial class CellInput : IDisposable
 
         if (cellValue != Cell.Value)
         {
-            Cell.Value = cellValue;
 
             if (IsPencilMode)
             {
@@ -77,6 +76,8 @@ public partial class CellInput : IDisposable
             }
             else
             {
+                Cell.Value = cellValue;
+                Cell.PossibleValues = [];
                 await OnCellChanged.InvokeAsync(new CellChangedEventArgs(Cell));
             }
         }
