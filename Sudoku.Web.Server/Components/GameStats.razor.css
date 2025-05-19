@@ -10,10 +10,32 @@
     padding: 1rem;
 }
 
+.stat-header {
+    cursor: pointer;
+    display: flex;
+    gap: 0.5rem;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+    .stat-header .label {
+        font-weight: bold;
+    }
+
+.stat-header .value {
+    flex-grow: 1;
+    text-align: end;
+}
+
+    .stat-header i {
+        flex-grow: 0;
+    }
+
 .stat-item {
     display: flex;
     justify-content: space-between;
     font-size: 1rem;
+    margin-right: 1.5rem;
 }
 
 .label {

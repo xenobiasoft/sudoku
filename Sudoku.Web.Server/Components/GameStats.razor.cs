@@ -10,6 +10,7 @@ public partial class GameStats : ComponentBase, IDisposable
     private int _totalMoves = 0;
     private int _invalidMoves = 0;
     private TimeSpan _playDuration = TimeSpan.Zero;
+    private bool _isCollapsed = true;
 
     protected override void OnInitialized()
     {
@@ -37,6 +38,11 @@ public partial class GameStats : ComponentBase, IDisposable
 
         session.Timer.OnTick -= OnTimerTick;
         session.OnMoveRecorded -= OnMoveRecorded;
+    }
+
+    private void ToggleCollapse()
+    {
+        _isCollapsed = !_isCollapsed;
     }
 
     private void UpdateStats()
