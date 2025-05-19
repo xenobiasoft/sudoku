@@ -1,7 +1,7 @@
 ﻿<td class="cell">
     @if (Cell.Locked)
     {
-        <label @ref="_element" class="@CssClass">@Cell.Value</label>
+        <label @ref="_element" class="@CssClass" @onkeypress="KeyPressAsync" @onfocus="OnFocus" tabindex="0">@Cell.Value</label>
     }
     else
     {

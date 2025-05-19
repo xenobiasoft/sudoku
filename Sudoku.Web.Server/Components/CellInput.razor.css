@@ -33,7 +33,8 @@
     line-height: 1.2em;
 }
 
-    .cell input:focus {
+    .cell input:focus,
+    .cell label:focus {
         background-color: #F0F8FF !important;
     }
 

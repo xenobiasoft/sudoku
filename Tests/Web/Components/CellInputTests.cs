@@ -36,7 +36,7 @@ public class CellInputTests : TestContext
         var renderComponent = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
 
 		// Assert
-        renderComponent.MarkupMatches("<td class=\"cell\"><label class=\"\">4</label></td>");
+        renderComponent.MarkupMatches("<td class=\"cell\"><label tabindex=\"0\" class=\"\">4</label></td>");
     }
 
     [Fact]

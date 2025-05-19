@@ -73,7 +73,7 @@ public partial class Game
         return HandleCellUpdate(SelectedCell.Row, SelectedCell.Column, args.Value);
     }
 
-    private async Task HandleCellUpdate(int row, int column, int? value)
+    private async Task HandleCellUpdate(int row, int column, int value)
     {
         Puzzle.SetCell(row, column, value);
         var isValid = Puzzle.IsValid();
