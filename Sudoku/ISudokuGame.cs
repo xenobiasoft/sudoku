@@ -6,6 +6,6 @@ public interface ISudokuGame
 {
     Task DeleteAsync(string alias, string puzzleId);
     Task<GameStateMemory> LoadAsync(string alias, string puzzleId);
-    Task<GameStateMemory> NewGameAsync(Level level);
+    Task<GameStateMemory> NewGameAsync(string alias, Level level);
     Task SaveAsync(GameStateMemory memory);
 }

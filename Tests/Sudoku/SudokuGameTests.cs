@@ -9,36 +9,35 @@ namespace UnitTests.Sudoku;
 
 public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
 {
+    private const string Alias = "testAlias";
+    private const string PuzzleId = "testPuzzleId";
+
     [Fact]
     public async Task DeleteAsync_DeletesGameStateFromStorage()
     {
         // Arrange
-        var alias = Container.Create<string>();
-        var puzzleId = Container.Create<string>();
         var mockGameStateManager = Container.ResolveMock<IGameStateStorage<GameStateMemory>>();
         var sut = ResolveSut();
 
         // Act
-        await sut.DeleteAsync(alias, puzzleId);
+        await sut.DeleteAsync(Alias, PuzzleId);
 
         // Assert
-        mockGameStateManager.VerifyDeleteAsyncCalled(alias, puzzleId, Times.Once);
+        mockGameStateManager.VerifyDeleteAsyncCalled(Alias, PuzzleId, Times.Once);
     }
 
     [Fact]
     public async Task LoadAsync_LoadsGameStateFromGameStateManager()
     {
         // Arrange
-        var alias = Container.Create<string>();
-        var puzzleId = Container.Create<string>();
         var mockGameStateManager = Container.ResolveMock<IGameStateStorage<GameStateMemory>>();
         var sut = ResolveSut();
 
         // Act
-        await sut.LoadAsync(alias, puzzleId);
+        await sut.LoadAsync(Alias, PuzzleId);
 
         // Assert
-        mockGameStateManager.Verify(x => x.LoadAsync(alias, puzzleId), Times.Once);
+        mockGameStateManager.Verify(x => x.LoadAsync(Alias, PuzzleId), Times.Once);
     }
 
     [Fact]
@@ -49,7 +48,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
         var sut = ResolveSut();
 
         // Act
-        await sut.NewGameAsync(Level.Easy);
+        await sut.NewGameAsync(Alias, Level.Easy);
 
         // Assert
         mockPuzzleGenerator.Verify(x => x.Generate(It.IsAny<Level>()), Times.Once);
@@ -63,7 +62,7 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
         var sut = ResolveSut();
 
         // Act
-        var gameState = await sut.NewGameAsync(Level.Easy);
+        var gameState = await sut.NewGameAsync(Alias, Level.Easy);
 
         // Assert
         gameState.VerifyNewGameState();

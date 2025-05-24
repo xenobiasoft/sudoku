@@ -21,17 +21,17 @@ public static class MockSudokuGameExtensions
         return mock;
     }
 
-    public static Mock<ISudokuGame> SetNewAsync(this Mock<ISudokuGame> mock, ISudokuPuzzle puzzle)
+    public static Mock<ISudokuGame> SetNewAsync(this Mock<ISudokuGame> mock, string alias, ISudokuPuzzle puzzle)
     {
         var gameState = new GameStateMemory(Guid.NewGuid().ToString(), puzzle.GetAllCells());
 
-        return mock.SetNewAsync(gameState);
+        return mock.SetNewAsync(alias, gameState);
     }
 
-    public static Mock<ISudokuGame> SetNewAsync(this Mock<ISudokuGame> mock, GameStateMemory memory)
+    public static Mock<ISudokuGame> SetNewAsync(this Mock<ISudokuGame> mock, string alias, GameStateMemory memory)
     {
         mock
-            .Setup(x => x.NewGameAsync(It.IsAny<Level>()))
+            .Setup(x => x.NewGameAsync(alias, It.IsAny<Level>()))
             .ReturnsAsync(memory);
 
         return mock;
@@ -39,7 +39,7 @@ public static class MockSudokuGameExtensions
 
     public static Mock<ISudokuGame> VerifyGeneratesNewPuzzle(this Mock<ISudokuGame> mock, Func<Times> times)
     {
-        mock.Verify(x => x.NewGameAsync(It.IsAny<Level>()), times);
+        mock.Verify(x => x.NewGameAsync(It.IsAny<string>(), It.IsAny<Level>()), times);
 
         return mock;
     }

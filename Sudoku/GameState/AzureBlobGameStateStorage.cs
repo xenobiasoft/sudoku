@@ -15,6 +15,8 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
 
     public async Task DeleteAsync(string alias, string puzzleId)
     {
+        ValidateGameStateArgs(alias, puzzleId);
+
         await _semaphore.WaitAsync();
 
         try
@@ -30,8 +32,15 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
         }
     }
 
+    public void Dispose()
+    {
+        _semaphore?.Dispose();
+    }
+
     public async Task<GameStateMemory> LoadAsync(string alias, string puzzleId)
     {
+        ValidateGameStateArgs(alias, puzzleId);
+
         await _semaphore.WaitAsync();
 
         try
@@ -53,6 +62,8 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
 
     public async Task<GameStateMemory> ResetAsync(string alias, string puzzleId)
     {
+        ValidateGameStateArgs(alias, puzzleId);
+
         await _semaphore.WaitAsync();
 
         try
@@ -82,6 +93,8 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
 
     public async Task SaveAsync(GameStateMemory gameState)
     {
+        ValidateGameState(gameState);
+
         var currentGameState = await LoadAsync(gameState.Alias, gameState.PuzzleId);
 
         if (currentGameState != null && currentGameState.HasSameBoardStateAs(gameState))
@@ -106,6 +119,8 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
 
     public async Task<GameStateMemory> UndoAsync(string alias, string puzzleId)
     {
+        ValidateGameStateArgs(alias, puzzleId);
+
         await _semaphore.WaitAsync();
 
         try
@@ -184,8 +199,25 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
         }
     }
 
-    public void Dispose()
+    private void ValidateGameState(GameStateMemory gameState)
     {
-        _semaphore?.Dispose();
+        if (gameState == null)
+        {
+            throw new ArgumentNullException(nameof(gameState), "Game state cannot be null.");
+        }
+        ValidateGameStateArgs(gameState.Alias, gameState.PuzzleId);
+    }
+
+    private void ValidateGameStateArgs(string alias, string puzzleId)
+    {
+        if (string.IsNullOrWhiteSpace(alias))
+        {
+            throw new ArgumentException("Alias cannot be empty.", nameof(alias));
+        }
+
+        if (string.IsNullOrWhiteSpace(puzzleId))
+        {
+            throw new ArgumentException("PuzzleId cannot be empty.", nameof(puzzleId));
+        }
     }
 }

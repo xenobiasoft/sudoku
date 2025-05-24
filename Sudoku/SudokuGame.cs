@@ -5,12 +5,13 @@ namespace XenobiaSoft.Sudoku;
 
 public class SudokuGame(IPuzzleGenerator puzzleGenerator, IGameStateStorage<GameStateMemory> gameStateStorage) : ISudokuGame
 {
-    public async Task<GameStateMemory> NewGameAsync(Level level)
+    public async Task<GameStateMemory> NewGameAsync(string alias, Level level)
     {
         var puzzle = await puzzleGenerator.Generate(level).ConfigureAwait(false);
 
         var gameState = new GameStateMemory(puzzle.PuzzleId, puzzle.GetAllCells())
         {
+            Alias = alias,
             InvalidMoves = 0,
             TotalMoves = 0,
             PlayDuration = TimeSpan.Zero,

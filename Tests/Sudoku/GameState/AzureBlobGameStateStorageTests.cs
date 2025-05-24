@@ -1,4 +1,5 @@
 ﻿using DepenMock.XUnit;
+using Sudoku.Web.Server.Components;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Services;
@@ -49,6 +50,52 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         }
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task DeleteAsync_WhenAliasIsEmpty_ThrowsException(string alias)
+    {
+        // Arrange
+        var gameState = Container
+            .Build<GameStateMemory>()
+            .With(x => x.PuzzleId, PuzzleId)
+            .With(x => x.Alias, alias)
+            .Create();
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(gameState);
+        var sut = ResolveSut();
+
+        // Act
+        var deleteAsync = sut.DeleteAsync(alias, PuzzleId);
+
+        // Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => deleteAsync);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task DeleteAsync_WhenPuzzleIdIsEmpty_ThrowsException(string puzzleId)
+    {
+        // Arrange
+        var gameState = Container
+            .Build<GameStateMemory>()
+            .With(x => x.PuzzleId, puzzleId)
+            .With(x => x.Alias, Alias)
+            .Create();
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(gameState);
+        var sut = ResolveSut();
+
+        // Act
+        var deleteAsync = sut.DeleteAsync(Alias, puzzleId);
+
+        // Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => deleteAsync);
+    }
+
     [Fact]
     public async Task LoadAsync_ShouldCallLoadAsync()
     {
@@ -79,6 +126,52 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
 
         // Assert
         result.Should().Be(_gameState);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task LoadAsync_WhenAliasIsEmpty_ThrowsException(string alias)
+    {
+        // Arrange
+        var gameState = Container
+            .Build<GameStateMemory>()
+            .With(x => x.PuzzleId, PuzzleId)
+            .With(x => x.Alias, alias)
+            .Create();
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(gameState);
+        var sut = ResolveSut();
+
+        // Act
+        var loadAsync = sut.LoadAsync(alias, PuzzleId);
+
+        // Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => loadAsync);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task LoadAsync_WhenPuzzleIdIsEmpty_ThrowsException(string puzzleId)
+    {
+        // Arrange
+        var gameState = Container
+            .Build<GameStateMemory>()
+            .With(x => x.PuzzleId, puzzleId)
+            .With(x => x.Alias, Alias)
+            .Create();
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(gameState);
+        var sut = ResolveSut();
+
+        // Act
+        var loadAsync = sut.LoadAsync(Alias, puzzleId);
+
+        // Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => loadAsync);
     }
 
     [Fact]
@@ -143,6 +236,52 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
 
         // Assert
         actual.Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task ResetAsync_WhenAliasIsEmpty_ThrowsException(string alias)
+    {
+        // Arrange
+        var gameState = Container
+            .Build<GameStateMemory>()
+            .With(x => x.PuzzleId, PuzzleId)
+            .With(x => x.Alias, alias)
+            .Create();
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(gameState);
+        var sut = ResolveSut();
+
+        // Act
+        var resetAsync = sut.ResetAsync(alias, PuzzleId);
+
+        // Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => resetAsync);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task ResetAsync_WhenPuzzleIdIsEmpty_ThrowsException(string puzzleId)
+    {
+        // Arrange
+        var gameState = Container
+            .Build<GameStateMemory>()
+            .With(x => x.PuzzleId, puzzleId)
+            .With(x => x.Alias, Alias)
+            .Create();
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(gameState);
+        var sut = ResolveSut();
+
+        // Act
+        var resetAsync = sut.ResetAsync(Alias, puzzleId);
+
+        // Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => resetAsync);
     }
 
     [Fact]
@@ -213,6 +352,52 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         _mockStorageService.VerifySavesGameState(ContainerName, expectedBlobName, _gameState, Times.Never);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task SaveAsync_WhenAliasIsEmpty_ThrowsException(string alias)
+    {
+        // Arrange
+        var gameState = Container
+            .Build<GameStateMemory>()
+            .With(x => x.PuzzleId, PuzzleId)
+            .With(x => x.Alias, alias)
+            .Create();
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(gameState);
+        var sut = ResolveSut();
+
+        // Act
+        var saveAsync = sut.SaveAsync(gameState);
+
+        // Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => saveAsync);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task SaveAsync_WhenPuzzleIdIsEmpty_ThrowsException(string puzzleId)
+    {
+        // Arrange
+        var gameState = Container
+            .Build<GameStateMemory>()
+            .With(x => x.PuzzleId, puzzleId)
+            .With(x => x.Alias, Alias)
+            .Create();
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(gameState);
+        var sut = ResolveSut();
+
+        // Act
+        var saveAsync = sut.SaveAsync(gameState);
+
+        // Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => saveAsync);
+    }
+
     [Fact]
     public async Task UndoAsync_ShouldDeleteLatest()
     {
@@ -257,6 +442,52 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
 
         // Assert
         await Assert.ThrowsAsync<CannotUndoInitialStateException>(UndoAsync);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task UndoAsync_WhenAliasIsEmpty_ThrowsException(string alias)
+    {
+        // Arrange
+        var gameState = Container
+            .Build<GameStateMemory>()
+            .With(x => x.PuzzleId, PuzzleId)
+            .With(x => x.Alias, alias)
+            .Create();
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(gameState);
+        var sut = ResolveSut();
+
+        // Act
+        var undoAsync = sut.UndoAsync(alias, PuzzleId);
+
+        // Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => undoAsync);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task UndoAsync_WhenPuzzleIdIsEmpty_ThrowsException(string puzzleId)
+    {
+        // Arrange
+        var gameState = Container
+            .Build<GameStateMemory>()
+            .With(x => x.PuzzleId, puzzleId)
+            .With(x => x.Alias, Alias)
+            .Create();
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(gameState);
+        var sut = ResolveSut();
+
+        // Act
+        var undoAsync = sut.UndoAsync(Alias, puzzleId);
+
+        // Assert
+        await Assert.ThrowsAsync<ArgumentException>(() => undoAsync);
     }
 
     [Fact]
