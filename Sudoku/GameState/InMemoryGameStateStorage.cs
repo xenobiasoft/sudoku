@@ -6,23 +6,23 @@ public class InMemoryGameStateStorage : IGameStateStorage<PuzzleState>
 
     public GameStateMemoryType MemoryType => GameStateMemoryType.InMemory;
 
-    public Task DeleteAsync(string puzzleId)
+    public Task DeleteAsync(string alias, string puzzleId)
     {
         _gameState.Clear();
 
         return Task.CompletedTask;
     }
 
-    public Task<PuzzleState> LoadAsync(string puzzleId)
+    public Task<PuzzleState> LoadAsync(string alias, string puzzleId)
     {
         return Task.FromResult(_gameState.Count > 0 ? _gameState.Peek() : null);
     }
 
-    public async Task<PuzzleState> ResetAsync(string puzzleId)
+    public async Task<PuzzleState> ResetAsync(string alias, string puzzleId)
     {
         while (_gameState.Count > 1)
         {
-            await UndoAsync(puzzleId);
+            await UndoAsync(alias, puzzleId);
         }
 
         return _gameState.Peek();
@@ -42,7 +42,7 @@ public class InMemoryGameStateStorage : IGameStateStorage<PuzzleState>
         return Task.CompletedTask;
     }
 
-    public Task<PuzzleState> UndoAsync(string puzzleId)
+    public Task<PuzzleState> UndoAsync(string alias, string puzzleId)
     {
         return _gameState.Count == 0 ? Task.FromResult<PuzzleState>(null) : Task.FromResult(_gameState.Pop());
     }

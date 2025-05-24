@@ -4,10 +4,11 @@ namespace Sudoku.Web.Server.Services;
 
 public interface IGameStateManager
 {
-    Task DeleteGameAsync(string gameId);
-    Task<GameStateMemory?> LoadGameAsync(string gameId);
+    Task DeleteGameAsync(string alias, string gameId);
+    Task<string> GetGameAliasAsync();
+    Task<GameStateMemory?> LoadGameAsync(string alias, string gameId);
     Task<List<GameStateMemory>> LoadGamesAsync();
-    Task<GameStateMemory> ResetGameAsync(string gameId);
+    Task<GameStateMemory> ResetGameAsync(string alias, string gameId);
     Task SaveGameAsync(GameStateMemory gameState);
-    Task<GameStateMemory> UndoGameAsync(string gameId);
+    Task<GameStateMemory> UndoGameAsync(string alias, string gameId);
 }

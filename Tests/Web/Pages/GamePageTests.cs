@@ -13,6 +13,9 @@ namespace UnitTests.Web.Pages;
 
 public class GamePageTests : TestContext
 {
+    private const string Alias = "test-alias";
+    private const string PuzzleId = "test-puzzleId";
+
     private readonly Mock<IInvalidCellNotificationService> _mockInvalidCellNotifier = new();
     private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
     private readonly Mock<IGameStateManager> _mockGameStateManager = new();
@@ -20,13 +23,15 @@ public class GamePageTests : TestContext
 
     public GamePageTests()
     {
-        var loadedGameState = new GameStateMemory("puzzle1", PuzzleFactory.GetPuzzle(Level.Easy).GetAllCells())
+        var loadedGameState = new GameStateMemory(PuzzleId, PuzzleFactory.GetPuzzle(Level.Easy).GetAllCells())
         {
+            Alias = Alias,
             InvalidMoves = 0,
             PlayDuration = TimeSpan.FromMinutes(10),
             TotalMoves = 5
         };
         _mockGameStateManager.SetupLoadGameAsync(loadedGameState);
+        _mockGameStateManager.SetupGetAliasAsync(Alias);
         _mockGameSessionManager.Setup(x => x.CurrentSession).Returns(new GameSession(loadedGameState, new Mock<IGameTimer>().Object));
 
         Services.AddSingleton(_mockInvalidCellNotifier.Object);
@@ -85,9 +90,12 @@ public class GamePageTests : TestContext
     public async Task Game_WhenPuzzleSolved_SendsGameEndedNotification()
     {
         // Arrange
-        var gameState = new GameStateMemory("puzzle1", PuzzleFactory.GetSolvedPuzzle().GetAllCells());
+        var gameState = new GameStateMemory(PuzzleId, PuzzleFactory.GetSolvedPuzzle().GetAllCells())
+        {
+            Alias = Alias
+        };
         _mockGameStateManager.SetupLoadGameAsync(gameState);
-        var sut = RenderComponent<Game>();
+        var sut = RenderComponent<Game>(x => x.Add(p => p.PuzzleId, PuzzleId));
         var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
@@ -103,9 +111,12 @@ public class GamePageTests : TestContext
     public async Task Game_WhenPuzzleSolved_DisplaysWinScreen()
     {
         // Arrange
-        var gameState = new GameStateMemory("puzzle1", PuzzleFactory.GetSolvedPuzzle().GetAllCells());
+        var gameState = new GameStateMemory(PuzzleId, PuzzleFactory.GetSolvedPuzzle().GetAllCells())
+        {
+            Alias = Alias
+        };
         _mockGameStateManager.SetupLoadGameAsync(gameState);
-        var sut = RenderComponent<Game>();
+        var sut = RenderComponent<Game>(x => x.Add(p => p.PuzzleId, PuzzleId));
         var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
@@ -122,9 +133,12 @@ public class GamePageTests : TestContext
     public async Task Game_WhenPuzzleSolved_DeletesGame()
     {
         // Arrange
-        var gameState = new GameStateMemory("puzzle1", PuzzleFactory.GetSolvedPuzzle().GetAllCells());
+        var gameState = new GameStateMemory(PuzzleId, PuzzleFactory.GetSolvedPuzzle().GetAllCells())
+        {
+            Alias = Alias
+        };
         _mockGameStateManager.SetupLoadGameAsync(gameState);
-        var sut = RenderComponent<Game>();
+        var sut = RenderComponent<Game>(x => x.Add(p => p.PuzzleId, PuzzleId));
         var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
@@ -133,19 +147,19 @@ public class GamePageTests : TestContext
         await sut.InvokeAsync(() => buttonGroup.OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(1)));
 
         // Assert
-        _mockGameStateManager.VerifyDeleteGameAsyncCalled(sut.Instance.PuzzleId, Times.Once);
+        _mockGameStateManager.VerifyDeleteGameAsyncCalled(gameState.Alias, gameState.PuzzleId, Times.Once);
     }
 
     [Fact]
-    public void OnInitializedAsync_LoadsGameState()
+    public void OnAfterRenderAsync_LoadsGameState()
     {
         // Arrange
 
         // Act
-        RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, "puzzle1"));
+        RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
 
         // Assert
-        _mockGameStateManager.VerifyLoadsAsyncCalled("puzzle1", Times.Once);
+        _mockGameStateManager.VerifyLoadsAsyncCalled(Alias, PuzzleId, Times.Once);
     }
 
     [Fact]
@@ -173,32 +187,30 @@ public class GamePageTests : TestContext
     public async Task HandleUndo_ShouldLoadPreviousGameStateAndUpdatePuzzle()
     {
         // Arrange
-        var puzzleId = "test-puzzle";
-        var gameState = new GameStateMemory(puzzleId, []);
-        _mockGameStateManager.Setup(x => x.UndoGameAsync(puzzleId)).ReturnsAsync(gameState);
-        var game = RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, puzzleId));
+        var gameState = new GameStateMemory(PuzzleId, []);
+        _mockGameStateManager.Setup(x => x.UndoGameAsync(Alias, PuzzleId)).ReturnsAsync(gameState);
+        var game = RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
 
         // Act
         await game.InvokeAsync(() => game.Instance.HandleUndo());
 
         // Assert
-        _mockGameStateManager.VerifyUndoAsyncCalled(puzzleId, Times.Once);
+        _mockGameStateManager.VerifyUndoAsyncCalled(Alias, PuzzleId, Times.Once);
     }
 
     [Fact]
     public async Task HandleReset_ShouldLoadInitialGameStateAndUpdatePuzzle()
     {
         // Arrange
-        var puzzleId = "test-puzzle";
-        var gameState = new GameStateMemory(puzzleId, []);
-        _mockGameStateManager.Setup(x => x.ResetGameAsync(puzzleId)).ReturnsAsync(gameState);
-        var game = RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, puzzleId));
+        var gameState = new GameStateMemory(PuzzleId, []);
+        _mockGameStateManager.Setup(x => x.ResetGameAsync(Alias, PuzzleId)).ReturnsAsync(gameState);
+        var game = RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
 
         // Act
         await game.InvokeAsync(() => game.Instance.HandleReset());
 
         // Assert
-        _mockGameStateManager.VerifyResetAsyncCalled(puzzleId, Times.Once);
+        _mockGameStateManager.VerifyResetAsyncCalled(Alias, PuzzleId, Times.Once);
     }
 
     [Fact]
@@ -219,7 +231,10 @@ public class GamePageTests : TestContext
     public void Game_VictoryDisplay_ShowsWhenPuzzleIsSolved()
     {
         // Arrange
-        var gameState = new GameStateMemory("puzzle1", PuzzleFactory.GetSolvedPuzzle().GetAllCells());
+        var gameState = new GameStateMemory(PuzzleId, PuzzleFactory.GetSolvedPuzzle().GetAllCells())
+        {
+            Alias = Alias
+        };
         _mockGameStateManager.SetupLoadGameAsync(gameState);
         var sut = RenderComponent<Game>();
 

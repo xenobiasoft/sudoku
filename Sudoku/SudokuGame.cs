@@ -3,8 +3,7 @@ using XenobiaSoft.Sudoku.Generator;
 
 namespace XenobiaSoft.Sudoku;
 
-public class SudokuGame(IPuzzleGenerator puzzleGenerator, IGameStateStorage<GameStateMemory> gameStateStorage)
-    : ISudokuGame
+public class SudokuGame(IPuzzleGenerator puzzleGenerator, IGameStateStorage<GameStateMemory> gameStateStorage) : ISudokuGame
 {
     public async Task<GameStateMemory> NewGameAsync(Level level)
     {
@@ -25,13 +24,13 @@ public class SudokuGame(IPuzzleGenerator puzzleGenerator, IGameStateStorage<Game
         return gameStateStorage.SaveAsync(memory);
     }
 
-    public Task DeleteAsync(string puzzleId)
+    public Task DeleteAsync(string alias, string puzzleId)
     {
-        return gameStateStorage.DeleteAsync(puzzleId);
+        return gameStateStorage.DeleteAsync(alias, puzzleId);
     }
 
-    public Task<GameStateMemory> LoadAsync(string puzzleId)
+    public Task<GameStateMemory> LoadAsync(string alias, string puzzleId)
     {
-        return gameStateStorage.LoadAsync(puzzleId);
+        return gameStateStorage.LoadAsync(alias, puzzleId);
     }
 }

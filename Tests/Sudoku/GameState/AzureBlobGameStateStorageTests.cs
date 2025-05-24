@@ -8,6 +8,7 @@ namespace UnitTests.Sudoku.GameState;
 public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGameStateStorage, IGameStateStorage<GameStateMemory>>
 {
     private const string ContainerName = "sudoku-puzzles";
+    private const string Alias = "test-alias";
     private const string PuzzleId = "test-puzzle";
 
     private readonly Mock<IStorageService> _mockStorageService;
@@ -25,11 +26,12 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         _gameState = Container
             .Build<GameStateMemory>()
             .With(x => x.PuzzleId, PuzzleId)
+            .With(x => x.Alias, Alias)
             .Create();
     }
     
     [Fact]
-    public async Task ClearAsync_ShouldDeleteAllBlobsForPuzzleId()
+    public async Task ClearAsync_WhenGivenAliasAndPuzzle_ShouldDeleteAllBlobs()
     {
         // Arrange
         _mockStorageService
@@ -38,7 +40,7 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         var sut = ResolveSut();
 
         // Act
-        await sut.DeleteAsync(PuzzleId);
+        await sut.DeleteAsync(Alias, PuzzleId);
 
         // Assert
         foreach (var blobName in _blobNames)
@@ -57,7 +59,7 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         var sut = ResolveSut();
 
         // Act
-        await sut.LoadAsync(PuzzleId);
+        await sut.LoadAsync(Alias, PuzzleId);
 
         // Assert
         _mockStorageService.VerifyLoadsGameState(ContainerName, _blobNames.Last(), Times.Once);
@@ -73,7 +75,7 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         var sut = ResolveSut();
 
         // Act
-        var result = await sut.LoadAsync(PuzzleId);
+        var result = await sut.LoadAsync(Alias, PuzzleId);
 
         // Assert
         result.Should().Be(_gameState);
@@ -88,7 +90,7 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         var sut = ResolveSut();
 
         // Act
-        await sut.ResetAsync(puzzleId);
+        await sut.ResetAsync(Alias, puzzleId);
 
         // Assert
         _mockStorageService.VerifyGetsBlobNames(ContainerName, puzzleId, Times.Once);
@@ -102,7 +104,7 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         var sut = ResolveSut();
 
         // Act
-        Task ResetGame() => sut.ResetAsync(PuzzleId);
+        Task ResetGame() => sut.ResetAsync(Alias, PuzzleId);
 
         // Assert
         await Assert.ThrowsAsync<CannotResetInitialStateException>(ResetGame);
@@ -118,7 +120,7 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         var sut = ResolveSut();
 
         // Act
-        await sut.ResetAsync(puzzleId);
+        await sut.ResetAsync(Alias, puzzleId);
 
         // Assert
         foreach (var blobName in deletedBlobNames)
@@ -139,7 +141,7 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         var sut = ResolveSut();
 
         // Act
-        var actual = await sut.ResetAsync(puzzleId);
+        var actual = await sut.ResetAsync(Alias, puzzleId);
 
         // Assert
         actual.Should().Be(expected);
@@ -222,7 +224,7 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         var sut = ResolveSut();
 
         // Act
-        await sut.UndoAsync(PuzzleId);
+        await sut.UndoAsync(Alias, PuzzleId);
 
         // Assert
         _mockStorageService.VerifyDeletesBlob(ContainerName, _blobNames.Last(), Times.Once);
@@ -238,7 +240,7 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         var sut = ResolveSut();
 
         // Act
-        var result = await sut.UndoAsync(PuzzleId);
+        var result = await sut.UndoAsync(Alias, PuzzleId);
 
         // Assert
         result.Should().Be(_gameState);
@@ -252,7 +254,7 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         var sut = ResolveSut();
 
         // Act
-        Task UndoAsync() => sut.UndoAsync(PuzzleId);
+        Task UndoAsync() => sut.UndoAsync(Alias, PuzzleId);
 
         // Assert
         await Assert.ThrowsAsync<CannotUndoInitialStateException>(UndoAsync);

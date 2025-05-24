@@ -15,7 +15,7 @@ public static class MockSudokuGameExtensions
     public static Mock<ISudokuGame> SetLoadAsync(this Mock<ISudokuGame> mock, GameStateMemory memory)
     {
         mock
-            .Setup(x => x.LoadAsync(It.IsAny<string>()))
+            .Setup(x => x.LoadAsync(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(memory);
 
         return mock;
@@ -44,9 +44,9 @@ public static class MockSudokuGameExtensions
         return mock;
     }
 
-    public static Mock<ISudokuGame> VerifyLoadsAsync(this Mock<ISudokuGame> mock, string puzzleId, Func<Times> times)
+    public static Mock<ISudokuGame> VerifyLoadsAsync(this Mock<ISudokuGame> mock, string alias, string puzzleId, Func<Times> times)
     {
-        mock.Verify(x => x.LoadAsync(puzzleId), times);
+        mock.Verify(x => x.LoadAsync(alias, puzzleId), times);
 
         return mock;
     }

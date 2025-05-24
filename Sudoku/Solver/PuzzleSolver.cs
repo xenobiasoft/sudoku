@@ -7,6 +7,8 @@ namespace XenobiaSoft.Sudoku.Solver;
 public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateStorage<PuzzleState> gameStateStorage)
     : IPuzzleSolver
 {
+    private const string Alias = "SudokuSolverAlias";
+
     private ISudokuPuzzle _puzzle;
 
     public async Task<ISudokuPuzzle> SolvePuzzle(ISudokuPuzzle puzzle)
@@ -47,7 +49,7 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateStor
 
         if (_puzzle.IsSolved())
         {
-            await gameStateStorage.DeleteAsync(_puzzle.PuzzleId);
+            await gameStateStorage.DeleteAsync(Alias, _puzzle.PuzzleId);
         }
     }
 
@@ -97,7 +99,7 @@ public class PuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateStor
 
     private async Task UndoAsync()
     {
-        var memento = await gameStateStorage.UndoAsync(_puzzle.PuzzleId);
+        var memento = await gameStateStorage.UndoAsync(Alias, _puzzle.PuzzleId);
 
         if (memento == null)
         {

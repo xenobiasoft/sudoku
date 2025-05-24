@@ -13,7 +13,7 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
 
     public GameStateMemoryType MemoryType => GameStateMemoryType.AzureBlobPersistence;
 
-    public async Task DeleteAsync(string puzzleId)
+    public async Task DeleteAsync(string alias, string puzzleId)
     {
         await _semaphore.WaitAsync();
 
@@ -30,13 +30,13 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
         }
     }
 
-    public async Task<GameStateMemory> LoadAsync(string puzzleId)
+    public async Task<GameStateMemory> LoadAsync(string alias, string puzzleId)
     {
         await _semaphore.WaitAsync();
 
         try
         {
-            var latestBlobName = await GetLatestBlobNameAsync(puzzleId);
+            var latestBlobName = await GetLatestBlobNameAsync(alias, puzzleId);
 
             if (latestBlobName == null)
             {
@@ -51,13 +51,13 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
         }
     }
 
-    public async Task<GameStateMemory> ResetAsync(string puzzleId)
+    public async Task<GameStateMemory> ResetAsync(string alias, string puzzleId)
     {
         await _semaphore.WaitAsync();
 
         try
         {
-            var blobList = await GetSortedBlobNamesAsync(puzzleId);
+            var blobList = await GetSortedBlobNamesAsync(alias, puzzleId);
 
             if (blobList.Count <= 1)
             {
@@ -82,7 +82,7 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
 
     public async Task SaveAsync(GameStateMemory gameState)
     {
-        var currentGameState = await LoadAsync(gameState.PuzzleId);
+        var currentGameState = await LoadAsync(gameState.Alias, gameState.PuzzleId);
 
         if (currentGameState != null && currentGameState.HasSameBoardStateAs(gameState))
         {
@@ -93,10 +93,10 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
 
         try
         {
-            var nextBlobName = await GetNextBlobNameAsync(gameState.PuzzleId);
+            var nextBlobName = await GetNextBlobNameAsync(gameState.Alias, gameState.PuzzleId);
 
             await storageService.SaveAsync(ContainerName, nextBlobName, gameState);
-            await TrimHistoryIfNeededAsync(gameState.PuzzleId);
+            await TrimHistoryIfNeededAsync(gameState.Alias, gameState.PuzzleId);
         }
         finally
         {
@@ -104,13 +104,13 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
         }
     }
 
-    public async Task<GameStateMemory> UndoAsync(string puzzleId)
+    public async Task<GameStateMemory> UndoAsync(string alias, string puzzleId)
     {
         await _semaphore.WaitAsync();
 
         try
         {
-            var blobList = await GetSortedBlobNamesAsync(puzzleId);
+            var blobList = await GetSortedBlobNamesAsync(alias, puzzleId);
 
             if (blobList.Count <= 1)
             {
@@ -137,16 +137,16 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
         }
     }
 
-    private async Task<string?> GetLatestBlobNameAsync(string puzzleId)
+    private async Task<string?> GetLatestBlobNameAsync(string alias, string puzzleId)
     {
-        var blobs = await GetSortedBlobNamesAsync(puzzleId);
+        var blobs = await GetSortedBlobNamesAsync(alias, puzzleId);
 
         return blobs.LastOrDefault();
     }
 
-    private async Task<string> GetNextBlobNameAsync(string puzzleId)
+    private async Task<string> GetNextBlobNameAsync(string alias, string puzzleId)
     {
-        var blobs = await GetSortedBlobNamesAsync(puzzleId);
+        var blobs = await GetSortedBlobNamesAsync(alias, puzzleId);
 
         var nextNumber = blobs.Count > 0
             ? int.Parse(Path.GetFileNameWithoutExtension(blobs.Last()) ?? "0") + 1
@@ -155,7 +155,7 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
         return $"{puzzleId}/{nextNumber:D5}.json";
     }
 
-    private async Task<List<string>> GetSortedBlobNamesAsync(string puzzleId)
+    private async Task<List<string>> GetSortedBlobNamesAsync(string alias, string puzzleId)
     {
         var blobs = new List<string>();
 
@@ -169,9 +169,9 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
             .ToList();
     }
 
-    private async Task TrimHistoryIfNeededAsync(string puzzleId)
+    private async Task TrimHistoryIfNeededAsync(string alias, string puzzleId)
     {
-        var blobs = await GetSortedBlobNamesAsync(puzzleId);
+        var blobs = await GetSortedBlobNamesAsync(alias, puzzleId);
         if (blobs.Count > MaxUndoHistory)
         {
             var excess = blobs.Count - MaxUndoHistory;

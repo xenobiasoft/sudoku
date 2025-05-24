@@ -1,5 +1,4 @@
 ﻿using DepenMock.XUnit;
-using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
@@ -10,6 +9,8 @@ namespace UnitTests.Sudoku.Solver;
 
 public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolver>
 {
+    private const string Alias = "SudokuSolverAlias";
+
     [Fact]
     public async Task SolvePuzzle_SavesGameState_OnEachLoop()
     {
@@ -39,7 +40,7 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
         await sut.SolvePuzzle(mockPuzzle.Object);
 
         // Assert
-        mockGameStateStorage.VerifyUndoAsyncCalled(mockPuzzle.Object.PuzzleId, Times.Once);
+        mockGameStateStorage.VerifyUndoAsyncCalled(Alias, mockPuzzle.Object.PuzzleId, Times.Once);
     }
 
     [Fact]
@@ -105,6 +106,6 @@ public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolv
         await sut.SolvePuzzle(mockPuzzle.Object);
 
         // Assert
-        mockGameStateStorage.VerifyUndoAsyncCalled(mockPuzzle.Object.PuzzleId, Times.Once);
+        mockGameStateStorage.VerifyUndoAsyncCalled(Alias, mockPuzzle.Object.PuzzleId, Times.Once);
     }
 }

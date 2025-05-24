@@ -13,30 +13,32 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
     public async Task DeleteAsync_DeletesGameStateFromStorage()
     {
         // Arrange
+        var alias = Container.Create<string>();
         var puzzleId = Container.Create<string>();
         var mockGameStateManager = Container.ResolveMock<IGameStateStorage<GameStateMemory>>();
         var sut = ResolveSut();
 
         // Act
-        await sut.DeleteAsync(puzzleId);
+        await sut.DeleteAsync(alias, puzzleId);
 
         // Assert
-        mockGameStateManager.VerifyDeleteAsyncCalled(puzzleId, Times.Once);
+        mockGameStateManager.VerifyDeleteAsyncCalled(alias, puzzleId, Times.Once);
     }
 
     [Fact]
     public async Task LoadAsync_LoadsGameStateFromGameStateManager()
     {
         // Arrange
+        var alias = Container.Create<string>();
         var puzzleId = Container.Create<string>();
         var mockGameStateManager = Container.ResolveMock<IGameStateStorage<GameStateMemory>>();
         var sut = ResolveSut();
 
         // Act
-        await sut.LoadAsync(puzzleId);
+        await sut.LoadAsync(alias, puzzleId);
 
         // Assert
-        mockGameStateManager.Verify(x => x.LoadAsync(puzzleId), Times.Once);
+        mockGameStateManager.Verify(x => x.LoadAsync(alias, puzzleId), Times.Once);
     }
 
     [Fact]

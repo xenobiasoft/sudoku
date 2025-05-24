@@ -7,7 +7,7 @@ public static class MockGameStateStorageExtensions
     public static Mock<IGameStateStorage<TStateMemoryType>> SetupLoadAsync<TStateMemoryType>(this Mock<IGameStateStorage<TStateMemoryType>> mock, TStateMemoryType gameState) where TStateMemoryType : PuzzleState
     {
         mock
-            .Setup(x => x.LoadAsync(It.IsAny<string>()))
+            .Setup(x => x.LoadAsync(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(gameState);
 
         return mock;
@@ -16,7 +16,7 @@ public static class MockGameStateStorageExtensions
     public static Mock<IGameStateStorage<TStateMemoryType>> SetupResetAsync<TStateMemoryType>(this Mock<IGameStateStorage<TStateMemoryType>> mock, TStateMemoryType? gameState) where TStateMemoryType : PuzzleState
     {
         mock
-            .Setup(x => x.ResetAsync(It.IsAny<string>()))
+            .Setup(x => x.ResetAsync(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(gameState)
             .Verifiable();
 
@@ -26,7 +26,7 @@ public static class MockGameStateStorageExtensions
     public static Mock<IGameStateStorage<TStateMemoryType>> SetupUndoAsync<TStateMemoryType>(this Mock<IGameStateStorage<TStateMemoryType>> mock, TStateMemoryType? gameState) where TStateMemoryType : PuzzleState
     {
         mock
-            .Setup(x => x.UndoAsync(It.IsAny<string>()))
+            .Setup(x => x.UndoAsync(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync(gameState)
             .Verifiable();
 
@@ -35,28 +35,28 @@ public static class MockGameStateStorageExtensions
 
     public static Mock<IGameStateStorage<TStateMemoryType>> VerifyDeleteAsyncCalled<TStateMemoryType>(this Mock<IGameStateStorage<TStateMemoryType>> mock, Func<Times> times) where TStateMemoryType : PuzzleState
     {
-        mock.Verify(x => x.DeleteAsync(It.IsAny<string>()), times);
+        mock.Verify(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()), times);
 
         return mock;
     }
 
-    public static Mock<IGameStateStorage<TStateMemoryType>> VerifyDeleteAsyncCalled<TStateMemoryType>(this Mock<IGameStateStorage<TStateMemoryType>> mock, string puzzleId, Func<Times> times) where TStateMemoryType : PuzzleState
+    public static Mock<IGameStateStorage<TStateMemoryType>> VerifyDeleteAsyncCalled<TStateMemoryType>(this Mock<IGameStateStorage<TStateMemoryType>> mock, string alias, string puzzleId, Func<Times> times) where TStateMemoryType : PuzzleState
     {
-        mock.Verify(x => x.DeleteAsync(puzzleId), times);
+        mock.Verify(x => x.DeleteAsync(alias, puzzleId), times);
 
         return mock;
     }
 
-    public static Mock<IGameStateStorage<TStateMemoryType>> VerifyLoadAsyncCalled<TStateMemoryType>(this Mock<IGameStateStorage<TStateMemoryType>> mock, string puzzleId, Func<Times> times) where TStateMemoryType : PuzzleState
+    public static Mock<IGameStateStorage<TStateMemoryType>> VerifyLoadAsyncCalled<TStateMemoryType>(this Mock<IGameStateStorage<TStateMemoryType>> mock, string alias, string puzzleId, Func<Times> times) where TStateMemoryType : PuzzleState
     {
-        mock.Verify(x => x.LoadAsync(puzzleId), times);
+        mock.Verify(x => x.LoadAsync(alias, puzzleId), times);
 
         return mock;
     }
 
-    public static Mock<IGameStateStorage<TStateMemoryType>> VerifyResetAsyncCalled<TStateMemoryType>(this Mock<IGameStateStorage<TStateMemoryType>> mock, string puzzleId, Func<Times> times) where TStateMemoryType : PuzzleState
+    public static Mock<IGameStateStorage<TStateMemoryType>> VerifyResetAsyncCalled<TStateMemoryType>(this Mock<IGameStateStorage<TStateMemoryType>> mock, string alias, string puzzleId, Func<Times> times) where TStateMemoryType : PuzzleState
     {
-        mock.Verify(x => x.ResetAsync(puzzleId), times);
+        mock.Verify(x => x.ResetAsync(alias, puzzleId), times);
 
         return mock;
     }
@@ -75,9 +75,9 @@ public static class MockGameStateStorageExtensions
         return mock;
     }
 
-    public static Mock<IGameStateStorage<TStateMemoryType>> VerifyUndoAsyncCalled<TStateMemoryType>(this Mock<IGameStateStorage<TStateMemoryType>> mock, string puzzleId, Func<Times> times) where TStateMemoryType : PuzzleState
+    public static Mock<IGameStateStorage<TStateMemoryType>> VerifyUndoAsyncCalled<TStateMemoryType>(this Mock<IGameStateStorage<TStateMemoryType>> mock, string alias, string puzzleId, Func<Times> times) where TStateMemoryType : PuzzleState
     {
-        mock.Verify(x => x.UndoAsync(puzzleId), times);
+        mock.Verify(x => x.UndoAsync(alias, puzzleId), times);
 
         return mock;
     }
