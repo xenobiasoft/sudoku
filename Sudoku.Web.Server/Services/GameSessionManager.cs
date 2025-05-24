@@ -54,6 +54,7 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
 
         var gameState = new GameStateMemory(_currentSession.PuzzleId, _currentSession.Board)
         {
+            Alias = _currentSession.Alias,
             InvalidMoves = _currentSession.InvalidMoves,
             TotalMoves = _currentSession.TotalMoves,
             PlayDuration = _currentSession.PlayDuration
