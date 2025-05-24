@@ -1,6 +1,6 @@
 ﻿using XenobiaSoft.Sudoku.GameState;
 
-namespace Sudoku.Web.Server.Services;
+namespace Sudoku.Web.Server.Services.Abstractions;
 
 public interface ILocalStorageService
 {

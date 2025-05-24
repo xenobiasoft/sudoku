@@ -19,7 +19,7 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
 
         try
         {
-            await foreach (var blobItem in storageService.GetBlobNamesAsync(ContainerName, $"{puzzleId}"))
+            await foreach (var blobItem in storageService.GetBlobNamesAsync(ContainerName, $"{alias}/{puzzleId}"))
             {
                 await storageService.DeleteAsync(ContainerName, blobItem);
             }
@@ -152,20 +152,20 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
             ? int.Parse(Path.GetFileNameWithoutExtension(blobs.Last()) ?? "0") + 1
             : 1;
 
-        return $"{puzzleId}/{nextNumber:D5}.json";
+        return $"{alias}/{puzzleId}/{nextNumber:D5}.json";
     }
 
     private async Task<List<string>> GetSortedBlobNamesAsync(string alias, string puzzleId)
     {
         var blobs = new List<string>();
 
-        await foreach (var blobItem in storageService.GetBlobNamesAsync(ContainerName, blobPrefix: puzzleId))
+        await foreach (var blobItem in storageService.GetBlobNamesAsync(ContainerName, blobPrefix: $"{alias}/{puzzleId}"))
         {
             blobs.Add(blobItem);
         }
 
         return blobs
-            .OrderBy(x => int.Parse(Path.GetFileNameWithoutExtension(x.Replace(puzzleId, string.Empty))))
+            .OrderBy(x => int.Parse(Path.GetFileNameWithoutExtension(x)))
             .ToList();
     }
 

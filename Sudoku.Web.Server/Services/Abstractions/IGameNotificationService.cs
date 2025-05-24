@@ -1,4 +1,4 @@
-﻿namespace Sudoku.Web.Server.Services;
+﻿namespace Sudoku.Web.Server.Services.Abstractions;
 
 public interface IGameNotificationService
 {
