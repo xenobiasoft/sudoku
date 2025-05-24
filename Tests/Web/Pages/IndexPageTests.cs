@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Sudoku.Web.Server.Services;
+using Sudoku.Web.Server.Services.Abstractions;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku.GameState;
 using IndexPage = Sudoku.Web.Server.Pages.Index;

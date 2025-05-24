@@ -1,4 +1,5 @@
 ﻿using Microsoft.JSInterop;
+using Sudoku.Web.Server.Services.Abstractions;
 
 namespace Sudoku.Web.Server.Services;
 

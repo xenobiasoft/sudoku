@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Sudoku.Web.Server.Services;
+using Sudoku.Web.Server.Services.Abstractions;
 
 namespace Sudoku.Web.Server.Pages;
 
@@ -11,10 +11,12 @@ public partial class New
     [Inject] private NavigationManager? Navigation { get; set; }
     [Inject] private ISudokuGame? SudokuGame { get; set; }
     [Inject] private IGameStateManager? GameStorageManager { get; set; }
+    [Inject] private IGameStateManager? GameStateManager { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        var gameState = await SudokuGame!.NewGameAsync(Difficulty.ParseLevel());
+        var alias = await GameStateManager!.GetGameAliasAsync();
+        var gameState = await SudokuGame!.NewGameAsync(alias, Difficulty.ParseLevel());
 
         await GameStorageManager!.SaveGameAsync(gameState);
 

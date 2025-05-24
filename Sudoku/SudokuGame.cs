@@ -3,15 +3,15 @@ using XenobiaSoft.Sudoku.Generator;
 
 namespace XenobiaSoft.Sudoku;
 
-public class SudokuGame(IPuzzleGenerator puzzleGenerator, IGameStateStorage<GameStateMemory> gameStateStorage)
-    : ISudokuGame
+public class SudokuGame(IPuzzleGenerator puzzleGenerator, IGameStateStorage<GameStateMemory> gameStateStorage) : ISudokuGame
 {
-    public async Task<GameStateMemory> NewGameAsync(Level level)
+    public async Task<GameStateMemory> NewGameAsync(string alias, Level level)
     {
         var puzzle = await puzzleGenerator.Generate(level).ConfigureAwait(false);
 
         var gameState = new GameStateMemory(puzzle.PuzzleId, puzzle.GetAllCells())
         {
+            Alias = alias,
             InvalidMoves = 0,
             TotalMoves = 0,
             PlayDuration = TimeSpan.Zero,
@@ -25,13 +25,13 @@ public class SudokuGame(IPuzzleGenerator puzzleGenerator, IGameStateStorage<Game
         return gameStateStorage.SaveAsync(memory);
     }
 
-    public Task DeleteAsync(string puzzleId)
+    public Task DeleteAsync(string alias, string puzzleId)
     {
-        return gameStateStorage.DeleteAsync(puzzleId);
+        return gameStateStorage.DeleteAsync(alias, puzzleId);
     }
 
-    public Task<GameStateMemory> LoadAsync(string puzzleId)
+    public Task<GameStateMemory> LoadAsync(string alias, string puzzleId)
     {
-        return gameStateStorage.LoadAsync(puzzleId);
+        return gameStateStorage.LoadAsync(alias, puzzleId);
     }
 }

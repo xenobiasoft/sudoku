@@ -4,21 +4,21 @@ public class CachingAzureBlobGameStateStorageDecorator(IGameStateStorage<GameSta
 {
     private readonly Dictionary<string, GameStateMemory> _cache = new();
 
-    public override async Task DeleteAsync(string puzzleId)
+    public override async Task DeleteAsync(string alias, string puzzleId)
     {
-        await decorated.DeleteAsync(puzzleId);
+        await decorated.DeleteAsync(alias, puzzleId);
 
         _cache.Remove(puzzleId);
     }
 
-    public override async Task<GameStateMemory> LoadAsync(string puzzleId)
+    public override async Task<GameStateMemory> LoadAsync(string alias, string puzzleId)
     {
         if (_cache.TryGetValue(puzzleId, out var gameState))
         {
             return gameState;
         }
 
-        gameState = await decorated.LoadAsync(puzzleId);
+        gameState = await decorated.LoadAsync(alias, puzzleId);
 
         if (gameState != null)
         {
@@ -28,9 +28,9 @@ public class CachingAzureBlobGameStateStorageDecorator(IGameStateStorage<GameSta
         return gameState;
     }
 
-    public override async Task<GameStateMemory> ResetAsync(string puzzleId)
+    public override async Task<GameStateMemory> ResetAsync(string alias, string puzzleId)
     {
-        var gameState = await decorated.ResetAsync(puzzleId);
+        var gameState = await decorated.ResetAsync(alias, puzzleId);
 
         _cache[puzzleId] = gameState;
 
@@ -44,9 +44,9 @@ public class CachingAzureBlobGameStateStorageDecorator(IGameStateStorage<GameSta
         return decorated.SaveAsync(gameState);
     }
 
-    public override async Task<GameStateMemory> UndoAsync(string puzzleId)
+    public override async Task<GameStateMemory> UndoAsync(string alias, string puzzleId)
     {
-        var gameState = await decorated.UndoAsync(puzzleId);
+        var gameState = await decorated.UndoAsync(alias, puzzleId);
 
         _cache[puzzleId] = gameState;
 

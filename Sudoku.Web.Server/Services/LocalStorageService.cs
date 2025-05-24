@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using Sudoku.Web.Server.Services.Abstractions;
+using System.Text.Json;
 using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Services;
@@ -6,6 +7,26 @@ namespace Sudoku.Web.Server.Services;
 public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageService
 {
     private const string SavedGamesKey = "savedGames";
+    private const string AliasKey = "sudoku-alias";
+
+    public async Task DeleteGameAsync(string gameId)
+    {
+        var games = await LoadGameStatesAsync();
+        var gameToRemove = games.FirstOrDefault(g => g.PuzzleId == gameId);
+        if (gameToRemove != null)
+        {
+            games.Remove(gameToRemove);
+        }
+
+        await SaveGameStateAsync(games);
+    }
+
+    public async Task<string?> GetAliasAsync()
+    {
+        var alias = await jsRuntime.GetAsync(AliasKey);
+
+        return alias;
+    }
 
     public async Task<GameStateMemory?> LoadGameAsync(string gameId)
     {
@@ -27,18 +48,6 @@ public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageSer
         return JsonSerializer.Deserialize<List<GameStateMemory>>(json) ?? [];
     }
 
-    public async Task DeleteGameAsync(string gameId)
-    {
-        var games = await LoadGameStatesAsync();
-        var gameToRemove = games.FirstOrDefault(g => g.PuzzleId == gameId);
-        if (gameToRemove != null)
-        {
-            games.Remove(gameToRemove);
-        }
-
-        await SaveGameStateAsync(games);
-    }
-
     public async Task SaveGameStateAsync(GameStateMemory gameState)
     {
         var games = await LoadGameStatesAsync();
@@ -52,6 +61,11 @@ public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageSer
         games.Add(gameState);
 
         await SaveGameStateAsync(games);
+    }
+
+    public async Task SetAliasAsync(string alias)
+    {
+        await jsRuntime.SetAsync(AliasKey, alias);
     }
 
     private async Task SaveGameStateAsync(IEnumerable<GameStateMemory> gameState)

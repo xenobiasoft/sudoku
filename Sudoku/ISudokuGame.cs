@@ -4,8 +4,8 @@ namespace XenobiaSoft.Sudoku;
 
 public interface ISudokuGame
 {
-    Task DeleteAsync(string puzzleId);
-    Task<GameStateMemory> LoadAsync(string puzzleId);
-    Task<GameStateMemory> NewGameAsync(Level level);
+    Task DeleteAsync(string alias, string puzzleId);
+    Task<GameStateMemory> LoadAsync(string alias, string puzzleId);
+    Task<GameStateMemory> NewGameAsync(string alias, Level level);
     Task SaveAsync(GameStateMemory memory);
 }

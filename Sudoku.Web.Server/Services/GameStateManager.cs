@@ -1,23 +1,35 @@
-﻿using System.Diagnostics;
+﻿using Sudoku.Web.Server.Services.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Services;
 
 public class GameStateManager(ILocalStorageService localStorageService, IGameStateStorage<GameStateMemory> gameStateStorage) : IGameStateManager
 {
-    public async Task DeleteGameAsync(string gameId)
+    public async Task DeleteGameAsync(string alias, string gameId)
     {
         await localStorageService.DeleteGameAsync(gameId);
-        await gameStateStorage.DeleteAsync(gameId);
+        await gameStateStorage.DeleteAsync(alias, gameId);
     }
 
-    public async Task<GameStateMemory?> LoadGameAsync(string gameId)
+    public async Task<string> GetGameAliasAsync()
+    {
+        var alias = await localStorageService.GetAliasAsync();
+
+        if (!string.IsNullOrEmpty(alias)) return alias;
+
+        alias = AliasGenerator.GenerateAlias();
+        await localStorageService.SetAliasAsync(alias);
+
+        return alias;
+    }
+
+    public async Task<GameStateMemory?> LoadGameAsync(string alias, string gameId)
     {
         var gameState = await localStorageService.LoadGameAsync(gameId);
 
         if (gameState == null)
         {
-            await gameStateStorage.LoadAsync(gameId);
+            await gameStateStorage.LoadAsync(alias, gameId);
         }
 
         return gameState;
@@ -28,9 +40,9 @@ public class GameStateManager(ILocalStorageService localStorageService, IGameSta
         return localStorageService.LoadGameStatesAsync();
     }
 
-    public async Task<GameStateMemory> ResetGameAsync(string gameId)
+    public async Task<GameStateMemory> ResetGameAsync(string alias, string gameId)
     {
-        var gameState = await gameStateStorage.ResetAsync(gameId);
+        var gameState = await gameStateStorage.ResetAsync(alias, gameId);
         await localStorageService.SaveGameStateAsync(gameState!);
 
         return gameState!;
@@ -42,13 +54,13 @@ public class GameStateManager(ILocalStorageService localStorageService, IGameSta
         await localStorageService.SaveGameStateAsync(gameState);
     }
 
-    public async Task<GameStateMemory> UndoGameAsync(string gameId)
+    public async Task<GameStateMemory> UndoGameAsync(string alias, string gameId)
     {
-        var currentGameState = await LoadGameAsync(gameId);
+        var currentGameState = await LoadGameAsync(alias, gameId);
 
         if (currentGameState!.TotalMoves <= 1) return currentGameState;
 
-        var gameState = await gameStateStorage.UndoAsync(gameId);
+        var gameState = await gameStateStorage.UndoAsync(alias, gameId);
 
         return gameState!;
     }

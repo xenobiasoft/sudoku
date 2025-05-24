@@ -1,4 +1,5 @@
-﻿using XenobiaSoft.Sudoku.GameState;
+﻿using Sudoku.Web.Server.Services.Abstractions;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Services;
 
@@ -53,6 +54,7 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
 
         var gameState = new GameStateMemory(_currentSession.PuzzleId, _currentSession.Board)
         {
+            Alias = _currentSession.Alias,
             InvalidMoves = _currentSession.InvalidMoves,
             TotalMoves = _currentSession.TotalMoves,
             PlayDuration = _currentSession.PlayDuration

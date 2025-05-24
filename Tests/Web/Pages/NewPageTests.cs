@@ -1,11 +1,10 @@
 ﻿using Bunit.TestDoubles;
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Pages;
-using Sudoku.Web.Server.Services;
+using Sudoku.Web.Server.Services.Abstractions;
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
-using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Web.Pages;
 
@@ -16,10 +15,12 @@ public class NewPageTests : TestContext
 
     public NewPageTests()
     {
+        var alias = "game-alias";
         _mockSudokuGame = new Mock<ISudokuGame>();
         _mockGameStateManager = new Mock<IGameStateManager>();
+        _mockGameStateManager.SetupGetAliasAsync(alias);
 
-        _mockSudokuGame.SetNewAsync(PuzzleFactory.GetPuzzle(Level.Easy));
+        _mockSudokuGame.SetNewAsync(alias, PuzzleFactory.GetPuzzle(Level.Easy));
 
         Services.AddSingleton(_mockGameStateManager.Object);
         Services.AddSingleton(_mockSudokuGame.Object);

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Sudoku.Web.Server.Services;
+using Sudoku.Web.Server.Services.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Pages;
@@ -7,7 +7,8 @@ namespace Sudoku.Web.Server.Pages;
 public partial class Index
 {
 	[Inject] private NavigationManager NavigationManager { get; set; } = null!;
-    [Inject] private IGameStateManager? GameStateManager { get; set; } = null!;
+    [Inject] private IGameStateManager? GameStateManager { get; set; }
+    private string Alias { set; get; } = string.Empty;
 
     private bool _showSavedGames;
     private bool _showDifficulty;
@@ -15,6 +16,8 @@ public partial class Index
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        Alias = await GameStateManager!.GetGameAliasAsync();
+
         if (_savedGames == null)
         {
             await LoadGamesAsync();
@@ -34,7 +37,7 @@ public partial class Index
 
     private async Task DeleteGameAsync(string gameId)
     {
-        await GameStateManager!.DeleteGameAsync(gameId);
+        await GameStateManager!.DeleteGameAsync(Alias, gameId);
         _savedGames = _savedGames!.Where(x => x.PuzzleId != gameId).ToList();
         StateHasChanged();
     }

@@ -9,6 +9,7 @@ namespace UnitTests.Sudoku.GameState;
 public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameStateStorage, IGameStateStorage<PuzzleState>>
 {
     private const string PuzzleId = "test-puzzle";
+    private const string Alias = "test-alias";
 
     [Fact]
     public async Task ClearAsync_ShouldClearGameState()
@@ -19,10 +20,10 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
         await sut.SaveAsync(Container.Create<PuzzleState>());
 
         // Act
-        await sut.DeleteAsync(PuzzleId);
+        await sut.DeleteAsync(Alias, PuzzleId);
 
         // Assert
-        var result = await sut.LoadAsync(PuzzleId);
+        var result = await sut.LoadAsync(Alias, PuzzleId);
         result.Should().BeNull();
     }
 
@@ -33,7 +34,7 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
         var sut = ResolveSut();
 
         // Act
-        var result = await sut.LoadAsync(PuzzleId);
+        var result = await sut.LoadAsync(Alias, PuzzleId);
 
         // Assert
         result.Should().BeNull();
@@ -49,7 +50,7 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
         await sut.SaveAsync(expectedGameState);
 
         // Act
-        var actualGameState = await sut.LoadAsync(PuzzleId);
+        var actualGameState = await sut.LoadAsync(Alias, PuzzleId);
 
         // Assert
         actualGameState.Should().Be(expectedGameState);
@@ -82,7 +83,7 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
         }
 
         // Act
-        var result = await sut.ResetAsync(PuzzleId);
+        var result = await sut.ResetAsync(Alias, PuzzleId);
 
         // Assert
         result.Should().BeEquivalentTo(initialGameState);
@@ -102,7 +103,7 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
         await sut.SaveAsync(gameState2);
 
         // Assert
-        var result = await sut.LoadAsync(PuzzleId);
+        var result = await sut.LoadAsync(Alias, PuzzleId);
 
         result.Should().Be(gameState1);
     }
@@ -119,8 +120,8 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
         await sut.SaveAsync(gameState2);
 
         // Act
-        var undoneState = await sut.UndoAsync(PuzzleId);
-        var currentState = await sut.LoadAsync(PuzzleId);
+        var undoneState = await sut.UndoAsync(Alias, PuzzleId);
+        var currentState = await sut.LoadAsync(Alias, PuzzleId);
 
         // Assert
         Assert.Multiple(() =>
@@ -137,7 +138,7 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
         var sut = ResolveSut();
 
         // Act
-        var result = await sut.UndoAsync(PuzzleId);
+        var result = await sut.UndoAsync(Alias, PuzzleId);
 
         // Assert
         result.Should().BeNull();

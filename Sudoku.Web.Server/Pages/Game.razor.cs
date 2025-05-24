@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Sudoku.Web.Server.EventArgs;
-using Sudoku.Web.Server.Services;
+using Sudoku.Web.Server.Services.Abstractions;
 
 namespace Sudoku.Web.Server.Pages;
 
@@ -20,13 +20,15 @@ public partial class Game
     public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
     public Cell SelectedCell { get; private set; } = new(0, 0);
     private bool IsPencilMode { get; set; }
+    public string Alias { get; set; } = string.Empty;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
         _locationChangingRegistration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
-        var gameState = await GameStateManager!.LoadGameAsync(PuzzleId!);
+        Alias = await GameStateManager!.GetGameAliasAsync();
+        var gameState = await GameStateManager!.LoadGameAsync(Alias, PuzzleId!);
         await SessionManager.StartNewSession(gameState!);
         Puzzle.Load(gameState);
 
@@ -48,7 +50,7 @@ public partial class Game
     public async Task HandleReset()
     {
         await SessionManager.PauseSession();
-        var gameState = await GameStateManager!.ResetGameAsync(PuzzleId!);
+        var gameState = await GameStateManager!.ResetGameAsync(Alias, PuzzleId!);
         SessionManager.ResumeSession(gameState);
         Puzzle.Load(gameState);
         StateHasChanged();
@@ -57,7 +59,7 @@ public partial class Game
     public async Task HandleUndo()
     {
         await SessionManager.PauseSession();
-        var gameState = await GameStateManager!.UndoGameAsync(PuzzleId!);
+        var gameState = await GameStateManager!.UndoGameAsync(Alias, PuzzleId!);
         SessionManager.ResumeSession(gameState);
         Puzzle.Load(gameState);
         StateHasChanged();
@@ -83,7 +85,7 @@ public partial class Game
         if (Puzzle.IsSolved())
         {
             await SessionManager.EndSession();
-            await GameStateManager!.DeleteGameAsync(PuzzleId!);
+            await GameStateManager!.DeleteGameAsync(Alias, PuzzleId!);
             GameNotificationService!.NotifyGameEnded();
         }
 

@@ -1,4 +1,6 @@
-﻿namespace Sudoku.Web.Server.Services
+﻿using Sudoku.Web.Server.Services.Abstractions;
+
+namespace Sudoku.Web.Server.Services
 {
     public class GameNotificationService : IGameNotificationService
     {

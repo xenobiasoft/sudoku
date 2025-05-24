@@ -10,6 +10,7 @@ namespace UnitTests.Sudoku.GameState;
 public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstraction<CachingAzureBlobGameStateStorageDecorator, IGameStateStorage<GameStateMemory>>
 {
     private const string PuzzleId = "test-puzzle";
+    private const string Alias = "test-alias";
 
     private readonly Mock<IGameStateStorage<GameStateMemory>> _mockDecoratedStorage;
     private readonly GameStateMemory _gameState;
@@ -32,10 +33,10 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
         await sut.SaveAsync(_gameState);
 
         // Act
-        await sut.DeleteAsync(PuzzleId);
+        await sut.DeleteAsync(Alias, PuzzleId);
 
         // Assert
-        _mockDecoratedStorage.VerifyDeleteAsyncCalled(PuzzleId, Times.Once);
+        _mockDecoratedStorage.VerifyDeleteAsyncCalled(Alias, PuzzleId, Times.Once);
     }
 
     [Fact]
@@ -46,11 +47,11 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
         await sut.SaveAsync(_gameState);
 
         // Act
-        var result = await sut.LoadAsync(PuzzleId);
+        var result = await sut.LoadAsync(Alias, PuzzleId);
 
         // Assert
         result.Should().Be(_gameState);
-        _mockDecoratedStorage.Verify(x => x.LoadAsync(It.IsAny<string>()), Times.Never);
+        _mockDecoratedStorage.Verify(x => x.LoadAsync(Alias, PuzzleId), Times.Never);
     }
 
     [Fact]
@@ -61,11 +62,11 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
         var sut = ResolveSut();
 
         // Act
-        var result = await sut.LoadAsync(PuzzleId);
+        var result = await sut.LoadAsync(Alias, PuzzleId);
 
         // Assert
         result.Should().Be(_gameState);
-        _mockDecoratedStorage.Verify(x => x.LoadAsync(PuzzleId), Times.Once);
+        _mockDecoratedStorage.Verify(x => x.LoadAsync(Alias, PuzzleId), Times.Once);
     }
 
     [Fact]
@@ -75,10 +76,10 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
         var sut = ResolveSut();
 
         // Act
-        await sut.ResetAsync(PuzzleId);
+        await sut.ResetAsync(Alias, PuzzleId);
 
         // Assert
-        _mockDecoratedStorage.VerifyResetAsyncCalled(PuzzleId, Times.Once);
+        _mockDecoratedStorage.VerifyResetAsyncCalled(Alias, PuzzleId, Times.Once);
     }
 
     [Fact]
@@ -89,10 +90,10 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
         var sut = ResolveSut();
 
         // Act
-        await sut.ResetAsync(PuzzleId);
+        await sut.ResetAsync(Alias, PuzzleId);
 
         // Assert
-        var cachedGameState = await sut.LoadAsync(PuzzleId);
+        var cachedGameState = await sut.LoadAsync(Alias, PuzzleId);
         cachedGameState!.AssertAreEquivalent(_gameState);
     }
 
@@ -106,7 +107,7 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
         await sut.SaveAsync(_gameState);
 
         // Assert
-        var cachedGameState = await sut.LoadAsync(PuzzleId);
+        var cachedGameState = await sut.LoadAsync(Alias, PuzzleId);
         cachedGameState.Should().Be(_gameState);
         _mockDecoratedStorage.VerifySaveAsyncCalled(_gameState, Times.Once);
     }
@@ -119,10 +120,10 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
         var sut = ResolveSut();
 
         // Act
-        await sut.UndoAsync(PuzzleId);
+        await sut.UndoAsync(Alias, PuzzleId);
 
         // Assert
-        _mockDecoratedStorage.VerifyUndoAsyncCalled(PuzzleId, Times.Once);
+        _mockDecoratedStorage.VerifyUndoAsyncCalled(Alias, PuzzleId, Times.Once);
     }
 
     [Fact]
@@ -133,10 +134,10 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
         var sut = ResolveSut();
 
         // Act
-        await sut.UndoAsync(PuzzleId);
+        await sut.UndoAsync(Alias, PuzzleId);
 
         // Assert
-        var cachedGameState = await sut.LoadAsync(PuzzleId);
+        var cachedGameState = await sut.LoadAsync(Alias, PuzzleId);
         cachedGameState!.AssertAreEquivalent(_gameState);
     }
 }

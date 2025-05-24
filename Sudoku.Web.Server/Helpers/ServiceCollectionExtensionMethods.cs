@@ -1,6 +1,7 @@
 ﻿using Azure.Identity;
 using Microsoft.Extensions.Azure;
 using Sudoku.Web.Server.Services;
+using Sudoku.Web.Server.Services.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.GameState.Decorators;
 using XenobiaSoft.Sudoku.Generator;
