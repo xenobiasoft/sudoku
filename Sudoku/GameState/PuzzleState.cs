@@ -6,5 +6,5 @@ namespace XenobiaSoft.Sudoku.GameState;
 public class PuzzleState(string puzzleId, Cell[] board)
 {
     public string PuzzleId { get; init; } = puzzleId;
-    public Cell[] Board { get; init; } = board;
+    public Cell[] Board { get; init; } = board.Select(cell => cell == null ? cell : cell.Copy()).ToArray();
 }

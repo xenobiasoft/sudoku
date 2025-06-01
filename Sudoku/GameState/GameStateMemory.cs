@@ -13,4 +13,16 @@ public class GameStateMemory(string puzzleId, Cell[] board) : PuzzleState(puzzle
     public DateTime LastUpdated { get; init; } = DateTime.UtcNow;
     public TimeSpan PlayDuration { get; set; } = TimeSpan.Zero;
     public int TotalMoves { get; set; } = 0;
+
+    public GameStateMemory Clone()
+    {
+        return new GameStateMemory(PuzzleId, Board)
+        {
+            Alias = Alias,
+            InvalidMoves = InvalidMoves,
+            LastUpdated = LastUpdated,
+            PlayDuration = PlayDuration,
+            TotalMoves = TotalMoves
+        };
+    }
 }

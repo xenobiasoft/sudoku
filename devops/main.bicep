@@ -60,7 +60,7 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2022-09-01' = {
   properties: {
     defaultDocuments: [
       'Default.html'
-      'index.html'      
+      'index.html'
     ]
     linuxFxVersion: 'DOTNETCORE|9.0'
     managedPipelineMode: 'Integrated'
