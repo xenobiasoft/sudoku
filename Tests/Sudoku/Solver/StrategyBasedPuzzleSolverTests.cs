@@ -7,7 +7,7 @@ using XenobiaSoft.Sudoku.Strategies;
 
 namespace UnitTests.Sudoku.Solver;
 
-public class PuzzleSolverTests : BaseTestByAbstraction<PuzzleSolver, IPuzzleSolver>
+public class StrategyBasedPuzzleSolverTests : BaseTestByAbstraction<StrategyBasedPuzzleSolver, IPuzzleSolver>
 {
     private const string Alias = "SudokuSolverAlias";
 

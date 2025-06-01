@@ -32,7 +32,7 @@ namespace Sudoku.Web.Server.Helpers
         {
             services
                 .AddScoped<ISudokuGame, SudokuGame>()
-                .AddScoped<IPuzzleSolver, PuzzleSolver>()
+                .AddScoped<IPuzzleSolver, StrategyBasedPuzzleSolver>()
                 .AddScoped<IPuzzleGenerator, PuzzleGenerator>()
                 .AddScoped<IStorageService, AzureStorageService>()
                 .AddScoped<IGameStateStorage<PuzzleState>, InMemoryGameStateStorage>()
