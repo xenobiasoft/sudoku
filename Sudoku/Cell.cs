@@ -11,7 +11,8 @@ public record Cell(int Row, int Column)
 		return new Cell(Row, Column)
 		{
 			Value = Value,
-			PossibleValues = PossibleValues,
+			Locked = Locked,
+            PossibleValues = PossibleValues,
 		};
 	}
 }

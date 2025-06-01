@@ -97,7 +97,7 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IGameSt
 
         var currentGameState = await LoadAsync(gameState.Alias, gameState.PuzzleId);
 
-        if (currentGameState != null && currentGameState.HasSameBoardStateAs(gameState))
+        if (currentGameState != null && currentGameState.IsSameGameStateAs(gameState))
         {
             return;
         }
