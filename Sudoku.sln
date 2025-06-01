@@ -8,10 +8,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "Tests\UnitTest
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sudoku.Web.Server", "Sudoku.Web.Server\Sudoku.Web.Server.csproj", "{496F08A0-E45C-4835-B5F7-AD29E651BD65}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DevOps", "DevOps", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub", "GitHub", "{7DBF7794-0F31-412A-997F-71760CE39417}"
 	ProjectSection(SolutionItems) = preProject
-		devops\azure-pipelines.yml = devops\azure-pipelines.yml
 		devops\main.bicep = devops\main.bicep
+		.github\workflows\main.yml = .github\workflows\main.yml
+		.github\variables.yml = .github\variables.yml
 	EndProjectSection
 EndProject
 Global

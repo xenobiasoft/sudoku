@@ -52,7 +52,7 @@ jobs:
         with:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           resourceGroupName: rg-xenobiasoft
-          template: ./devops/main.bicep
+          template: ./.github/main.bicep
           scope: resourcegroup
           parameters: |
             sslThumbprint=${{ secrets.SSL_THUMBPRINT }}
