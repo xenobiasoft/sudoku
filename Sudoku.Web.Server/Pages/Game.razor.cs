@@ -15,6 +15,7 @@ public partial class Game
     [Inject] private ICellFocusedNotificationService? CellFocusedNotificationService { get; set; }
     [Inject] private IGameStateManager? GameStateManager { get; set; }
     [Inject] private IGameSessionManager SessionManager { get; set; } = null!;
+    [Inject] private IAliasService AliasService { get; set; } = null!;
     [Inject] public NavigationManager NavigationManager { get; set; } = null!;
 
     public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
@@ -27,7 +28,7 @@ public partial class Game
         if (!firstRender) return;
 
         _locationChangingRegistration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
-        Alias = await GameStateManager!.GetGameAliasAsync();
+        Alias = await AliasService.GetAliasAsync();
         var gameState = await GameStateManager!.LoadGameAsync(Alias, PuzzleId!);
         await SessionManager.StartNewSession(gameState!);
         Puzzle.Load(gameState);

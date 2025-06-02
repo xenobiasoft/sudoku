@@ -21,6 +21,7 @@ public class GamePageTests : TestContext
     private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
     private readonly Mock<IGameStateManager> _mockGameStateManager = new();
     private readonly Mock<IGameSessionManager> _mockGameSessionManager = new();
+    private readonly Mock<IAliasService> _mockAliasService = new();
 
     public GamePageTests()
     {
@@ -32,7 +33,7 @@ public class GamePageTests : TestContext
             TotalMoves = 5
         };
         _mockGameStateManager.SetupLoadGameAsync(loadedGameState);
-        _mockGameStateManager.SetupGetAliasAsync(Alias);
+        _mockAliasService.Setup(x => x.GetAliasAsync()).ReturnsAsync(Alias);
         _mockGameSessionManager.Setup(x => x.CurrentSession).Returns(new GameSession(loadedGameState, new Mock<IGameTimer>().Object));
 
         Services.AddSingleton(_mockInvalidCellNotifier.Object);
@@ -41,6 +42,7 @@ public class GamePageTests : TestContext
         Services.AddSingleton(new Mock<ISudokuPuzzle>().Object);
         Services.AddSingleton(_mockGameSessionManager.Object);
         Services.AddSingleton(_mockGameStateManager.Object);
+        Services.AddSingleton(_mockAliasService.Object);
     }
 
     [Fact]

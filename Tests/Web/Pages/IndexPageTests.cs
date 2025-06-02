@@ -8,7 +8,9 @@ namespace UnitTests.Web.Pages;
 
 public class IndexPageTests : TestContext
 {
+    private const string Alias = "test-alias";
     private readonly Mock<IGameStateManager> _mockGameStateManager = new();
+    private readonly Mock<IAliasService> _mockAliasService = new();
 
     public IndexPageTests()
     {
@@ -18,7 +20,9 @@ public class IndexPageTests : TestContext
             new(Guid.NewGuid().ToString(),[]) { LastUpdated = DateTime.UtcNow.AddMinutes(-5) }
         };
         _mockGameStateManager.SetupLoadGamesAsync(savedGames);
+        _mockAliasService.Setup(x => x.GetAliasAsync()).ReturnsAsync(Alias);
         Services.AddSingleton(_mockGameStateManager.Object);
+        Services.AddSingleton(_mockAliasService.Object);
     }
 
     [Fact]
@@ -57,7 +61,6 @@ public class IndexPageTests : TestContext
 
         // Act
         var delGameElements = component.FindAll(".del-game-icon");
-
 
         // Assert
         delGameElements.Count.Should().Be(2);

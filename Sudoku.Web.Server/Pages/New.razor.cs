@@ -11,11 +11,11 @@ public partial class New
     [Inject] private NavigationManager? Navigation { get; set; }
     [Inject] private ISudokuGame? SudokuGame { get; set; }
     [Inject] private IGameStateManager? GameStorageManager { get; set; }
-    [Inject] private IGameStateManager? GameStateManager { get; set; }
+    [Inject] private IAliasService AliasService { get; set; } = null!;
 
     protected override async Task OnInitializedAsync()
     {
-        var alias = await GameStateManager!.GetGameAliasAsync();
+        var alias = await AliasService.GetAliasAsync();
         var gameState = await SudokuGame!.NewGameAsync(alias, Difficulty.ParseLevel());
 
         await GameStorageManager!.SaveGameAsync(gameState);

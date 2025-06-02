@@ -5,15 +5,6 @@ namespace UnitTests.Helpers.Mocks;
 
 public static class MockGameStateManagerExtensions
 {
-    public static Mock<IGameStateManager> SetupGetAliasAsync(this Mock<IGameStateManager> mock, string alias)
-    {
-        mock
-            .Setup(x => x.GetGameAliasAsync())
-            .ReturnsAsync(alias);
-
-        return mock;
-    }
-
     public static Mock<IGameStateManager> SetupLoadGameAsync(this Mock<IGameStateManager> mock, GameStateMemory gameState)
     {
         mock
