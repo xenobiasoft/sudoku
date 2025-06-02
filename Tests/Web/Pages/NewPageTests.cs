@@ -18,12 +18,14 @@ public class NewPageTests : TestContext
         var alias = "game-alias";
         _mockSudokuGame = new Mock<ISudokuGame>();
         _mockGameStateManager = new Mock<IGameStateManager>();
-        _mockGameStateManager.SetupGetAliasAsync(alias);
+        var aliasService = new Mock<IAliasService>();
+        aliasService.SetupGetAliasAsync(alias);
 
         _mockSudokuGame.SetNewAsync(alias, PuzzleFactory.GetPuzzle(Level.Easy));
 
         Services.AddSingleton(_mockGameStateManager.Object);
         Services.AddSingleton(_mockSudokuGame.Object);
+        Services.AddSingleton(aliasService.Object);
     }
 
     [Fact]

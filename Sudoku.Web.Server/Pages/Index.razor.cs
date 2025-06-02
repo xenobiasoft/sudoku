@@ -6,8 +6,9 @@ namespace Sudoku.Web.Server.Pages;
 
 public partial class Index
 {
-	[Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
     [Inject] private IGameStateManager? GameStateManager { get; set; }
+    [Inject] private IAliasService AliasService { get; set; } = null!;
     private string Alias { set; get; } = string.Empty;
 
     private bool _showSavedGames;
@@ -16,7 +17,7 @@ public partial class Index
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Alias = await GameStateManager!.GetGameAliasAsync();
+        Alias = await AliasService.GetAliasAsync();
 
         if (_savedGames == null)
         {

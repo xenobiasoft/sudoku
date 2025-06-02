@@ -23,7 +23,8 @@ namespace Sudoku.Web.Server.Helpers
                 .AddScoped<IGameStateManager, GameStateManager>()
                 .AddScoped<IJsRuntimeWrapper, JsRuntimeWrapper>()
                 .AddScoped<IGameTimer>(sp => new GameTimer(TimeSpan.FromSeconds(1)))
-                .AddScoped<IGameSessionManager, GameSessionManager>();
+                .AddScoped<IGameSessionManager, GameSessionManager>()
+                .AddScoped<IAliasService, AliasService>();
 
             return services;
         }

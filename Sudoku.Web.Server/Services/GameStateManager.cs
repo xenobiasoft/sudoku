@@ -11,18 +11,6 @@ public class GameStateManager(ILocalStorageService localStorageService, IGameSta
         await gameStateStorage.DeleteAsync(alias, gameId);
     }
 
-    public async Task<string> GetGameAliasAsync()
-    {
-        var alias = await localStorageService.GetAliasAsync();
-
-        if (!string.IsNullOrEmpty(alias)) return alias;
-
-        alias = AliasGenerator.GenerateAlias();
-        await localStorageService.SetAliasAsync(alias);
-
-        return alias;
-    }
-
     public async Task<GameStateMemory?> LoadGameAsync(string alias, string gameId)
     {
         var gameState = await localStorageService.LoadGameAsync(gameId);
@@ -60,8 +48,9 @@ public class GameStateManager(ILocalStorageService localStorageService, IGameSta
 
         if (currentGameState!.TotalMoves <= 1) return currentGameState;
 
-        var gameState = await gameStateStorage.UndoAsync(alias, gameId);
+        var previousGameState = await gameStateStorage.UndoAsync(alias, gameId);
+        await localStorageService.SaveGameStateAsync(previousGameState!);
 
-        return gameState!;
+        return previousGameState!;
     }
 }
