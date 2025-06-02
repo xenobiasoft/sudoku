@@ -46,16 +46,16 @@ The following components need to be moved to the shared library:
 
 1. Game Management:
 
-   - `POST /api/game/new` - Create new game
-   - `GET /api/game/{id}` - Get game state
-   - `POST /api/game/{id}/move` - Make a move
-   - `GET /api/game/{id}/validate` - Validate current state
-   - `POST /api/game/{id}/solve` - Get solution
+   - `POST /api/games/new` - Create new game
+   - `GET /api/games/{id}` - Get game state
+   - `POST /api/games/{id}/move` - Make a move
+   - `GET /api/games/{id}/validate` - Validate current state
+   - `POST /api/games/{id}/solve` - Get solution
 
 2. Puzzle Management:
-   - `GET /api/puzzle/generate` - Generate new puzzle
-   - `GET /api/puzzle/validate` - Validate puzzle
-   - `POST /api/puzzle/solve` - Solve puzzle
+   - `GET /api/puzzles/generate` - Generate new puzzle
+   - `GET /api/puzzles/validate` - Validate puzzle
+   - `POST /api/puzzles/solve` - Solve puzzle
 
 ### 2.4 Frontend Changes
 
