@@ -12,7 +12,7 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
     public async Task StartNewSession(GameStateMemory gameState)
     {
         _currentSession = new GameSession(gameState, timer);
-        _currentSession.Timer.Start();
+        _currentSession.Start();
         await SaveSessionAsync();
     }
 
@@ -20,7 +20,7 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
     {
         if (_currentSession is NullGameSession) return;
 
-        _currentSession.Timer.Pause();
+        _currentSession.Pause();
         await SaveSessionAsync();
     }
 
@@ -29,15 +29,14 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
         if (_currentSession is NullGameSession) return;
 
         _currentSession.ReloadBoard(gameState);
-
-        _currentSession.Timer.Resume();
+        _currentSession.Resume();
     }
 
     public async Task EndSession()
     {
         if (_currentSession is NullGameSession) return;
-        
-        _currentSession.Timer.Pause();
+
+        _currentSession.End();
         await SaveSessionAsync();
         _currentSession = NullGameSession.Instance;
     }
@@ -62,4 +61,4 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
 
         await gameStateManager.SaveGameAsync(gameState);
     }
-} 
+}

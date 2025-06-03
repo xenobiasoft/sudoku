@@ -15,7 +15,12 @@ public class GameStatsTests : TestContext
     {
         _mockTimer = new Mock<IGameTimer>();
         var mockSessionManager = new Mock<IGameSessionManager>();
-        _session = new GameSession(new GameStateMemory("puzzle-id", []), _mockTimer.Object);
+        var gameState = new GameStateMemory("puzzle-id", [])
+        {
+            InvalidMoves = 0,
+            TotalMoves = 0
+        };
+        _session = new GameSession(gameState, _mockTimer.Object);
 
         mockSessionManager.Setup(x => x.CurrentSession).Returns(_session);
         Services.AddSingleton(mockSessionManager.Object);
@@ -29,8 +34,7 @@ public class GameStatsTests : TestContext
         var gameStats = RenderComponent<GameStats>();
 
         // Act
-        _session.RecordMove(true); // Total moves: 1
-        _session.RecordMove(false); // Total moves: 2, Invalid moves: 1
+        _session.Start();
 
         // Assert
         gameStats.MarkupMatches(@$"
@@ -44,17 +48,18 @@ public class GameStatsTests : TestContext
     }
 
     [Fact]
-    public void GameStats_WhenExpanded_RendersCorrectly()
+    public async Task GameStats_WhenExpanded_RendersCorrectly()
     {
         // Arrange
         _mockTimer.Setup(x => x.ElapsedTime).Returns(TimeSpan.FromMinutes(15));
         var gameStats = RenderComponent<GameStats>();
-        _session.RecordMove(true); // Total moves: 1
-        _session.RecordMove(false); // Total moves: 2, Invalid moves: 1
+        _session.Start();
+        await gameStats.InvokeAsync(() => _session.RecordMove(true)); // Total moves: 1
+        await gameStats.InvokeAsync(() => _session.RecordMove(false)); // Total moves: 2, Invalid moves: 1
         var statHeader = gameStats.Find(".stat-header");
 
         // Act
-        statHeader.Click();
+        await gameStats.InvokeAsync(() => statHeader.Click());
 
         // Assert
         gameStats.MarkupMatches(@$"
@@ -76,14 +81,15 @@ public class GameStatsTests : TestContext
     }
 
     [Fact]
-    public void GameStats_WhenMovesAreRecorded_ShouldUpdate()
+    public async Task GameStats_WhenMovesAreRecorded_ShouldUpdate()
     {
         // Arrange
         var gameStats = RenderComponent<GameStats>();
         var statHeader = gameStats.Find(".stat-header");
-        _session.RecordMove(true);
-        _session.RecordMove(false);
-        statHeader.Click();
+        _session.Start();
+        await gameStats.InvokeAsync(() => _session.RecordMove(true));
+        await gameStats.InvokeAsync(() => _session.RecordMove(false));
+        await gameStats.InvokeAsync(() => statHeader.Click());
 
         // Act
         var totalMoves = gameStats.Find(".total-moves .value");
@@ -95,7 +101,7 @@ public class GameStatsTests : TestContext
     }
 
     [Fact]
-    public void GameStats_WhenTimerTicks_ShouldUpdate()
+    public async Task GameStats_WhenTimerTicks_ShouldUpdate()
     {
         // Arrange
         var gameStats = RenderComponent<GameStats>();
@@ -103,7 +109,7 @@ public class GameStatsTests : TestContext
         var playDuration = gameStats.Find(".game-stats .stat-header .value");
 
         // Act
-        _mockTimer.Raise(x => x.OnTick += null, this, TimeSpan.FromMinutes(5));
+        await gameStats.InvokeAsync(() => _mockTimer.Raise(x => x.OnTick += null, this, TimeSpan.FromMinutes(5)));
 
         // Assert
         playDuration.MarkupMatches("<span class=\"value\">00:05:00</span>");

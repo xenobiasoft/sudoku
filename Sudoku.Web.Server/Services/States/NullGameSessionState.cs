@@ -1,18 +1,17 @@
-﻿using Sudoku.Web.Server.Services.Abstractions;
+using Sudoku.Web.Server.Services.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 
-namespace Sudoku.Web.Server.Services;
+namespace Sudoku.Web.Server.Services.States;
 
-public class NullGameSession : IGameSession
+public class NullGameSessionState : IGameSessionState
 {
-    public static NullGameSession Instance = new NullGameSession();
+    public static NullGameSessionState Instance { get; } = new();
 
     public string Alias => string.Empty;
     public string PuzzleId => string.Empty;
     public Cell[] Board => [];
     public int InvalidMoves => 0;
     public int TotalMoves => 0;
-    public DateTime StartTime => DateTime.MinValue;
     public TimeSpan PlayDuration => TimeSpan.Zero;
     public IGameTimer Timer => new NullGameTimer();
 
