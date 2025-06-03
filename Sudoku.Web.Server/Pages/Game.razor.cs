@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.Routing;
 using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services.Abstractions;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Pages;
 
@@ -10,87 +11,119 @@ public partial class Game
     private IDisposable? _locationChangingRegistration;
 
     [Parameter] public string? PuzzleId { get; set; }
-    [Inject] public IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
-    [Inject] public IGameNotificationService? GameNotificationService { get; set; }
-    [Inject] private ICellFocusedNotificationService? CellFocusedNotificationService { get; set; }
-    [Inject] private IGameStateManager? GameStateManager { get; set; }
-    [Inject] private IGameSessionManager SessionManager { get; set; } = null!;
-    [Inject] private IAliasService AliasService { get; set; } = null!;
-    [Inject] public NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] public required IInvalidCellNotificationService InvalidCellNotificationService { get; set; }
+    [Inject] public required IGameNotificationService GameNotificationService { get; set; }
+    [Inject] public required ICellFocusedNotificationService CellFocusedNotificationService { get; set; }
+    [Inject] public required IGameStateManager GameStateManager { get; set; }
+    [Inject] public required IGameSessionManager SessionManager { get; set; }
+    [Inject] public required IAliasService AliasService { get; set; }
+    [Inject] public required NavigationManager NavigationManager { get; set; }
 
-    public ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
+    private ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
     public Cell SelectedCell { get; private set; } = new(0, 0);
     private bool IsPencilMode { get; set; }
-    public string Alias { get; set; } = string.Empty;
+    private string Alias { get; set; } = string.Empty;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
+        await InitializeGameAsync();
+    }
+
+    private async Task InitializeGameAsync()
+    {
+        RegisterNavigationHandler();
+        await LoadGameStateAsync();
+        NotifyGameStart();
+    }
+
+    private void RegisterNavigationHandler()
+    {
         _locationChangingRegistration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
+    private async Task LoadGameStateAsync()
+    {
         Alias = await AliasService.GetAliasAsync();
-        var gameState = await GameStateManager!.LoadGameAsync(Alias, PuzzleId!);
+        var gameState = await GameStateManager.LoadGameAsync(Alias, PuzzleId!);
         await SessionManager.StartNewSession(gameState!);
         Puzzle.Load(gameState);
+    }
 
-        GameNotificationService!.NotifyGameStarted();
+    private void NotifyGameStart()
+    {
+        GameNotificationService.NotifyGameStarted();
         StateHasChanged();
     }
 
     private async ValueTask OnLocationChanging(LocationChangingContext context)
     {
         await SessionManager.PauseSession();
-        _locationChangingRegistration!.Dispose();
+        _locationChangingRegistration?.Dispose();
     }
 
     private void HandleSetSelectedCell(Cell cell)
     {
         SelectedCell = cell;
+        StateHasChanged();
     }
 
     public async Task HandleReset()
     {
-        await SessionManager.PauseSession();
-        var gameState = await GameStateManager!.ResetGameAsync(Alias, PuzzleId!);
-        SessionManager.ResumeSession(gameState);
-        Puzzle.Load(gameState);
-        StateHasChanged();
+        await UpdateGameStateAsync(() => GameStateManager.ResetGameAsync(Alias, PuzzleId!));
     }
 
     public async Task HandleUndo()
     {
+        await UpdateGameStateAsync(() => GameStateManager.UndoGameAsync(Alias, PuzzleId!));
+    }
+
+    private async Task UpdateGameStateAsync(Func<Task<GameStateMemory>> stateUpdateAction)
+    {
         await SessionManager.PauseSession();
-        var gameState = await GameStateManager!.UndoGameAsync(Alias, PuzzleId!);
+        var gameState = await stateUpdateAction();
         SessionManager.ResumeSession(gameState);
         Puzzle.Load(gameState);
         StateHasChanged();
     }
 
-    private Task HandleCellChanged(CellChangedEventArgs args)
-    {
-        return HandleCellUpdate(args.Row, args.Column, args.Value);
-    }
+    private Task HandleCellChanged(CellChangedEventArgs args) =>
+        HandleCellUpdate(args.Row, args.Column, args.Value);
 
-    private Task HandleCellValueChanged(CellValueChangedEventArgs args)
-    {
-        return HandleCellUpdate(SelectedCell.Row, SelectedCell.Column, args.Value);
-    }
+    private Task HandleCellValueChanged(CellValueChangedEventArgs args) =>
+        HandleCellUpdate(SelectedCell.Row, SelectedCell.Column, args.Value);
 
     private async Task HandleCellUpdate(int row, int column, int value)
     {
+        UpdatePuzzleCell(row, column, value);
+        await ValidateAndUpdateGameState();
+    }
+
+    private void UpdatePuzzleCell(int row, int column, int value)
+    {
         Puzzle.SetCell(row, column, value);
         var isValid = Puzzle.IsValid();
-        InvalidCellNotificationService!.Notify(Puzzle.Validate().ToList());
-        await SessionManager.RecordMove(isValid);
+        InvalidCellNotificationService.Notify(Puzzle.Validate().ToList());
+    }
+
+    private async Task ValidateAndUpdateGameState()
+    {
+        await SessionManager.RecordMove(Puzzle.IsValid());
 
         if (Puzzle.IsSolved())
         {
-            await SessionManager.EndSession();
-            await GameStateManager!.DeleteGameAsync(Alias, PuzzleId!);
-            GameNotificationService!.NotifyGameEnded();
+            await HandleGameCompletion();
         }
 
         StateHasChanged();
+    }
+
+    private async Task HandleGameCompletion()
+    {
+        await SessionManager.EndSession();
+        await GameStateManager.DeleteGameAsync(Alias, PuzzleId!);
+        GameNotificationService.NotifyGameEnded();
     }
 
     private void HandlePencilModeToggle(bool isPencilMode)
@@ -101,18 +134,21 @@ public partial class Game
 
     private void HandlePossibleValueChanged(CellPossibleValueChangedEventArgs arg)
     {
-        var possibleValues = SelectedCell.PossibleValues;
+        UpdatePossibleValues(arg.Value);
+        StateHasChanged();
+    }
 
-        if (possibleValues.Contains(arg.Value))
+    private void UpdatePossibleValues(int value)
+    {
+        var possibleValues = SelectedCell.PossibleValues;
+        if (possibleValues.Contains(value))
         {
-            possibleValues.Remove(arg.Value);
+            possibleValues.Remove(value);
         }
         else
         {
-            possibleValues.Add(arg.Value);
+            possibleValues.Add(value);
         }
-
         SelectedCell.PossibleValues = possibleValues;
-        StateHasChanged();
     }
 }

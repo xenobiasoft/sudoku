@@ -8,18 +8,21 @@ public partial class New
     private readonly string[] Digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
 
     [Parameter] public string Difficulty { get; set; } = "Easy";
-    [Inject] private NavigationManager? Navigation { get; set; }
-    [Inject] private ISudokuGame? SudokuGame { get; set; }
-    [Inject] private IGameStateManager? GameStorageManager { get; set; }
-    [Inject] private IAliasService AliasService { get; set; } = null!;
+    [Inject] public required NavigationManager Navigation { get; set; }
+    [Inject] public required ISudokuGame SudokuGame { get; set; }
+    [Inject] public required IGameStateManager GameStorageManager { get; set; }
+    [Inject] public required IAliasService AliasService { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        await StartNewGameAsync();
+    }
+
+    private async Task StartNewGameAsync()
+    {
         var alias = await AliasService.GetAliasAsync();
-        var gameState = await SudokuGame!.NewGameAsync(alias, Difficulty.ParseLevel());
-
-        await GameStorageManager!.SaveGameAsync(gameState);
-
-        Navigation!.NavigateTo($"/game/{gameState.PuzzleId}");
+        var gameState = await SudokuGame.NewGameAsync(alias, Difficulty.ParseLevel());
+        await GameStorageManager.SaveGameAsync(gameState);
+        Navigation.NavigateTo($"/game/{gameState.PuzzleId}");
     }
 }
