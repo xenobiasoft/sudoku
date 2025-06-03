@@ -1,8 +1,8 @@
-﻿using XenobiaSoft.Sudoku.GameState;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Services.Abstractions;
 
-public interface IGameSession
+public interface IGameSessionState
 {
     string Alias { get; }
     string PuzzleId { get; }

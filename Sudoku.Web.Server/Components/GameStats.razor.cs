@@ -5,7 +5,7 @@ namespace Sudoku.Web.Server.Components;
 
 public partial class GameStats : ComponentBase, IDisposable
 {
-    [Inject] private IGameSessionManager SessionManager { get; set; } = null!;
+    [Inject] public required IGameSessionManager SessionManager { get; set; } = null!;
 
     private int _totalMoves = 0;
     private int _invalidMoves = 0;
@@ -14,10 +14,28 @@ public partial class GameStats : ComponentBase, IDisposable
 
     protected override void OnInitialized()
     {
+        SubscribeToSessionEvents();
+    }
+
+    protected override void OnParametersSet()
+    {
+        UpdateStats();
+    }
+
+    private void SubscribeToSessionEvents()
+    {
         if (SessionManager.CurrentSession is not { } session) return;
 
         session.Timer.OnTick += OnTimerTick;
         session.OnMoveRecorded += OnMoveRecorded;
+    }
+
+    private void UnsubscribeFromSessionEvents()
+    {
+        if (SessionManager.CurrentSession is not { } session) return;
+
+        session.Timer.OnTick -= OnTimerTick;
+        session.OnMoveRecorded -= OnMoveRecorded;
     }
 
     private void OnTimerTick(object? sender, TimeSpan elapsedTime)
@@ -34,21 +52,21 @@ public partial class GameStats : ComponentBase, IDisposable
 
     public void Dispose()
     {
-        if (SessionManager.CurrentSession is not { } session) return;
-
-        session.Timer.OnTick -= OnTimerTick;
-        session.OnMoveRecorded -= OnMoveRecorded;
+        UnsubscribeFromSessionEvents();
     }
 
     private void ToggleCollapse()
     {
         _isCollapsed = !_isCollapsed;
+        StateHasChanged();
     }
 
     private void UpdateStats()
     {
-        _invalidMoves = SessionManager.CurrentSession.InvalidMoves;
-        _totalMoves = SessionManager.CurrentSession.TotalMoves;
-        _playDuration = SessionManager.CurrentSession.PlayDuration;
+        if (SessionManager.CurrentSession is not { } session) return;
+
+        _invalidMoves = session.InvalidMoves;
+        _totalMoves = session.TotalMoves;
+        _playDuration = session.PlayDuration;
     }
 }
