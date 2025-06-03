@@ -6,24 +6,27 @@ namespace Sudoku.Web.Server.Pages;
 
 public partial class Index
 {
-    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
-    [Inject] private IGameStateManager? GameStateManager { get; set; }
-    [Inject] private IAliasService AliasService { get; set; } = null!;
-    private string Alias { set; get; } = string.Empty;
+    [Inject] public required NavigationManager NavigationManager { get; set; }
+    [Inject] public required IGameStateManager GameStateManager { get; set; }
+    [Inject] public required IAliasService AliasService { get; set; }
 
+    private string Alias { get; set; } = string.Empty;
     private bool _showSavedGames;
     private bool _showDifficulty;
     private IEnumerable<GameStateMemory>? _savedGames;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Alias = await AliasService.GetAliasAsync();
+        if (!firstRender) return;
 
-        if (_savedGames == null)
-        {
-            await LoadGamesAsync();
-            StateHasChanged();
-        }
+        await InitializePageAsync();
+    }
+
+    private async Task InitializePageAsync()
+    {
+        Alias = await AliasService.GetAliasAsync();
+        await LoadGamesAsync();
+        StateHasChanged();
     }
 
     private void LoadGame(string gameId)
@@ -33,13 +36,13 @@ public partial class Index
 
     private async Task LoadGamesAsync()
     {
-        _savedGames = await GameStateManager!.LoadGamesAsync() ?? [];
+        _savedGames = await GameStateManager.LoadGamesAsync() ?? [];
     }
 
     private async Task DeleteGameAsync(string gameId)
     {
-        await GameStateManager!.DeleteGameAsync(Alias, gameId);
-        _savedGames = _savedGames!.Where(x => x.PuzzleId != gameId).ToList();
+        await GameStateManager.DeleteGameAsync(Alias, gameId);
+        _savedGames = _savedGames?.Where(x => x.PuzzleId != gameId).ToList();
         StateHasChanged();
     }
 
@@ -51,10 +54,12 @@ public partial class Index
     private void ToggleDisplaySavedGames()
     {
         _showSavedGames = !_showSavedGames;
+        StateHasChanged();
     }
 
     private void ToggleDifficultyOptions()
     {
         _showDifficulty = !_showDifficulty;
+        StateHasChanged();
     }
 }
