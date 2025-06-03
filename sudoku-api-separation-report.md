@@ -52,7 +52,13 @@ The following components need to be moved to the shared library:
    - `GET /api/games/{id}/validate` - Validate current state
    - `POST /api/games/{id}/solve` - Get solution
 
-2. Puzzle Management:
+2. Session Management:
+
+   - `POST /api/sessions` - Create new session
+   - `GET /api/sessions/{id}` - Get session state
+   - `DELETE /api/sessions/{id}` - End session
+
+3. Puzzle Management:
    - `GET /api/puzzles/generate` - Generate new puzzle
    - `GET /api/puzzles/validate` - Validate puzzle
    - `POST /api/puzzles/solve` - Solve puzzle
@@ -132,9 +138,10 @@ Create new DTOs for:
 
 #### Current State
 
-- The game state is currently managed directly in the Blazor application
-- State changes are immediate and synchronous
-- Game logic and state are tightly coupled
+- The game state is managed through session-based state management
+- Each game session maintains its own state
+- State changes are tracked and persisted per session
+- Game logic and state are separated through the session management layer
 
 #### Challenges
 
