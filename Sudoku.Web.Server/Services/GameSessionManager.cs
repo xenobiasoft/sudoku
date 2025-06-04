@@ -3,38 +3,47 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Services;
 
+/// <summary>
+/// Manages game sessions and their persistence
+/// </summary>
 public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateManager) : IGameSessionManager
 {
+    private readonly IGameTimer _timer = timer ?? throw new ArgumentNullException(nameof(timer));
+    private readonly IGameStateManager _gameStateManager = gameStateManager ?? throw new ArgumentNullException(nameof(gameStateManager));
     private IGameSession _currentSession = NullGameSession.Instance;
 
     public IGameSession CurrentSession => _currentSession;
 
     public async Task StartNewSession(GameStateMemory gameState)
     {
-        _currentSession = new GameSession(gameState, timer);
+        if (gameState == null) throw new ArgumentNullException(nameof(gameState));
+
+        _currentSession = new GameSession(gameState, _timer);
         _currentSession.Start();
         await SaveSessionAsync();
     }
 
     public async Task PauseSession()
     {
-        if (_currentSession is NullGameSession) return;
+        if (_currentSession.IsNull) return;
 
         _currentSession.Pause();
         await SaveSessionAsync();
     }
 
-    public void ResumeSession(GameStateMemory gameState)
+    public async Task ResumeSession(GameStateMemory gameState)
     {
-        if (_currentSession is NullGameSession) return;
+        if (gameState == null) throw new ArgumentNullException(nameof(gameState));
+        if (_currentSession.IsNull) return;
 
         _currentSession.ReloadBoard(gameState);
         _currentSession.Resume();
+        await SaveSessionAsync();
     }
 
     public async Task EndSession()
     {
-        if (_currentSession is NullGameSession) return;
+        if (_currentSession.IsNull) return;
 
         _currentSession.End();
         await SaveSessionAsync();
@@ -43,13 +52,15 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
 
     public async Task RecordMove(bool isValid)
     {
+        if (_currentSession.IsNull) return;
+
         _currentSession.RecordMove(isValid);
         await SaveSessionAsync();
     }
 
     private async Task SaveSessionAsync()
     {
-        if (_currentSession is NullGameSession) return;
+        if (_currentSession.IsNull) return;
 
         var gameState = new GameStateMemory(_currentSession.PuzzleId, _currentSession.Board)
         {
@@ -59,6 +70,6 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
             PlayDuration = _currentSession.PlayDuration
         };
 
-        await gameStateManager.SaveGameAsync(gameState);
+        await _gameStateManager.SaveGameAsync(gameState);
     }
 }

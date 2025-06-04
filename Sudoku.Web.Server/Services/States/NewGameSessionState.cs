@@ -3,6 +3,9 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Services.States;
 
+/// <summary>
+/// Represents a new game session state
+/// </summary>
 public class NewGameSessionState(GameStateMemory gameState, IGameTimer timer) : IGameSessionState
 {
     public string Alias => gameState.Alias ?? string.Empty;

@@ -3,6 +3,9 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Services.States;
 
+/// <summary>
+/// Represents an active game session state
+/// </summary>
 public class ActiveGameSessionState(GameStateMemory gameState, IGameTimer timer) : IGameSessionState
 {
     private int _invalidMoves = gameState.InvalidMoves;

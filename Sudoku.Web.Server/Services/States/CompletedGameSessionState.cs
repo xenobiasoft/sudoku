@@ -4,6 +4,9 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Services.States;
 
+/// <summary>
+/// Represents a completed game session state
+/// </summary>
 public class CompletedGameSessionState(GameStateMemory gameState, IGameTimer timer) : IGameSessionState
 {
     public string Alias => gameState.Alias ?? string.Empty;

@@ -1,86 +1,87 @@
-﻿using XenobiaSoft.Sudoku.GameState;
+using Sudoku.Web.Server.Services.Abstractions;
+using XenobiaSoft.Sudoku.GameState;
 
-namespace Sudoku.Web.Server.Services.Abstractions;
+namespace Sudoku.Web.Server.Services;
 
 /// <summary>
-/// Represents a game session
+/// Base class for game sessions
 /// </summary>
-public interface IGameSession
+public abstract class GameSessionBase : IGameSession
 {
     /// <summary>
     /// Gets whether this is a null session
     /// </summary>
-    bool IsNull { get; }
+    public abstract bool IsNull { get; }
 
     /// <summary>
     /// Gets the player's alias
     /// </summary>
-    string Alias { get; }
+    public abstract string Alias { get; }
 
     /// <summary>
     /// Gets the unique identifier of the puzzle
     /// </summary>
-    string PuzzleId { get; }
+    public abstract string PuzzleId { get; }
 
     /// <summary>
     /// Gets the current state of the game board
     /// </summary>
-    Cell[] Board { get; }
+    public abstract Cell[] Board { get; }
 
     /// <summary>
     /// Gets the number of invalid moves made
     /// </summary>
-    int InvalidMoves { get; }
+    public abstract int InvalidMoves { get; }
 
     /// <summary>
     /// Gets the total number of moves made
     /// </summary>
-    int TotalMoves { get; }
+    public abstract int TotalMoves { get; }
 
     /// <summary>
     /// Gets the duration of the current game session
     /// </summary>
-    TimeSpan PlayDuration { get; }
+    public abstract TimeSpan PlayDuration { get; }
 
     /// <summary>
     /// Gets the timer for the game session
     /// </summary>
-    IGameTimer Timer { get; }
+    public abstract IGameTimer Timer { get; }
 
     /// <summary>
     /// Event raised when a move is recorded
     /// </summary>
-    event EventHandler? OnMoveRecorded;
+    public abstract event EventHandler? OnMoveRecorded;
 
     /// <summary>
     /// Records a move in the game
     /// </summary>
     /// <param name="isValid">Whether the move was valid</param>
-    void RecordMove(bool isValid);
+    public abstract void RecordMove(bool isValid);
 
     /// <summary>
     /// Reloads the game board with a new state
     /// </summary>
     /// <param name="gameState">The new game state to load</param>
-    void ReloadBoard(GameStateMemory gameState);
+    public abstract void ReloadBoard(GameStateMemory gameState);
 
     /// <summary>
     /// Starts the game session
     /// </summary>
-    void Start();
+    public abstract void Start();
 
     /// <summary>
     /// Pauses the game session
     /// </summary>
-    void Pause();
+    public abstract void Pause();
 
     /// <summary>
     /// Resumes the game session
     /// </summary>
-    void Resume();
+    public abstract void Resume();
 
     /// <summary>
     /// Ends the game session
     /// </summary>
-    void End();
+    public abstract void End();
 }

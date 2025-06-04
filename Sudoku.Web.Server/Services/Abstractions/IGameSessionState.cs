@@ -2,21 +2,13 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Services.Abstractions;
 
-public interface IGameSessionState
+/// <summary>
+/// Represents a game session state that combines properties and actions
+/// </summary>
+public interface IGameSessionState : IGameStateProperties, IGameStateActions
 {
-    string Alias { get; }
-    string PuzzleId { get; }
-    Cell[] Board { get; }
-    int InvalidMoves { get; }
-    int TotalMoves { get; }
-    TimeSpan PlayDuration { get; }
-    IGameTimer Timer { get; }
+    /// <summary>
+    /// Event raised when a move is recorded
+    /// </summary>
     event EventHandler? OnMoveRecorded;
-
-    void End();
-    void Pause();
-    void RecordMove(bool isValid);
-    void ReloadBoard(GameStateMemory gameState);
-    void Resume();
-    void Start();
 }
