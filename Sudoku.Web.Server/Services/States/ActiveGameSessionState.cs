@@ -19,6 +19,16 @@ public class ActiveGameSessionState(GameStateMemory gameState, IGameTimer timer)
 
     public event EventHandler? OnMoveRecorded;
 
+    public void End()
+    {
+        timer.Pause();
+    }
+
+    public void Pause()
+    {
+        timer.Pause();
+    }
+
     public void RecordMove(bool isValid)
     {
         _totalMoves++;
@@ -31,23 +41,13 @@ public class ActiveGameSessionState(GameStateMemory gameState, IGameTimer timer)
         _board = gameState.Board;
     }
 
-    public void Start()
-    {
-        // Active game state doesn't start
-    }
-
-    public void Pause()
-    {
-        timer.Pause();
-    }
-
     public void Resume()
     {
         timer.Resume();
     }
 
-    public void End()
+    public void Start()
     {
-        timer.Pause();
+        // Active game state doesn't start
     }
 }

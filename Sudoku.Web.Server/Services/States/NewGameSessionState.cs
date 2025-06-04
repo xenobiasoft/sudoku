@@ -15,6 +15,16 @@ public class NewGameSessionState(GameStateMemory gameState, IGameTimer timer) : 
 
     public event EventHandler? OnMoveRecorded;
 
+    public void End()
+    {
+        timer.Pause();
+    }
+
+    public void Pause()
+    {
+        // New game state doesn't pause
+    }
+
     public void RecordMove(bool isValid)
     {
         // New game state doesn't record moves
@@ -25,23 +35,13 @@ public class NewGameSessionState(GameStateMemory gameState, IGameTimer timer) : 
         // New game state doesn't reload board
     }
 
-    public void Start()
-    {
-        timer.Start();
-    }
-
-    public void Pause()
-    {
-        // New game state doesn't pause
-    }
-
     public void Resume()
     {
         // New game state doesn't resume
     }
 
-    public void End()
+    public void Start()
     {
-        timer.Pause();
+        timer.Start();
     }
 }

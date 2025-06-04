@@ -13,10 +13,10 @@ public interface IGameSessionState
     IGameTimer Timer { get; }
     event EventHandler? OnMoveRecorded;
 
+    void End();
+    void Pause();
     void RecordMove(bool isValid);
     void ReloadBoard(GameStateMemory gameState);
-    void Start();
-    void Pause();
     void Resume();
-    void End();
+    void Start();
 }

@@ -16,6 +16,16 @@ public class CompletedGameSessionState(GameStateMemory gameState, IGameTimer tim
 
     public event EventHandler? OnMoveRecorded;
 
+    public void End()
+    {
+        // Completed game state doesn't end
+    }
+
+    public void Pause()
+    {
+        // Completed game state doesn't pause
+    }
+
     public void RecordMove(bool isValid)
     {
         // Completed game state doesn't record moves
@@ -26,23 +36,13 @@ public class CompletedGameSessionState(GameStateMemory gameState, IGameTimer tim
         // Completed game state doesn't reload board
     }
 
-    public void Start()
-    {
-        // Completed game state doesn't start
-    }
-
-    public void Pause()
-    {
-        // Completed game state doesn't pause
-    }
-
     public void Resume()
     {
         // Completed game state doesn't resume
     }
 
-    public void End()
+    public void Start()
     {
-        // Completed game state doesn't end
+        // Completed game state doesn't start
     }
 }
