@@ -4,20 +4,24 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Services;
 
-public class GameSession(GameStateMemory gameState, IGameTimer timer) : IGameSession
+/// <summary>
+/// Represents an active game session
+/// </summary>
+public class GameSession(GameStateMemory gameState, IGameTimer timer) : GameSessionBase
 {
     private IGameSessionState _state = new NewGameSessionState(gameState, timer);
     private EventHandler? _moveRecordedHandler;
 
-    public string Alias => _state.Alias;
-    public string PuzzleId => _state.PuzzleId;
-    public Cell[] Board => _state.Board;
-    public int InvalidMoves => _state.InvalidMoves;
-    public int TotalMoves => _state.TotalMoves;
-    public TimeSpan PlayDuration => _state.PlayDuration;
-    public IGameTimer Timer => _state.Timer;
+    public override bool IsNull => false;
+    public override string Alias => _state.Alias;
+    public override string PuzzleId => _state.PuzzleId;
+    public override Cell[] Board => _state.Board;
+    public override int InvalidMoves => _state.InvalidMoves;
+    public override int TotalMoves => _state.TotalMoves;
+    public override TimeSpan PlayDuration => _state.PlayDuration;
+    public override IGameTimer Timer => _state.Timer;
 
-    public event EventHandler? OnMoveRecorded
+    public override event EventHandler? OnMoveRecorded
     {
         add
         {
@@ -31,63 +35,60 @@ public class GameSession(GameStateMemory gameState, IGameTimer timer) : IGameSes
         }
     }
 
-    public void RecordMove(bool isValid)
+    public override void RecordMove(bool isValid)
     {
         _state.RecordMove(isValid);
     }
 
-    public void ReloadBoard(GameStateMemory gameState)
+    public override void ReloadBoard(GameStateMemory gameState)
     {
         _state.ReloadBoard(gameState);
     }
 
-    public void Start()
+    public override void Start()
     {
         _state.Start();
-        var newState = new ActiveGameSessionState(new GameStateMemory(PuzzleId, Board)
-        {
-            Alias = Alias,
-            InvalidMoves = InvalidMoves,
-            TotalMoves = TotalMoves,
-            PlayDuration = PlayDuration
-        }, Timer);
-
-        // Transfer event handlers
-        if (_moveRecordedHandler != null)
-        {
-            newState.OnMoveRecorded += _moveRecordedHandler;
-        }
-
-        _state = newState;
+        TransitionToState(new ActiveGameSessionState(CreateGameStateMemory(), Timer));
     }
 
-    public void Pause()
+    public override void Pause()
     {
         _state.Pause();
     }
 
-    public void Resume()
+    public override void Resume()
     {
         _state.Resume();
     }
 
-    public void End()
+    public override void End()
     {
         _state.End();
-        var newState = new CompletedGameSessionState(new GameStateMemory(PuzzleId, Board)
+        TransitionToState(new CompletedGameSessionState(CreateGameStateMemory(), Timer));
+    }
+
+    private void TransitionToState(IGameSessionState newState)
+    {
+        TransferEventHandlers(newState);
+        _state = newState;
+    }
+
+    private void TransferEventHandlers(IGameSessionState newState)
+    {
+        if (_moveRecordedHandler != null)
+        {
+            newState.OnMoveRecorded += _moveRecordedHandler;
+        }
+    }
+
+    private GameStateMemory CreateGameStateMemory()
+    {
+        return new GameStateMemory(PuzzleId, Board)
         {
             Alias = Alias,
             InvalidMoves = InvalidMoves,
             TotalMoves = TotalMoves,
             PlayDuration = PlayDuration
-        }, Timer);
-
-        // Transfer event handlers
-        if (_moveRecordedHandler != null)
-        {
-            newState.OnMoveRecorded += _moveRecordedHandler;
-        }
-
-        _state = newState;
+        };
     }
 }

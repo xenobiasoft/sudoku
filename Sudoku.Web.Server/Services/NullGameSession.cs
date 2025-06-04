@@ -3,25 +3,28 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Services;
 
-public class NullGameSession : IGameSession
+/// <summary>
+/// Represents a null game session that does nothing
+/// </summary>
+public class NullGameSession : GameSessionBase
 {
-    public static NullGameSession Instance = new NullGameSession();
+    public static NullGameSession Instance { get; } = new();
 
-    public string Alias => string.Empty;
-    public string PuzzleId => string.Empty;
-    public Cell[] Board => [];
-    public int InvalidMoves => 0;
-    public int TotalMoves => 0;
-    public DateTime StartTime => DateTime.MinValue;
-    public TimeSpan PlayDuration => TimeSpan.Zero;
-    public IGameTimer Timer => new NullGameTimer();
+    public override bool IsNull => true;
+    public override string Alias => string.Empty;
+    public override string PuzzleId => string.Empty;
+    public override Cell[] Board => [];
+    public override int InvalidMoves => 0;
+    public override int TotalMoves => 0;
+    public override TimeSpan PlayDuration => TimeSpan.Zero;
+    public override IGameTimer Timer => new NullGameTimer();
 
-    public event EventHandler? OnMoveRecorded;
+    public override event EventHandler? OnMoveRecorded;
 
-    public void RecordMove(bool isValid) { }
-    public void ReloadBoard(GameStateMemory gameState) { }
-    public void Start() { }
-    public void Pause() { }
-    public void Resume() { }
-    public void End() { }
+    public override void RecordMove(bool isValid) { }
+    public override void ReloadBoard(GameStateMemory gameState) { }
+    public override void Start() { }
+    public override void Pause() { }
+    public override void Resume() { }
+    public override void End() { }
 }
