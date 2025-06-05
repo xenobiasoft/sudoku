@@ -8,7 +8,7 @@
         <div class="game-view">
             @if (SessionManager.CurrentSession is not NullGameSession)
             {
-                <GameStats />
+                <GameStats Session="@SessionManager.CurrentSession" />
             }
             <GameBoard Puzzle="Puzzle"
                        OnCellFocus="HandleSetSelectedCell"

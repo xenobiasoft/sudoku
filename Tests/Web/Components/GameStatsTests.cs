@@ -16,7 +16,6 @@ public class GameStatsTests : TestContext
         _mockTimer = new Mock<IGameTimer>();
         _mockSession.SetupGet(x => x.Timer).Returns(_mockTimer.Object);
         _mockSession.SetupGet(x => x.IsNull).Returns(false);
-        Services.AddSingleton(_mockSession.Object);
         Services.AddSingleton(_mockTimer.Object);
     }
 
@@ -24,7 +23,7 @@ public class GameStatsTests : TestContext
     public void GameStats_WhenCollapsed_RendersCorrectly()
     {
         // Arrange
-        var gameStats = RenderComponent<GameStats>();
+        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.Session, _mockSession.Object));
         _mockSession.Setup(x => x.PlayDuration).Returns(TimeSpan.FromMinutes(15));
 
         // Act
@@ -45,7 +44,7 @@ public class GameStatsTests : TestContext
     public async Task GameStats_WhenExpanded_RendersCorrectly()
     {
         // Arrange
-        var gameStats = RenderComponent<GameStats>();
+        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.Session, _mockSession.Object));
         var statHeader = gameStats.Find(".stat-header");
         _mockSession.Setup(x => x.PlayDuration).Returns(TimeSpan.FromMinutes(15));
         _mockSession.Setup(x => x.TotalMoves).Returns(2);
@@ -78,7 +77,7 @@ public class GameStatsTests : TestContext
     public async Task GameStats_WhenMovesAreRecorded_ShouldUpdate()
     {
         // Arrange
-        var gameStats = RenderComponent<GameStats>();
+        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.Session, _mockSession.Object));
         var statHeader = gameStats.Find(".stat-header");
         await gameStats.InvokeAsync(() => statHeader.Click());
         _mockSession.Setup(x => x.TotalMoves).Returns(2);
@@ -98,7 +97,7 @@ public class GameStatsTests : TestContext
     public async Task GameStats_WhenTimerTicks_ShouldUpdate()
     {
         // Arrange
-        var gameStats = RenderComponent<GameStats>();
+        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.Session, _mockSession.Object));
         var playDuration = gameStats.Find(".game-stats .stat-header .value");
         _mockSession.Setup(x => x.PlayDuration).Returns(TimeSpan.FromMinutes(5));
 
