@@ -35,11 +35,14 @@ public class GamePageTests : TestContext
         _mockGameStateManager.SetupLoadGameAsync(loadedGameState);
         _mockAliasService.Setup(x => x.GetAliasAsync()).ReturnsAsync(Alias);
         _mockGameSessionManager.Setup(x => x.CurrentSession).Returns(new GameSession(loadedGameState, new Mock<IGameTimer>().Object));
-
+        var mockGameSession = new Mock<IGameSession>();
+        var mockGameTimer = new Mock<IGameTimer>();
+        mockGameSession.Setup(x => x.Timer).Returns(mockGameTimer.Object);
         Services.AddSingleton(_mockInvalidCellNotifier.Object);
         Services.AddSingleton(_mockGameNotificationService.Object);
         Services.AddSingleton(new Mock<ICellFocusedNotificationService>().Object);
         Services.AddSingleton(new Mock<ISudokuPuzzle>().Object);
+        Services.AddSingleton(mockGameSession.Object);
         Services.AddSingleton(_mockGameSessionManager.Object);
         Services.AddSingleton(_mockGameStateManager.Object);
         Services.AddSingleton(_mockAliasService.Object);

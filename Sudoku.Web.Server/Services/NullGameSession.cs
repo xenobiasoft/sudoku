@@ -6,25 +6,29 @@ namespace Sudoku.Web.Server.Services;
 /// <summary>
 /// Represents a null game session that does nothing
 /// </summary>
-public class NullGameSession : GameSessionBase
+public class NullGameSession : IGameSession
 {
     public static NullGameSession Instance { get; } = new();
 
-    public override bool IsNull => true;
-    public override string Alias => string.Empty;
-    public override string PuzzleId => string.Empty;
-    public override Cell[] Board => [];
-    public override int InvalidMoves => 0;
-    public override int TotalMoves => 0;
-    public override TimeSpan PlayDuration => TimeSpan.Zero;
-    public override IGameTimer Timer => new NullGameTimer();
+    public bool IsNull => true;
+    public string Alias => string.Empty;
+    public string PuzzleId => string.Empty;
+    public Cell[] Board => [];
+    public int InvalidMoves => 0;
+    public int TotalMoves => 0;
+    public TimeSpan PlayDuration => TimeSpan.Zero;
+    public IGameTimer Timer => new NullGameTimer();
 
-    public override event EventHandler? OnMoveRecorded;
+    public event EventHandler? OnMoveRecorded;
 
-    public override void RecordMove(bool isValid) { }
-    public override void ReloadBoard(GameStateMemory gameState) { }
-    public override void Start() { }
-    public override void Pause() { }
-    public override void Resume() { }
-    public override void End() { }
+    public void ChangeState(IGameSessionState sessionState) { }
+    public void End() { }
+    public void IncrementInvalidMoves() { }
+    public void IncrementTotalMoves() { }
+    public void Pause() { }
+    public void RecordMove(bool isValid) { }
+    public void ReloadBoard(GameStateMemory gameState) { }
+    public void ReloadGameState(GameStateMemory gameState) { }
+    public void Resume() { }
+    public void Start() { }
 }

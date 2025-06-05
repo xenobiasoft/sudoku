@@ -7,88 +7,85 @@ namespace Sudoku.Web.Server.Services;
 /// <summary>
 /// Represents an active game session
 /// </summary>
-public class GameSession(GameStateMemory gameState, IGameTimer timer) : GameSessionBase
+public class GameSession : IGameSession
 {
-    private IGameSessionState _state = new NewGameSessionState(gameState, timer);
-    private EventHandler? _moveRecordedHandler;
+    private IGameSessionState _state;
 
-    public override bool IsNull => false;
-    public override string Alias => _state.Alias;
-    public override string PuzzleId => _state.PuzzleId;
-    public override Cell[] Board => _state.Board;
-    public override int InvalidMoves => _state.InvalidMoves;
-    public override int TotalMoves => _state.TotalMoves;
-    public override TimeSpan PlayDuration => _state.PlayDuration;
-    public override IGameTimer Timer => _state.Timer;
-
-    public override event EventHandler? OnMoveRecorded
+    /// <summary>
+    /// Represents an active game session
+    /// </summary>
+    public GameSession(GameStateMemory gameState, IGameTimer timer)
     {
-        add
-        {
-            _moveRecordedHandler += value;
-            _state.OnMoveRecorded += value;
-        }
-        remove
-        {
-            _moveRecordedHandler -= value;
-            _state.OnMoveRecorded -= value;
-        }
+        Timer = timer;
+        ReloadGameState(gameState);
+        _state = new NewGameSessionState(this);
     }
 
-    public override void RecordMove(bool isValid)
+    public event EventHandler? OnMoveRecorded;
+
+    public string Alias { get; private set; } = string.Empty;
+    public Cell[] Board { get; private set; } = [];
+    public int InvalidMoves { get; private set; }
+    public bool IsNull => false;
+    public TimeSpan PlayDuration { get; private set; } = TimeSpan.Zero;
+    public string PuzzleId { get; private set; } = string.Empty;
+    public IGameTimer Timer { get; }
+    public int TotalMoves { get; private set; }
+
+    public void ChangeState(IGameSessionState sessionState)
     {
-        _state.RecordMove(isValid);
+        _state = sessionState;
     }
 
-    public override void ReloadBoard(GameStateMemory gameState)
+    public void End()
     {
-        _state.ReloadBoard(gameState);
+        _state.End();
     }
 
-    public override void Start()
+    public void IncrementInvalidMoves()
     {
-        _state.Start();
-        TransitionToState(new ActiveGameSessionState(CreateGameStateMemory(), Timer));
+        InvalidMoves++;
+        OnMoveRecorded?.Invoke(this, System.EventArgs.Empty);
     }
 
-    public override void Pause()
+    public void IncrementTotalMoves()
+    {
+        TotalMoves++;
+        OnMoveRecorded?.Invoke(this, System.EventArgs.Empty);
+    }
+
+    public void Pause()
     {
         _state.Pause();
     }
 
-    public override void Resume()
+    public void RecordMove(bool isValid)
+    {
+        _state.RecordMove(isValid);
+    }
+
+    public void ReloadBoard(GameStateMemory gameState)
+    {
+        _state.ReloadBoard(gameState);
+    }
+
+    public void ReloadGameState(GameStateMemory gameState)
+    {
+        Alias = gameState.Alias;
+        Board = gameState.Board;
+        InvalidMoves = gameState.InvalidMoves;
+        PlayDuration = gameState.PlayDuration;
+        PuzzleId = gameState.PuzzleId;
+        TotalMoves = gameState.TotalMoves;
+    }
+
+    public void Resume()
     {
         _state.Resume();
     }
 
-    public override void End()
+    public void Start()
     {
-        _state.End();
-        TransitionToState(new CompletedGameSessionState(CreateGameStateMemory(), Timer));
-    }
-
-    private void TransitionToState(IGameSessionState newState)
-    {
-        TransferEventHandlers(newState);
-        _state = newState;
-    }
-
-    private void TransferEventHandlers(IGameSessionState newState)
-    {
-        if (_moveRecordedHandler != null)
-        {
-            newState.OnMoveRecorded += _moveRecordedHandler;
-        }
-    }
-
-    private GameStateMemory CreateGameStateMemory()
-    {
-        return new GameStateMemory(PuzzleId, Board)
-        {
-            Alias = Alias,
-            InvalidMoves = InvalidMoves,
-            TotalMoves = TotalMoves,
-            PlayDuration = PlayDuration
-        };
+        _state.Start();
     }
 }

@@ -3,47 +3,39 @@ using XenobiaSoft.Sudoku.GameState;
 namespace Sudoku.Web.Server.Services.Abstractions;
 
 /// <summary>
-/// Represents a game session state that combines properties and actions
+/// Represents a game session state
 /// </summary>
-public interface IGameSessionState : IGameStateActions
+public interface IGameSessionState
 {
     /// <summary>
-    /// Gets the player's alias
+    /// Ends the game session
     /// </summary>
-    string Alias { get; }
+    void End();
 
     /// <summary>
-    /// Gets the unique identifier of the puzzle
+    /// Pauses the game session
     /// </summary>
-    string PuzzleId { get; }
+    void Pause();
 
     /// <summary>
-    /// Gets the current state of the game board
+    /// Records a move in the game
     /// </summary>
-    Cell[] Board { get; }
+    /// <param name="isValid">Whether the move was valid</param>
+    void RecordMove(bool isValid);
 
     /// <summary>
-    /// Gets the number of invalid moves made
+    /// Reloads the game board with a new state
     /// </summary>
-    int InvalidMoves { get; }
+    /// <param name="gameState">The new game state to load</param>
+    void ReloadBoard(GameStateMemory gameState);
 
     /// <summary>
-    /// Gets the total number of moves made
+    /// Resumes the game session
     /// </summary>
-    int TotalMoves { get; }
+    void Resume();
 
     /// <summary>
-    /// Gets the duration of the current game session
+    /// Starts the game session
     /// </summary>
-    TimeSpan PlayDuration { get; }
-
-    /// <summary>
-    /// Gets the timer for the game session
-    /// </summary>
-    IGameTimer Timer { get; }
-
-    /// <summary>
-    /// Event raised when a move is recorded
-    /// </summary>
-    event EventHandler? OnMoveRecorded;
+    void Start();
 }

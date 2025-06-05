@@ -4,6 +4,13 @@ namespace UnitTests.Helpers.Mocks;
 
 public static class MockGameTimerExtensions
 {
+    public static Mock<IGameTimer> RaiseTick(this Mock<IGameTimer> mock)
+    {
+        mock.Raise(x => x.OnTick += null, new object(), TimeSpan.FromSeconds(1));
+
+        return mock;
+    }
+
     public static Mock<IGameTimer> VerifyPaused(this Mock<IGameTimer> mock, Func<Times> times)
     {
         mock.Verify(t => t.Pause(), times);
