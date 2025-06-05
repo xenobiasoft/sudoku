@@ -6,21 +6,12 @@ namespace Sudoku.Web.Server.Services.States;
 /// <summary>
 /// Represents a new game session state
 /// </summary>
-public class NewGameSessionState(GameStateMemory gameState, IGameTimer timer) : IGameSessionState
+public class NewGameSessionState(IGameSession session) : IGameSessionState
 {
-    public string Alias => gameState.Alias ?? string.Empty;
-    public string PuzzleId => gameState.PuzzleId;
-    public Cell[] Board => gameState.Board;
-    public int InvalidMoves => gameState.InvalidMoves;
-    public int TotalMoves => gameState.TotalMoves;
-    public TimeSpan PlayDuration => timer.ElapsedTime;
-    public IGameTimer Timer => timer;
-
-    public event EventHandler? OnMoveRecorded;
-
     public void End()
     {
-        timer.Pause();
+        session.Timer.Pause();
+        session.ChangeState(new CompletedGameSessionState(session));
     }
 
     public void Pause()
@@ -35,7 +26,7 @@ public class NewGameSessionState(GameStateMemory gameState, IGameTimer timer) : 
 
     public void ReloadBoard(GameStateMemory gameState)
     {
-        // New game state doesn't reload board
+        session.ReloadGameState(gameState);
     }
 
     public void Resume()
@@ -45,6 +36,7 @@ public class NewGameSessionState(GameStateMemory gameState, IGameTimer timer) : 
 
     public void Start()
     {
-        timer.Start();
+        session.Timer.Start();
+        session.ChangeState(new ActiveGameSessionState(session));
     }
 }

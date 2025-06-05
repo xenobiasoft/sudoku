@@ -6,47 +6,33 @@ namespace Sudoku.Web.Server.Services.States;
 /// <summary>
 /// Represents an active game session state
 /// </summary>
-public class ActiveGameSessionState(GameStateMemory gameState, IGameTimer timer) : IGameSessionState
+public class ActiveGameSessionState(IGameSession session) : IGameSessionState
 {
-    private int _invalidMoves = gameState.InvalidMoves;
-    private int _totalMoves = gameState.TotalMoves;
-    private Cell[] _board = gameState.Board;
-
-    public string Alias => gameState.Alias ?? string.Empty;
-    public string PuzzleId => gameState.PuzzleId;
-    public Cell[] Board => _board;
-    public int InvalidMoves => _invalidMoves;
-    public int TotalMoves => _totalMoves;
-    public TimeSpan PlayDuration => timer.ElapsedTime;
-    public IGameTimer Timer => timer;
-
-    public event EventHandler? OnMoveRecorded;
-
     public void End()
     {
-        timer.Pause();
+        session.Timer.Pause();
+        session.ChangeState(new CompletedGameSessionState(session));
     }
 
     public void Pause()
     {
-        timer.Pause();
+        session.Timer.Pause();
     }
 
     public void RecordMove(bool isValid)
     {
-        _totalMoves++;
-        if (!isValid) _invalidMoves++;
-        OnMoveRecorded?.Invoke(this, System.EventArgs.Empty);
+        session.IncrementTotalMoves();
+        if (!isValid) session.IncrementInvalidMoves();
     }
 
     public void ReloadBoard(GameStateMemory gameState)
     {
-        _board = gameState.Board;
+        session.ReloadGameState(gameState);
     }
 
     public void Resume()
     {
-        timer.Resume();
+        session.Timer.Resume();
     }
 
     public void Start()

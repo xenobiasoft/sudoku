@@ -5,10 +5,10 @@ namespace Sudoku.Web.Server.Components;
 
 public partial class GameStats : ComponentBase, IDisposable
 {
-    [Inject] public required IGameSessionManager SessionManager { get; set; } = null!;
+    [Inject] public required IGameSession Session { get; set; } = null!;
 
-    private int _totalMoves = 0;
-    private int _invalidMoves = 0;
+    private int _totalMoves;
+    private int _invalidMoves;
     private TimeSpan _playDuration = TimeSpan.Zero;
     private bool _isCollapsed = true;
 
@@ -24,18 +24,18 @@ public partial class GameStats : ComponentBase, IDisposable
 
     private void SubscribeToSessionEvents()
     {
-        if (SessionManager.CurrentSession is not { } session) return;
+        if (Session.IsNull) return;
 
-        session.Timer.OnTick += OnTimerTick;
-        session.OnMoveRecorded += OnMoveRecorded;
+        Session.Timer.OnTick += OnTimerTick;
+        Session.OnMoveRecorded += OnMoveRecorded;
     }
 
     private void UnsubscribeFromSessionEvents()
     {
-        if (SessionManager.CurrentSession is not { } session) return;
+        if (Session.IsNull) return;
 
-        session.Timer.OnTick -= OnTimerTick;
-        session.OnMoveRecorded -= OnMoveRecorded;
+        Session.Timer.OnTick -= OnTimerTick;
+        Session.OnMoveRecorded -= OnMoveRecorded;
     }
 
     private void OnTimerTick(object? sender, TimeSpan elapsedTime)
@@ -63,10 +63,10 @@ public partial class GameStats : ComponentBase, IDisposable
 
     private void UpdateStats()
     {
-        if (SessionManager.CurrentSession is not { } session) return;
+        if (Session.IsNull) return;
 
-        _invalidMoves = session.InvalidMoves;
-        _totalMoves = session.TotalMoves;
-        _playDuration = session.PlayDuration;
+        _invalidMoves = Session.InvalidMoves;
+        _totalMoves = Session.TotalMoves;
+        _playDuration = Session.PlayDuration;
     }
 }

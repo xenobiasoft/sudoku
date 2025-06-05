@@ -52,11 +52,38 @@ public interface IGameSession
     /// </summary>
     event EventHandler? OnMoveRecorded;
 
+    void ChangeState(IGameSessionState sessionState);
+
     /// <summary>
     /// Records a move in the game
     /// </summary>
     /// <param name="isValid">Whether the move was valid</param>
     void RecordMove(bool isValid);
+
+    /// <summary>
+    /// Ends the game session
+    /// </summary>
+    void End();
+
+    /// <summary>
+    /// Increments the count of invalid moves made by the user.
+    /// </summary>
+    /// <remarks>This method is typically used to track the number of invalid actions performed during a
+    /// session or game. It updates an internal counter, which can be used for analytics, enforcing limits, or providing
+    /// feedback to the user.</remarks>
+    void IncrementInvalidMoves();
+
+    /// <summary>
+    /// Increments the total number of moves by one.
+    /// </summary>
+    /// <remarks>This method updates the internal counter tracking the total moves.  It is typically used to
+    /// record progress in scenarios where moves are counted,  such as in games or simulations.</remarks>
+    void IncrementTotalMoves();
+
+    /// <summary>
+    /// Pauses the game session
+    /// </summary>
+    void Pause();
 
     /// <summary>
     /// Reloads the game board with a new state
@@ -65,14 +92,13 @@ public interface IGameSession
     void ReloadBoard(GameStateMemory gameState);
 
     /// <summary>
-    /// Starts the game session
+    /// Reloads the game state from the specified memory source.
     /// </summary>
-    void Start();
-
-    /// <summary>
-    /// Pauses the game session
-    /// </summary>
-    void Pause();
+    /// <remarks>This method updates the current game state to match the state stored in the provided 
+    /// <paramref name="gameState"/> object. Ensure that the game state memory is valid and  consistent before calling
+    /// this method.</remarks>
+    /// <param name="gameState">The memory object containing the game state to be reloaded.  This parameter cannot be <see langword="null"/>.</param>
+    void ReloadGameState(GameStateMemory gameState);
 
     /// <summary>
     /// Resumes the game session
@@ -80,7 +106,7 @@ public interface IGameSession
     void Resume();
 
     /// <summary>
-    /// Ends the game session
+    /// Starts the game session
     /// </summary>
-    void End();
+    void Start();
 }
