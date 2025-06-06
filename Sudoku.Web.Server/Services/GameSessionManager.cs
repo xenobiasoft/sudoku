@@ -62,14 +62,6 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
     {
         if (_currentSession.IsNull) return;
 
-        var gameState = new GameStateMemory(_currentSession.PuzzleId, _currentSession.Board)
-        {
-            Alias = _currentSession.Alias,
-            InvalidMoves = _currentSession.InvalidMoves,
-            TotalMoves = _currentSession.TotalMoves,
-            PlayDuration = _currentSession.PlayDuration
-        };
-
-        await _gameStateManager.SaveGameAsync(gameState);
+        await _gameStateManager.SaveGameAsync(_currentSession.GameState);
     }
 }

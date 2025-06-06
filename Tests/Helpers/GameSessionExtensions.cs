@@ -8,22 +8,31 @@ public static class GameSessionExtensions
 {
     public static IGameSession VerifyGameSessionReloaded(this IGameSession gameSession, GameStateMemory gameState)
     {
-        gameSession.Board.Should().BeEquivalentTo(gameState.Board);
+        gameSession.GameState.Board.Should().BeEquivalentTo(gameState.Board);
         
         return gameSession;
     }
 
-    public static IGameSession VerifyNewSession(this IGameSession gameSession, string sessionName)
+    public static IGameSession VerifyNewSession(this IGameSession gameSession, string puzzleId)
     {
         Assert.Multiple(() =>
         {
             gameSession.Should().BeOfType<GameSession>();
-            gameSession.PuzzleId.Should().Be(sessionName);
+            gameSession.GameState.PuzzleId.Should().Be(puzzleId);
         });
         
         return gameSession;
     }
-    
+
+    public static IGameSession VerifyRecordMoveCalled(this IGameSession gameSession, int expectedInvalidMoves, int expectedTotalMoves)
+    {
+        gameSession.Should().BeOfType<GameSession>();
+        gameSession.GameState.TotalMoves.Should().Be(expectedTotalMoves);
+        gameSession.GameState.InvalidMoves.Should().Be(expectedInvalidMoves);
+        
+        return gameSession;
+    }
+
     public static IGameSession VerifySessionReset(this IGameSession gameSession)
     {
         gameSession.Should().BeOfType<NullGameSession>();

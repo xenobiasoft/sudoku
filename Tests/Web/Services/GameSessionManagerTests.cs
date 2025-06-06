@@ -4,7 +4,6 @@ using Sudoku.Web.Server.Services.Abstractions;
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
-using XenobiaSoft.Sudoku.Extensions;
 using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Web.Services;
@@ -102,7 +101,7 @@ public class GameSessionManagerTests : BaseTestByAbstraction<GameSessionManager,
         await sut.PauseSession();
 
         // Act
-        sut.ResumeSession(initialGameState);
+        await sut.ResumeSession(initialGameState);
 
         // Assert
         sut.CurrentSession.VerifyGameSessionReloaded(initialGameState);
@@ -117,7 +116,7 @@ public class GameSessionManagerTests : BaseTestByAbstraction<GameSessionManager,
         await sut.PauseSession();
 
         // Act
-        sut.ResumeSession(new GameStateMemory(Container.Create<string>(), []));
+        await sut.ResumeSession(new GameStateMemory(Container.Create<string>(), []));
 
         // Assert
         _mockTimer.VerifyResumed(Times.Once);
@@ -138,20 +137,23 @@ public class GameSessionManagerTests : BaseTestByAbstraction<GameSessionManager,
         _mockGameStateManager.VerifySaveAsyncCalled(Times.Once);
     }
 
-    [Fact]
-    public async Task RecordMove_CallsSessionRecordMove()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RecordMove_CallsSessionRecordMove(bool isValidMove)
     {
         // Arrange
-        var recordMoveCalled = false;
+        var gameState = Container.Create<GameStateMemory>();
+        var expectedInvalidMoves = isValidMove ? gameState.InvalidMoves : gameState.InvalidMoves + 1;
+        var expectedTotalMoves = gameState.TotalMoves + 1;
         var sut = ResolveSut();
-        await sut.StartNewSession(Container.Create<GameStateMemory>());
-        sut.CurrentSession.OnMoveRecorded += (sender, args) => recordMoveCalled = true;
+        await sut.StartNewSession(gameState);
 
         // Act
-        await sut.RecordMove(true);
+        await sut.RecordMove(isValidMove);
 
         // Assert
-        recordMoveCalled.Should().BeTrue();
+        sut.CurrentSession.VerifyRecordMoveCalled(expectedInvalidMoves, expectedTotalMoves);
     }
 
     [Fact]
