@@ -1,5 +1,4 @@
 using Sudoku.Web.Server.Services.Abstractions;
-using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Services.States;
 
@@ -11,7 +10,7 @@ public class NewGameSessionState(IGameSession session) : IGameSessionState
     public void End()
     {
         session.Timer.Pause();
-        session.ChangeState(new CompletedGameSessionState(session));
+        session.SessionState = new CompletedGameSessionState(session);
     }
 
     public void Pause()
@@ -24,11 +23,6 @@ public class NewGameSessionState(IGameSession session) : IGameSessionState
         // New game state doesn't record moves
     }
 
-    public void ReloadBoard(GameStateMemory gameState)
-    {
-        session.ReloadGameState(gameState);
-    }
-
     public void Resume()
     {
         // New game state doesn't resume
@@ -37,6 +31,6 @@ public class NewGameSessionState(IGameSession session) : IGameSessionState
     public void Start()
     {
         session.Timer.Start();
-        session.ChangeState(new ActiveGameSessionState(session));
+        session.SessionState = new ActiveGameSessionState(session);
     }
 }

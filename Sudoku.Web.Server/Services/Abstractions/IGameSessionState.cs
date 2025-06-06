@@ -24,12 +24,6 @@ public interface IGameSessionState
     void RecordMove(bool isValid);
 
     /// <summary>
-    /// Reloads the game board with a new state
-    /// </summary>
-    /// <param name="gameState">The new game state to load</param>
-    void ReloadBoard(GameStateMemory gameState);
-
-    /// <summary>
     /// Resumes the game session
     /// </summary>
     void Resume();

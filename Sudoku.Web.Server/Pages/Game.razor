@@ -22,9 +22,9 @@
                          OnUndo="HandleUndo"
                          OnPencilMode="HandlePencilModeToggle"
                          OnPossibleValueChanged="HandlePossibleValueChanged"
-                         TotalMoves="@SessionManager.CurrentSession.Board.Count(x => x is { Value: not null, Locked: false })" />
+                         TotalMoves="@SessionManager.CurrentSession.GameState.Board.Count(x => x is { Value: not null, Locked: false })" />
             <VictoryDisplay IsVictory="@Puzzle.IsSolved()"
-                            ElapsedTime="@SessionManager.CurrentSession.PlayDuration" />
+                            ElapsedTime="@SessionManager.CurrentSession.GameState.PlayDuration" />
         </div>
     </div>
 </div>

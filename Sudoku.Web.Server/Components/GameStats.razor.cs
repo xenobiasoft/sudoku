@@ -27,7 +27,6 @@ public partial class GameStats : ComponentBase, IDisposable
         if (Session.IsNull) return;
 
         Session.Timer.OnTick += OnTimerTick;
-        Session.OnMoveRecorded += OnMoveRecorded;
     }
 
     private void UnsubscribeFromSessionEvents()
@@ -35,7 +34,6 @@ public partial class GameStats : ComponentBase, IDisposable
         if (Session.IsNull) return;
 
         Session.Timer.OnTick -= OnTimerTick;
-        Session.OnMoveRecorded -= OnMoveRecorded;
     }
 
     private void OnTimerTick(object? sender, TimeSpan elapsedTime)
@@ -65,8 +63,8 @@ public partial class GameStats : ComponentBase, IDisposable
     {
         if (Session.IsNull) return;
 
-        _invalidMoves = Session.InvalidMoves;
-        _totalMoves = Session.TotalMoves;
-        _playDuration = Session.PlayDuration;
+        _invalidMoves = Session.GameState.InvalidMoves;
+        _totalMoves = Session.GameState.TotalMoves;
+        _playDuration = Session.GameState.PlayDuration;
     }
 }
