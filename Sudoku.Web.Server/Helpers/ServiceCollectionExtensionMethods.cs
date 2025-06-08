@@ -38,7 +38,9 @@ namespace Sudoku.Web.Server.Helpers
                 .AddScoped<IStorageService, AzureStorageService>()
                 .AddScoped<IGameStateStorage, InMemoryGameStateStorage>()
                 .AddScoped<IGameStateStorage, AzureBlobGameStateStorage>()
-                .AddScoped<IGameStateStorage>(x =>
+                .AddScoped<IInMemoryGameStateStorage, InMemoryGameStateStorage>()
+                .AddScoped<IPersistentGameStateStorage, AzureBlobGameStateStorage>()
+                .AddScoped<IPersistentGameStateStorage>(x =>
                     ActivatorUtilities.CreateInstance<CachingAzureBlobGameStateStorageDecorator>(x,
                         ActivatorUtilities.CreateInstance<AzureBlobGameStateStorage>(x)));
 

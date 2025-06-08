@@ -11,12 +11,12 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameStateManager, IGa
     private const string Alias = "TestAlias";
     private const string GameId = "TestGameId";
 
-    private readonly Mock<IGameStateStorage> _mockGameStateStorage;
+    private readonly Mock<IPersistentGameStateStorage> _mockGameStateStorage;
     private readonly Mock<ILocalStorageService> _mockLocalStorageService;
 
     public GameStateManagerTests()
     {
-        _mockGameStateStorage = Container.ResolveMock<IGameStateStorage>();
+        _mockGameStateStorage = Container.ResolveMock<IPersistentGameStateStorage>();
         _mockLocalStorageService = Container.ResolveMock<ILocalStorageService>();
     }
 

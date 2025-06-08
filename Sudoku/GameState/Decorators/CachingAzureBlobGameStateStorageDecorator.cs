@@ -1,6 +1,6 @@
 ﻿namespace XenobiaSoft.Sudoku.GameState.Decorators;
 
-public class CachingAzureBlobGameStateStorageDecorator(IGameStateStorage decorated) : AzureBlobGameStateStorageDecorator(decorated)
+public class CachingAzureBlobGameStateStorageDecorator(IPersistentGameStateStorage decorated) : AzureBlobGameStateStorageDecorator(decorated)
 {
     private readonly Dictionary<string, GameStateMemory> _cache = new();
 

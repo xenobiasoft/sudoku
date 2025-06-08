@@ -4,7 +4,7 @@ using XenobiaSoft.Sudoku.Strategies;
 
 namespace XenobiaSoft.Sudoku.Solver;
 
-public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateStorage gameStateStorage)
+public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, IInMemoryGameStateStorage gameStateStorage)
     : IPuzzleSolver
 {
     private const string Alias = "SudokuSolverAlias";

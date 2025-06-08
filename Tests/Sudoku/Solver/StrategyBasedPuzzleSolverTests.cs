@@ -17,7 +17,7 @@ public class StrategyBasedPuzzleSolverTests : BaseTestByAbstraction<StrategyBase
         // Arrange
         var mockPuzzle = Container.ResolveMock<ISudokuPuzzle>();
         mockPuzzle.SetupPuzzleIsSolved();
-        var mockGameStateStorage = Container.ResolveMock<IGameStateStorage>();
+        var mockGameStateStorage = Container.ResolveMock<IInMemoryGameStateStorage>();
         var sut = ResolveSut();
 
         // Act
@@ -31,7 +31,7 @@ public class StrategyBasedPuzzleSolverTests : BaseTestByAbstraction<StrategyBase
     public async Task SolvePuzzle_ShouldUndoOnInvalidMove()
     {
         // Arrange
-        var mockGameStateStorage = Container.ResolveMock<IGameStateStorage>();
+        var mockGameStateStorage = Container.ResolveMock<IInMemoryGameStateStorage>();
         var mockPuzzle = Container.ResolveMock<ISudokuPuzzle>();
         mockPuzzle.SetupInvalidMove();
         var sut = ResolveSut();
@@ -65,7 +65,7 @@ public class StrategyBasedPuzzleSolverTests : BaseTestByAbstraction<StrategyBase
     public async Task SolvePuzzle_WhenGameStateIsEmpty_AndUndoCalled_ThrowsInvalidBoardException()
     {
         // Arrange
-        Container.ResolveMock<IGameStateStorage>().SetupUndoAsync(null);
+        Container.ResolveMock<IInMemoryGameStateStorage>().SetupUndoAsync(null);
         var mockPuzzle = Container.ResolveMock<ISudokuPuzzle>();
         mockPuzzle.SetupInvalidMove();
         var sut = ResolveSut();
@@ -83,7 +83,7 @@ public class StrategyBasedPuzzleSolverTests : BaseTestByAbstraction<StrategyBase
         // Arrange
         var mockPuzzle = Container.ResolveMock<ISudokuPuzzle>();
         mockPuzzle.SetupPuzzleIsSolved();
-        var mockGameStateStorage = Container.ResolveMock<IGameStateStorage>();
+        var mockGameStateStorage = Container.ResolveMock<IInMemoryGameStateStorage>();
         var sut = ResolveSut();
 
         // Act
@@ -99,7 +99,7 @@ public class StrategyBasedPuzzleSolverTests : BaseTestByAbstraction<StrategyBase
         // Arrange
         var mockPuzzle = Container.ResolveMock<ISudokuPuzzle>();
         mockPuzzle.SetupInvalidMove();
-        var mockGameStateStorage = Container.ResolveMock<IGameStateStorage>();
+        var mockGameStateStorage = Container.ResolveMock<IInMemoryGameStateStorage>();
         var sut = ResolveSut();
 
         // Act
