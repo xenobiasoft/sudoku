@@ -36,15 +36,15 @@ namespace Sudoku.Web.Server.Helpers
                 .AddScoped<IPuzzleSolver, StrategyBasedPuzzleSolver>()
                 .AddScoped<IPuzzleGenerator, PuzzleGenerator>()
                 .AddScoped<IStorageService, AzureStorageService>()
-                .AddScoped<IGameStateStorage<PuzzleState>, InMemoryGameStateStorage>()
-                .AddScoped<IGameStateStorage<GameStateMemory>, AzureBlobGameStateStorage>()
-                .AddScoped<IGameStateStorage<GameStateMemory>>(x =>
+                .AddScoped<IGameStateStorage, InMemoryGameStateStorage>()
+                .AddScoped<IGameStateStorage, AzureBlobGameStateStorage>()
+                .AddScoped<IGameStateStorage>(x =>
                     ActivatorUtilities.CreateInstance<CachingAzureBlobGameStateStorageDecorator>(x,
                         ActivatorUtilities.CreateInstance<AzureBlobGameStateStorage>(x)));
 
             typeof(SudokuPuzzle).Assembly
                 .GetTypes()
-                .Where(x => x.Name.EndsWith("Strategy") && !x.IsAbstract && !x.IsInterface)
+                .Where(x => x.Name.EndsWith("Strategy") && x is { IsAbstract: false, IsInterface: false })
                 .ToList()
                 .ForEach(x =>
                 {

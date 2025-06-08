@@ -64,7 +64,7 @@ public class PuzzleFactory
 			}
 		}
 
-        puzzle.Load(new PuzzleState(puzzle.PuzzleId, cells));
+        puzzle.Load(new GameStateMemory { PuzzleId = puzzle.PuzzleId, Board = cells });
 
         return puzzle;
     }

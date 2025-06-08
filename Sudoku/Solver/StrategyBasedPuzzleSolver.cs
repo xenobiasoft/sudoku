@@ -4,7 +4,7 @@ using XenobiaSoft.Sudoku.Strategies;
 
 namespace XenobiaSoft.Sudoku.Solver;
 
-public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateStorage<PuzzleState> gameStateStorage)
+public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, IGameStateStorage gameStateStorage)
     : IPuzzleSolver
 {
     private const string Alias = "SudokuSolverAlias";
@@ -94,7 +94,13 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
             throw new InvalidMoveException();
         }
 
-        return gameStateStorage.SaveAsync(new GameStateMemory(_puzzle.PuzzleId, _puzzle.GetAllCells()));
+        var gameState = new GameStateMemory
+        {
+            Board = _puzzle.GetAllCells(),
+            PuzzleId = _puzzle.PuzzleId,
+        };
+
+        return gameStateStorage.SaveAsync(gameState);
     }
 
     private async Task UndoAsync()

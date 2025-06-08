@@ -16,8 +16,8 @@ public class IndexPageTests : TestContext
     {
         var savedGames = new List<GameStateMemory>
         {
-            new(Guid.NewGuid().ToString(), []) { LastUpdated = DateTime.UtcNow.AddMinutes(-10) },
-            new(Guid.NewGuid().ToString(),[]) { LastUpdated = DateTime.UtcNow.AddMinutes(-5) }
+            new() { Board = [], LastUpdated = DateTime.UtcNow.AddMinutes(-10), PuzzleId = Guid.NewGuid().ToString() },
+            new() { Board = [], LastUpdated = DateTime.UtcNow.AddMinutes(-5), PuzzleId = Guid.NewGuid().ToString() }
         };
         _mockGameStateManager.SetupLoadGamesAsync(savedGames);
         _mockAliasService.Setup(x => x.GetAliasAsync()).ReturnsAsync(Alias);
@@ -101,8 +101,8 @@ public class IndexPageTests : TestContext
         // Arrange
         var savedGames = new List<GameStateMemory>
         {
-            new(Guid.NewGuid().ToString(),[]) { LastUpdated = DateTime.UtcNow.AddMinutes(-10) },
-            new(Guid.NewGuid().ToString(),[]) { LastUpdated = DateTime.UtcNow.AddMinutes(-5) }
+            new() { Board = [], LastUpdated = DateTime.UtcNow.AddMinutes(-10), PuzzleId = Guid.NewGuid().ToString() },
+            new() {Board =[], LastUpdated = DateTime.UtcNow.AddMinutes(-5), PuzzleId = Guid.NewGuid().ToString()}
         };
         _mockGameStateManager.SetupLoadGamesAsync(savedGames);
         var component = RenderComponent<IndexPage>();

@@ -7,7 +7,7 @@ public static class MockSudokuGameExtensions
 {
     public static Mock<ISudokuGame> SetLoadAsync(this Mock<ISudokuGame> mock, ISudokuPuzzle puzzle)
     {
-        var gameState = new GameStateMemory(Guid.NewGuid().ToString(), puzzle.GetAllCells());
+        var gameState = new GameStateMemory { Board = puzzle.GetAllCells(), PuzzleId = Guid.NewGuid().ToString() };
 
         return mock.SetLoadAsync(gameState);
     }
@@ -23,7 +23,12 @@ public static class MockSudokuGameExtensions
 
     public static Mock<ISudokuGame> SetNewAsync(this Mock<ISudokuGame> mock, string alias, ISudokuPuzzle puzzle)
     {
-        var gameState = new GameStateMemory(Guid.NewGuid().ToString(), puzzle.GetAllCells());
+        var gameState = new GameStateMemory
+        {
+            Alias = alias,
+            Board = puzzle.GetAllCells(), 
+            PuzzleId = Guid.NewGuid().ToString()
+        };
 
         return mock.SetNewAsync(alias, gameState);
     }

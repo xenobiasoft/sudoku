@@ -174,7 +174,7 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
         var sut = ResolveSut();
 
         // Act
-        sut.Load(puzzle.ToPuzzleState());
+        sut.Load(puzzle.ToGameState());
 
         // Assert
         sut.PuzzleId.Should().Be(puzzle.PuzzleId);

@@ -1,6 +1,6 @@
 ﻿namespace XenobiaSoft.Sudoku.GameState.Decorators;
 
-public abstract class AzureBlobGameStateStorageDecorator(IGameStateStorage<GameStateMemory> decorated) : IGameStateStorage<GameStateMemory>
+public abstract class AzureBlobGameStateStorageDecorator(IGameStateStorage decorated) : IGameStateStorage
 {
     public GameStateMemoryType MemoryType => decorated.MemoryType;
 

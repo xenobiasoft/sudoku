@@ -1,8 +1,8 @@
 ﻿namespace XenobiaSoft.Sudoku.GameState;
 
-public class InMemoryGameStateStorage : IGameStateStorage<PuzzleState>
+public class InMemoryGameStateStorage : IGameStateStorage
 {
-	private readonly CircularStack<PuzzleState> _gameState = new(50);
+	private readonly CircularStack<GameStateMemory> _gameState = new(50);
 
     public GameStateMemoryType MemoryType => GameStateMemoryType.InMemory;
 
@@ -13,12 +13,12 @@ public class InMemoryGameStateStorage : IGameStateStorage<PuzzleState>
         return Task.CompletedTask;
     }
 
-    public Task<PuzzleState> LoadAsync(string alias, string puzzleId)
+    public Task<GameStateMemory> LoadAsync(string alias, string puzzleId)
     {
         return Task.FromResult(_gameState.Count > 0 ? _gameState.Peek() : null);
     }
 
-    public async Task<PuzzleState> ResetAsync(string alias, string puzzleId)
+    public async Task<GameStateMemory> ResetAsync(string alias, string puzzleId)
     {
         while (_gameState.Count > 1)
         {
@@ -28,7 +28,7 @@ public class InMemoryGameStateStorage : IGameStateStorage<PuzzleState>
         return _gameState.Peek();
     }
 
-    public Task SaveAsync(PuzzleState gameState)
+    public Task SaveAsync(GameStateMemory gameState)
     {
         if (_gameState.Count > 0)
         {
@@ -42,12 +42,12 @@ public class InMemoryGameStateStorage : IGameStateStorage<PuzzleState>
         return Task.CompletedTask;
     }
 
-    public Task<PuzzleState> UndoAsync(string alias, string puzzleId)
+    public Task<GameStateMemory> UndoAsync(string alias, string puzzleId)
     {
-        return _gameState.Count == 0 ? Task.FromResult<PuzzleState>(null) : Task.FromResult(_gameState.Pop());
+        return _gameState.Count == 0 ? Task.FromResult<GameStateMemory>(null) : Task.FromResult(_gameState.Pop());
     }
 
-    private bool AreGameStatesEqual(PuzzleState gameState1, PuzzleState gameState2)
+    private bool AreGameStatesEqual(GameStateMemory gameState1, GameStateMemory gameState2)
     {
         if (gameState1.PuzzleId != gameState2.PuzzleId)
         {

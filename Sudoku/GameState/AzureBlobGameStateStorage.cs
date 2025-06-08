@@ -4,7 +4,7 @@ using XenobiaSoft.Sudoku.Services;
 
 namespace XenobiaSoft.Sudoku.GameState;
 
-public class AzureBlobGameStateStorage(IStorageService storageService) : IGameStateStorage<GameStateMemory>, IDisposable
+public class AzureBlobGameStateStorage(IStorageService storageService) : IGameStateStorage, IDisposable
 {
     private const string ContainerName = "sudoku-puzzles";
     private const int MaxUndoHistory = 50;
