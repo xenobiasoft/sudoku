@@ -11,12 +11,12 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameStateManager, IGa
     private const string Alias = "TestAlias";
     private const string GameId = "TestGameId";
 
-    private readonly Mock<IGameStateStorage<GameStateMemory>> _mockGameStateStorage;
+    private readonly Mock<IPersistentGameStateStorage> _mockGameStateStorage;
     private readonly Mock<ILocalStorageService> _mockLocalStorageService;
 
     public GameStateManagerTests()
     {
-        _mockGameStateStorage = Container.ResolveMock<IGameStateStorage<GameStateMemory>>();
+        _mockGameStateStorage = Container.ResolveMock<IPersistentGameStateStorage>();
         _mockLocalStorageService = Container.ResolveMock<ILocalStorageService>();
     }
 
@@ -37,7 +37,7 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameStateManager, IGa
     public async Task DeleteGameAsync_ShouldDeleteGameFromGameStateStorage()
     {
         // Arrange
-        _mockLocalStorageService.SetupLoadGameAsync(new GameStateMemory(GameId, []));
+        _mockLocalStorageService.SetupLoadGameAsync(new GameStateMemory { Board = [], PuzzleId = GameId});
         var sut = ResolveSut();
 
         // Act
@@ -51,7 +51,7 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameStateManager, IGa
     public async Task DeleteGameAsync_ShouldDeleteGameFromLocalStorageService()
     {
         // Arrange
-        _mockLocalStorageService.SetupLoadGameAsync(new GameStateMemory(GameId, []));
+        _mockLocalStorageService.SetupLoadGameAsync(new GameStateMemory { Board = [], PuzzleId = GameId });
         var sut = ResolveSut();
 
         // Act

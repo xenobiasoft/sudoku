@@ -1,12 +1,11 @@
 ﻿using DepenMock.XUnit;
-using Sudoku.Web.Server.Components;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Services;
 
 namespace UnitTests.Sudoku.GameState;
 
-public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGameStateStorage, IGameStateStorage<GameStateMemory>>
+public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGameStateStorage, IGameStateStorage>
 {
     private const string ContainerName = "sudoku-puzzles";
     private const string Alias = "test-alias";

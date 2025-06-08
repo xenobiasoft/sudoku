@@ -3,26 +3,27 @@
 namespace XenobiaSoft.Sudoku.GameState;
 
 [method: JsonConstructor]
-public class GameStateMemory(string puzzleId, Cell[] board) : PuzzleState(puzzleId, board)
+public class GameStateMemory
 {
-    public GameStateMemory() : this(string.Empty, [])
-    { }
-
     public string Alias { get; set; }
+    public Cell[] Board { get; set; } = [];
     public int InvalidMoves { get; set; } = 0;
     public DateTime LastUpdated { get; init; } = DateTime.UtcNow;
     public TimeSpan PlayDuration { get; set; } = TimeSpan.Zero;
+    public string PuzzleId { get; set; } = string.Empty;
     public int TotalMoves { get; set; } = 0;
 
     public GameStateMemory Clone()
     {
-        return new GameStateMemory(PuzzleId, Board)
+        return new GameStateMemory
         {
-            Alias = Alias,
-            InvalidMoves = InvalidMoves,
-            LastUpdated = LastUpdated,
-            PlayDuration = PlayDuration,
-            TotalMoves = TotalMoves
+            Alias = this.Alias,
+            Board = this.Board?.Select(cell => cell?.Copy()).ToArray(),
+            InvalidMoves = this.InvalidMoves,
+            LastUpdated = this.LastUpdated,
+            PlayDuration = this.PlayDuration,
+            PuzzleId = this.PuzzleId,
+            TotalMoves = this.TotalMoves
         };
     }
 }

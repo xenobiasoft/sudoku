@@ -95,7 +95,11 @@ public class GameSessionManagerTests : BaseTestByAbstraction<GameSessionManager,
     public async Task ResumeSession_ShouldReloadGameState()
     {
         // Arrange
-        var initialGameState = new GameStateMemory("puzzle-id", PuzzleFactory.GetPuzzle(Level.Easy).GetAllCells());
+        var initialGameState = new GameStateMemory
+        {
+            PuzzleId = "puzzle-id",
+            Board = PuzzleFactory.GetPuzzle(Level.Easy).GetAllCells()
+        };
         var sut = ResolveSut();
         await sut.StartNewSession(Container.Create<GameStateMemory>());
         await sut.PauseSession();
@@ -111,12 +115,13 @@ public class GameSessionManagerTests : BaseTestByAbstraction<GameSessionManager,
     public async Task ResumeSession_ShouldResumeTimer()
     {
         // Arrange
+        var gameStateMemory = Container.Create<GameStateMemory>();
         var sut = ResolveSut();
-        await sut.StartNewSession(Container.Create<GameStateMemory>());
+        await sut.StartNewSession(gameStateMemory);
         await sut.PauseSession();
 
         // Act
-        await sut.ResumeSession(new GameStateMemory(Container.Create<string>(), []));
+        await sut.ResumeSession(gameStateMemory);
 
         // Assert
         _mockTimer.VerifyResumed(Times.Once);
@@ -161,7 +166,10 @@ public class GameSessionManagerTests : BaseTestByAbstraction<GameSessionManager,
     {
         // Arrange
         var puzzleId = "puzzle1";
-        var gameState = new GameStateMemory(puzzleId, new Cell[81]);
+        var gameState = Container.Build<GameStateMemory>()
+            .With(g => g.PuzzleId, puzzleId)
+            .With(g => g.Board, PuzzleFactory.GetPuzzle(Level.Easy).GetAllCells())
+            .Create();
         var sut = ResolveSut();
 
         // Act

@@ -141,10 +141,10 @@ public class SudokuPuzzle : ISudokuPuzzle
         return true;
     }
 
-    public void Load(PuzzleState state)
+    public void Load(GameStateMemory gameState)
     {
-        PuzzleId = state.PuzzleId;
-        var cells = state.Board;
+        PuzzleId = gameState.PuzzleId;
+        var cells = gameState.Board;
         
         for (var i = 0; i < cells.Length; i++)
         {

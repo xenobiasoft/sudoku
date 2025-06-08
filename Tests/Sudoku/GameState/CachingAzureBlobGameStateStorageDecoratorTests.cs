@@ -7,17 +7,17 @@ using XenobiaSoft.Sudoku.GameState.Decorators;
 
 namespace UnitTests.Sudoku.GameState;
 
-public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstraction<CachingAzureBlobGameStateStorageDecorator, IGameStateStorage<GameStateMemory>>
+public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstraction<CachingAzureBlobGameStateStorageDecorator, IPersistentGameStateStorage>
 {
     private const string PuzzleId = "test-puzzle";
     private const string Alias = "test-alias";
 
-    private readonly Mock<IGameStateStorage<GameStateMemory>> _mockDecoratedStorage;
+    private readonly Mock<IPersistentGameStateStorage> _mockDecoratedStorage;
     private readonly GameStateMemory _gameState;
 
     public CachingAzureBlobGameStateStorageDecoratorTests()
     {
-        _mockDecoratedStorage = Container.ResolveMock<IGameStateStorage<GameStateMemory>>();
+        _mockDecoratedStorage = Container.ResolveMock<IPersistentGameStateStorage>();
         _gameState = Container
             .Build<GameStateMemory>()
             .With(x => x.PuzzleId, PuzzleId)

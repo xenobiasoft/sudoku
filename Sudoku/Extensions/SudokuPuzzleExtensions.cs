@@ -4,8 +4,17 @@ namespace XenobiaSoft.Sudoku.Extensions;
 
 public static class SudokuPuzzleExtensions
 {
-    public static PuzzleState ToPuzzleState(this ISudokuPuzzle puzzle)
+    public static GameStateMemory ToGameState(this ISudokuPuzzle puzzle)
     {
-        return new PuzzleState(puzzle.PuzzleId, puzzle.GetAllCells());
+        if (puzzle is null)
+        {
+            throw new ArgumentNullException(nameof(puzzle), "The Sudoku puzzle cannot be null.");
+        }
+
+        return new GameStateMemory
+        {
+            PuzzleId = puzzle.PuzzleId,
+            Board = puzzle.GetAllCells()
+        };
     }
 }
