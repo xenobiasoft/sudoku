@@ -44,6 +44,7 @@ public class GameTimer(TimeSpan tickInterval) : IGameTimer, IDisposable
         lock (_lock)
         {
             if (_isRunning) return;
+            _startTime = DateTime.UtcNow;
             _isRunning = true;
         }
     }

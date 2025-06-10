@@ -19,6 +19,7 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
         if (gameState == null) throw new ArgumentNullException(nameof(gameState));
 
         _currentSession = new GameSession(gameState, _timer);
+        _timer.OnTick += OnTimerTick;
         _currentSession.Start();
         await SaveSessionAsync();
     }
@@ -45,6 +46,7 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
     {
         if (_currentSession.IsNull) return;
 
+        _timer.OnTick -= OnTimerTick;
         _currentSession.End();
         await SaveSessionAsync();
         _currentSession = NullGameSession.Instance;
@@ -56,6 +58,12 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
 
         _currentSession.RecordMove(isValid);
         await SaveSessionAsync();
+    }
+
+    private void OnTimerTick(object? sender, TimeSpan elapsedTime)
+    {
+        if (_currentSession.IsNull) return;
+        _currentSession.GameState.PlayDuration = elapsedTime;
     }
 
     private async Task SaveSessionAsync()
