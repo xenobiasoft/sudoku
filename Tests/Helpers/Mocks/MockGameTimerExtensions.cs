@@ -27,7 +27,7 @@ public static class MockGameTimerExtensions
 
     public static Mock<IGameTimer> VerifyResumed(this Mock<IGameTimer> mock, Func<Times> times)
     {
-        mock.Verify(t => t.Resume(), times);
+        mock.Verify(t => t.Resume(It.IsAny<TimeSpan>()), times);
         
         return mock;
     }

@@ -7,6 +7,7 @@ public interface IGameTimer
     void Start();
     void Pause();
     void Resume();
+    void Resume(TimeSpan initialDuration);
     void Reset();
     event EventHandler<TimeSpan> OnTick;
-} 
+}

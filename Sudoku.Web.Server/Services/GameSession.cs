@@ -40,7 +40,7 @@ public class GameSession : IGameSession
 
     public void Resume()
     {
-        SessionState.Resume();
+        SessionState.Resume(GameState.PlayDuration);
     }
 
     public void Start()
