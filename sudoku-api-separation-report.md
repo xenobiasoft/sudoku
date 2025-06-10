@@ -46,11 +46,11 @@ The following components need to be moved to the shared library:
 
 1. Game Management:
 
-   - `POST /api/games/new` - Create new game
-   - `GET /api/games/{id}` - Get game state
-   - `POST /api/games/{id}/move` - Make a move
-   - `GET /api/games/{id}/validate` - Validate current state
-   - `POST /api/games/{id}/solve` - Get solution
+   - `POST /api/games/{alias}/{id}` - Create new game
+   - `GET /api/games/{alias}/{id}` - Get game state
+   - `PUT /api/games/{alias}/{id}/move` - Make a move
+   - `GET /api/games/{alias}/{id}/validate` - Validate current state
+   - `POST /api/games/{alias}/{id}/solve` - Get solution
 
 2. Session Management:
 
