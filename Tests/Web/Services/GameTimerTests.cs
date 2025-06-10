@@ -2,7 +2,7 @@ using Sudoku.Web.Server.Services;
 
 namespace UnitTests.Web.Services;
 
-public class GameTimerTests : IDisposable
+public class GameTimerTests
 {
     private readonly TimeSpan _interval = TimeSpan.FromMilliseconds(10);
     private readonly GameTimer _timer;
@@ -66,7 +66,7 @@ public class GameTimerTests : IDisposable
         await Task.Delay(_interval * 2);
 
         // Act
-        _timer.Resume();
+        _timer.Resume(pausedTimeTicks);
 
         // Assert
         _timer.IsRunning.Should().BeTrue();
@@ -120,34 +120,70 @@ public class GameTimerTests : IDisposable
     }
 
     [Fact]
-    public void Dispose_ShouldNotThrow()
+    public void Resume_WithInitialDuration_ShouldStartWithCorrectDuration()
     {
         // Arrange
+        var initialDuration = TimeSpan.FromMinutes(5);
         _timer.Start();
+        _timer.Pause();
 
         // Act
-        var dispose = () => _timer.Dispose();
+        _timer.Resume(initialDuration);
 
         // Assert
-        dispose.Should().NotThrow();
+        _timer.ElapsedTime.Should().BeCloseTo(initialDuration, TimeSpan.FromMilliseconds(50));
     }
 
     [Fact]
-    public async Task Dispose_ShouldStopTimer()
+    public void Resume_WithInitialDuration_ShouldContinueFromInitialDuration()
     {
         // Arrange
+        var initialDuration = TimeSpan.FromMinutes(5);
         _timer.Start();
+        _timer.Pause();
+        _timer.Resume(initialDuration);
 
         // Act
-        _timer.Dispose();
+        Thread.Sleep(1000); // Wait for 1 second
 
         // Assert
-        await Task.Delay(_interval * 2);
-        _timer.IsRunning.Should().BeFalse();
+        Assert.True(_timer.ElapsedTime > initialDuration);
+        Assert.True(_timer.ElapsedTime <= initialDuration.Add(TimeSpan.FromSeconds(2))); // Allow for some timing variance
     }
 
-    public void Dispose()
+    [Fact]
+    public void Resume_WithInitialDuration_ShouldRaiseTickEventWithCorrectDuration()
     {
-        _timer.Dispose();
+        // Arrange
+        var initialDuration = TimeSpan.FromMinutes(5);
+        TimeSpan? tickedDuration = null;
+        _timer.OnTick += (_, duration) => tickedDuration = duration;
+        _timer.Start();
+        _timer.Pause();
+        _timer.Resume(initialDuration);
+
+        // Act
+        Thread.Sleep(1100); // Wait for first tick
+
+        // Assert
+        Assert.NotNull(tickedDuration);
+        Assert.True(tickedDuration > initialDuration);
+        Assert.True(tickedDuration <= initialDuration.Add(TimeSpan.FromSeconds(2))); // Allow for some timing variance
+    }
+
+    [Fact]
+    public void Resume_WithInitialDuration_WhenAlreadyRunning_ShouldNotChangeDuration()
+    {
+        // Arrange
+        var initialDuration = TimeSpan.FromMinutes(5);
+        _timer.Start();
+        Thread.Sleep(1000); // Let it run for a bit
+        var beforeDuration = _timer.ElapsedTime;
+
+        // Act
+        _timer.Resume(initialDuration);
+
+        // Assert
+        _timer.ElapsedTime.Should().BeCloseTo(beforeDuration, TimeSpan.FromMilliseconds(50));
     }
 }

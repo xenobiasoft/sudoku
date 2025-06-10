@@ -41,10 +41,16 @@ public class GameTimer(TimeSpan tickInterval) : IGameTimer, IDisposable
 
     public void Resume()
     {
+        Resume(TimeSpan.Zero);
+    }
+
+    public void Resume(TimeSpan initialDuration)
+    {
         lock (_lock)
         {
             if (_isRunning) return;
             _startTime = DateTime.UtcNow;
+            _accumulatedTime = initialDuration;
             _isRunning = true;
         }
     }

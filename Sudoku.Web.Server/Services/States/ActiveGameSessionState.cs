@@ -27,7 +27,12 @@ public class ActiveGameSessionState(IGameSession session) : IGameSessionState
 
     public void Resume()
     {
-        session.Timer.Resume();
+        Resume(TimeSpan.Zero);
+    }
+
+    public void Resume(TimeSpan initialDuration)
+    {
+        session.Timer.Resume(initialDuration);
     }
 
     public void Start()

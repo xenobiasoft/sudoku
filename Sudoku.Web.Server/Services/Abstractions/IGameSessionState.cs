@@ -29,6 +29,12 @@ public interface IGameSessionState
     void Resume();
 
     /// <summary>
+    /// Resumes the game session with a specified initial duration
+    /// </summary>
+    /// <param name="initialDuration">The initial duration of the game session</param>
+    void Resume(TimeSpan initialDuration);
+
+    /// <summary>
     /// Starts the game session
     /// </summary>
     void Start();

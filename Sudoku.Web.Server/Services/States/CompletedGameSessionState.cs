@@ -30,6 +30,11 @@ public class CompletedGameSessionState(IGameSession session) : IGameSessionState
 
     public void Resume()
     {
+        Resume(TimeSpan.Zero);
+    }
+
+    public void Resume(TimeSpan initialDuration)
+    {
         // Completed game state doesn't resume
     }
 

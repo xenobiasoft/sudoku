@@ -25,6 +25,11 @@ public class NewGameSessionState(IGameSession session) : IGameSessionState
 
     public void Resume()
     {
+        Resume(TimeSpan.Zero);
+    }
+
+    public void Resume(TimeSpan initialDuration)
+    {
         // New game state doesn't resume
     }
 

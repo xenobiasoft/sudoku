@@ -10,6 +10,7 @@ public class NullGameTimer : IGameTimer
     public void Start() { }
     public void Pause() { }
     public void Resume() { }
+    public void Resume(TimeSpan initialDuration) { }
     public void Reset() { }
 
     public event EventHandler<TimeSpan>? OnTick;
