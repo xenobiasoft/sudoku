@@ -5,6 +5,7 @@ using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
+using FluentAssertions;
 
 namespace UnitTests.Web.Services;
 
@@ -190,5 +191,21 @@ public class GameSessionManagerTests : BaseTestByAbstraction<GameSessionManager,
 
         // Assert
         _mockTimer.VerifyStarted(Times.Once);
+    }
+
+    [Fact]
+    public async Task TimerTick_ShouldUpdatePlayDuration()
+    {
+        // Arrange
+        var gameState = Container.Create<GameStateMemory>();
+        var sut = ResolveSut();
+        await sut.StartNewSession(gameState);
+        var elapsedTime = TimeSpan.FromMinutes(5);
+
+        // Act
+        _mockTimer.Raise(x => x.OnTick += null, new object(), elapsedTime);
+
+        // Assert
+        gameState.PlayDuration.Should().Be(elapsedTime);
     }
 }
