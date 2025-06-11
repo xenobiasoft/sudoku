@@ -3,10 +3,10 @@ using Microsoft.Extensions.Azure;
 using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.GameState.Decorators;
 using XenobiaSoft.Sudoku.Generator;
 using XenobiaSoft.Sudoku.Services;
 using XenobiaSoft.Sudoku.Solver;
+using XenobiaSoft.Sudoku.Storage.Azure;
 using XenobiaSoft.Sudoku.Strategies;
 
 namespace Sudoku.Web.Server.Helpers
@@ -35,14 +35,8 @@ namespace Sudoku.Web.Server.Helpers
                 .AddScoped<ISudokuGame, SudokuGame>()
                 .AddScoped<IPuzzleSolver, StrategyBasedPuzzleSolver>()
                 .AddScoped<IPuzzleGenerator, PuzzleGenerator>()
-                .AddScoped<IStorageService, AzureStorageService>()
                 .AddScoped<IGameStateStorage, InMemoryGameStateStorage>()
-                .AddScoped<IGameStateStorage, AzureBlobGameStateStorage>()
-                .AddScoped<IInMemoryGameStateStorage, InMemoryGameStateStorage>()
-                .AddScoped<IPersistentGameStateStorage, AzureBlobGameStateStorage>()
-                .AddScoped<IPersistentGameStateStorage>(x =>
-                    ActivatorUtilities.CreateInstance<CachingAzureBlobGameStateStorageDecorator>(x,
-                        ActivatorUtilities.CreateInstance<AzureBlobGameStateStorage>(x)));
+                .AddScoped<IInMemoryGameStateStorage, InMemoryGameStateStorage>();
 
             typeof(SudokuPuzzle).Assembly
                 .GetTypes()
@@ -53,11 +47,8 @@ namespace Sudoku.Web.Server.Helpers
                     services.AddTransient(typeof(SolverStrategy), x);
                 });
 
-            services.AddAzureClients(builder =>
-            {
-                builder.UseCredential(new DefaultAzureCredential());
-                builder.AddBlobServiceClient(config["AzureStorageConnection"]);
-            });
+            // Register Azure storage services
+            services.AddAzureStorage(config);
 
             return services;
         }

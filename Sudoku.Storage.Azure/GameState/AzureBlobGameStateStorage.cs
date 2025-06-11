@@ -1,8 +1,9 @@
-﻿using XenobiaSoft.Sudoku.Exceptions;
+using XenobiaSoft.Sudoku.Exceptions;
 using XenobiaSoft.Sudoku.Extensions;
+using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Services;
 
-namespace XenobiaSoft.Sudoku.GameState;
+namespace XenobiaSoft.Sudoku.Storage.Azure.GameState;
 
 public class AzureBlobGameStateStorage(IStorageService storageService) : IPersistentGameStateStorage, IDisposable
 {
@@ -101,7 +102,7 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IPersis
         {
             return;
         }
-        
+
         await _semaphore.WaitAsync();
 
         try

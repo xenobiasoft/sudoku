@@ -3,7 +3,7 @@ using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.GameState.Decorators;
+using XenobiaSoft.Sudoku.Storage.Azure.GameState.Decorators;
 
 namespace UnitTests.Sudoku.GameState;
 

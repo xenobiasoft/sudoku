@@ -1,10 +1,10 @@
-﻿using DepenMock.XUnit;
+using DepenMock.XUnit;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Services;
 using XenobiaSoft.Sudoku.Storage.Azure.GameState;
 
-namespace UnitTests.Sudoku.GameState;
+namespace UnitTests.Storage.Azure;
 
 public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGameStateStorage, IGameStateStorage>
 {
@@ -30,7 +30,7 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
             .With(x => x.Alias, Alias)
             .Create();
     }
-    
+
     [Fact]
     public async Task DeleteAsync_WhenGivenAliasAndPuzzle_ShouldDeleteAllBlobs()
     {
@@ -118,7 +118,7 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         // Arrange
         _mockStorageService
             .StubGetBlobNamesCall(_blobNames)
-            .StubLoadAsyncCall(_gameState); ;
+            .StubLoadAsyncCall(_gameState);
         var sut = ResolveSut();
 
         // Act
@@ -288,7 +288,9 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
     public async Task SaveAsync_ShouldLoadLatestGameState()
     {
         // Arrange
-        _mockStorageService.StubGetBlobNamesCall(_blobNames);
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(_gameState);
         var sut = ResolveSut();
 
         // Act
@@ -302,44 +304,44 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
     public async Task SaveAsync_WhenNoPreviousGameState_ShouldSaveGameState()
     {
         // Arrange
-        var expectedBlobName = GetFullBlobName("00001");
-        _mockStorageService.StubGetBlobNamesCall([]);
+        _mockStorageService
+            .StubGetBlobNamesCall([])
+            .StubLoadAsyncCall(null);
         var sut = ResolveSut();
 
         // Act
         await sut.SaveAsync(_gameState);
 
         // Assert
-        _mockStorageService.VerifySavesGameState(ContainerName, expectedBlobName, _gameState, Times.Once);
+        _mockStorageService.VerifySavesGameState(ContainerName, $"{Alias}/{PuzzleId}/00001.json", _gameState, Times.Once);
     }
 
     [Fact]
     public async Task SaveAsync_WhenNewGameStateChanged_ShouldSaveGameState()
     {
         // Arrange
-        var expectedBlobName = GetFullBlobName("00004");
-        _mockStorageService
-            .StubGetBlobNamesCall(_blobNames)
-            .StubLoadAsyncCall(_gameState);
-        var gameState = Container
+        var newGameState = Container
             .Build<GameStateMemory>()
             .With(x => x.PuzzleId, PuzzleId)
             .With(x => x.Alias, Alias)
+            .With(x => x.TotalMoves, _gameState.TotalMoves + 1)
             .Create();
+        _mockStorageService
+            .StubGetBlobNamesCall(_blobNames)
+            .StubLoadAsyncCall(_gameState);
         var sut = ResolveSut();
 
         // Act
-        await sut.SaveAsync(gameState);
+        await sut.SaveAsync(newGameState);
 
         // Assert
-        _mockStorageService.VerifySavesGameState(ContainerName, expectedBlobName, gameState, Times.Once);
+        _mockStorageService.VerifySavesGameState(ContainerName, $"{Alias}/{PuzzleId}/00004.json", newGameState, Times.Once);
     }
 
     [Fact]
     public async Task SaveAsync_WhenNewGameStateUnchanged_ShouldNotSaveGameState()
     {
         // Arrange
-        var expectedBlobName = GetFullBlobName("00004");
         _mockStorageService
             .StubGetBlobNamesCall(_blobNames)
             .StubLoadAsyncCall(_gameState);
@@ -349,7 +351,7 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         await sut.SaveAsync(_gameState);
 
         // Assert
-        _mockStorageService.VerifySavesGameState(ContainerName, expectedBlobName, _gameState, Times.Never);
+        _mockStorageService.VerifySavesGameState(ContainerName, It.IsAny<string>(), _gameState, Times.Never);
     }
 
     [Theory]
@@ -402,9 +404,7 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
     public async Task UndoAsync_ShouldDeleteLatest()
     {
         // Arrange
-        _mockStorageService
-            .StubGetBlobNamesCall(_blobNames)
-            .StubLoadAsyncCall(_gameState);
+        _mockStorageService.StubGetBlobNamesCall(_blobNames);
         var sut = ResolveSut();
 
         // Act
@@ -418,16 +418,17 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
     public async Task UndoAsync_ShouldReturnPreviousGameState()
     {
         // Arrange
+        var expected = _gameState;
         _mockStorageService
             .StubGetBlobNamesCall(_blobNames)
-            .StubLoadAsyncCall(_gameState);
+            .StubLoadAsyncCall(_blobNames[^2], _gameState);
         var sut = ResolveSut();
 
         // Act
-        var result = await sut.UndoAsync(Alias, PuzzleId);
+        var actual = await sut.UndoAsync(Alias, PuzzleId);
 
         // Assert
-        result.Should().Be(_gameState);
+        actual.Should().Be(expected);
     }
 
     [Fact]
@@ -438,10 +439,10 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         var sut = ResolveSut();
 
         // Act
-        Task UndoAsync() => sut.UndoAsync(Alias, PuzzleId);
+        Task UndoGame() => sut.UndoAsync(Alias, PuzzleId);
 
         // Assert
-        await Assert.ThrowsAsync<CannotUndoInitialStateException>(UndoAsync);
+        await Assert.ThrowsAsync<CannotUndoInitialStateException>(UndoGame);
     }
 
     [Theory]
@@ -497,10 +498,10 @@ public class AzureBlobGameStateStorageTests : BaseTestByAbstraction<AzureBlobGam
         var sut = ResolveSut();
 
         // Act
-        var type = sut.MemoryType;
+        var actual = sut.MemoryType;
 
         // Assert
-        type.Should().Be(GameStateMemoryType.AzureBlobPersistence);
+        actual.Should().Be(GameStateMemoryType.AzureBlobPersistence);
     }
 
     private static string GetBlobPrefix()

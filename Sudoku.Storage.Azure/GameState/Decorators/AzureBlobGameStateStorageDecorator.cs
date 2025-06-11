@@ -1,4 +1,6 @@
-﻿namespace XenobiaSoft.Sudoku.GameState.Decorators;
+﻿using XenobiaSoft.Sudoku.GameState;
+
+namespace XenobiaSoft.Sudoku.Storage.Azure.GameState.Decorators;
 
 public abstract class AzureBlobGameStateStorageDecorator(IPersistentGameStateStorage decorated) : IPersistentGameStateStorage
 {
