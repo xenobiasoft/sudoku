@@ -4,8 +4,8 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyName>Xenobiasoft.$(MSBuildProjectName)</AssemblyName>
-    <RootNamespace>Xenobiasoft.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
+    <AssemblyName>XenobiaSoft.$(MSBuildProjectName)</AssemblyName>
+    <RootNamespace>XenobiaSoft.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

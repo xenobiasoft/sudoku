@@ -6,7 +6,7 @@ using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Generator;
 using XenobiaSoft.Sudoku.Services;
 using XenobiaSoft.Sudoku.Solver;
-using Xenobiasoft.Sudoku.Storage.Azure;
+using XenobiaSoft.Sudoku.Storage.Azure;
 using XenobiaSoft.Sudoku.Strategies;
 
 namespace Sudoku.Web.Server.Helpers

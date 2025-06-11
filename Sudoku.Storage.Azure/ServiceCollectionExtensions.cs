@@ -4,10 +4,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Services;
-using Xenobiasoft.Sudoku.Storage.Azure.GameState;
-using Xenobiasoft.Sudoku.Storage.Azure.GameState.Decorators;
+using XenobiaSoft.Sudoku.Storage.Azure.GameState;
+using XenobiaSoft.Sudoku.Storage.Azure.GameState.Decorators;
 
-namespace Xenobiasoft.Sudoku.Storage.Azure;
+namespace XenobiaSoft.Sudoku.Storage.Azure;
 
 public static class ServiceCollectionExtensions
 {

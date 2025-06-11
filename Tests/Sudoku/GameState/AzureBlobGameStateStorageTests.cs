@@ -2,7 +2,7 @@
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Services;
-using Xenobiasoft.Sudoku.Storage.Azure.GameState;
+using XenobiaSoft.Sudoku.Storage.Azure.GameState;
 
 namespace UnitTests.Sudoku.GameState;
 
