@@ -3,7 +3,7 @@ using XenobiaSoft.Sudoku.Extensions;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Services;
 
-namespace Sudoku.Storage.Azure.GameState;
+namespace Xenobiasoft.Sudoku.Storage.Azure.GameState;
 
 public class AzureBlobGameStateStorage(IStorageService storageService) : IPersistentGameStateStorage, IDisposable
 {

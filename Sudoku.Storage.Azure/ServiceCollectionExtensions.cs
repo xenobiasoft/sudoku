@@ -2,11 +2,11 @@ using Azure.Identity;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Sudoku.Storage.Azure.GameState;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Services;
+using Xenobiasoft.Sudoku.Storage.Azure.GameState;
 
-namespace Sudoku.Storage.Azure;
+namespace Xenobiasoft.Sudoku.Storage.Azure;
 
 public static class ServiceCollectionExtensions
 {

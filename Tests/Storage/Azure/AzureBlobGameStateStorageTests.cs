@@ -1,8 +1,8 @@
 using DepenMock.XUnit;
-using Sudoku.Storage.Azure.GameState;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Services;
+using Xenobiasoft.Sudoku.Storage.Azure.GameState;
 
 namespace UnitTests.Storage.Azure;
 
