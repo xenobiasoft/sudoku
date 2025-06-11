@@ -1,9 +1,9 @@
 using DepenMock.XUnit;
+using Sudoku.Storage.Azure.GameState.Decorators;
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.GameState.Decorators;
 
 namespace UnitTests.Sudoku.GameState;
 

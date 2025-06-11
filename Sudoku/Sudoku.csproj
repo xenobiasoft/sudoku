@@ -20,7 +20,7 @@
     <RootNamespace>XenobiaSoft.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.24.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.24.1" />
     <PackageReference Include="Microsoft.Bcl.Build" Version="1.0.21" />
   </ItemGroup>
   <ItemGroup>

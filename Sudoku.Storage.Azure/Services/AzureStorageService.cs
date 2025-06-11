@@ -1,15 +1,16 @@
-﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs;
 using System.Text;
 using System.Text.Json;
+using XenobiaSoft.Sudoku.Services;
 
-namespace XenobiaSoft.Sudoku.Services;
+namespace XenobiaSoft.Sudoku.Storage.Azure.Services;
 
 public class AzureStorageService(BlobServiceClient blobServiceClient) : IStorageService
 {
     public Task DeleteAsync(string containerName, string blobName)
     {
         var blobClient = GetBlobClient(containerName, blobName);
-        
+
         return blobClient.DeleteIfExistsAsync();
     }
 
@@ -39,7 +40,6 @@ public class AzureStorageService(BlobServiceClient blobServiceClient) : IStorage
         var json = download.Value.Content.ToString();
 
         return JsonSerializer.Deserialize<TBlobType>(json);
-
     }
 
     public Task SaveAsync(string containerName, string blobName, object blob, bool? overwrite = false)
