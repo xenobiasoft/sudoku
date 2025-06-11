@@ -1,9 +1,9 @@
-using Azure.Storage.Blobs;
 using System.Text;
 using System.Text.Json;
+using Azure.Storage.Blobs;
 using XenobiaSoft.Sudoku.Services;
 
-namespace XenobiaSoft.Sudoku.Storage.Azure.Services;
+namespace Sudoku.Storage.Azure.Services;
 
 public class AzureStorageService(BlobServiceClient blobServiceClient) : IStorageService
 {

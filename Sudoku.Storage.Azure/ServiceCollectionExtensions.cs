@@ -6,7 +6,7 @@ using Sudoku.Storage.Azure.GameState;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Services;
 
-namespace XenobiaSoft.Sudoku.Storage.Azure;
+namespace Sudoku.Storage.Azure;
 
 public static class ServiceCollectionExtensions
 {
