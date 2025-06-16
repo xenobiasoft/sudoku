@@ -22,7 +22,7 @@ namespace Sudoku.Web.Server.Components
             }
             else
             {
-                await OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(value.GetValueOrDefault()));
+                await OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(value));
             }
         }
 

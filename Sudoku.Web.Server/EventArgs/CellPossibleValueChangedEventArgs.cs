@@ -1,8 +1,8 @@
 ﻿namespace Sudoku.Web.Server.EventArgs;
 
-public record CellPossibleValueChangedEventArgs(int Value)
+public record CellPossibleValueChangedEventArgs(int? Value)
 {
-    public CellPossibleValueChangedEventArgs(int row, int column, int Value) : this(Value)
+    public CellPossibleValueChangedEventArgs(int row, int column, int? Value) : this(Value)
     {
         Row = row;
         Column = column;
