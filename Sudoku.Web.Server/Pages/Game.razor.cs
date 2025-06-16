@@ -94,13 +94,13 @@ public partial class Game
     private Task HandleCellValueChanged(CellValueChangedEventArgs args) =>
         HandleCellUpdate(SelectedCell.Row, SelectedCell.Column, args.Value);
 
-    private async Task HandleCellUpdate(int row, int column, int value)
+    private async Task HandleCellUpdate(int row, int column, int? value)
     {
         UpdatePuzzleCell(row, column, value);
         await ValidateAndUpdateGameState();
     }
 
-    private void UpdatePuzzleCell(int row, int column, int value)
+    private void UpdatePuzzleCell(int row, int column, int? value)
     {
         Puzzle.SetCell(row, column, value);
         var isValid = Puzzle.IsValid();
@@ -138,16 +138,20 @@ public partial class Game
         StateHasChanged();
     }
 
-    private void UpdatePossibleValues(int value)
+    private void UpdatePossibleValues(int? value)
     {
         var possibleValues = SelectedCell.PossibleValues;
-        if (possibleValues.Contains(value))
+        if (!value.HasValue)
         {
-            possibleValues.Remove(value);
+            possibleValues.Clear();
+        }
+        else if (possibleValues.Contains(value.Value))
+        {
+            possibleValues.Remove(value.Value);
         }
         else
         {
-            possibleValues.Add(value);
+            possibleValues.Add(value.Value);
         }
         SelectedCell.PossibleValues = possibleValues;
     }
