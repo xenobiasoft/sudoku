@@ -17,6 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Sudoku.ServiceDefaults\Sudoku.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Sudoku\Sudoku.csproj" />
     <ProjectReference Include="..\Sudoku.Storage.Azure\Sudoku.Storage.Azure.csproj" />
   </ItemGroup>
