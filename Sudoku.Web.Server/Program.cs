@@ -12,6 +12,8 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.AddServiceDefaults();
+
         ILogger<Program>? logger = null;
 
         try
@@ -60,6 +62,8 @@ public class Program
                 });
 
             var app = builder.Build();
+
+            app.MapDefaultEndpoints();
 
             logger = app.Services.GetRequiredService<ILogger<Program>>();
 

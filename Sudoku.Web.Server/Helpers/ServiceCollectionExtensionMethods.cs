@@ -1,10 +1,7 @@
-﻿using Azure.Identity;
-using Microsoft.Extensions.Azure;
-using Sudoku.Web.Server.Services;
+﻿using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Generator;
-using XenobiaSoft.Sudoku.Services;
 using XenobiaSoft.Sudoku.Solver;
 using XenobiaSoft.Sudoku.Storage.Azure;
 using XenobiaSoft.Sudoku.Strategies;
@@ -47,7 +44,6 @@ namespace Sudoku.Web.Server.Helpers
                     services.AddTransient(typeof(SolverStrategy), x);
                 });
 
-            // Register Azure storage services
             services.AddAzureStorage(config);
 
             return services;
