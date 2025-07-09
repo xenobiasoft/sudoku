@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sudoku.ServiceDefaults\Sudoku.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\Sudoku\Sudoku.csproj" />
   </ItemGroup>
 
 </Project>

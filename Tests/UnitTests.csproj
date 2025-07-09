@@ -32,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Sudoku.Api\Sudoku.Api.csproj" />
     <ProjectReference Include="..\Sudoku.Web.Server\Sudoku.Web.Server.csproj" />
     <ProjectReference Include="..\Sudoku\Sudoku.csproj" />
     <ProjectReference Include="..\Sudoku.Storage.Azure\Sudoku.Storage.Azure.csproj" />
