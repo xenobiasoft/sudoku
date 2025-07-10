@@ -1,4 +1,4 @@
-﻿namespace XenobiaSoft.Sudoku.Generator;
+﻿namespace XenobiaSoft.Sudoku.Abstractions;
 
 public interface IPuzzleGenerator
 {

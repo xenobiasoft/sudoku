@@ -1,4 +1,4 @@
-﻿using XenobiaSoft.Sudoku.Services;
+﻿using XenobiaSoft.Sudoku.Abstractions;
 
 namespace UnitTests.Helpers.Mocks;
 

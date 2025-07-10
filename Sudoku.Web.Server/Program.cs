@@ -25,10 +25,14 @@ public class Program
                 .AddDebug()
                 .AddAzureWebAppDiagnostics();
 
-            var vaultUri = builder.Configuration["KeyVault:VaultUri"] ?? string.Empty;
+            // Try to get the key vault URI from the connection string (Aspire way) or direct configuration
+            var vaultUri = builder.Configuration["ConnectionStrings:AzureKeyVault"]
+                ?? builder.Configuration["KeyVault:VaultUri"]
+                ?? string.Empty;
+
             if (string.IsNullOrEmpty(vaultUri))
             {
-                throw new InvalidOperationException("Key Vault URI is not configured.");
+                throw new InvalidOperationException("Key Vault URI is not configured. Please ensure 'ConnectionStrings:AzureKeyVault' is set in AppHost configuration.");
             }
 
             builder
@@ -44,7 +48,7 @@ public class Program
             builder.Services.AddHealthChecks();
             builder.Services
                 .RegisterGameServices(builder.Configuration)
-                .RegisterBlazorGameServices()
+                .RegisterBlazorGameServices(builder.Configuration)
                 .AddBlazorApplicationInsights(x =>
                 {
                     x.InstrumentationKey = builder.Configuration["AppInsightsKey"];

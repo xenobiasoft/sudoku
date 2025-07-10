@@ -2,6 +2,7 @@ using DepenMock.XUnit;
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Storage.Azure.GameState.Decorators;
 

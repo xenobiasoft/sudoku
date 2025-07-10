@@ -1,4 +1,5 @@
-﻿using XenobiaSoft.Sudoku.GameState;
+﻿using XenobiaSoft.Sudoku.Abstractions;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace XenobiaSoft.Sudoku.Storage.Azure.GameState.Decorators;
 
@@ -28,6 +29,11 @@ public class CachingAzureBlobGameStateStorageDecorator(IPersistentGameStateStora
         }
 
         return gameState;
+    }
+
+    public override Task<IEnumerable<GameStateMemory>> LoadAllAsync(string alias)
+    {
+        return decorated.LoadAllAsync(alias);
     }
 
     public override async Task<GameStateMemory> ResetAsync(string alias, string puzzleId)

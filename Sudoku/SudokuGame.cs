@@ -1,5 +1,5 @@
-﻿using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.Generator;
+﻿using XenobiaSoft.Sudoku.Abstractions;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace XenobiaSoft.Sudoku;
 

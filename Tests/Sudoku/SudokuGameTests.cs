@@ -2,8 +2,8 @@
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.Generator;
 
 namespace UnitTests.Sudoku;
 

@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using Azure.Storage.Blobs;
-using XenobiaSoft.Sudoku.Services;
+using XenobiaSoft.Sudoku.Abstractions;
 
 namespace XenobiaSoft.Sudoku.Storage.Azure.Services;
 

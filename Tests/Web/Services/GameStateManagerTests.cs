@@ -2,6 +2,7 @@
 using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
 using UnitTests.Helpers.Mocks;
+using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Web.Services;

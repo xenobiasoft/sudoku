@@ -3,7 +3,7 @@ using Sudoku.Api.Controllers;
 using System.Net;
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
-using XenobiaSoft.Sudoku.Services;
+using XenobiaSoft.Sudoku.Abstractions;
 
 namespace UnitTests.API;
 

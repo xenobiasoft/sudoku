@@ -1,5 +1,5 @@
 ﻿using XenobiaSoft.Sudoku;
-using XenobiaSoft.Sudoku.Generator;
+using XenobiaSoft.Sudoku.Abstractions;
 
 namespace UnitTests.Helpers.Mocks;
 

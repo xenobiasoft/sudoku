@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Controllers;
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
+using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.Services;
 
 namespace UnitTests.API;
 
@@ -59,6 +59,18 @@ public class GamesControllerTests : BaseTestByType<GamesController>
     }
 
     // 2.3 GET /api/players/{alias}/games returns a list of games with the correct player alias.
+    [Fact]
+    public async Task FinishImplementingTests()
+    {
+        // Arrange
+        
+
+        // Act
+
+        // Assert
+        Assert.Fail("Not Implemented");
+    }
+
     // 2.4 GET /api/players/{alias}/games returns 200 OK with a list of games.
     // 2.5 GET /api/players/{alias}/games calls GameService to retrieve games for the player alias.
     // 3. DELETE /api/players/{alias}/games returns 204 No Content after deleting all games for the player alias.

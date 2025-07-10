@@ -1,7 +1,7 @@
+using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.Exceptions;
 using XenobiaSoft.Sudoku.Extensions;
 using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.Services;
 
 namespace XenobiaSoft.Sudoku.Storage.Azure.GameState;
 
@@ -54,6 +54,60 @@ public class AzureBlobGameStateStorage(IStorageService storageService) : IPersis
             }
 
             return await storageService.LoadAsync<GameStateMemory>(ContainerName, latestBlobName);
+        }
+        finally
+        {
+            _semaphore.Release();
+        }
+    }
+
+    public async Task<IEnumerable<GameStateMemory>> LoadAllAsync(string alias)
+    {
+        if (string.IsNullOrWhiteSpace(alias))
+        {
+            throw new ArgumentException("Alias cannot be empty.", nameof(alias));
+        }
+
+        await _semaphore.WaitAsync();
+
+        try
+        {
+            var puzzleIdToLatestBlobMap = new Dictionary<string, string>();
+
+            await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName, alias))
+            {
+                var parts = blobName.Split('/');
+                if (parts.Length < 3) continue;
+
+                var puzzleId = parts[1];
+                var filename = parts[2];
+
+                // Track the full blob path for each puzzle
+                var blobPath = $"{alias}/{puzzleId}/{filename}";
+
+                // If we already have a blob for this puzzle ID, check if this one is newer
+                if (puzzleIdToLatestBlobMap.TryGetValue(puzzleId, out var existingBlobPath))
+                {
+                    var existingFilename = existingBlobPath.Split('/')[2];
+                    var existingNumber = int.Parse(Path.GetFileNameWithoutExtension(existingFilename));
+                    var currentNumber = int.Parse(Path.GetFileNameWithoutExtension(filename));
+
+                    if (currentNumber > existingNumber)
+                    {
+                        puzzleIdToLatestBlobMap[puzzleId] = blobPath;
+                    }
+                }
+                else
+                {
+                    puzzleIdToLatestBlobMap[puzzleId] = blobPath;
+                }
+            }
+
+            // Load all the latest game states in parallel
+            var tasks = puzzleIdToLatestBlobMap.Values
+                .Select(blobPath => storageService.LoadAsync<GameStateMemory>(ContainerName, blobPath));
+
+            return await Task.WhenAll(tasks);
         }
         finally
         {

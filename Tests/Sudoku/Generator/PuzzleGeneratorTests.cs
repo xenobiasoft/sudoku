@@ -2,6 +2,7 @@
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.Generator;
 using XenobiaSoft.Sudoku.Solver;
 

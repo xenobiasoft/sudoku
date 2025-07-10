@@ -1,4 +1,4 @@
-﻿namespace XenobiaSoft.Sudoku.Services;
+﻿namespace XenobiaSoft.Sudoku.Abstractions;
 
 public interface IPlayerService
 {
