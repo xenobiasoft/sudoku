@@ -6,13 +6,13 @@ public class PlayerService : IPlayerService
 {
     private static readonly string[] Adjectives = ["Swift", "Clever", "Brave", "Witty", "Silent", "Happy"];
     private static readonly string[] Animals = ["Tiger", "Elephant", "Giraffe", "Otter", "Falcon", "Panther"];
+    private static readonly Random RandomInstance = new Random();
 
     public Task<string> CreateNewAsync()
     {
-        var random = new Random();
-        var adjective = Adjectives[random.Next(Adjectives.Length)];
-        var animal = Animals[random.Next(Animals.Length)];
-        var number = random.Next(10, 100); // Add randomness to avoid collisions
+        var adjective = RandomInstance.Next(Adjectives.Length);
+        var animal = RandomInstance.Next(Animals.Length);
+        var number = RandomInstance.Next(10, 100); // Add randomness to avoid collisions
 
         return Task.FromResult($"{adjective}{animal}{number}");
     }
