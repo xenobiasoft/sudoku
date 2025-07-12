@@ -28,13 +28,6 @@ public static class MockLocalStorageServiceExtensions
         return mock;
     }
 
-    public static Mock<ILocalStorageService> VerifySaveAsyncCalledWith(this Mock<ILocalStorageService> mock, GameStateMemory gameState, Func<Times> times)
-    {
-        mock.Verify(x => x.SaveGameStateAsync(gameState), times);
-
-        return mock;
-    }
-
     public static Mock<ILocalStorageService> VerifyLoadGameAsyncCalled(this Mock<ILocalStorageService> mock, Func<Times> times)
     {
         mock.Verify(x => x.LoadGameAsync(It.IsAny<string>()), times);
