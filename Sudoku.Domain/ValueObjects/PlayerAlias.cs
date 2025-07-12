@@ -23,7 +23,7 @@ public record PlayerAlias
             throw new InvalidPlayerAliasException("Player alias must be at least 2 characters");
 
         // Only allow alphanumeric characters and spaces
-        if (!value.All(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)))
+        if (!value.All(c => char.IsLetterOrDigit(c) || c == ' '))
             throw new InvalidPlayerAliasException("Player alias can only contain letters, numbers, and spaces");
 
         return new PlayerAlias(value.Trim());
