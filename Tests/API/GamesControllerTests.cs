@@ -1,6 +1,6 @@
 ﻿using DepenMock.XUnit;
-using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Controllers;
+using System.Net;
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku.Abstractions;
@@ -11,6 +11,7 @@ namespace UnitTests.API;
 public class GamesControllerTests : BaseTestByType<GamesController>
 {
     private readonly string _playerAlias;
+    private readonly string _gameId;
     private readonly GamesController _sut;
     private readonly Mock<IGameService> _mockGameService;
     private readonly IEnumerable<GameStateMemory> _games;
@@ -19,14 +20,116 @@ public class GamesControllerTests : BaseTestByType<GamesController>
     {
         _games = Container.CreateMany<GameStateMemory>();
         _playerAlias = Container.Create<string>();
+        _gameId = Container.Create<string>();
         _mockGameService = Container.ResolveMock<IGameService>();
         _sut = ResolveSut();
 
+        _mockGameService.SetUpReturnedGame(_games.First());
         _mockGameService.SetUpReturnedGames(_games);
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task DeleteAsync_WhenAliasIsNullOrWhitespace_ReturnsStatusCode400(string alias)
+    {
+        // Act
+        var response = await _sut.DeleteAsync(alias, _gameId);
+
+        // Assert
+        response.AssertResponseStatusCode(HttpStatusCode.BadRequest);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task DeleteAsync_WhenGameIdIsNullOrWhitespace_ReturnsStatusCode400(string gameId)
+    {
+        // Act
+        var response = await _sut.DeleteAsync(_playerAlias, gameId);
+
+        // Assert
+        response.AssertResponseStatusCode(HttpStatusCode.BadRequest);
+    }
+
     [Fact]
-    public async Task Get_WhenPlayerHasNoGames_ReturnsEmptyList()
+    public async Task DeleteAsync_WhenValidAlias_CallsGameService()
+    {
+        // Act
+        await _sut.DeleteAsync(_playerAlias, _gameId);
+
+        // Assert
+        _mockGameService.VerifyDeleteGameAsyncCalled(_playerAlias, _gameId, Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenValidAlias_ReturnsStatusCode204()
+    {
+        // Act
+        var response = await _sut.DeleteAsync(_playerAlias, _gameId);
+
+        // Assert
+        response.AssertResponseStatusCode(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task GetAsync_WhenNoGameId_CallsGameServiceToRetrievePlayerGames()
+    {
+        // Act
+        await _sut.GetAsync(_playerAlias);
+
+        // Assert
+        _mockGameService.VerifyGetGamesForAliasCalled(_playerAlias, Times.Once);
+    }
+
+    [Fact]
+    public async Task GetAsync_WhenGivenGameId_CallsGameServiceToRetrieveSingleGame()
+    {
+        // Act
+        await _sut.GetAsync(_playerAlias, _gameId);
+
+        // Assert
+        _mockGameService.VerifyGetGameForAliasCalled(_playerAlias, _gameId, Times.Once);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task GetAsync_WhenAliasIsNullOrWhitespace_ReturnsStatusCode400(string alias)
+    {
+        // Act
+        var response = await _sut.GetAsync(alias);
+
+        // Assert
+        response.AssertResponseStatusCode(HttpStatusCode.BadRequest);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task GetAsync_WhenAliasIsNullOrWhitespaceWithGameId_ReturnsStatusCode400(string alias)
+    {
+        // Act
+        var response = await _sut.GetAsync(alias, _gameId);
+
+        // Assert
+        response.AssertResponseStatusCode(HttpStatusCode.BadRequest);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task GetAsync_WhenInvalidGameIdValidAlias_ReturnsStatusCode400(string gameId)
+    {
+        // Act
+        var response = await _sut.GetAsync(_playerAlias, gameId);
+
+        // Assert
+        response.AssertResponseStatusCode(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task GetAsync_WhenPlayerHasNoGames_ReturnsEmptyList()
     {
         // Arrange
         _mockGameService.SetUpReturnedGames([]);
@@ -39,7 +142,20 @@ public class GamesControllerTests : BaseTestByType<GamesController>
     }
 
     [Fact]
-    public async Task Get_WhenValidAlias_CallsGameService()
+    public async Task GetAsync_WhenNoMatchForAliasGameId_ReturnsStatusCode404()
+    {
+        // Arrange
+        _mockGameService.SetUpReturnedGame(null);
+
+        // Act
+        var response = await _sut.GetAsync(_playerAlias, _gameId);
+
+        // Assert
+        response.AssertResponseStatusCode(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GetAsync_WhenValidAlias_CallsGameService()
     {
         // Act
         await _sut.GetAsync(_playerAlias);
@@ -49,7 +165,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
     }
 
     [Fact]
-    public async Task Get_WhenValidAlias_ReturnsListOfGames()
+    public async Task GetAsync_WhenValidAlias_ReturnsListOfGames()
     {
         // Act
         var response = await _sut.GetAsync(_playerAlias);
@@ -58,22 +174,33 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         response.AssertResponseReturnEquals(_games);
     }
 
-    // 2.3 GET /api/players/{alias}/games returns a list of games with the correct player alias.
     [Fact]
-    public async Task FinishImplementingTests()
+    public async Task GetAsync_WhenValidAliasValidGameId_ReturnsSingleGame()
     {
-        // Arrange
-        
-
         // Act
+        var response = await _sut.GetAsync(_playerAlias, _gameId);
 
         // Assert
-        Assert.Fail("Not Implemented");
+        response.AssertResponseReturnEquals(_games.First());
     }
 
-    // 2.4 GET /api/players/{alias}/games returns 200 OK with a list of games.
-    // 2.5 GET /api/players/{alias}/games calls GameService to retrieve games for the player alias.
-    // 3. DELETE /api/players/{alias}/games returns 204 No Content after deleting all games for the player alias.
-    // 3.1 DELETE /api/players/{alias}/games returns 404 Not Found if the player alias does not exist.
-    // 3.2 DELETE /api/players/{alias}/games deletes all games for the player alias.
+    [Fact]
+    public async Task GetAsync_WhenValidAlias_ReturnsStatusCode200()
+    {
+        // Act
+        var response = await _sut.GetAsync(_playerAlias);
+
+        // Assert
+        response.AssertResponseStatusCode(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task GetAsync_WhenValidAliasValidGameId_ReturnsStatusCode200()
+    {
+        // Act
+        var response = await _sut.GetAsync(_playerAlias, _gameId);
+
+        // Assert
+        response.AssertResponseStatusCode(HttpStatusCode.OK);
+    }
 }

@@ -3,15 +3,27 @@ using System.Net;
 
 namespace UnitTests.Helpers;
 
+/// <summary>
+/// Extension methods for testing ASP.NET Core ActionResult responses.
+/// </summary>
 public static class ActionResultExtensions
 {
-    public static void AssertResponseReturnEquals<TResponseType>(this ActionResult<TResponseType> result, TResponseType expected)
+    /// <summary>
+    /// Asserts that the action result value is equivalent to the expected value.
+    /// </summary>
+    /// <typeparam name="TResponseType">The type of the response.</typeparam>
+    /// <param name="actionResult">The action result to verify.</param>
+    /// <param name="expected">The expected value.</param>
+    /// <exception cref="ArgumentNullException">Thrown when actionResult is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the response value is null or of unsupported type.</exception>
+    public static void AssertResponseReturnEquals<TResponseType>(this ActionResult<TResponseType> actionResult, TResponseType expected)
     {
-        if (result == null)
+        if (actionResult == null)
         {
-            throw new ArgumentNullException(nameof(result), "ActionResult cannot be null");
+            throw new ArgumentNullException(nameof(actionResult), "ActionResult cannot be null");
         }
-        var returnValue = DetermineResponseReturnValue<TResponseType>(result);
+        
+        var returnValue = DetermineResponseReturnValue<TResponseType>(actionResult);
         
         if (returnValue == null)
         {
@@ -21,37 +33,57 @@ public static class ActionResultExtensions
         returnValue.Should().BeEquivalentTo(expected, options => options.ExcludingMissingMembers());
     }
 
-    public static void AssertResponseStatusCode<TResponseType>(this ActionResult<TResponseType> response, HttpStatusCode statusCode)
+    /// <summary>
+    /// Asserts that the action result has the expected HTTP status code.
+    /// </summary>
+    /// <param name="actionResult">The action result to verify.</param>
+    /// <param name="expectedStatusCode">The expected HTTP status code.</param>
+    /// <exception cref="ArgumentNullException">Thrown when actionResult is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the status code doesn't match.</exception>
+    public static void AssertResponseStatusCode(this ActionResult actionResult, HttpStatusCode expectedStatusCode)
     {
-        var actionResult = response.Result;
-        
         if (actionResult == null)
         {
-            throw new ArgumentNullException(nameof(response.Result), "ActionResult cannot be null");
-        }
-
-        var expectedStatusCode = (int)statusCode;
-        int actualStatusCode;
-
-        if (actionResult is ObjectResult objectResult)
-        {
-            actualStatusCode = objectResult.StatusCode ?? 200;
-        }
-        else if (actionResult is StatusCodeResult statusCodeResult)
-        {
-            actualStatusCode = statusCodeResult.StatusCode;
-        }
-        else
-        {
-            actualStatusCode = DetermineStatusCode(actionResult);
+            throw new ArgumentNullException(nameof(actionResult), "ActionResult cannot be null");
         }
         
-        if (expectedStatusCode != actualStatusCode)
+        int expectedStatusCodeValue = (int)expectedStatusCode;
+        int actualStatusCode = GetStatusCodeFromActionResult(actionResult);
+        
+        if (expectedStatusCodeValue != actualStatusCode)
         {
-            throw new InvalidOperationException($"Expected status code {expectedStatusCode} ({statusCode}), but got {actualStatusCode}");
+            throw new InvalidOperationException($"Expected status code {expectedStatusCodeValue} ({expectedStatusCode}), but got {actualStatusCode}");
         }
     }
 
+    /// <summary>
+    /// Asserts that the generic action result has the expected HTTP status code.
+    /// </summary>
+    /// <typeparam name="TResponseType">The type of the response.</typeparam>
+    /// <param name="actionResult">The action result to verify.</param>
+    /// <param name="expectedStatusCode">The expected HTTP status code.</param>
+    /// <exception cref="ArgumentNullException">Thrown when actionResult or its Result property is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the status code doesn't match.</exception>
+    public static void AssertResponseStatusCode<TResponseType>(this ActionResult<TResponseType> actionResult, HttpStatusCode expectedStatusCode)
+    {
+        if (actionResult == null)
+        {
+            throw new ArgumentNullException(nameof(actionResult), "ActionResult cannot be null");
+        }
+        
+        var innerResult = actionResult.Result;
+        
+        if (innerResult == null)
+        {
+            throw new ArgumentNullException(nameof(actionResult.Result), "ActionResult.Result cannot be null");
+        }
+
+        AssertResponseStatusCode(innerResult, expectedStatusCode);
+    }
+
+    /// <summary>
+    /// Extracts the response value from the action result.
+    /// </summary>
     private static TResponseType DetermineResponseReturnValue<TResponseType>(ActionResult<TResponseType> result)
     {
         return result.Result switch
@@ -63,6 +95,27 @@ public static class ActionResultExtensions
         };
     }
 
+    /// <summary>
+    /// Gets the HTTP status code from an action result.
+    /// </summary>
+    private static int GetStatusCodeFromActionResult(ActionResult actionResult)
+    {
+        if (actionResult is ObjectResult objectResult)
+        {
+            return objectResult.StatusCode ?? 200;
+        }
+        
+        if (actionResult is StatusCodeResult statusCodeResult)
+        {
+            return statusCodeResult.StatusCode;
+        }
+        
+        return DetermineStatusCode(actionResult);
+    }
+
+    /// <summary>
+    /// Maps specific ActionResult types to their corresponding HTTP status codes.
+    /// </summary>
     private static int DetermineStatusCode(ActionResult actionResult)
     {
         return actionResult switch

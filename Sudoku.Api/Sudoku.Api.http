@@ -7,7 +7,7 @@ Accept: application/json
 
 ###
 
-GET {{Sudoku.Api_HostAddress}}/api/players/{{$guid}}
+GET {{Sudoku.Api_HostAddress}}/api/players/{{$guid}}/games
 Accept: application/json
 
 ###
