@@ -29,7 +29,7 @@ public class GamesController(IGameService gameService) : ControllerBase
 
         var gameId = await gameService.CreateGameAsync(alias, difficulty);
         
-        return CreatedAtAction(nameof(GetAsync), new { alias, gameId }, null);
+        return CreatedAtAction(nameof(GetAsync), new { alias, gameId }, gameId);
     }
 
     /// <summary>
