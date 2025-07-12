@@ -1,10 +1,17 @@
-﻿namespace XenobiaSoft.Sudoku.GameState;
+﻿using XenobiaSoft.Sudoku.Abstractions;
+
+namespace XenobiaSoft.Sudoku.GameState;
 
 public class InMemoryGameStateStorage : IInMemoryGameStateStorage
 {
 	private readonly CircularStack<GameStateMemory> _gameState = new(50);
 
     public GameStateMemoryType MemoryType => GameStateMemoryType.InMemory;
+
+    public Task<GameStateMemory> CreateAsync(string alias, GameDifficulty difficulty)
+    {
+        throw new NotSupportedException();
+    }
 
     public Task DeleteAsync(string alias, string puzzleId)
     {
@@ -16,6 +23,11 @@ public class InMemoryGameStateStorage : IInMemoryGameStateStorage
     public Task<GameStateMemory> LoadAsync(string alias, string puzzleId)
     {
         return Task.FromResult(_gameState.Count > 0 ? _gameState.Peek() : null);
+    }
+
+    public Task<IEnumerable<GameStateMemory>> LoadAllAsync(string alias)
+    {
+        throw new NotSupportedException();
     }
 
     public async Task<GameStateMemory> ResetAsync(string alias, string puzzleId)

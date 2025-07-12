@@ -1,4 +1,5 @@
-﻿using XenobiaSoft.Sudoku.GameState;
+﻿using XenobiaSoft.Sudoku.Abstractions;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace XenobiaSoft.Sudoku.Storage.Azure.GameState.Decorators;
 
@@ -7,7 +8,10 @@ public abstract class AzureBlobGameStateStorageDecorator(IPersistentGameStateSto
     public GameStateMemoryType MemoryType => decorated.MemoryType;
 
     public abstract Task DeleteAsync(string alias, string puzzleId);
+    
     public abstract Task<GameStateMemory> LoadAsync(string alias, string puzzleId);
+
+    public abstract Task<IEnumerable<GameStateMemory>> LoadAllAsync(string alias);
 
     public abstract Task<GameStateMemory> ResetAsync(string alias, string puzzleId);
 

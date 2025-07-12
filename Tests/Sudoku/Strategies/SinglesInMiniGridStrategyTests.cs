@@ -11,7 +11,7 @@ public class SinglesInMiniGridStrategyTests : BaseTestByAbstraction<SinglesInMin
 	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInMiniGrid_SetValueToThatNumber()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
 		var sut = ResolveSut();
 
 		// Act
@@ -25,7 +25,7 @@ public class SinglesInMiniGridStrategyTests : BaseTestByAbstraction<SinglesInMin
 	public void SolvePuzzle_WhenACellValueIsSet_ReturnsExpectedScore()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
 		var sut = ResolveSut();
 
 		// Act

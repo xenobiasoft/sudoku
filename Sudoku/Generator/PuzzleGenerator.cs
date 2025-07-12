@@ -1,13 +1,14 @@
-﻿using XenobiaSoft.Sudoku.Exceptions;
+﻿using XenobiaSoft.Sudoku.Abstractions;
+using XenobiaSoft.Sudoku.Exceptions;
 using XenobiaSoft.Sudoku.Solver;
 
 namespace XenobiaSoft.Sudoku.Generator;
 
 public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
 {
-    public async Task<ISudokuPuzzle> Generate(Level level)
+    public async Task<ISudokuPuzzle> GenerateAsync(GameDifficulty difficulty)
 	{
-		var puzzle = await GenerateEmptyPuzzle().ConfigureAwait(false);
+		var puzzle = await GenerateEmptyPuzzleAsync().ConfigureAwait(false);
 
         try
         {
@@ -15,29 +16,29 @@ public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
         }
         catch (InvalidBoardException)
         {
-            return await Generate(level);
+            return await GenerateAsync(difficulty);
         }
 
-		puzzle = CreateEmptyCells(puzzle, level);
+		puzzle = CreateEmptyCells(puzzle, difficulty);
 
         puzzle = LockCompletedCells(puzzle);
 
 		return puzzle;
 	}
 
-    public async Task<ISudokuPuzzle> GenerateEmptyPuzzle()
+    public async Task<ISudokuPuzzle> GenerateEmptyPuzzleAsync()
     {
         return await Task.FromResult(new SudokuPuzzle());
     }
 
-    private ISudokuPuzzle CreateEmptyCells(ISudokuPuzzle puzzle, Level level)
+    private ISudokuPuzzle CreateEmptyCells(ISudokuPuzzle puzzle, GameDifficulty difficulty)
 	{
-		var numberOfEmptyCells = level switch
+		var numberOfEmptyCells = difficulty switch
 		{
-			Level.Easy => RandomGenerator.RandomNumber(40, 45),
-			Level.Medium => RandomGenerator.RandomNumber(46, 49),
-			Level.Hard => RandomGenerator.RandomNumber(50, 53),
-			Level.ExtremelyHard => RandomGenerator.RandomNumber(54, 58),
+			GameDifficulty.Easy => RandomGenerator.RandomNumber(40, 45),
+			GameDifficulty.Medium => RandomGenerator.RandomNumber(46, 49),
+			GameDifficulty.Hard => RandomGenerator.RandomNumber(50, 53),
+			GameDifficulty.ExtremelyHard => RandomGenerator.RandomNumber(54, 58),
 			_ => 0
 		};
 		var emptyCellCoords = new List<Tuple<int, int>>();

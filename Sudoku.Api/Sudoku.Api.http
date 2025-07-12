@@ -1,6 +1,13 @@
-@Sudoku.Api_HostAddress = http://localhost:5154
+@Sudoku.Api_HostAddress = https://localhost:7272
 
-GET {{Sudoku.Api_HostAddress}}/weatherforecast/
+###
+
+POST {{Sudoku.Api_HostAddress}}/api/players
+Accept: application/json
+
+###
+
+GET {{Sudoku.Api_HostAddress}}/api/players/{{$guid}}/games
 Accept: application/json
 
 ###

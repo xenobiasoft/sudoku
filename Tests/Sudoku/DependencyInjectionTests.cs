@@ -18,7 +18,7 @@ public class DependencyInjectionTests
             .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
         var services = new ServiceCollection();
         services
-            .RegisterBlazorGameServices()
+            .RegisterBlazorGameServices(configMgr)
             .RegisterGameServices(configMgr);
         var factory = new TestServiceProviderFactory();
         var serviceProvider = factory.CreateServiceProvider(factory.CreateBuilder(services));

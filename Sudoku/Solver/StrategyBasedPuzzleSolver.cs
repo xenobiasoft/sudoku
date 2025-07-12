@@ -1,4 +1,5 @@
-﻿using XenobiaSoft.Sudoku.Exceptions;
+﻿using XenobiaSoft.Sudoku.Abstractions;
+using XenobiaSoft.Sudoku.Exceptions;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Strategies;
 

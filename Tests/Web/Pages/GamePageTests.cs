@@ -28,7 +28,7 @@ public class GamePageTests : TestContext
         var loadedGameState = new GameStateMemory
         {
             Alias = Alias,
-            Board = PuzzleFactory.GetPuzzle(Level.Easy).GetAllCells(),
+            Board = PuzzleFactory.GetPuzzle(GameDifficulty.Easy).GetAllCells(),
             InvalidMoves = 0,
             PlayDuration = TimeSpan.FromMinutes(10),
             PuzzleId = PuzzleId,

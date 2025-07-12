@@ -21,7 +21,7 @@ public class NewPageTests : TestContext
         var aliasService = new Mock<IAliasService>();
         aliasService.SetupGetAliasAsync(alias);
 
-        _mockSudokuGame.SetNewAsync(alias, PuzzleFactory.GetPuzzle(Level.Easy));
+        _mockSudokuGame.SetNewAsync(alias, PuzzleFactory.GetPuzzle(GameDifficulty.Easy));
 
         Services.AddSingleton(_mockGameStateManager.Object);
         Services.AddSingleton(_mockSudokuGame.Object);
@@ -57,7 +57,7 @@ public class NewPageTests : TestContext
     {
         // Arrange
         var navMan = Services.GetRequiredService<FakeNavigationManager>();
-        _mockSudokuGame.SetLoadAsync(PuzzleFactory.GetPuzzle(Level.Easy));
+        _mockSudokuGame.SetLoadAsync(PuzzleFactory.GetPuzzle(GameDifficulty.Easy));
 
         // Act
         RenderComponent<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));

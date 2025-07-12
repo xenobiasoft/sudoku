@@ -1,7 +1,7 @@
 ﻿using DepenMock.XUnit;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
-using XenobiaSoft.Sudoku.GameState;
+using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.Solver;
 using XenobiaSoft.Sudoku.Strategies;
 

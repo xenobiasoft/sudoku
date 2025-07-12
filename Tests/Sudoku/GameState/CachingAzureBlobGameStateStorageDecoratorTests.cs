@@ -2,6 +2,7 @@ using DepenMock.XUnit;
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Storage.Azure.GameState.Decorators;
 
@@ -123,7 +124,7 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
         await sut.UndoAsync(Alias, PuzzleId);
 
         // Assert
-        _mockDecoratedStorage.VerifyUndoAsyncCalled(Alias, PuzzleId, Times.Once);
+        MockGameStateStorageExtensions.VerifyUndoAsyncCalled(_mockDecoratedStorage, Alias, PuzzleId, Times.Once);
     }
 
     [Fact]

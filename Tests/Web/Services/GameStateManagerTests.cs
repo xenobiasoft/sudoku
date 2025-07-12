@@ -2,6 +2,7 @@
 using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
 using UnitTests.Helpers.Mocks;
+using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Web.Services;
@@ -180,7 +181,7 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameStateManager, IGa
         await sut.UndoGameAsync(Alias, GameId);
 
         // Assert
-        _mockGameStateStorage.VerifyUndoAsyncCalled(Alias, GameId, Times.Once);
+        MockGameStateStorageExtensions.VerifyUndoAsyncCalled(_mockGameStateStorage, Alias, GameId, Times.Once);
     }
 
     [Fact]
@@ -198,6 +199,6 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameStateManager, IGa
         await sut.UndoGameAsync(Alias, GameId);
 
         // Assert
-        _mockGameStateStorage.VerifyUndoAsyncCalled(Alias, GameId, Times.Never);
+        MockGameStateStorageExtensions.VerifyUndoAsyncCalled(_mockGameStateStorage, Alias, GameId, Times.Never);
     }
 }

@@ -1,4 +1,5 @@
-﻿using XenobiaSoft.Sudoku.GameState;
+﻿using XenobiaSoft.Sudoku.Abstractions;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Helpers.Mocks;
 

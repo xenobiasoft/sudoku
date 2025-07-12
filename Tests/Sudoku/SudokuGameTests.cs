@@ -2,8 +2,8 @@
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.Generator;
 
 namespace UnitTests.Sudoku;
 
@@ -48,21 +48,21 @@ public class SudokuGameTests : BaseTestByAbstraction<SudokuGame, ISudokuGame>
         var sut = ResolveSut();
 
         // Act
-        await sut.NewGameAsync(Alias, Level.Easy);
+        await sut.NewGameAsync(Alias, GameDifficulty.Easy);
 
         // Assert
-        mockPuzzleGenerator.Verify(x => x.Generate(It.IsAny<Level>()), Times.Once);
+        mockPuzzleGenerator.Verify(x => x.GenerateAsync(It.IsAny<GameDifficulty>()), Times.Once);
     }
 
     [Fact]
     public async Task NewGameAsync_ReturnsGameState()
     {
         // Arrange
-        Container.ResolveMock<IPuzzleGenerator>().SetupGenerate(PuzzleFactory.GetPuzzle(Level.Easy));
+        Container.ResolveMock<IPuzzleGenerator>().SetupGenerate(PuzzleFactory.GetPuzzle(GameDifficulty.Easy));
         var sut = ResolveSut();
 
         // Act
-        var gameState = await sut.NewGameAsync(Alias, Level.Easy);
+        var gameState = await sut.NewGameAsync(Alias, GameDifficulty.Easy);
 
         // Assert
         gameState.VerifyNewGameState();

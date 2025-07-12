@@ -1,13 +1,13 @@
-﻿using XenobiaSoft.Sudoku.GameState;
-using XenobiaSoft.Sudoku.Generator;
+﻿using XenobiaSoft.Sudoku.Abstractions;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace XenobiaSoft.Sudoku;
 
 public class SudokuGame(IPuzzleGenerator puzzleGenerator, IGameStateStorage gameStateStorage) : ISudokuGame
 {
-    public async Task<GameStateMemory> NewGameAsync(string alias, Level level)
+    public async Task<GameStateMemory> NewGameAsync(string alias, GameDifficulty difficulty)
     {
-        var puzzle = await puzzleGenerator.Generate(level).ConfigureAwait(false);
+        var puzzle = await puzzleGenerator.GenerateAsync(difficulty).ConfigureAwait(false);
 
         var gameState = new GameStateMemory
         {

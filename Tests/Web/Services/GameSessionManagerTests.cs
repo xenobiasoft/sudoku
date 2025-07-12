@@ -99,7 +99,7 @@ public class GameSessionManagerTests : BaseTestByAbstraction<GameSessionManager,
         var initialGameState = new GameStateMemory
         {
             PuzzleId = "puzzle-id",
-            Board = PuzzleFactory.GetPuzzle(Level.Easy).GetAllCells()
+            Board = PuzzleFactory.GetPuzzle(GameDifficulty.Easy).GetAllCells()
         };
         var sut = ResolveSut();
         await sut.StartNewSession(Container.Create<GameStateMemory>());
@@ -169,7 +169,7 @@ public class GameSessionManagerTests : BaseTestByAbstraction<GameSessionManager,
         var puzzleId = "puzzle1";
         var gameState = Container.Build<GameStateMemory>()
             .With(g => g.PuzzleId, puzzleId)
-            .With(g => g.Board, PuzzleFactory.GetPuzzle(Level.Easy).GetAllCells())
+            .With(g => g.Board, PuzzleFactory.GetPuzzle(GameDifficulty.Easy).GetAllCells())
             .Create();
         var sut = ResolveSut();
 

@@ -1,6 +1,6 @@
 ﻿namespace XenobiaSoft.Sudoku;
 
-public enum Level
+public enum GameDifficulty
 {
 	Easy = 1,
 	Medium = 2,
