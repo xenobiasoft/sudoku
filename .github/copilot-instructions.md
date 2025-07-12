@@ -132,35 +132,34 @@ public class AzureBlobGameRepository : IGameRepository
 - **Mocking**: Use mocks for external dependencies
 - **Single Assert**: Only have one assert per test
 
-The unit tests use the library [DepenMock](https://github.com/xenobiasoft/depenmock). All test classes should inherit from BaseTestByAbstraction, if the **sut** implements an interface or inherits from a base class. Otherwise, the test class should inherit from BaseTestByType. The **sut** should be resolved using the method `ResolveSut()`.
+The unit tests use the library [DepenMock](https://github.com/xenobiasoft/depenmock). All test classes should inherit from BaseTestByAbstraction, if the **sut** implements an interface or inherits from a base class. Otherwise, the test class should inherit from BaseTestByType. The **sut** should be resolved using the method `ResolveSut()`. All mocks should be resolved in a setup method and added as a private class variable using the method `Container.ResolveMock<>()`.
 
 ```csharp
 [Test]
 public void MakeMove_ValidMove_RaisesEvent()
 {
     // Arrange
-    var game = SudokuGame.Create("player1", GameDifficulty.Easy);
-    var initialEventCount = game.DomainEvents.Count;
+    var sut = ResolveSut();
+    var initialEventCount = sut.DomainEvents.Count;
 
     // Act
-    game.MakeMove(0, 0, 5);
+    sut.MakeMove(0, 0, 5);
 
     // Assert
-    game.DomainEvents.Count.Should().Be(initialEventCount + 1);
+    sut.DomainEvents.Count.Should().Be(initialEventCount + 1);
 }
 
 [Test]
 public void MakeMove_ValidMove_UpdatesCell()
 {
     // Arrange
-    var game = SudokuGame.Create("player1", GameDifficulty.Easy);
-    var initialEventCount = game.DomainEvents.Count;
+    var sut = ResolveSut();
 
     // Act
-    game.MakeMove(0, 0, 5);
+    sut.MakeMove(0, 0, 5);
 
     // Assert
-    game.Cells[0, 0].Value.Should().Be(5);
+    sut.Cells[0, 0].Value.Should().Be(5);
 }
 ```
 
