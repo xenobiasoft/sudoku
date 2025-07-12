@@ -22,16 +22,16 @@ public class GameService(IPersistentGameStateStorage storage) : IGameService
 
     public Task<GameStateMemory> ResetGameAsync(string alias, string gameId)
     {
-        throw new NotImplementedException();
+        return storage.ResetAsync(alias, gameId);
     }
 
     public Task SaveGameAsync(GameStateMemory gameState)
     {
-        throw new NotImplementedException();
+        return storage.SaveAsync(gameState);
     }
 
     public Task<GameStateMemory> UndoGameAsync(string alias, string gameId)
     {
-        throw new NotImplementedException();
+        return storage.UndoAsync(alias, gameId);
     }
 }

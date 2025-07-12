@@ -1,6 +1,7 @@
 ﻿using DepenMock.XUnit;
 using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku.Abstractions;
+using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Services;
 
 namespace UnitTests.Sudoku.Services;
@@ -48,5 +49,38 @@ public class GameServiceTests : BaseTestByAbstraction<GameService, IGameService>
 
 		// Assert
         _mockPersistentGameStateStorage.VerifyLoadAllAsyncCalled(_alias, Times.Once);
+    }
+
+    [Fact]
+    public async Task ResetGameAsync_CallsStorageService_ResetAsync()
+    {
+        // Act
+        await _sut.ResetGameAsync(_alias, _gameId);
+
+        // Assert
+        _mockPersistentGameStateStorage.VerifyResetGameAsyncCalled(_alias, _gameId, Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveGameAsync_CallsStorageService_SaveGameAsync()
+    {
+        // Arrange
+        var gameState = Container.Create<GameStateMemory>();
+
+        // Act
+        await _sut.SaveGameAsync(gameState);
+
+        // Assert
+        _mockPersistentGameStateStorage.VerifySaveGameAsyncCalled(gameState, Times.Once);
+    }
+
+    [Fact]
+    public async Task UndoGameAsync_CallsStorageService_UndoGameAsync()
+    {
+        // Act
+        await _sut.UndoGameAsync(_alias, _gameId);
+
+        // Assert
+        _mockPersistentGameStateStorage.VerifyUndoAsyncCalled(_alias, _gameId, Times.Once);
     }
 }

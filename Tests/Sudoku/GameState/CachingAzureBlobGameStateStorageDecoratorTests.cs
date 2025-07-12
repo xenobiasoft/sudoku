@@ -124,7 +124,7 @@ public class CachingAzureBlobGameStateStorageDecoratorTests : BaseTestByAbstract
         await sut.UndoAsync(Alias, PuzzleId);
 
         // Assert
-        _mockDecoratedStorage.VerifyUndoAsyncCalled(Alias, PuzzleId, Times.Once);
+        MockGameStateStorageExtensions.VerifyUndoAsyncCalled(_mockDecoratedStorage, Alias, PuzzleId, Times.Once);
     }
 
     [Fact]

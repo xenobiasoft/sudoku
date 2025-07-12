@@ -181,7 +181,7 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameStateManager, IGa
         await sut.UndoGameAsync(Alias, GameId);
 
         // Assert
-        _mockGameStateStorage.VerifyUndoAsyncCalled(Alias, GameId, Times.Once);
+        MockGameStateStorageExtensions.VerifyUndoAsyncCalled(_mockGameStateStorage, Alias, GameId, Times.Once);
     }
 
     [Fact]
@@ -199,6 +199,6 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameStateManager, IGa
         await sut.UndoGameAsync(Alias, GameId);
 
         // Assert
-        _mockGameStateStorage.VerifyUndoAsyncCalled(Alias, GameId, Times.Never);
+        MockGameStateStorageExtensions.VerifyUndoAsyncCalled(_mockGameStateStorage, Alias, GameId, Times.Never);
     }
 }

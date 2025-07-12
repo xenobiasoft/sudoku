@@ -18,7 +18,7 @@ namespace Sudoku.Api.Controllers
         {
             var alias = await playerService.CreateNewAsync();
 
-            return CreatedAtAction(nameof(PostAsync), new { alias });
+            return Created("api/players", alias);
         }
     }
 }
