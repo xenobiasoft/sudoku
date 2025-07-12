@@ -91,12 +91,14 @@ public class SudokuPuzzle
         return true;
     }
 
+    private const int MinimumCluesForUniqueSolution = 17; // Based on Sudoku rules, 17 is the minimum number of clues required for a puzzle to have a unique solution.
+
     public bool HasUniqueSolution()
     {
         // This is a simplified check - in a real implementation, you'd want a more sophisticated solver
         // For now, we'll assume that puzzles with a reasonable number of fixed cells have unique solutions
         var fixedCells = _cells.Count(c => c.IsFixed);
-        return fixedCells >= 17; // Minimum number of clues for a unique solution
+        return fixedCells >= MinimumCluesForUniqueSolution;
     }
 
     public int GetFixedCellCount() => _cells.Count(c => c.IsFixed);
