@@ -84,7 +84,7 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
 
         for (var i = 0; i < 4; i++)
         {
-            await sut.SaveAsync(PuzzleFactory.GetPuzzle(Level.Easy).ToGameState());
+            await sut.SaveAsync(PuzzleFactory.GetPuzzle(GameDifficulty.Easy).ToGameState());
         }
 
         // Act
@@ -117,8 +117,8 @@ public class InMemoryGameStateStorageTests : BaseTestByAbstraction<InMemoryGameS
     public async Task UndoAsync_ShouldReturnLastGameStateAndRemoveIt()
     {
         // Arrange
-        var gameState1 = PuzzleFactory.GetPuzzle(Level.Easy).ToGameState();
-        var gameState2 = PuzzleFactory.GetPuzzle(Level.Easy).ToGameState();
+        var gameState1 = PuzzleFactory.GetPuzzle(GameDifficulty.Easy).ToGameState();
+        var gameState2 = PuzzleFactory.GetPuzzle(GameDifficulty.Easy).ToGameState();
         var sut = ResolveSut();
 
         await sut.SaveAsync(gameState1);

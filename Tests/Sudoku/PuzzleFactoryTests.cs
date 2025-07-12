@@ -122,14 +122,14 @@ public class PuzzleFactoryTests
     }
 
     [Theory]
-    [InlineData(Level.Easy)]
-    [InlineData(Level.Medium)]
-    [InlineData(Level.Hard)]
-    [InlineData(Level.ExtremelyHard)]
-    public void IsValid_WhenGivenValidPuzzle_ReturnsTrue(Level level)
+    [InlineData(GameDifficulty.Easy)]
+    [InlineData(GameDifficulty.Medium)]
+    [InlineData(GameDifficulty.Hard)]
+    [InlineData(GameDifficulty.ExtremelyHard)]
+    public void IsValid_WhenGivenValidPuzzle_ReturnsTrue(GameDifficulty difficulty)
     {
         // Arrange
-        var puzzle = PuzzleFactory.GetPuzzle(level);
+        var puzzle = PuzzleFactory.GetPuzzle(difficulty);
 
         // Act
         var isValid = puzzle.IsValid();
@@ -180,7 +180,7 @@ public class PuzzleFactoryTests
             { [2, 3], [2, 7, 8], [2, 3, 7], [], [], [], [3, 6], [3], [] },
             { [1, 2, 3], [1, 2, 4, 5], [1, 2, 3, 4, 5], [2, 3, 5, 6], [], [2, 6], [1, 3, 4, 6], [], [] }
         };
-        var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+        var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
 
         // Act
         puzzle.PopulatePossibleValues();
@@ -193,7 +193,7 @@ public class PuzzleFactoryTests
     public void SetCellWithFewestPossibleValues_FindsCellWithFewestPossibleValues_AndSetsValueBasedOnOneOfThoseValues()
     {
         // Arrange
-        var puzzle = PuzzleFactory.GetPuzzle(Level.ExtremelyHard);
+        var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.ExtremelyHard);
         puzzle.PopulatePossibleValues();
         var cell = puzzle.FindCellWithFewestPossibleValues();
         var possibleValues = cell
@@ -212,7 +212,7 @@ public class PuzzleFactoryTests
     public void Validate_WhenInvalidNumberIsEntered_ReturnsTheConflictingCells()
     {
         // Arrange
-        var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+        var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
         puzzle.SetCell(0, 2, 5);
 
         // Act

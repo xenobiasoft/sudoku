@@ -1,10 +1,20 @@
 ﻿using XenobiaSoft.Sudoku.Abstractions;
+using XenobiaSoft.Sudoku.Extensions;
 using XenobiaSoft.Sudoku.GameState;
 
 namespace XenobiaSoft.Sudoku.Services;
 
-public class GameService(IPersistentGameStateStorage storage) : IGameService
+public class GameService(IPersistentGameStateStorage storage, IPuzzleGenerator puzzleGenerator) : IGameService
 {
+    public async Task<string> CreateGameAsync(string alias, GameDifficulty difficulty)
+    {
+        var puzzle = await puzzleGenerator.GenerateAsync(difficulty);
+
+        await storage.SaveAsync(puzzle.ToGameState());
+
+        return puzzle.PuzzleId;
+    }
+
     public Task DeleteGameAsync(string alias, string gameId)
     {
         return storage.DeleteAsync(alias, gameId);

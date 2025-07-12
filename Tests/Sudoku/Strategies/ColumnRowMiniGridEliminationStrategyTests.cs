@@ -11,7 +11,7 @@ public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<C
 	public void SolvePuzzle_WhenOnlyOnePossibleValue_ThenValueEqualsThatNumber()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
 		var sut = ResolveSut();
 
 		// Act
@@ -25,7 +25,7 @@ public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<C
 	public void SolvePuzzle_WhenACellValueIsSet_ReturnsTrue()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
 		var sut = ResolveSut();
 
 		// Act
@@ -39,7 +39,7 @@ public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<C
 	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsScoreOfZero()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.ExtremelyHard);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.ExtremelyHard);
 		var sut = ResolveSut();
 
 		// Act

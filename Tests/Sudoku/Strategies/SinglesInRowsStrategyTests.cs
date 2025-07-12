@@ -11,7 +11,7 @@ public class SinglesInRowsStrategyTests : BaseTestByAbstraction<SinglesInRowsStr
 	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInRow_SetValueToThatNumber()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
 		var sut = ResolveSut();
 
 		// Act
@@ -25,7 +25,7 @@ public class SinglesInRowsStrategyTests : BaseTestByAbstraction<SinglesInRowsStr
 	public void SolvePuzzle_WhenACellValueIsSet_ReturnsTrue()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
 		var sut = ResolveSut();
 
 		// Act

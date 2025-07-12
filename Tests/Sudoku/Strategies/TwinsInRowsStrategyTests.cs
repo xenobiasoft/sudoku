@@ -11,7 +11,7 @@ public class TwinsInRowsStrategyTests : BaseTestByAbstraction<TwinsInRowsStrateg
 	public void SolvePuzzle_WhenTwoCellsHaveSamePossibleValuesWithLengthOfTwoInRow_ThenSetAsTwins()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Medium);
 		var sut = ResolveSut();
 
 		// Act
@@ -29,7 +29,7 @@ public class TwinsInRowsStrategyTests : BaseTestByAbstraction<TwinsInRowsStrateg
 	public void SolvePuzzle_WhenTwinsAreFoundInRow_RemovesTwinsNumbersFromOtherCells()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Medium);
 		var sut = ResolveSut();
 
 		// Act
@@ -48,7 +48,7 @@ public class TwinsInRowsStrategyTests : BaseTestByAbstraction<TwinsInRowsStrateg
 	public void SolvePuzzle_WhenACellValueIsSet_ReturnsTrue()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Medium);
 		var sut = ResolveSut();
 
 		// Act
@@ -76,7 +76,7 @@ public class TwinsInRowsStrategyTests : BaseTestByAbstraction<TwinsInRowsStrateg
 	public void SolvePuzzle_WhenNonTripletPossibleValuesIsEmpty_ThrowsException()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
 		puzzle.GetCell(4, 2).Value = 7;
 		var sut = ResolveSut();
 

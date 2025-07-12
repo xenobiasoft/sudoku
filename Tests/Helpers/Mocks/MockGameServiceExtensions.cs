@@ -1,4 +1,5 @@
-﻿using XenobiaSoft.Sudoku.Abstractions;
+﻿using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Helpers.Mocks;
@@ -13,6 +14,11 @@ public static class MockGameServiceExtensions
     public static void SetUpReturnedGames(this Mock<IGameService> mock, IEnumerable<GameStateMemory> games)
     {
         mock.Setup(x => x.LoadGamesAsync(It.IsAny<string>())).ReturnsAsync(games);
+    }
+
+    public static void VerifyCreateGameAsyncCalled(this Mock<IGameService> mock, string alias, GameDifficulty difficulty, Func<Times> times)
+    {
+        mock.Verify(x => x.CreateGameAsync(alias, difficulty), times);
     }
 
     public static void VerifyDeleteGameAsyncCalled(this Mock<IGameService> mock, string alias, string gameId, Func<Times> times)

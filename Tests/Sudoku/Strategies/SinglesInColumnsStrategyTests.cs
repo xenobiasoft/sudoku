@@ -11,7 +11,7 @@ public class SinglesInColumnsStrategyTests : BaseTestByAbstraction<SinglesInColu
 	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInColumn_SetValueToThatNumber()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
 		var sut = ResolveSut();
 
 		// Act
@@ -25,7 +25,7 @@ public class SinglesInColumnsStrategyTests : BaseTestByAbstraction<SinglesInColu
 	public void SolvePuzzle_WhenCellValueIsSet_ReturnsTrue()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
 		var sut = ResolveSut();
 
 		// Act
@@ -39,7 +39,7 @@ public class SinglesInColumnsStrategyTests : BaseTestByAbstraction<SinglesInColu
 	public void SolvePuzzle_WhenCellValueIsSet_RemovesThatValueFromColumnCellsPossibleValues()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
 		var loneRangerCell = puzzle.GetCell(6, 0);
 		var sut = ResolveSut();
 

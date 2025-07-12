@@ -26,7 +26,7 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
 		var sut = ResolveSut();
 
 		// Act
-		var puzzle = await sut.GenerateEmptyPuzzle();
+		var puzzle = await sut.GenerateEmptyPuzzleAsync();
 
 		// Assert
         puzzle.AssertAllCellsEmpty();
@@ -40,24 +40,24 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
 		var sut = ResolveSut();
 
 		// Act
-		await sut.Generate(Level.Easy);
+		await sut.GenerateAsync(GameDifficulty.Easy);
 
 		// Assert
         puzzleSolver.VerifyCallsSolvePuzzle(Times.Once);
     }
 
 	[Theory]
-	[InlineData(Level.Easy, 40, 45)]
-	[InlineData(Level.Medium, 46, 49)]
-	[InlineData(Level.Hard, 50, 53)]
-	[InlineData(Level.ExtremelyHard, 54, 58)]
-	public async Task Generate_RemovesRandomCellsFromSolvedPuzzle(Level level, int minEmptyCells, int maxEmptyCells)
+	[InlineData(GameDifficulty.Easy, 40, 45)]
+	[InlineData(GameDifficulty.Medium, 46, 49)]
+	[InlineData(GameDifficulty.Hard, 50, 53)]
+	[InlineData(GameDifficulty.ExtremelyHard, 54, 58)]
+	public async Task Generate_RemovesRandomCellsFromSolvedPuzzle(GameDifficulty difficulty, int minEmptyCells, int maxEmptyCells)
 	{
 		// Arrange
 		var sut = ResolveSut();
 
 		// Act
-		var puzzle = await sut.Generate(level);
+		var puzzle = await sut.GenerateAsync(difficulty);
 
 		// Assert
         puzzle.AssertHasExpectedNumberEmptyCells(minEmptyCells, maxEmptyCells);
@@ -70,7 +70,7 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
         var sut = ResolveSut();
 
         // Act
-        var puzzle = await sut.Generate(Level.Easy);
+        var puzzle = await sut.GenerateAsync(GameDifficulty.Easy);
 
         // Assert
         puzzle.AssertPopulatedCellsLocked();
@@ -85,7 +85,7 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
         var sut = ResolveSut();
 
         // Act
-        await sut.Generate(Level.Easy);
+        await sut.GenerateAsync(GameDifficulty.Easy);
 
         // Assert
         mockSolver.VerifyRetriesPuzzleGeneration();

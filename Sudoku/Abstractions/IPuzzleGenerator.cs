@@ -2,6 +2,6 @@
 
 public interface IPuzzleGenerator
 {
-	Task<ISudokuPuzzle> Generate(Level level);
-	Task<ISudokuPuzzle> GenerateEmptyPuzzle();
+	Task<ISudokuPuzzle> GenerateAsync(GameDifficulty difficulty);
+	Task<ISudokuPuzzle> GenerateEmptyPuzzleAsync();
 }

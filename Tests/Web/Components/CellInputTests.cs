@@ -152,7 +152,7 @@ public class CellInputTests : TestContext
         var calledArgs = (CellChangedEventArgs)null!;
         var cellInput = RenderComponent<CellInput>(x => x
             .Add(c => c.Cell, new Cell(1, 2))
-            .Add(c => c.Puzzle, PuzzleFactory.GetPuzzle(Level.Easy))
+            .Add(c => c.Puzzle, PuzzleFactory.GetPuzzle(GameDifficulty.Easy))
             .Add(c => c.OnCellChanged, args => calledArgs = args)
             .Add(c => c.IsPencilMode, false));
 
@@ -176,7 +176,7 @@ public class CellInputTests : TestContext
         var calledArgs = (CellPossibleValueChangedEventArgs)null!;
         var cellInput = RenderComponent<CellInput>(x => x
             .Add(c => c.Cell, new Cell(1, 2))
-            .Add(c => c.Puzzle, PuzzleFactory.GetPuzzle(Level.Easy))
+            .Add(c => c.Puzzle, PuzzleFactory.GetPuzzle(GameDifficulty.Easy))
             .Add(c => c.OnPossibleValueChanged, args => calledArgs = args)
             .Add(c => c.IsPencilMode, true));
 

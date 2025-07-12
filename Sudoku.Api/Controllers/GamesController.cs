@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 
@@ -8,6 +9,29 @@ namespace Sudoku.Api.Controllers;
 [ApiController]
 public class GamesController(IGameService gameService) : ControllerBase
 {
+    /// <summary>
+    /// Creates a new game for the specified player with the given difficulty.
+    /// </summary>
+    /// <param name="alias">The alias of the player. Cannot be null or empty.</param>
+    /// <param name="difficulty">The difficulty level of the game.</param>
+    /// <returns>An <see cref="IActionResult"/> indicating the result of the operation. Returns <see
+    /// cref="StatusCodes.Status201Created"/> if the creation is successful, or <see
+    /// cref="StatusCodes.Status400BadRequest"/> if the alias is null or empty.</returns>
+    [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<string>> CreateAsync(string alias, [FromQuery] GameDifficulty difficulty)
+    {
+        if (string.IsNullOrWhiteSpace(alias))
+        {
+            return BadRequest("Player alias cannot be null or empty.");
+        }
+
+        var gameId = await gameService.CreateGameAsync(alias, difficulty);
+        
+        return CreatedAtAction(nameof(GetAsync), new { alias, gameId }, null);
+    }
+
     /// <summary>
     /// Deletes the games associated with the specified player alias.
     /// </summary>
@@ -38,7 +62,7 @@ public class GamesController(IGameService gameService) : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<GameStateMemory>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<IEnumerable<GameStateMemory>>> GetAsync(string alias)
+    public async Task<ActionResult<IEnumerable<GameStateMemory>>> GetAllAsync(string alias)
     {
         if (string.IsNullOrWhiteSpace(alias))
         {

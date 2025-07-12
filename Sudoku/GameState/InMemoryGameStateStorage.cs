@@ -8,6 +8,11 @@ public class InMemoryGameStateStorage : IInMemoryGameStateStorage
 
     public GameStateMemoryType MemoryType => GameStateMemoryType.InMemory;
 
+    public Task<GameStateMemory> CreateAsync(string alias, GameDifficulty difficulty)
+    {
+        throw new NotSupportedException();
+    }
+
     public Task DeleteAsync(string alias, string puzzleId)
     {
         _gameState.Clear();

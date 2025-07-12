@@ -3,6 +3,7 @@ using Sudoku.Api.Controllers;
 using System.Net;
 using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
+using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 
@@ -26,6 +27,39 @@ public class GamesControllerTests : BaseTestByType<GamesController>
 
         _mockGameService.SetUpReturnedGame(_games.First());
         _mockGameService.SetUpReturnedGames(_games);
+    }
+
+    [Fact]
+    public async Task CreateAsync_WhenValidAliasAndDifficulty_ReturnsStatusCode201()
+    {
+        // Act
+        var response = await _sut.CreateAsync(_playerAlias, GameDifficulty.Medium);
+
+        // Assert
+        response.AssertResponseStatusCode(HttpStatusCode.Created);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task CreateAsync_WhenAliasIsNullOrWhitespace_ReturnsStatusCode400(string alias)
+    {
+        // Act
+        var response = await _sut.CreateAsync(alias, GameDifficulty.Medium);
+
+        // Assert
+        response.AssertResponseStatusCode(HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateAsync_WhenValidAliasAndDifficulty_CallsGameServiceWithCorrectParameters()
+    {
+        // Act
+        await _sut.CreateAsync(_playerAlias, GameDifficulty.Medium);
+
+        // Assert
+        _mockGameService.VerifyCreateGameAsyncCalled(_playerAlias, GameDifficulty.Medium, Times.Once);
     }
 
     [Theory]
@@ -76,7 +110,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
     public async Task GetAsync_WhenNoGameId_CallsGameServiceToRetrievePlayerGames()
     {
         // Act
-        await _sut.GetAsync(_playerAlias);
+        await _sut.GetAllAsync(_playerAlias);
 
         // Assert
         _mockGameService.VerifyGetGamesForAliasCalled(_playerAlias, Times.Once);
@@ -98,7 +132,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
     public async Task GetAsync_WhenAliasIsNullOrWhitespace_ReturnsStatusCode400(string alias)
     {
         // Act
-        var response = await _sut.GetAsync(alias);
+        var response = await _sut.GetAllAsync(alias);
 
         // Assert
         response.AssertResponseStatusCode(HttpStatusCode.BadRequest);
@@ -135,7 +169,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         _mockGameService.SetUpReturnedGames([]);
 
         // Act
-        var response = await _sut.GetAsync(_playerAlias);
+        var response = await _sut.GetAllAsync(_playerAlias);
 
         // Assert
         response.AssertResponseReturnEquals([]);
@@ -158,7 +192,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
     public async Task GetAsync_WhenValidAlias_CallsGameService()
     {
         // Act
-        await _sut.GetAsync(_playerAlias);
+        await _sut.GetAllAsync(_playerAlias);
 
         // Assert
         _mockGameService.VerifyGetGamesForAliasCalled(_playerAlias, Times.Once);
@@ -168,7 +202,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
     public async Task GetAsync_WhenValidAlias_ReturnsListOfGames()
     {
         // Act
-        var response = await _sut.GetAsync(_playerAlias);
+        var response = await _sut.GetAllAsync(_playerAlias);
 
         // Assert
         response.AssertResponseReturnEquals(_games);
@@ -188,7 +222,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
     public async Task GetAsync_WhenValidAlias_ReturnsStatusCode200()
     {
         // Act
-        var response = await _sut.GetAsync(_playerAlias);
+        var response = await _sut.GetAllAsync(_playerAlias);
 
         // Assert
         response.AssertResponseStatusCode(HttpStatusCode.OK);

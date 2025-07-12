@@ -5,15 +5,15 @@ namespace UnitTests.Helpers;
 
 public class PuzzleFactory
 {
-	public static ISudokuPuzzle GetPuzzle(Level level, bool rotateGrid = false)
+	public static ISudokuPuzzle GetPuzzle(GameDifficulty difficulty, bool rotateGrid = false)
     {
-		var puzzleValues = level switch
+		var puzzleValues = difficulty switch
 		{
-			Level.Easy => EasyPuzzle,
-			Level.Medium => MediumPuzzle,
-			Level.Hard => HardPuzzle,
-			Level.ExtremelyHard => ExtremePuzzle,
-			_ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
+			GameDifficulty.Easy => EasyPuzzle,
+			GameDifficulty.Medium => MediumPuzzle,
+			GameDifficulty.Hard => HardPuzzle,
+			GameDifficulty.ExtremelyHard => ExtremePuzzle,
+			_ => throw new ArgumentOutOfRangeException(nameof(difficulty), difficulty, null)
 		};
 
 		if (rotateGrid)

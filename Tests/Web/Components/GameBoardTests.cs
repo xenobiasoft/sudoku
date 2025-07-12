@@ -55,7 +55,7 @@ public class GameBoardTests : TestContext
         CellChangedEventArgs? calledArgs = null;
         var gameBoard = RenderComponent<GameBoard>(x => x
             .Add(c => c.OnCellChanged, args => calledArgs = args)
-            .Add(c => c.Puzzle, PuzzleFactory.GetPuzzle(Level.Easy)));
+            .Add(c => c.Puzzle, PuzzleFactory.GetPuzzle(GameDifficulty.Easy)));
         var cellInput = gameBoard.FindComponents<CellInput>().First();
 
         // Act

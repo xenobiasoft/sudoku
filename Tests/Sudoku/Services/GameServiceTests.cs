@@ -1,5 +1,6 @@
 ﻿using DepenMock.XUnit;
 using UnitTests.Helpers.Mocks;
+using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 using XenobiaSoft.Sudoku.Services;
@@ -12,13 +13,35 @@ public class GameServiceTests : BaseTestByAbstraction<GameService, IGameService>
     private readonly string _gameId;
     private readonly IGameService _sut;
     private readonly Mock<IPersistentGameStateStorage> _mockPersistentGameStateStorage;
+    private readonly Mock<IPuzzleGenerator> _mockPuzzleGenerator;
 
     public GameServiceTests()
     {
         _alias = Container.Create<string>();
         _gameId = Container.Create<string>();
         _mockPersistentGameStateStorage = Container.ResolveMock<IPersistentGameStateStorage>();
+        _mockPuzzleGenerator = Container.ResolveMock<IPuzzleGenerator>();
         _sut = ResolveSut();
+    }
+
+    [Fact]
+    public async Task CreateGameAsync_CallsStorageService_SaveGameAsync()
+    {
+        // Act
+        await _sut.CreateGameAsync(_alias, GameDifficulty.Easy);
+
+        // Assert
+        _mockPersistentGameStateStorage.VerifySaveAsyncCalled(Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateGameAsync_CallsPuzzleGenerator_Generate()
+    {
+        // Act
+        await _sut.CreateGameAsync(_alias, GameDifficulty.Easy);
+
+        // Assert
+        _mockPuzzleGenerator.VerifyGenerateCalled(GameDifficulty.Easy, Times.Once);
     }
 
     [Fact]

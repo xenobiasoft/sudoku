@@ -11,7 +11,7 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 	public void SolvePuzzle_WhenTwoCellsHaveSamePossibleValuesWithLengthOfTwoInMiniGrid_ThenSetAsTwins()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Medium);
 		var sut = ResolveSut();
 
 		// Act
@@ -29,7 +29,7 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 	public void SolvePuzzle_WhenTwinsAreFoundInMiniGrid_RemovesTwinsNumbersFromOtherCells()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Medium);
 		var sut = ResolveSut();
 		var twinCells = new List<Cell>
 		{
@@ -52,7 +52,7 @@ public class TwinsInMiniGridsStrategyTests : BaseTestByAbstraction<TwinsInMiniGr
 	public void SolvePuzzle_WhenACellValueIsSet_ReturnsTrue()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(Level.Medium);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Medium);
 		var sut = ResolveSut();
 
 		// Act

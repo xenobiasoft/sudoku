@@ -124,14 +124,14 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
     }
 
     [Theory]
-    [InlineData(Level.Easy)]
-    [InlineData(Level.Medium)]
-    [InlineData(Level.Hard)]
-    [InlineData(Level.ExtremelyHard)]
-    public void IsValid_WhenGivenValidPuzzle_ReturnsTrue(Level level)
+    [InlineData(GameDifficulty.Easy)]
+    [InlineData(GameDifficulty.Medium)]
+    [InlineData(GameDifficulty.Hard)]
+    [InlineData(GameDifficulty.ExtremelyHard)]
+    public void IsValid_WhenGivenValidPuzzle_ReturnsTrue(GameDifficulty difficulty)
     {
         // Arrange
-        var sut = PuzzleFactory.GetPuzzle(level);
+        var sut = PuzzleFactory.GetPuzzle(difficulty);
 
         // Act
         var isValid = sut.IsValid();
@@ -170,7 +170,7 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
     public void Load_SetsPuzzleIdOnCurrentPuzzle()
     {
         // Arrange
-        var puzzle = PuzzleFactory.GetPuzzle(Level.Easy);
+        var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
         var sut = ResolveSut();
 
         // Act
@@ -196,7 +196,7 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
             {[2,3], [2,7,8], [2,3,7], [], [], [], [3,6], [3], []},
             { [1,2,3], [1,2,4,5], [1,2,3,4,5], [2,3,5,6], [], [2,6], [1,3,4,6], [], []}
         };
-        var sut = PuzzleFactory.GetPuzzle(Level.Easy);
+        var sut = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
 
         // Act
         sut.PopulatePossibleValues();
@@ -209,7 +209,7 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
     public void SetCellWithFewestPossibleValues_FindsCellWithFewestPossibleValues_AndSetsValueBasedOnOneOfThoseValues()
     {
         // Arrange
-        var sut = PuzzleFactory.GetPuzzle(Level.ExtremelyHard);
+        var sut = PuzzleFactory.GetPuzzle(GameDifficulty.ExtremelyHard);
         sut.PopulatePossibleValues();
         var cell = sut.FindCellWithFewestPossibleValues();
         var possibleValues = cell
@@ -228,7 +228,7 @@ public class SudokuPuzzleTests : BaseTestByAbstraction<SudokuPuzzle, ISudokuPuzz
     public void Validate_WhenInvalidNumberIsEntered_ReturnsTheConflictingCells()
     {
         // Arrange
-        var sut = PuzzleFactory.GetPuzzle(Level.Easy);
+        var sut = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
         sut.SetCell(0, 2, 5);
 
         // Act
