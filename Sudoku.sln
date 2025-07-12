@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.AppHost", "Sudoku.Ap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.ServiceDefaults", "Sudoku.ServiceDefaults\Sudoku.ServiceDefaults.csproj", "{2B5F2794-B11C-7F6D-BA4E-3FD968E80C96}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Domain", "Sudoku.Domain\Sudoku.Domain.csproj", "{AC320488-135A-4883-9B1B-329DD7482921}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -118,6 +120,18 @@ Global
 		{2B5F2794-B11C-7F6D-BA4E-3FD968E80C96}.Release|x64.Build.0 = Release|Any CPU
 		{2B5F2794-B11C-7F6D-BA4E-3FD968E80C96}.Release|x86.ActiveCfg = Release|Any CPU
 		{2B5F2794-B11C-7F6D-BA4E-3FD968E80C96}.Release|x86.Build.0 = Release|Any CPU
+		{AC320488-135A-4883-9B1B-329DD7482921}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC320488-135A-4883-9B1B-329DD7482921}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC320488-135A-4883-9B1B-329DD7482921}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AC320488-135A-4883-9B1B-329DD7482921}.Debug|x64.Build.0 = Debug|Any CPU
+		{AC320488-135A-4883-9B1B-329DD7482921}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AC320488-135A-4883-9B1B-329DD7482921}.Debug|x86.Build.0 = Debug|Any CPU
+		{AC320488-135A-4883-9B1B-329DD7482921}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC320488-135A-4883-9B1B-329DD7482921}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC320488-135A-4883-9B1B-329DD7482921}.Release|x64.ActiveCfg = Release|Any CPU
+		{AC320488-135A-4883-9B1B-329DD7482921}.Release|x64.Build.0 = Release|Any CPU
+		{AC320488-135A-4883-9B1B-329DD7482921}.Release|x86.ActiveCfg = Release|Any CPU
+		{AC320488-135A-4883-9B1B-329DD7482921}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
