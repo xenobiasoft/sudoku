@@ -7,16 +7,10 @@ using Sudoku.Domain.ValueObjects;
 
 namespace XenobiaSoft.Sudoku.Infrastructure.Repositories;
 
-public class InMemoryGameRepository : IGameRepository
+public class InMemoryGameRepository(ILogger<InMemoryGameRepository> logger) : IGameRepository, IDisposable
 {
     private readonly Dictionary<GameId, SudokuGame> _games = new();
-    private readonly ILogger<InMemoryGameRepository> _logger;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
-
-    public InMemoryGameRepository(ILogger<InMemoryGameRepository> logger)
-    {
-        _logger = logger;
-    }
 
     public async Task<SudokuGame?> GetByIdAsync(GameId id)
     {
@@ -26,7 +20,7 @@ public class InMemoryGameRepository : IGameRepository
             try
             {
                 _games.TryGetValue(id, out var game);
-                _logger.LogDebug("Retrieved game {GameId} from in-memory storage", id.Value);
+                logger.LogDebug("Retrieved game {GameId} from in-memory storage", id.Value);
                 return game;
             }
             finally
@@ -36,7 +30,7 @@ public class InMemoryGameRepository : IGameRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving game {GameId} from in-memory storage", id.Value);
+            logger.LogError(ex, "Error retrieving game {GameId} from in-memory storage", id.Value);
             throw;
         }
     }
@@ -53,7 +47,7 @@ public class InMemoryGameRepository : IGameRepository
                     .OrderByDescending(g => g.CreatedAt)
                     .ToList();
 
-                _logger.LogDebug("Retrieved {Count} games for player {PlayerAlias} from in-memory storage",
+                logger.LogDebug("Retrieved {Count} games for player {PlayerAlias} from in-memory storage",
                     games.Count, playerAlias.Value);
                 return games;
             }
@@ -64,7 +58,7 @@ public class InMemoryGameRepository : IGameRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving games for player {PlayerAlias} from in-memory storage", playerAlias.Value);
+            logger.LogError(ex, "Error retrieving games for player {PlayerAlias} from in-memory storage", playerAlias.Value);
             throw;
         }
     }
@@ -83,7 +77,7 @@ public class InMemoryGameRepository : IGameRepository
             try
             {
                 _games[game.Id] = game;
-                _logger.LogDebug("Saved game {GameId} to in-memory storage", game.Id.Value);
+                logger.LogDebug("Saved game {GameId} to in-memory storage", game.Id.Value);
             }
             finally
             {
@@ -92,7 +86,7 @@ public class InMemoryGameRepository : IGameRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error saving game {GameId} to in-memory storage", game.Id.Value);
+            logger.LogError(ex, "Error saving game {GameId} to in-memory storage", game.Id.Value);
             throw;
         }
     }
@@ -106,7 +100,7 @@ public class InMemoryGameRepository : IGameRepository
             {
                 if (_games.Remove(id))
                 {
-                    _logger.LogDebug("Deleted game {GameId} from in-memory storage", id.Value);
+                    logger.LogDebug("Deleted game {GameId} from in-memory storage", id.Value);
                 }
             }
             finally
@@ -116,7 +110,7 @@ public class InMemoryGameRepository : IGameRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting game {GameId} from in-memory storage", id.Value);
+            logger.LogError(ex, "Error deleting game {GameId} from in-memory storage", id.Value);
             throw;
         }
     }
@@ -137,7 +131,7 @@ public class InMemoryGameRepository : IGameRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking existence of game {GameId} in in-memory storage", id.Value);
+            logger.LogError(ex, "Error checking existence of game {GameId} in in-memory storage", id.Value);
             throw;
         }
     }
@@ -174,7 +168,7 @@ public class InMemoryGameRepository : IGameRepository
                 }
 
                 var result = query.ToList();
-                _logger.LogDebug("Retrieved {Count} games using specification from in-memory storage", result.Count);
+                logger.LogDebug("Retrieved {Count} games using specification from in-memory storage", result.Count);
                 return result;
             }
             finally
@@ -184,7 +178,7 @@ public class InMemoryGameRepository : IGameRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving games using specification from in-memory storage");
+            logger.LogError(ex, "Error retrieving games using specification from in-memory storage");
             throw;
         }
     }
@@ -218,7 +212,7 @@ public class InMemoryGameRepository : IGameRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error counting games using specification from in-memory storage");
+            logger.LogError(ex, "Error counting games using specification from in-memory storage");
             throw;
         }
     }
@@ -270,7 +264,7 @@ public class InMemoryGameRepository : IGameRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting total games count for player {PlayerAlias} from in-memory storage", playerAlias?.Value);
+            logger.LogError(ex, "Error getting total games count for player {PlayerAlias} from in-memory storage", playerAlias?.Value);
             throw;
         }
     }
@@ -303,7 +297,7 @@ public class InMemoryGameRepository : IGameRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error calculating average completion time for player {PlayerAlias} from in-memory storage", playerAlias?.Value);
+            logger.LogError(ex, "Error calculating average completion time for player {PlayerAlias} from in-memory storage", playerAlias?.Value);
             throw;
         }
     }

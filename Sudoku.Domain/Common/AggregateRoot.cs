@@ -1,5 +1,3 @@
-using Sudoku.Domain.Events;
-
 namespace Sudoku.Domain.Common;
 
 public abstract class AggregateRoot

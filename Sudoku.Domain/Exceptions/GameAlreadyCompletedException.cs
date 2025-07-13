@@ -1,8 +1,3 @@
 namespace Sudoku.Domain.Exceptions;
 
-public class GameAlreadyCompletedException : DomainException
-{
-    public GameAlreadyCompletedException(string message) : base(message)
-    {
-    }
-}
+public class GameAlreadyCompletedException(string message) : DomainException(message);

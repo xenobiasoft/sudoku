@@ -1,8 +1,3 @@
 namespace Sudoku.Domain.Exceptions;
 
-public class InvalidCellValueException : DomainException
-{
-    public InvalidCellValueException(string message) : base(message)
-    {
-    }
-}
+public class InvalidCellValueException(string message) : DomainException(message);

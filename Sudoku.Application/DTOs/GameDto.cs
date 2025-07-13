@@ -1,5 +1,4 @@
 using Sudoku.Domain.Entities;
-using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Application.DTOs;

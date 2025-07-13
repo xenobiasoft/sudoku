@@ -1,56 +1,38 @@
-using System.Text.Json;
-using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
 using Sudoku.Application.Interfaces;
 using Sudoku.Application.Specifications;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
+using XenobiaSoft.Sudoku.Infrastructure.Services;
 
 namespace XenobiaSoft.Sudoku.Infrastructure.Repositories;
 
-public class AzureBlobGameRepository : IGameRepository
+public class AzureBlobGameRepository(IAzureStorageService storageService, ILogger<AzureBlobGameRepository> logger)
+    : IGameRepository
 {
-    private readonly BlobContainerClient _containerClient;
-    private readonly ILogger<AzureBlobGameRepository> _logger;
-    private readonly JsonSerializerOptions _jsonOptions;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
-
-    public AzureBlobGameRepository(BlobContainerClient containerClient, ILogger<AzureBlobGameRepository> logger)
-    {
-        _containerClient = containerClient;
-        _logger = logger;
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
-        };
-    }
+    private const string ContainerName = "sudoku-games";
 
     public async Task<SudokuGame?> GetByIdAsync(GameId id)
     {
         try
         {
             var blobName = GetBlobName(id);
-            var blobClient = _containerClient.GetBlobClient(blobName);
+            var game = await storageService.LoadAsync<SudokuGame>(ContainerName, blobName);
 
-            if (!await blobClient.ExistsAsync())
+            if (game == null)
             {
-                _logger.LogDebug("Game with ID {GameId} not found", id.Value);
+                logger.LogDebug("Game with ID {GameId} not found", id.Value);
                 return null;
             }
 
-            var response = await blobClient.DownloadAsync();
-            using var streamReader = new StreamReader(response.Value.Content);
-            var json = await streamReader.ReadToEndAsync();
-            var game = JsonSerializer.Deserialize<SudokuGame>(json, _jsonOptions);
-
-            _logger.LogDebug("Retrieved game {GameId} from Azure Blob Storage", id.Value);
+            logger.LogDebug("Retrieved game {GameId} from Azure Blob Storage", id.Value);
             return game;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving game {GameId} from Azure Blob Storage", id.Value);
+            logger.LogError(ex, "Error retrieving game {GameId} from Azure Blob Storage", id.Value);
             throw;
         }
     }
@@ -62,21 +44,21 @@ public class AzureBlobGameRepository : IGameRepository
             var games = new List<SudokuGame>();
             var prefix = $"{playerAlias.Value}/";
 
-            await foreach (var blobItem in _containerClient.GetBlobsAsync(prefix: prefix))
+            await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName, prefix))
             {
-                var game = await LoadGameFromBlobAsync(blobItem.Name);
+                var game = await storageService.LoadAsync<SudokuGame>(ContainerName, blobName);
                 if (game != null)
                 {
                     games.Add(game);
                 }
             }
 
-            _logger.LogDebug("Retrieved {Count} games for player {PlayerAlias}", games.Count, playerAlias.Value);
+            logger.LogDebug("Retrieved {Count} games for player {PlayerAlias}", games.Count, playerAlias.Value);
             return games.OrderByDescending(g => g.CreatedAt);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving games for player {PlayerAlias}", playerAlias.Value);
+            logger.LogError(ex, "Error retrieving games for player {PlayerAlias}", playerAlias.Value);
             throw;
         }
     }
@@ -96,14 +78,9 @@ public class AzureBlobGameRepository : IGameRepository
             try
             {
                 var blobName = GetBlobName(game.Id);
-                var blobClient = _containerClient.GetBlobClient(blobName);
+                await storageService.SaveAsync(ContainerName, blobName, game);
 
-                var json = JsonSerializer.Serialize(game, _jsonOptions);
-                using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
-
-                await blobClient.UploadAsync(stream, overwrite: true);
-
-                _logger.LogDebug("Saved game {GameId} to Azure Blob Storage", game.Id.Value);
+                logger.LogDebug("Saved game {GameId} to Azure Blob Storage", game.Id.Value);
             }
             finally
             {
@@ -112,7 +89,7 @@ public class AzureBlobGameRepository : IGameRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error saving game {GameId} to Azure Blob Storage", game.Id.Value);
+            logger.LogError(ex, "Error saving game {GameId} to Azure Blob Storage", game.Id.Value);
             throw;
         }
     }
@@ -122,17 +99,12 @@ public class AzureBlobGameRepository : IGameRepository
         try
         {
             var blobName = GetBlobName(id);
-            var blobClient = _containerClient.GetBlobClient(blobName);
-
-            if (await blobClient.ExistsAsync())
-            {
-                await blobClient.DeleteAsync();
-                _logger.LogDebug("Deleted game {GameId} from Azure Blob Storage", id.Value);
-            }
+            await storageService.DeleteAsync(ContainerName, blobName);
+            logger.LogDebug("Deleted game {GameId} from Azure Blob Storage", id.Value);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting game {GameId} from Azure Blob Storage", id.Value);
+            logger.LogError(ex, "Error deleting game {GameId} from Azure Blob Storage", id.Value);
             throw;
         }
     }
@@ -142,12 +114,11 @@ public class AzureBlobGameRepository : IGameRepository
         try
         {
             var blobName = GetBlobName(id);
-            var blobClient = _containerClient.GetBlobClient(blobName);
-            return await blobClient.ExistsAsync();
+            return await storageService.ExistsAsync(ContainerName, blobName);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking existence of game {GameId}", id.Value);
+            logger.LogError(ex, "Error checking existence of game {GameId}", id.Value);
             throw;
         }
     }
@@ -182,12 +153,12 @@ public class AzureBlobGameRepository : IGameRepository
             }
 
             var result = query.ToList();
-            _logger.LogDebug("Retrieved {Count} games using specification", result.Count);
+            logger.LogDebug("Retrieved {Count} games using specification", result.Count);
             return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error retrieving games using specification");
+            logger.LogError(ex, "Error retrieving games using specification");
             throw;
         }
     }
@@ -214,7 +185,7 @@ public class AzureBlobGameRepository : IGameRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error counting games using specification");
+            logger.LogError(ex, "Error counting games using specification");
             throw;
         }
     }
@@ -259,7 +230,7 @@ public class AzureBlobGameRepository : IGameRepository
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error getting total games count for player {PlayerAlias}", playerAlias?.Value);
+            logger.LogError(ex, "Error getting total games count for player {PlayerAlias}", playerAlias?.Value);
             throw;
         }
     }
@@ -276,7 +247,7 @@ public class AzureBlobGameRepository : IGameRepository
         {
             var completedGames = await GetCompletedGamesAsync(playerAlias);
             var gamesWithCompletionTime = completedGames
-                .Where(g => g.CompletedAt.HasValue)
+                .Where(g => g.CompletedAt.HasValue && g.StartedAt.HasValue)
                 .ToList();
 
             if (!gamesWithCompletionTime.Any())
@@ -284,15 +255,14 @@ public class AzureBlobGameRepository : IGameRepository
                 return TimeSpan.Zero;
             }
 
-            var totalTime = gamesWithCompletionTime
-                .Sum(g => (g.CompletedAt!.Value - g.CreatedAt).TotalMilliseconds);
-
+            var totalTime = gamesWithCompletionTime.Sum(g =>
+                (g.CompletedAt!.Value - g.StartedAt!.Value).TotalMilliseconds);
             var averageMilliseconds = totalTime / gamesWithCompletionTime.Count;
             return TimeSpan.FromMilliseconds(averageMilliseconds);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error calculating average completion time for player {PlayerAlias}", playerAlias?.Value);
+            logger.LogError(ex, "Error calculating average completion time for player {PlayerAlias}", playerAlias?.Value);
             throw;
         }
     }
@@ -301,9 +271,9 @@ public class AzureBlobGameRepository : IGameRepository
     {
         var games = new List<SudokuGame>();
 
-        await foreach (var blobItem in _containerClient.GetBlobsAsync())
+        await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName))
         {
-            var game = await LoadGameFromBlobAsync(blobItem.Name);
+            var game = await storageService.LoadAsync<SudokuGame>(ContainerName, blobName);
             if (game != null)
             {
                 games.Add(game);
@@ -311,30 +281,6 @@ public class AzureBlobGameRepository : IGameRepository
         }
 
         return games;
-    }
-
-    private async Task<SudokuGame?> LoadGameFromBlobAsync(string blobName)
-    {
-        try
-        {
-            var blobClient = _containerClient.GetBlobClient(blobName);
-
-            if (!await blobClient.ExistsAsync())
-            {
-                return null;
-            }
-
-            var response = await blobClient.DownloadAsync();
-            using var streamReader = new StreamReader(response.Value.Content);
-            var json = await streamReader.ReadToEndAsync();
-
-            return JsonSerializer.Deserialize<SudokuGame>(json, _jsonOptions);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Error loading game from blob {BlobName}", blobName);
-            return null;
-        }
     }
 
     private static string GetBlobName(GameId gameId)

@@ -1,39 +1,28 @@
-using MediatR;
-using Sudoku.Application.Common;
 using Sudoku.Application.Commands;
+using Sudoku.Application.Common;
 using Sudoku.Application.Interfaces;
-using Sudoku.Domain.Entities;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Application.Handlers;
 
-public class StartGameCommandHandler : ICommandHandler<StartGameCommand>
+public class StartGameCommandHandler(IGameRepository gameRepository) : ICommandHandler<StartGameCommand>
 {
-    private readonly IGameRepository _gameRepository;
-
-    public StartGameCommandHandler(IGameRepository gameRepository)
-    {
-        _gameRepository = gameRepository;
-    }
-
     public async Task<Result> Handle(StartGameCommand request, CancellationToken cancellationToken)
     {
         try
         {
-            // Parse the game ID
             var gameId = GameId.Create(request.GameId);
+            var game = await gameRepository.GetByIdAsync(gameId);
 
-            // Get the game
-            var game = await _gameRepository.GetByIdAsync(gameId);
             if (game == null)
+            {
                 return Result.Failure($"Game not found with ID: {request.GameId}");
+            }
 
-            // Start the game
             game.StartGame();
 
-            // Save the updated game
-            await _gameRepository.SaveAsync(game);
+            await gameRepository.SaveAsync(game);
 
             return Result.Success();
         }
