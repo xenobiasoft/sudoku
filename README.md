@@ -1,16 +1,57 @@
 # Sudoku Game
 
-A modern Sudoku game built with Blazor and C#. Features a clean, interactive UI and multiple difficulty levels.
+A modern, full-featured Sudoku game built with Blazor Server and C#, following Clean Architecture and Domain-Driven Design (DDD) principles. The solution is modular, testable, and cloud-ready, featuring a clean interactive UI, multiple difficulty levels, and robust backend logic.
 
-## About the Project
+## Solution Overview
 
-I created this game to practice TDD, learn Blazor, and to understand some of the algorithms for solving Sudoku. The original game was a Windows Forms application written in Visual Basic.NET and was very procedural and not very testable. I decided to rewrite the game in Blazor and C# to make it more accessible and to learn a new technology.
+This solution is organized into several projects:
 
-I refactored the code to be more object-oriented, using some design patterns, and added dependency injection to make it more testable.
+```
+Sudoku.sln
+├── Sudoku.Domain/           # Core domain logic and business rules
+├── Sudoku.Application/      # Application use cases and orchestration
+├── Sudoku.Infrastructure/   # Infrastructure (storage, external APIs)
+├── Sudoku.Web.Server/       # Blazor Server web UI
+├── Sudoku.Api/              # REST API (optional)
+├── Sudoku.Storage.Azure/    # Azure storage implementation
+├── Sudoku.AppHost/          # Application orchestration/hosting
+└── Tests/                   # Unit and integration tests
+```
 
-Sudoku is a logic-based, number-placement puzzle. The objective is to fill a 9×9 grid with digits so that each column, each row, and each of the nine 3×3 subgrids that compose the grid contain all of the digits from 1 to 9. The game features three levels of difficulty: easy, medium, and hard.
+### Key Technologies & Patterns
+
+- **.NET 9.0** throughout
+- **Blazor Server** for real-time, interactive UI
+- **Domain-Driven Design (DDD)**: Rich domain models, value objects, domain events
+- **Clean Architecture**: Clear separation of concerns between domain, application, infrastructure, and UI
+- **CQRS Pattern**: Commands and queries are handled separately for scalability and maintainability
+- **Azure Storage**: Cloud persistence for game state
+- **Dependency Injection**: For all services and repositories
+- **Comprehensive Testing**: Unit and integration tests for all layers
+
+### Data Flow
+
+1. **User Interaction**: Browser → Blazor Server → SignalR Hub
+2. **Game Logic**: Web Services → Domain Layer
+3. **State Management**: Game state stored in memory, local storage, or Azure
+4. **Persistence**: Azure Blob Storage with optional caching
+
+## Features
+
+- Multiple difficulty levels (Easy, Medium, Hard)
+- Real-time, interactive UI
+- Game state persistence (local and cloud)
+- Undo/redo, pencil mode, and validation
+- Modular, extensible architecture
 
 ## Building the Project
+
+**Prerequisites:**
+
+- [.NET 9.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+- (Optional) Azure account for cloud storage features
+
+To build the solution:
 
 ```bash
 dotnet build
@@ -18,6 +59,22 @@ dotnet build
 
 ## Running the Project
 
+To run the Blazor Server app locally:
+
 ```bash
-dotnet run
+dotnet run --project Sudoku.Web.Server
 ```
+
+The app will be available at `https://localhost:5001` (or as indicated in the console output).
+
+## Testing
+
+To run all tests:
+
+```bash
+dotnet test
+```
+
+## Architecture Diagram
+
+For a detailed architecture diagram and explanation, see `current-architecture-diagram.md` in the root of the repository.
