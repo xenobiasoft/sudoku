@@ -23,9 +23,13 @@ public record GameStatistics
     {
         TotalMoves++;
         if (isValid)
+        {
             ValidMoves++;
+        }
         else
+        {
             InvalidMoves++;
+        }
 
         LastMoveAt = DateTime.UtcNow;
     }

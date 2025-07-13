@@ -1,5 +1,3 @@
-using Sudoku.Domain.ValueObjects;
-
 namespace Sudoku.Domain.Events;
 
 public record GameCreatedEvent(GameId GameId, PlayerAlias PlayerAlias, GameDifficulty Difficulty) : DomainEvent;

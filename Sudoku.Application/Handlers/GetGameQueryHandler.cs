@@ -1,36 +1,26 @@
-using MediatR;
 using Sudoku.Application.Common;
-using Sudoku.Application.Queries;
 using Sudoku.Application.DTOs;
 using Sudoku.Application.Interfaces;
-using Sudoku.Domain.Entities;
+using Sudoku.Application.Queries;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Application.Handlers;
 
-public class GetGameQueryHandler : IQueryHandler<GetGameQuery, GameDto>
+public class GetGameQueryHandler(IGameRepository gameRepository) : IQueryHandler<GetGameQuery, GameDto>
 {
-    private readonly IGameRepository _gameRepository;
-
-    public GetGameQueryHandler(IGameRepository gameRepository)
-    {
-        _gameRepository = gameRepository;
-    }
-
     public async Task<Result<GameDto>> Handle(GetGameQuery request, CancellationToken cancellationToken)
     {
         try
         {
-            // Parse the game ID
             var gameId = GameId.Create(request.GameId);
+            var game = await gameRepository.GetByIdAsync(gameId);
 
-            // Get the game
-            var game = await _gameRepository.GetByIdAsync(gameId);
             if (game == null)
+            {
                 return Result<GameDto>.Failure($"Game not found with ID: {request.GameId}");
+            }
 
-            // Convert to DTO
             var gameDto = GameDto.FromGame(game);
 
             return Result<GameDto>.Success(gameDto);

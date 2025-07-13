@@ -1,8 +1,3 @@
 namespace Sudoku.Domain.Exceptions;
 
-public class InvalidPlayerAliasException : DomainException
-{
-    public InvalidPlayerAliasException(string message) : base(message)
-    {
-    }
-}
+public class InvalidPlayerAliasException(string message) : DomainException(message);

@@ -1,8 +1,3 @@
 namespace Sudoku.Domain.Exceptions;
 
-public class InvalidPuzzleException : DomainException
-{
-    public InvalidPuzzleException(string message) : base(message)
-    {
-    }
-}
+public class InvalidPuzzleException(string message) : DomainException(message);

@@ -13,33 +13,24 @@ public interface IAzureStorageService
     IAsyncEnumerable<string> GetBlobNamesAsync(string containerName, string? prefix = null);
 }
 
-public class AzureStorageService : IAzureStorageService
+public class AzureStorageService(BlobServiceClient blobServiceClient, ILogger<AzureStorageService> logger) : IAzureStorageService
 {
-    private readonly BlobServiceClient _blobServiceClient;
-    private readonly ILogger<AzureStorageService> _logger;
-    private readonly JsonSerializerOptions _jsonOptions;
-
-    public AzureStorageService(BlobServiceClient blobServiceClient, ILogger<AzureStorageService> logger)
+    private readonly JsonSerializerOptions _jsonOptions = new()
     {
-        _blobServiceClient = blobServiceClient;
-        _logger = logger;
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
-        };
-    }
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true
+    };
 
     public async Task<T?> LoadAsync<T>(string containerName, string blobName)
     {
         try
         {
-            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
             var blobClient = containerClient.GetBlobClient(blobName);
 
             if (!await blobClient.ExistsAsync())
             {
-                _logger.LogDebug("Blob {BlobName} not found in container {ContainerName}", blobName, containerName);
+                logger.LogDebug("Blob {BlobName} not found in container {ContainerName}", blobName, containerName);
                 return default;
             }
 
@@ -48,12 +39,12 @@ public class AzureStorageService : IAzureStorageService
             var json = await streamReader.ReadToEndAsync();
             var result = JsonSerializer.Deserialize<T>(json, _jsonOptions);
 
-            _logger.LogDebug("Successfully loaded blob {BlobName} from container {ContainerName}", blobName, containerName);
+            logger.LogDebug("Successfully loaded blob {BlobName} from container {ContainerName}", blobName, containerName);
             return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error loading blob {BlobName} from container {ContainerName}", blobName, containerName);
+            logger.LogError(ex, "Error loading blob {BlobName} from container {ContainerName}", blobName, containerName);
             throw;
         }
     }
@@ -62,7 +53,7 @@ public class AzureStorageService : IAzureStorageService
     {
         try
         {
-            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
             await containerClient.CreateIfNotExistsAsync();
 
             var blobClient = containerClient.GetBlobClient(blobName);
@@ -71,11 +62,11 @@ public class AzureStorageService : IAzureStorageService
 
             await blobClient.UploadAsync(stream, overwrite: true);
 
-            _logger.LogDebug("Successfully saved blob {BlobName} to container {ContainerName}", blobName, containerName);
+            logger.LogDebug("Successfully saved blob {BlobName} to container {ContainerName}", blobName, containerName);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error saving blob {BlobName} to container {ContainerName}", blobName, containerName);
+            logger.LogError(ex, "Error saving blob {BlobName} to container {ContainerName}", blobName, containerName);
             throw;
         }
     }
@@ -84,18 +75,18 @@ public class AzureStorageService : IAzureStorageService
     {
         try
         {
-            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
             var blobClient = containerClient.GetBlobClient(blobName);
 
             if (await blobClient.ExistsAsync())
             {
                 await blobClient.DeleteAsync();
-                _logger.LogDebug("Successfully deleted blob {BlobName} from container {ContainerName}", blobName, containerName);
+                logger.LogDebug("Successfully deleted blob {BlobName} from container {ContainerName}", blobName, containerName);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error deleting blob {BlobName} from container {ContainerName}", blobName, containerName);
+            logger.LogError(ex, "Error deleting blob {BlobName} from container {ContainerName}", blobName, containerName);
             throw;
         }
     }
@@ -104,20 +95,20 @@ public class AzureStorageService : IAzureStorageService
     {
         try
         {
-            var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
             var blobClient = containerClient.GetBlobClient(blobName);
             return await blobClient.ExistsAsync();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking existence of blob {BlobName} in container {ContainerName}", blobName, containerName);
+            logger.LogError(ex, "Error checking existence of blob {BlobName} in container {ContainerName}", blobName, containerName);
             throw;
         }
     }
 
     public async IAsyncEnumerable<string> GetBlobNamesAsync(string containerName, string? prefix = null)
     {
-        var containerClient = _blobServiceClient.GetBlobContainerClient(containerName);
+        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
         await foreach (var blobItem in containerClient.GetBlobsAsync(prefix: prefix))
         {

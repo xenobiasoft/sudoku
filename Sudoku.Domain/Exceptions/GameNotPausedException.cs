@@ -1,8 +1,3 @@
 namespace Sudoku.Domain.Exceptions;
 
-public class GameNotPausedException : DomainException
-{
-    public GameNotPausedException(string message) : base(message)
-    {
-    }
-}
+public class GameNotPausedException(string message) : DomainException(message);

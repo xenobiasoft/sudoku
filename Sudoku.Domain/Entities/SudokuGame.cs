@@ -1,9 +1,3 @@
-using Sudoku.Domain.Common;
-using Sudoku.Domain.Enums;
-using Sudoku.Domain.Events;
-using Sudoku.Domain.Exceptions;
-using Sudoku.Domain.ValueObjects;
-
 namespace Sudoku.Domain.Entities;
 
 public class SudokuGame : AggregateRoot
@@ -22,7 +16,7 @@ public class SudokuGame : AggregateRoot
 
     private SudokuGame()
     {
-        _cells = new List<Cell>();
+        _cells = [];
     }
 
     public static SudokuGame Create(PlayerAlias playerAlias, GameDifficulty difficulty, IEnumerable<Cell> initialCells)
@@ -46,7 +40,9 @@ public class SudokuGame : AggregateRoot
     public void StartGame()
     {
         if (Status != GameStatus.NotStarted)
+        {
             throw new GameNotInStartStateException($"Cannot start game in {Status} state");
+        }
 
         Status = GameStatus.InProgress;
         StartedAt = DateTime.UtcNow;
@@ -57,14 +53,20 @@ public class SudokuGame : AggregateRoot
     public void MakeMove(int row, int column, int value)
     {
         if (Status != GameStatus.InProgress)
+        {
             throw new GameNotInProgressException($"Cannot make move in {Status} state");
+        }
 
         if (!IsValidMove(row, column, value))
+        {
             throw new InvalidMoveException($"Invalid move: {value} at position ({row}, {column})");
+        }
 
         var cell = GetCell(row, column);
         if (cell.IsFixed)
+        {
             throw new CellIsFixedException($"Cannot modify fixed cell at position ({row}, {column})");
+        }
 
         cell.SetValue(value);
         Statistics.RecordMove(true);
@@ -80,7 +82,9 @@ public class SudokuGame : AggregateRoot
     public void PauseGame()
     {
         if (Status != GameStatus.InProgress)
+        {
             throw new GameNotInProgressException($"Cannot pause game in {Status} state");
+        }
 
         Status = GameStatus.Paused;
         PausedAt = DateTime.UtcNow;
@@ -91,7 +95,9 @@ public class SudokuGame : AggregateRoot
     public void ResumeGame()
     {
         if (Status != GameStatus.Paused)
+        {
             throw new GameNotPausedException($"Cannot resume game in {Status} state");
+        }
 
         Status = GameStatus.InProgress;
         PausedAt = null;
@@ -102,7 +108,9 @@ public class SudokuGame : AggregateRoot
     public void AbandonGame()
     {
         if (Status == GameStatus.Completed)
+        {
             throw new GameAlreadyCompletedException("Cannot abandon completed game");
+        }
 
         Status = GameStatus.Abandoned;
 
@@ -118,23 +126,16 @@ public class SudokuGame : AggregateRoot
 
     public Cell GetCell(int row, int column)
     {
-        return _cells.FirstOrDefault(c => c.Row == row && c.Column == column)
-               ?? throw new CellNotFoundException($"Cell not found at position ({row}, {column})");
+        return _cells.FirstOrDefault(c => c.Row == row && c.Column == column) ?? throw new CellNotFoundException($"Cell not found at position ({row}, {column})");
     }
 
     public bool IsGameComplete()
     {
-        // Check if all cells have values
-        if (!_cells.All(c => c.HasValue))
-            return false;
-
-        // Check if the puzzle is valid (all rows, columns, and boxes are valid)
-        return IsValidPuzzle();
+        return _cells.All(c => c.HasValue) && IsValidPuzzle();
     }
 
     private bool IsValidMove(int row, int column, int value)
     {
-        // Check if the value is valid for the position
         return IsValidForRow(row, value) &&
                IsValidForColumn(column, value) &&
                IsValidForBox(row, column, value);
@@ -142,14 +143,12 @@ public class SudokuGame : AggregateRoot
 
     private bool IsValidForRow(int row, int value)
     {
-        return !_cells.Where(c => c.Row == row && c.HasValue)
-                     .Any(c => c.Value == value);
+        return _cells.Where(c => c.Row == row && c.HasValue).All(c => c.Value != value);
     }
 
     private bool IsValidForColumn(int column, int value)
     {
-        return !_cells.Where(c => c.Column == column && c.HasValue)
-                     .Any(c => c.Value == value);
+        return _cells.Where(c => c.Column == column && c.HasValue).All(c => c.Value != value);
     }
 
     private bool IsValidForBox(int row, int column, int value)
@@ -157,35 +156,33 @@ public class SudokuGame : AggregateRoot
         var boxRow = row / 3 * 3;
         var boxColumn = column / 3 * 3;
 
-        return !_cells.Where(c => c.Row >= boxRow && c.Row < boxRow + 3 &&
-                                 c.Column >= boxColumn && c.Column < boxColumn + 3 &&
-                                 c.HasValue)
-                     .Any(c => c.Value == value);
+        return _cells.Where(c => c.Row >= boxRow && c.Row < boxRow + 3 && c.Column >= boxColumn && c.Column < boxColumn + 3 && c.HasValue).All(c => c.Value != value);
     }
 
     private bool IsValidPuzzle()
     {
-        // Check all rows
         for (int row = 0; row < 9; row++)
         {
             var rowValues = _cells.Where(c => c.Row == row && c.HasValue)
                                  .Select(c => c.Value!.Value)
                                  .ToList();
             if (rowValues.Count != 9 || rowValues.Distinct().Count() != 9)
+            {
                 return false;
+            }
         }
 
-        // Check all columns
         for (int column = 0; column < 9; column++)
         {
             var columnValues = _cells.Where(c => c.Column == column && c.HasValue)
                                     .Select(c => c.Value!.Value)
                                     .ToList();
             if (columnValues.Count != 9 || columnValues.Distinct().Count() != 9)
+            {
                 return false;
+            }
         }
 
-        // Check all 3x3 boxes
         for (int boxRow = 0; boxRow < 9; boxRow += 3)
         {
             for (int boxColumn = 0; boxColumn < 9; boxColumn += 3)
@@ -196,7 +193,9 @@ public class SudokuGame : AggregateRoot
                                      .Select(c => c.Value!.Value)
                                      .ToList();
                 if (boxValues.Count != 9 || boxValues.Distinct().Count() != 9)
+                {
                     return false;
+                }
             }
         }
 

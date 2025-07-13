@@ -50,6 +50,8 @@ Sudoku.sln
   - Use expression-bodied members when appropriate
   - Prefer `var` for local variables when type is obvious
   - Use `readonly` for immutable fields
+  - Use Primary constructors when possible
+  - Always use curly braces for code blocks
 
 ### Domain Layer Guidelines
 
@@ -192,8 +194,15 @@ public class Result<T>
     public T? Value { get; }
     public string? Error { get; }
 
-    public static Result<T> Success(T value) => new(true, value, null);
-    public static Result<T> Failure(string error) => new(false, default, error);
+    public static Result<T> Success(T value)
+    {
+        return new(true, value, null);
+    }
+
+    public static Result<T> Failure(string error)
+    {
+        return new(false, default, error);
+    }
 }
 ```
 
@@ -273,9 +282,14 @@ public class GamesController : ControllerBase
         var command = new CreateGameCommand(request.PlayerAlias, request.Difficulty);
         var result = await _gameService.CreateGameAsync(command);
 
-        return result.IsSuccess
-            ? Ok(result.Value)
-            : BadRequest(result.Error);
+        if (result.IsSuccess)
+        {
+            return Ok(result.Value);
+        }
+        else
+        {
+            return BadRequest(result.Error);
+        }
     }
 }
 ```
@@ -314,8 +328,15 @@ public class GamesController : ControllerBase
 ```csharp
 public record GameId(Guid Value)
 {
-    public static GameId New() => new(Guid.NewGuid());
-    public static GameId FromString(string value) => new(Guid.Parse(value));
+    public static GameId New()
+    {
+        return new(Guid.NewGuid());
+    }
+
+    public static GameId FromString(string value)
+    {
+        return new(Guid.Parse(value));
+    }
 }
 ```
 
@@ -338,8 +359,13 @@ public class GameByPlayerSpecification : ISpecification<Game>
 {
     private readonly PlayerAlias _playerAlias;
 
-    public Expression<Func<Game, bool>> Criteria =>
-        game => game.PlayerAlias == _playerAlias;
+    public Expression<Func<Game, bool>> Criteria
+    {
+        get
+        {
+            return game => game.PlayerAlias == _playerAlias;
+        }
+    }
 }
 ```
 
