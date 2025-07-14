@@ -61,6 +61,24 @@ public record Cell
         Value = value;
     }
 
+    public void SetValue(int? value)
+    {
+        if (IsFixed)
+        {
+            throw new CellIsFixedException($"Cannot modify fixed cell at position ({Row}, {Column})");
+        }
+
+        if (value.HasValue)
+        {
+            if (value.Value < 1 || value.Value > 9)
+            {
+                throw new InvalidCellValueException($"Cell value must be between 1 and 9, got: {value.Value}");
+            }
+        }
+
+        Value = value;
+    }
+
     public void ClearValue()
     {
         if (IsFixed)
