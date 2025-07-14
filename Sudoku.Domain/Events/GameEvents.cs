@@ -4,7 +4,7 @@ public record GameCreatedEvent(GameId GameId, PlayerAlias PlayerAlias, GameDiffi
 
 public record GameStartedEvent(GameId GameId) : DomainEvent;
 
-public record MoveMadeEvent(GameId GameId, int Row, int Column, int Value, GameStatistics Statistics) : DomainEvent;
+public record MoveMadeEvent(GameId GameId, int Row, int Column, int? Value, GameStatistics Statistics) : DomainEvent;
 
 public record GamePausedEvent(GameId GameId) : DomainEvent;
 

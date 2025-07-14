@@ -50,22 +50,23 @@ public class SudokuGame : AggregateRoot
         AddDomainEvent(new GameStartedEvent(Id));
     }
 
-    public void MakeMove(int row, int column, int value)
+    public void MakeMove(int row, int column, int? value)
     {
         if (Status != GameStatus.InProgress)
         {
             throw new GameNotInProgressException($"Cannot make move in {Status} state");
         }
 
-        if (!IsValidMove(row, column, value))
-        {
-            throw new InvalidMoveException($"Invalid move: {value} at position ({row}, {column})");
-        }
-
         var cell = GetCell(row, column);
         if (cell.IsFixed)
         {
             throw new CellIsFixedException($"Cannot modify fixed cell at position ({row}, {column})");
+        }
+
+        // Only validate move if we're setting a value (not clearing)
+        if (value.HasValue && !IsValidMove(row, column, value.Value))
+        {
+            throw new InvalidMoveException($"Invalid move: {value} at position ({row}, {column})");
         }
 
         cell.SetValue(value);
