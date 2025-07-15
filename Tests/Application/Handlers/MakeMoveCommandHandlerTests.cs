@@ -6,8 +6,6 @@ using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
-using InvalidMoveException = Sudoku.Domain.Exceptions.InvalidMoveException;
-
 namespace UnitTests.Application.Handlers;
 
 public class MakeMoveCommandHandlerTests : BaseTestByAbstraction<MakeMoveCommandHandler, ICommandHandler<MakeMoveCommand>>
