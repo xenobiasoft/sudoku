@@ -134,7 +134,9 @@ public class AzureBlobGameRepository : IGameRepository
 - **Mocking**: Use mocks for external dependencies
 - **Single Assert**: Only have one assert per test
 
-The unit tests use the library [DepenMock](https://github.com/xenobiasoft/depenmock). All test classes should inherit from BaseTestByAbstraction, if the **sut** implements an interface or inherits from a base class. Otherwise, the test class should inherit from BaseTestByType. The **sut** should be resolved using the method `ResolveSut()`. All mocks should be resolved in a setup method and added as a private class variable using the method `Container.ResolveMock<>()`.
+The unit tests use the library [DepenMock](https://github.com/xenobiasoft/depenmock). All test classes should inherit from BaseTestByAbstraction,
+if the **sut** implements an interface or inherits from a base class. Otherwise, the test class should inherit from BaseTestByType.
+The **sut** should be resolved using the method `ResolveSut()`. All mocks should be resolved in the constructor of the test and added as a private class variable using the method `Container.ResolveMock<>()`.
 
 ```csharp
 [Test]
