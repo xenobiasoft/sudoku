@@ -167,6 +167,29 @@ public void MakeMove_ValidMove_UpdatesCell()
 }
 ```
 
+Testing logging can be accomplished by using the `Logger` object that is a property of the `BaseTestByAbstraction` and `BaseTestByType` class. There are multiple methods to get the specific type of log messages:
+
+- `Logger.InformationLogs()` for information logs
+- `Logger.WarningLogs()` for warning logs
+- `Logger.ErrorLogs()` for error logs
+- `Logger.DebugLogs()` for debug logs
+- `Logger.CriticalLogs()` for critical logs
+
+````csharp
+[Test]
+public void MakeMove_ValidMove_LogsInformation()
+{
+    // Arrange
+    var sut = ResolveSut();
+    var expectedMessage = "Player made a move";
+
+    // Act
+    sut.MakeMove(0, 0, 5);
+
+    // Assert
+    Logger.InformationLogs().ContainsMessage(expectedMessage);
+}
+
 ### Integration Testing
 
 - Test complete workflows
@@ -185,7 +208,7 @@ public class InvalidMoveException : DomainException
     {
     }
 }
-```
+````
 
 ### Result Pattern
 
