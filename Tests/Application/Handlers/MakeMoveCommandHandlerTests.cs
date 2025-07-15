@@ -232,15 +232,7 @@ public class MakeMoveCommandHandlerTests : BaseTestByAbstraction<MakeMoveCommand
     {
         var playerAlias = PlayerAlias.Create("TestPlayer");
         var difficulty = GameDifficulty.Medium;
-        var cells = new List<Cell>();
-        
-        for (int i = 0; i < 9; i++)
-        {
-            for (int j = 0; j < 9; j++)
-            {
-                cells.Add(Cell.CreateEmpty(i, j));
-            }
-        }
+        var cells = InitializeCells((i, j) => Cell.CreateEmpty(i, j));
 
         var game = SudokuGame.Create(playerAlias, difficulty, cells);
         game.StartGame();
