@@ -14,6 +14,7 @@ namespace UnitTests.Infrastructure.Repositories;
 public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameRepository, IGameRepository>
 {
     private readonly Mock<IAzureStorageService> _mockStorageService;
+    private const string ContainerName = "sudoku-games";
 
     public AzureBlobGameRepositoryTests()
     {
@@ -61,7 +62,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         await sut.DeleteAsync(gameId);
 
         // Assert
-        _mockStorageService.Verify(x => x.DeleteAsync("sudoku-games", expectedBlobName), Times.Once);
+        _mockStorageService.Verify(x => x.DeleteAsync(ContainerName, expectedBlobName), Times.Once);
     }
 
     [Fact]
@@ -73,7 +74,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         var expectedException = new InvalidOperationException("Storage error");
         
         _mockStorageService
-            .Setup(x => x.DeleteAsync("sudoku-games", expectedBlobName))
+            .Setup(x => x.DeleteAsync(ContainerName, expectedBlobName))
             .ThrowsAsync(expectedException);
 
         var sut = ResolveSut();
@@ -113,7 +114,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
 
         // Assert
         result.Should().BeTrue();
-        _mockStorageService.Verify(x => x.ExistsAsync("sudoku-games", expectedBlobName), Times.Once);
+        _mockStorageService.Verify(x => x.ExistsAsync(ContainerName, expectedBlobName), Times.Once);
     }
 
     [Fact]
@@ -124,7 +125,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         var expectedBlobName = $"games/{gameId.Value}.json";
         
         _mockStorageService
-            .Setup(x => x.ExistsAsync("sudoku-games", expectedBlobName))
+            .Setup(x => x.ExistsAsync(ContainerName, expectedBlobName))
             .ReturnsAsync(false);
 
         var sut = ResolveSut();
@@ -134,7 +135,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
 
         // Assert
         result.Should().BeFalse();
-        _mockStorageService.Verify(x => x.ExistsAsync("sudoku-games", expectedBlobName), Times.Once);
+        _mockStorageService.Verify(x => x.ExistsAsync(ContainerName, expectedBlobName), Times.Once);
     }
 
     [Fact]
@@ -146,7 +147,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         var expectedException = new InvalidOperationException("Storage error");
         
         _mockStorageService
-            .Setup(x => x.ExistsAsync("sudoku-games", expectedBlobName))
+            .Setup(x => x.ExistsAsync(ContainerName, expectedBlobName))
             .ThrowsAsync(expectedException);
 
         var sut = ResolveSut();
@@ -185,7 +186,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         var expectedBlobName = $"games/{game.Id.Value}.json";
         
         _mockStorageService
-            .Setup(x => x.LoadAsync<SudokuGame>("sudoku-games", expectedBlobName))
+            .Setup(x => x.LoadAsync<SudokuGame>(ContainerName, expectedBlobName))
             .ReturnsAsync(game);
 
         var sut = ResolveSut();
@@ -197,7 +198,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         result.Should().NotBeNull();
         result!.Id.Should().Be(game.Id);
         result.PlayerAlias.Should().Be(game.PlayerAlias);
-        _mockStorageService.Verify(x => x.LoadAsync<SudokuGame>("sudoku-games", expectedBlobName), Times.Once);
+        _mockStorageService.Verify(x => x.LoadAsync<SudokuGame>(ContainerName, expectedBlobName), Times.Once);
     }
 
     [Fact]
@@ -208,7 +209,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         var expectedBlobName = $"games/{gameId.Value}.json";
         
         _mockStorageService
-            .Setup(x => x.LoadAsync<SudokuGame>("sudoku-games", expectedBlobName))
+            .Setup(x => x.LoadAsync<SudokuGame>(ContainerName, expectedBlobName))
             .ReturnsAsync((SudokuGame?)null);
 
         var sut = ResolveSut();
@@ -218,7 +219,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
 
         // Assert
         result.Should().BeNull();
-        _mockStorageService.Verify(x => x.LoadAsync<SudokuGame>("sudoku-games", expectedBlobName), Times.Once);
+        _mockStorageService.Verify(x => x.LoadAsync<SudokuGame>(ContainerName, expectedBlobName), Times.Once);
     }
 
     [Fact]
@@ -230,7 +231,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         var expectedException = new InvalidOperationException("Storage error");
         
         _mockStorageService
-            .Setup(x => x.LoadAsync<SudokuGame>("sudoku-games", expectedBlobName))
+            .Setup(x => x.LoadAsync<SudokuGame>(ContainerName, expectedBlobName))
             .ThrowsAsync(expectedException);
 
         var sut = ResolveSut();
@@ -254,14 +255,14 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         var blobNames = new[] { "blob1", "blob2" };
         
         _mockStorageService
-            .Setup(x => x.GetBlobNamesAsync("sudoku-games", expectedPrefix))
+            .Setup(x => x.GetBlobNamesAsync(ContainerName, expectedPrefix))
             .Returns(blobNames.ToAsyncEnumerable());
         
         _mockStorageService
-            .Setup(x => x.LoadAsync<SudokuGame>("sudoku-games", "blob1"))
+            .Setup(x => x.LoadAsync<SudokuGame>(ContainerName, "blob1"))
             .ReturnsAsync(game1);
         _mockStorageService
-            .Setup(x => x.LoadAsync<SudokuGame>("sudoku-games", "blob2"))
+            .Setup(x => x.LoadAsync<SudokuGame>(ContainerName, "blob2"))
             .ReturnsAsync(game2);
 
         var sut = ResolveSut();
@@ -284,7 +285,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         var emptyBlobNames = Array.Empty<string>();
         
         _mockStorageService
-            .Setup(x => x.GetBlobNamesAsync("sudoku-games", expectedPrefix))
+            .Setup(x => x.GetBlobNamesAsync(ContainerName, expectedPrefix))
             .Returns(emptyBlobNames.ToAsyncEnumerable());
 
         var sut = ResolveSut();
@@ -305,7 +306,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         var expectedException = new InvalidOperationException("Storage error");
         
         _mockStorageService
-            .Setup(x => x.GetBlobNamesAsync("sudoku-games", expectedPrefix))
+            .Setup(x => x.GetBlobNamesAsync(ContainerName, expectedPrefix))
             .Throws(expectedException);
 
         var sut = ResolveSut();
@@ -558,7 +559,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         var expectedException = new InvalidOperationException("Storage error");
         
         _mockStorageService
-            .Setup(x => x.SaveAsync("sudoku-games", expectedBlobName, game))
+            .Setup(x => x.SaveAsync(ContainerName, expectedBlobName, game))
             .ThrowsAsync(expectedException);
 
         var sut = ResolveSut();
@@ -584,7 +585,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         await sut.SaveAsync(game);
 
         // Assert
-        _mockStorageService.Verify(x => x.SaveAsync("sudoku-games", expectedBlobName, game), Times.Once);
+        _mockStorageService.Verify(x => x.SaveAsync(ContainerName, expectedBlobName, game), Times.Once);
     }
 
     private static List<Cell> CreateEmptyCells()
@@ -613,14 +614,14 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         var blobNames = games.Select((g, i) => $"blob{i}").ToArray();
         
         _mockStorageService
-            .Setup(x => x.GetBlobNamesAsync("sudoku-games", null))
+            .Setup(x => x.GetBlobNamesAsync(ContainerName, null))
             .Returns(blobNames.ToAsyncEnumerable());
         
         for (var i = 0; i < games.Length; i++)
         {
             var blobName = $"blob{i}";
             _mockStorageService
-                .Setup(x => x.LoadAsync<SudokuGame>("sudoku-games", blobName))
+                .Setup(x => x.LoadAsync<SudokuGame>(ContainerName, blobName))
                 .ReturnsAsync(games[i]);
         }
     }
