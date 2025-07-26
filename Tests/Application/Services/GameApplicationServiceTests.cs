@@ -3,6 +3,7 @@ using MediatR;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
 using Sudoku.Application.DTOs;
+using Sudoku.Application.Interfaces;
 using Sudoku.Application.Queries;
 using Sudoku.Application.Services;
 

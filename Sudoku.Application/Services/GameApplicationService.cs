@@ -3,6 +3,7 @@ using Sudoku.Application.Common;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Queries;
 using Sudoku.Application.DTOs;
+using Sudoku.Application.Interfaces;
 
 namespace Sudoku.Application.Services;
 

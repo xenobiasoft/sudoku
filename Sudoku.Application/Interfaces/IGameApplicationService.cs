@@ -1,7 +1,7 @@
 using Sudoku.Application.Common;
 using Sudoku.Application.DTOs;
 
-namespace Sudoku.Application.Services;
+namespace Sudoku.Application.Interfaces;
 
 public interface IGameApplicationService
 {

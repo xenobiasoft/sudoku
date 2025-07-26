@@ -248,8 +248,7 @@ public static class ServiceCollectionExtensions
 ### Phase 4: Update Presentation Layers
 
 1. Update API controllers to use application services
-2. Update Blazor components to use application services
-3. Implement proper error handling
+2. Implement proper error handling
 
 ## Benefits of Proposed Architecture
 

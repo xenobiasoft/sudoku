@@ -2,7 +2,7 @@
 using Sudoku.Web.Server.Services.Abstractions;
 using XenobiaSoft.Sudoku.Storage.Azure;
 
-namespace Sudoku.Web.Server.Helpers
+namespace Sudoku.Web.Server
 {
     public static class ServiceCollectionExtensionMethods
     {
