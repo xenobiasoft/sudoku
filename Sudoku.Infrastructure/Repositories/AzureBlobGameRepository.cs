@@ -12,13 +12,37 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private const string ContainerName = "sudoku-games";
+    private const string DefaultRevision = "00001";
 
     public async Task<SudokuGame?> GetByIdAsync(GameId id)
     {
         try
         {
-            var blobName = GetBlobName(id);
-            var game = await storageService.LoadAsync<SudokuGame>(ContainerName, blobName);
+            // We need to find the game by ID, but we don't know the player alias yet
+            // so we need to search through all blobs to find it
+            var gamePrefix = $"*/{id.Value}/";
+            SudokuGame? game = null;
+            
+            await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName, gamePrefix))
+            {
+                // The blobName will be in the format "{playerAlias}/{gameId}/{revisionId}.json"
+                // We need to get the latest revision
+                var parts = blobName.Split('/');
+                if (parts.Length < 3) continue;
+                
+                var playerAlias = parts[0];
+                var gameId = parts[1];
+                
+                if (gameId == id.Value.ToString())
+                {
+                    var latestBlobName = await GetLatestRevisionAsync(playerAlias, id);
+                    if (latestBlobName != null)
+                    {
+                        game = await storageService.LoadAsync<SudokuGame>(ContainerName, latestBlobName);
+                        break;
+                    }
+                }
+            }
 
             if (game == null)
             {
@@ -42,13 +66,28 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
         {
             var games = new List<SudokuGame>();
             var prefix = $"{playerAlias.Value}/";
+            var gameIdSet = new HashSet<string>();
 
             await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName, prefix))
             {
-                var game = await storageService.LoadAsync<SudokuGame>(ContainerName, blobName);
-                if (game != null)
+                // Extract the game ID from the blob path
+                var parts = blobName.Split('/');
+                if (parts.Length < 3) continue;
+
+                var gameId = parts[1];
+                
+                // Only process each game ID once
+                if (gameIdSet.Add(gameId))
                 {
-                    games.Add(game);
+                    var latestBlobName = await GetLatestRevisionAsync(playerAlias.Value, GameId.Create(gameId));
+                    if (latestBlobName != null)
+                    {
+                        var game = await storageService.LoadAsync<SudokuGame>(ContainerName, latestBlobName);
+                        if (game != null)
+                        {
+                            games.Add(game);
+                        }
+                    }
                 }
             }
 
@@ -76,10 +115,10 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
 
             try
             {
-                var blobName = GetBlobName(game.Id);
-                await storageService.SaveAsync(ContainerName, blobName, game);
+                var nextBlobName = await GetNextRevisionBlobNameAsync(game.PlayerAlias.Value, game.Id);
+                await storageService.SaveAsync(ContainerName, nextBlobName, game);
 
-                logger.LogDebug("Saved game {GameId} to Azure Blob Storage", game.Id.Value);
+                logger.LogDebug("Saved game {GameId} to Azure Blob Storage at {BlobName}", game.Id.Value, nextBlobName);
             }
             finally
             {
@@ -97,9 +136,16 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
     {
         try
         {
-            var blobName = GetBlobName(id);
-            await storageService.DeleteAsync(ContainerName, blobName);
-            logger.LogDebug("Deleted game {GameId} from Azure Blob Storage", id.Value);
+            // Find all revisions for this game
+            var gamePrefix = $"*/{id.Value}/";
+            
+            await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName, gamePrefix))
+            {
+                await storageService.DeleteAsync(ContainerName, blobName);
+                logger.LogDebug("Deleted game revision {BlobName} from Azure Blob Storage", blobName);
+            }
+            
+            logger.LogDebug("Deleted all revisions of game {GameId} from Azure Blob Storage", id.Value);
         }
         catch (Exception ex)
         {
@@ -112,8 +158,15 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
     {
         try
         {
-            var blobName = GetBlobName(id);
-            return await storageService.ExistsAsync(ContainerName, blobName);
+            // Check if any blob exists with this game ID
+            var gamePrefix = $"*/{id.Value}/";
+            
+            await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName, gamePrefix))
+            {
+                return true;
+            }
+            
+            return false;
         }
         catch (Exception ex)
         {
@@ -269,22 +322,78 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
     private async Task<List<SudokuGame>> GetAllGamesAsync()
     {
         var games = new List<SudokuGame>();
+        var processedGameIds = new HashSet<string>();
 
         await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName))
         {
-            var game = await storageService.LoadAsync<SudokuGame>(ContainerName, blobName);
-            if (game != null)
+            var parts = blobName.Split('/');
+            if (parts.Length < 3) continue;
+
+            var playerAlias = parts[0];
+            var gameId = parts[1];
+            
+            // Only process each game ID once to get the latest revision
+            var gameIdString = gameId.ToString();
+            if (processedGameIds.Add(gameIdString))
             {
-                games.Add(game);
+                var latestBlobName = await GetLatestRevisionAsync(playerAlias, GameId.Create(gameId));
+                if (latestBlobName != null)
+                {
+                    var game = await storageService.LoadAsync<SudokuGame>(ContainerName, latestBlobName);
+                    if (game != null)
+                    {
+                        games.Add(game);
+                    }
+                }
             }
         }
 
         return games;
     }
 
-    private static string GetBlobName(GameId gameId)
+    private async Task<string?> GetLatestRevisionAsync(string playerAlias, GameId gameId)
     {
-        return $"games/{gameId.Value}.json";
+        var prefix = $"{playerAlias}/{gameId.Value}/";
+        var revisions = new List<string>();
+        
+        await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName, prefix))
+        {
+            revisions.Add(blobName);
+        }
+        
+        if (revisions.Count == 0)
+        {
+            return null;
+        }
+        
+        // Sort by revision number (last part of the path, excluding .json)
+        return revisions.OrderByDescending(r => 
+        {
+            var parts = r.Split('/');
+            var fileName = parts[^1];
+            var revNumber = System.IO.Path.GetFileNameWithoutExtension(fileName);
+            return int.Parse(revNumber);
+        }).First();
+    }
+    
+    private async Task<string> GetNextRevisionBlobNameAsync(string playerAlias, GameId gameId)
+    {
+        var prefix = $"{playerAlias}/{gameId.Value}/";
+        var revisions = new List<int>();
+        
+        await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName, prefix))
+        {
+            var parts = blobName.Split('/');
+            var fileName = parts[^1];
+            var revNumberStr = System.IO.Path.GetFileNameWithoutExtension(fileName);
+            if (int.TryParse(revNumberStr, out var revNumber))
+            {
+                revisions.Add(revNumber);
+            }
+        }
+        
+        var nextRevision = revisions.Count > 0 ? revisions.Max() + 1 : 1;
+        return $"{playerAlias}/{gameId.Value}/{nextRevision:D5}.json";
     }
 
     public void Dispose()
