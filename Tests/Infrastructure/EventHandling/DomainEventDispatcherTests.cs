@@ -142,7 +142,7 @@ public class DomainEventDispatcherTests : BaseTestByAbstraction<DomainEventDispa
     {
         // Arrange
         var domainEvent = Container.Create<GameCreatedEvent>();
-        _mockServiceProvider.SetupGetService(typeof(IEnumerable<IDomainEventHandler<GameCreatedEvent>>), Array.Empty<GameCreatedEvent>());
+        _mockServiceProvider.SetupGetService(typeof(IEnumerable<IDomainEventHandler<GameCreatedEvent>>), Array.Empty<IDomainEventHandler<GameCreatedEvent>>());
         var sut = ResolveSut();
 
         // Act
