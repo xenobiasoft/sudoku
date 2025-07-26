@@ -14,4 +14,11 @@ public interface IGameApplicationService
     Task<Result> PauseGameAsync(string gameId);
     Task<Result> ResumeGameAsync(string gameId);
     Task<Result> AbandonGameAsync(string gameId);
+    
+    // New methods to support the API endpoints
+    Task<Result> DeleteGameAsync(string gameId);
+    Task<Result> DeletePlayerGamesAsync(string playerAlias);
+    Task<Result> UndoLastMoveAsync(string gameId);
+    Task<Result> ResetGameAsync(string gameId);
+    Task<Result<ValidationResultDto>> ValidateGameAsync(string gameId);
 }

@@ -84,4 +84,34 @@ public class GameApplicationService(IMediator mediator) : IGameApplicationServic
         var command = new AbandonGameCommand(gameId);
         return await mediator.Send(command);
     }
+
+    public async Task<Result> DeleteGameAsync(string gameId)
+    {
+        var command = new DeleteGameCommand(gameId);
+        return await mediator.Send(command);
+    }
+
+    public async Task<Result> DeletePlayerGamesAsync(string playerAlias)
+    {
+        var command = new DeletePlayerGamesCommand(playerAlias);
+        return await mediator.Send(command);
+    }
+
+    public async Task<Result> UndoLastMoveAsync(string gameId)
+    {
+        var command = new UndoLastMoveCommand(gameId);
+        return await mediator.Send(command);
+    }
+
+    public async Task<Result> ResetGameAsync(string gameId)
+    {
+        var command = new ResetGameCommand(gameId);
+        return await mediator.Send(command);
+    }
+
+    public async Task<Result<ValidationResultDto>> ValidateGameAsync(string gameId)
+    {
+        var query = new ValidateGameQuery(gameId);
+        return await mediator.Send(query);
+    }
 }
