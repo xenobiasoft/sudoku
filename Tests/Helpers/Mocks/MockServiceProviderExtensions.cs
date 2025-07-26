@@ -13,7 +13,7 @@ public static class MockServiceProviderExtensions
             .ThrowsAsync(new TExceptionType());
 
         var handlers = new[] { mockHandler.Object };
-        mock.SetupGetService(typeof(IEnumerable<IDomainEventHandler<GameCreatedEvent>>), handlers);
+        mock.SetupGetService(typeof(IEnumerable<IDomainEventHandler<TDomainEvent>>), handlers);
     }
 
     public static void SetupGetService(this Mock<IServiceProvider> mock, Type serviceType, object? serviceInstance)
