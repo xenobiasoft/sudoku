@@ -8,8 +8,7 @@ using XenobiaSoft.Sudoku.Infrastructure.Services;
 
 namespace XenobiaSoft.Sudoku.Infrastructure.Repositories;
 
-public class AzureBlobGameRepository(IAzureStorageService storageService, ILogger<AzureBlobGameRepository> logger)
-    : IGameRepository
+public class AzureBlobGameRepository(IAzureStorageService storageService, ILogger<AzureBlobGameRepository> logger) : IGameRepository
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private const string ContainerName = "sudoku-games";
