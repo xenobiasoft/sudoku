@@ -4,41 +4,31 @@ using Sudoku.Domain.Events;
 
 namespace XenobiaSoft.Sudoku.Infrastructure.EventHandling;
 
-public class DomainEventDispatcher : IDomainEventDispatcher
+public class DomainEventDispatcher(IServiceProvider serviceProvider, ILogger<DomainEventDispatcher> logger) : IDomainEventDispatcher
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<DomainEventDispatcher> _logger;
-
-    public DomainEventDispatcher(IServiceProvider serviceProvider, ILogger<DomainEventDispatcher> logger)
-    {
-        _serviceProvider = serviceProvider;
-        _logger = logger;
-    }
-
     public async Task DispatchAsync(DomainEvent domainEvent)
     {
         try
         {
-            _logger.LogDebug("Dispatching domain event: {EventType}", domainEvent.GetType().Name);
+            logger.LogInformation("Dispatching domain event: {EventType}", domainEvent.GetType().Name);
 
             var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(domainEvent.GetType());
-            var handlers = _serviceProvider.GetServices(handlerType);
+            var handlers = serviceProvider.GetServices(handlerType);
 
             foreach (var handler in handlers)
             {
                 var method = handlerType.GetMethod("HandleAsync");
-                if (method != null)
-                {
-                    var task = (Task)method.Invoke(handler, new object[] { domainEvent })!;
-                    await task;
-                }
+                if (method == null) continue;
+
+                var task = (Task)method.Invoke(handler, [domainEvent])!;
+                await task;
             }
 
-            _logger.LogDebug("Successfully dispatched domain event: {EventType}", domainEvent.GetType().Name);
+            logger.LogInformation("Successfully dispatched domain event: {EventType}", domainEvent.GetType().Name);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error dispatching domain event: {EventType}", domainEvent.GetType().Name);
+            logger.LogError(ex, "Error dispatching domain event: {EventType}", domainEvent.GetType().Name);
             throw;
         }
     }
