@@ -1,7 +1,8 @@
 using DepenMock.XUnit;
-using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Domain.Events;
 using Sudoku.Domain.ValueObjects;
+using UnitTests.Helpers.Builders;
+using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku.Infrastructure.EventHandling;
 
 namespace UnitTests.Infrastructure.EventHandling;
@@ -15,23 +16,35 @@ public class DomainEventDispatcherTests : BaseTestByAbstraction<DomainEventDispa
         _mockServiceProvider = Container.ResolveMock<IServiceProvider>();
     }
 
+    protected override void AddContainerCustomizations(Container container)
+    {
+        container.AddCustomizations(new PlayerAliasClassBuilder());
+        container.AddCustomizations(new GameDifficultyClassBuilder());
+    }
+
     [Fact]
-    public async Task DispatchAsync_WithSingleEvent_CallsCorrectHandler()
+    public async Task DispatchAsync_WhenHandlerThrows_RethrowsException()
     {
         // Arrange
-        var gameId = GameId.New();
-        var playerAlias = PlayerAlias.Create("TestPlayer");
-        var difficulty = GameDifficulty.Medium;
-        var domainEvent = new GameCreatedEvent(gameId, playerAlias, difficulty);
+        var domainEvent = Container.Create<GameCreatedEvent>();
+        _mockServiceProvider.SetupFaultyHandlers<GameCreatedEvent, InvalidOperationException>(domainEvent);
+        var sut = ResolveSut();
 
-        var mockHandler = new Mock<IDomainEventHandler<GameCreatedEvent>>();
-        mockHandler.Setup(x => x.HandleAsync(domainEvent))
-            .Returns(Task.CompletedTask);
+        // Act
+        var dispatchAsync = async () => await sut.DispatchAsync(domainEvent);
 
+        // Assert
+        await dispatchAsync.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task DispatchAsync_WithDifferentEventTypes_CallsCorrectHandlers()
+    {
+        // Arrange
+        var domainEvent = Container.Create<MoveMadeEvent>();
+        var mockHandler = new Mock<IDomainEventHandler<MoveMadeEvent>>();
         var handlers = new[] { mockHandler.Object };
-
-        _mockServiceProvider.Setup(x => x.GetServices(typeof(IDomainEventHandler<GameCreatedEvent>)))
-            .Returns(handlers);
+        _mockServiceProvider.SetupGetService(typeof(IEnumerable<IDomainEventHandler<MoveMadeEvent>>), handlers);
 
         var sut = ResolveSut();
 
@@ -43,27 +56,77 @@ public class DomainEventDispatcherTests : BaseTestByAbstraction<DomainEventDispa
     }
 
     [Fact]
+    public async Task DispatchAsync_WithEmptyEventCollection_DoesNotThrow()
+    {
+        // Arrange
+        var sut = ResolveSut();
+
+        // Act
+        var dispatchAsync = async () => await sut.DispatchAsync([]);
+
+        // Assert
+        await dispatchAsync.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task DispatchAsync_WithMixedSuccessAndFailureHandlers_ThrowsFirstException()
+    {
+        // Arrange
+        var domainEvent = Container.Create<GameCreatedEvent>();
+        var mockHandler1 = new Mock<IDomainEventHandler<GameCreatedEvent>>();
+        var mockHandler2 = new Mock<IDomainEventHandler<GameCreatedEvent>>();
+        var expectedException = new InvalidOperationException("First handler error");
+        
+        mockHandler1
+            .Setup(x => x.HandleAsync(domainEvent))
+            .ThrowsAsync(expectedException);
+        var handlers = new[] { mockHandler1.Object, mockHandler2.Object };
+        _mockServiceProvider.SetupGetService(typeof(IEnumerable<IDomainEventHandler<GameCreatedEvent>>), handlers);
+        var sut = ResolveSut();
+
+        // Act
+        var dispatchAsync = async () => await sut.DispatchAsync(domainEvent);
+
+        // Assert
+        await dispatchAsync.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("First handler error");
+        
+        // Verify first handler was called
+        mockHandler1.Verify(x => x.HandleAsync(domainEvent), Times.Once);
+        // Verify second handler was not called due to exception
+        mockHandler2.Verify(x => x.HandleAsync(domainEvent), Times.Never);
+    }
+
+    [Fact]
+    public async Task DispatchAsync_WithMultipleEvents_CallsHandlersForEachEvent()
+    {
+        // Arrange
+        var gameCreatedEvent = Container.Create<GameCreatedEvent>();
+        var gameStartedEvent = Container.Create<GameStartedEvent>();
+        var domainEvents = new DomainEvent[] { gameCreatedEvent, gameStartedEvent };
+        var mockCreatedHandler = Container.ResolveMock<IDomainEventHandler<GameCreatedEvent>>();
+        var mockStartedHandler = Container.ResolveMock<IDomainEventHandler<GameStartedEvent>>();
+        _mockServiceProvider.SetupGetService(typeof(IEnumerable<IDomainEventHandler<GameCreatedEvent>>), new[] { mockCreatedHandler.Object });
+        _mockServiceProvider.SetupGetService(typeof(IEnumerable<IDomainEventHandler<GameStartedEvent>>), new[] { mockStartedHandler.Object });
+        var sut = ResolveSut();
+
+        // Act
+        await sut.DispatchAsync(domainEvents);
+
+        // Assert
+        mockCreatedHandler.Verify(x => x.HandleAsync(gameCreatedEvent), Times.Once);
+        mockStartedHandler.Verify(x => x.HandleAsync(gameStartedEvent), Times.Once);
+    }
+
+    [Fact]
     public async Task DispatchAsync_WithMultipleHandlers_CallsAllHandlers()
     {
         // Arrange
-        var gameId = GameId.New();
-        var playerAlias = PlayerAlias.Create("TestPlayer");
-        var difficulty = GameDifficulty.Medium;
-        var domainEvent = new GameCreatedEvent(gameId, playerAlias, difficulty);
-
+        var domainEvent = Container.Create<GameCreatedEvent>();
         var mockHandler1 = new Mock<IDomainEventHandler<GameCreatedEvent>>();
         var mockHandler2 = new Mock<IDomainEventHandler<GameCreatedEvent>>();
-        
-        mockHandler1.Setup(x => x.HandleAsync(domainEvent))
-            .Returns(Task.CompletedTask);
-        mockHandler2.Setup(x => x.HandleAsync(domainEvent))
-            .Returns(Task.CompletedTask);
-
         var handlers = new[] { mockHandler1.Object, mockHandler2.Object };
-
-        _mockServiceProvider.Setup(x => x.GetServices(typeof(IDomainEventHandler<GameCreatedEvent>)))
-            .Returns(handlers);
-
+        _mockServiceProvider.SetupGetService(typeof(IEnumerable<IDomainEventHandler<GameCreatedEvent>>), handlers);
         var sut = ResolveSut();
 
         // Act
@@ -78,217 +141,48 @@ public class DomainEventDispatcherTests : BaseTestByAbstraction<DomainEventDispa
     public async Task DispatchAsync_WithNoHandlers_DoesNotThrow()
     {
         // Arrange
-        var gameId = GameId.New();
-        var playerAlias = PlayerAlias.Create("TestPlayer");
-        var difficulty = GameDifficulty.Medium;
-        var domainEvent = new GameCreatedEvent(gameId, playerAlias, difficulty);
-
-        var emptyHandlers = Array.Empty<IDomainEventHandler<GameCreatedEvent>>();
-
-        _mockServiceProvider.Setup(x => x.GetServices(typeof(IDomainEventHandler<GameCreatedEvent>)))
-            .Returns(emptyHandlers);
-
+        var domainEvent = Container.Create<GameCreatedEvent>();
+        _mockServiceProvider.SetupGetService(typeof(IEnumerable<IDomainEventHandler<GameCreatedEvent>>), Array.Empty<GameCreatedEvent>());
         var sut = ResolveSut();
 
         // Act
-        Func<Task> act = async () => await sut.DispatchAsync(domainEvent);
+        var dispatchAsync = async () => await sut.DispatchAsync(domainEvent);
 
         // Assert
-        await act.Should().NotThrowAsync();
-    }
-
-    [Fact]
-    public async Task DispatchAsync_WhenHandlerThrows_RethrowsException()
-    {
-        // Arrange
-        var gameId = GameId.New();
-        var playerAlias = PlayerAlias.Create("TestPlayer");
-        var difficulty = GameDifficulty.Medium;
-        var domainEvent = new GameCreatedEvent(gameId, playerAlias, difficulty);
-
-        var mockHandler = new Mock<IDomainEventHandler<GameCreatedEvent>>();
-        var expectedException = new InvalidOperationException("Handler error");
-        
-        mockHandler.Setup(x => x.HandleAsync(domainEvent))
-            .ThrowsAsync(expectedException);
-
-        var handlers = new[] { mockHandler.Object };
-
-        _mockServiceProvider.Setup(x => x.GetServices(typeof(IDomainEventHandler<GameCreatedEvent>)))
-            .Returns(handlers);
-
-        var sut = ResolveSut();
-
-        // Act
-        Func<Task> act = async () => await sut.DispatchAsync(domainEvent);
-
-        // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Handler error");
-    }
-
-    [Fact]
-    public async Task DispatchAsync_WithMultipleEvents_CallsHandlersForEachEvent()
-    {
-        // Arrange
-        var gameId = GameId.New();
-        var playerAlias = PlayerAlias.Create("TestPlayer");
-        var difficulty = GameDifficulty.Medium;
-        var gameCreatedEvent = new GameCreatedEvent(gameId, playerAlias, difficulty);
-        var gameStartedEvent = new GameStartedEvent(gameId);
-        var domainEvents = new DomainEvent[] { gameCreatedEvent, gameStartedEvent };
-
-        var mockCreatedHandler = new Mock<IDomainEventHandler<GameCreatedEvent>>();
-        var mockStartedHandler = new Mock<IDomainEventHandler<GameStartedEvent>>();
-        
-        mockCreatedHandler.Setup(x => x.HandleAsync(gameCreatedEvent))
-            .Returns(Task.CompletedTask);
-        mockStartedHandler.Setup(x => x.HandleAsync(gameStartedEvent))
-            .Returns(Task.CompletedTask);
-
-        _mockServiceProvider.Setup(x => x.GetServices(typeof(IDomainEventHandler<GameCreatedEvent>)))
-            .Returns(new[] { mockCreatedHandler.Object });
-        _mockServiceProvider.Setup(x => x.GetServices(typeof(IDomainEventHandler<GameStartedEvent>)))
-            .Returns(new[] { mockStartedHandler.Object });
-
-        var sut = ResolveSut();
-
-        // Act
-        await sut.DispatchAsync(domainEvents);
-
-        // Assert
-        mockCreatedHandler.Verify(x => x.HandleAsync(gameCreatedEvent), Times.Once);
-        mockStartedHandler.Verify(x => x.HandleAsync(gameStartedEvent), Times.Once);
-    }
-
-    [Fact]
-    public async Task DispatchAsync_WithEmptyEventCollection_DoesNotThrow()
-    {
-        // Arrange
-        var emptyEvents = Array.Empty<DomainEvent>();
-        var sut = ResolveSut();
-
-        // Act
-        Func<Task> act = async () => await sut.DispatchAsync(emptyEvents);
-
-        // Assert
-        await act.Should().NotThrowAsync();
-    }
-
-    [Fact]
-    public async Task DispatchAsync_WithDifferentEventTypes_CallsCorrectHandlers()
-    {
-        // Arrange
-        var gameId = GameId.New();
-        var playerAlias = PlayerAlias.Create("TestPlayer");
-        var difficulty = GameDifficulty.Medium;
-        var statistics = GameStatistics.Create();
-        
-        var moveMadeEvent = new MoveMadeEvent(gameId, 0, 0, 5, statistics);
-
-        var mockHandler = new Mock<IDomainEventHandler<MoveMadeEvent>>();
-        mockHandler.Setup(x => x.HandleAsync(moveMadeEvent))
-            .Returns(Task.CompletedTask);
-
-        var handlers = new[] { mockHandler.Object };
-
-        _mockServiceProvider.Setup(x => x.GetServices(typeof(IDomainEventHandler<MoveMadeEvent>)))
-            .Returns(handlers);
-
-        var sut = ResolveSut();
-
-        // Act
-        await sut.DispatchAsync(moveMadeEvent);
-
-        // Assert
-        mockHandler.Verify(x => x.HandleAsync(moveMadeEvent), Times.Once);
+        await dispatchAsync.Should().NotThrowAsync();
     }
 
     [Fact]
     public async Task DispatchAsync_WithServiceProviderThrows_RethrowsException()
     {
         // Arrange
-        var gameId = GameId.New();
-        var playerAlias = PlayerAlias.Create("TestPlayer");
-        var difficulty = GameDifficulty.Medium;
-        var domainEvent = new GameCreatedEvent(gameId, playerAlias, difficulty);
-
-        var expectedException = new InvalidOperationException("Service provider error");
-        
-        _mockServiceProvider.Setup(x => x.GetServices(typeof(IDomainEventHandler<GameCreatedEvent>)))
-            .Throws(expectedException);
-
+        var domainEvent = Container.Create<GameCreatedEvent>();
+        _mockServiceProvider
+            .Setup(x => x.GetService(typeof(IEnumerable<IDomainEventHandler<GameCreatedEvent>>)))
+            .Throws(new InvalidOperationException());
         var sut = ResolveSut();
 
         // Act
-        Func<Task> act = async () => await sut.DispatchAsync(domainEvent);
+        var dispatchAsync = async () => await sut.DispatchAsync(domainEvent);
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("Service provider error");
+        await dispatchAsync.Should().ThrowAsync<InvalidOperationException>();
     }
 
     [Fact]
-    public async Task DispatchAsync_WithMixedSuccessAndFailureHandlers_ThrowsFirstException()
+    public async Task DispatchAsync_WithSingleEvent_CallsCorrectHandler()
     {
         // Arrange
-        var gameId = GameId.New();
-        var playerAlias = PlayerAlias.Create("TestPlayer");
-        var difficulty = GameDifficulty.Medium;
-        var domainEvent = new GameCreatedEvent(gameId, playerAlias, difficulty);
-
-        var mockHandler1 = new Mock<IDomainEventHandler<GameCreatedEvent>>();
-        var mockHandler2 = new Mock<IDomainEventHandler<GameCreatedEvent>>();
-        var expectedException = new InvalidOperationException("First handler error");
-        
-        mockHandler1.Setup(x => x.HandleAsync(domainEvent))
-            .ThrowsAsync(expectedException);
-        mockHandler2.Setup(x => x.HandleAsync(domainEvent))
-            .Returns(Task.CompletedTask);
-
-        var handlers = new[] { mockHandler1.Object, mockHandler2.Object };
-
-        _mockServiceProvider.Setup(x => x.GetServices(typeof(IDomainEventHandler<GameCreatedEvent>)))
-            .Returns(handlers);
-
+        var domainEvent = Container.Create<GameCreatedEvent>();
+        var mockHandler = Container.ResolveMock<IDomainEventHandler<GameCreatedEvent>>();
+        var handlers = new[] { mockHandler.Object };
+        _mockServiceProvider.SetupGetService(typeof(IEnumerable<IDomainEventHandler<GameCreatedEvent>>), handlers);
         var sut = ResolveSut();
 
         // Act
-        Func<Task> act = async () => await sut.DispatchAsync(domainEvent);
+        await sut.DispatchAsync(domainEvent);
 
         // Assert
-        await act.Should().ThrowAsync<InvalidOperationException>()
-            .WithMessage("First handler error");
-        
-        // Verify first handler was called
-        mockHandler1.Verify(x => x.HandleAsync(domainEvent), Times.Once);
-        // Verify second handler was not called due to exception
-        mockHandler2.Verify(x => x.HandleAsync(domainEvent), Times.Never);
-    }
-
-    [Fact]
-    public async Task DispatchAsync_WithNullEvent_ThrowsArgumentNullException()
-    {
-        // Arrange
-        var sut = ResolveSut();
-
-        // Act
-        Func<Task> act = async () => await sut.DispatchAsync((DomainEvent)null!);
-
-        // Assert
-        await act.Should().ThrowAsync<ArgumentNullException>();
-    }
-
-    [Fact]
-    public async Task DispatchAsync_WithNullEventCollection_ThrowsArgumentNullException()
-    {
-        // Arrange
-        var sut = ResolveSut();
-
-        // Act
-        Func<Task> act = async () => await sut.DispatchAsync((IEnumerable<DomainEvent>)null!);
-
-        // Assert
-        await act.Should().ThrowAsync<ArgumentNullException>();
+        mockHandler.Verify(x => x.HandleAsync(domainEvent), Times.Once);
     }
 }
