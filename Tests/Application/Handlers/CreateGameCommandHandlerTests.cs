@@ -12,12 +12,12 @@ namespace UnitTests.Application.Handlers;
 public class CreateGameCommandHandlerTests : BaseTestByAbstraction<CreateGameCommandHandler, ICommandHandler<CreateGameCommand>>
 {
     private readonly Mock<IGameRepository> _mockGameRepository;
-    private readonly Mock<IPuzzleRepository> _mockPuzzleRepository;
+    private readonly Mock<IPuzzleGenerator> _mockPuzzleRepository;
 
     public CreateGameCommandHandlerTests()
     {
         _mockGameRepository = Container.ResolveMock<IGameRepository>();
-        _mockPuzzleRepository = Container.ResolveMock<IPuzzleRepository>();
+        _mockPuzzleRepository = Container.ResolveMock<IPuzzleGenerator>();
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public class CreateGameCommandHandlerTests : BaseTestByAbstraction<CreateGameCom
         var puzzle = CreateTestPuzzle();
         var command = new CreateGameCommand(playerAlias, difficulty);
 
-        _mockPuzzleRepository.Setup(x => x.GetRandomByDifficultyAsync(It.IsAny<GameDifficulty>()))
+        _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
             .ReturnsAsync(puzzle);
 
         _mockGameRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>()))
@@ -42,7 +42,7 @@ public class CreateGameCommandHandlerTests : BaseTestByAbstraction<CreateGameCom
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        _mockPuzzleRepository.Verify(x => x.GetRandomByDifficultyAsync(It.IsAny<GameDifficulty>()), Times.Once);
+        _mockPuzzleRepository.Verify(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()), Times.Once);
         _mockGameRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Once);
     }
 
@@ -54,7 +54,7 @@ public class CreateGameCommandHandlerTests : BaseTestByAbstraction<CreateGameCom
         var difficulty = "Medium";
         var command = new CreateGameCommand(playerAlias, difficulty);
 
-        _mockPuzzleRepository.Setup(x => x.GetRandomByDifficultyAsync(It.IsAny<GameDifficulty>()))
+        _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
             .ReturnsAsync((SudokuPuzzle?)null);
 
         var sut = ResolveSut();
@@ -84,7 +84,7 @@ public class CreateGameCommandHandlerTests : BaseTestByAbstraction<CreateGameCom
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().NotBeNullOrEmpty();
-        _mockPuzzleRepository.Verify(x => x.GetRandomByDifficultyAsync(It.IsAny<GameDifficulty>()), Times.Never);
+        _mockPuzzleRepository.Verify(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()), Times.Never);
         _mockGameRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Never);
     }
 
@@ -104,7 +104,7 @@ public class CreateGameCommandHandlerTests : BaseTestByAbstraction<CreateGameCom
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().NotBeNullOrEmpty();
-        _mockPuzzleRepository.Verify(x => x.GetRandomByDifficultyAsync(It.IsAny<GameDifficulty>()), Times.Never);
+        _mockPuzzleRepository.Verify(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()), Times.Never);
         _mockGameRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Never);
     }
 
@@ -118,7 +118,7 @@ public class CreateGameCommandHandlerTests : BaseTestByAbstraction<CreateGameCom
         var command = new CreateGameCommand(playerAlias, difficulty);
         var exceptionMessage = "Database error";
 
-        _mockPuzzleRepository.Setup(x => x.GetRandomByDifficultyAsync(It.IsAny<GameDifficulty>()))
+        _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
             .ReturnsAsync(puzzle);
 
         _mockGameRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>()))
@@ -143,7 +143,7 @@ public class CreateGameCommandHandlerTests : BaseTestByAbstraction<CreateGameCom
         var command = new CreateGameCommand(playerAlias, difficulty);
         var domainException = new InvalidPlayerAliasException("Invalid player alias");
 
-        _mockPuzzleRepository.Setup(x => x.GetRandomByDifficultyAsync(It.IsAny<GameDifficulty>()))
+        _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
             .ThrowsAsync(domainException);
 
         var sut = ResolveSut();
@@ -166,7 +166,7 @@ public class CreateGameCommandHandlerTests : BaseTestByAbstraction<CreateGameCom
         var command = new CreateGameCommand(playerAlias, difficulty);
         var expectedDifficulty = GameDifficulty.FromName(difficulty);
 
-        _mockPuzzleRepository.Setup(x => x.GetRandomByDifficultyAsync(It.IsAny<GameDifficulty>()))
+        _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
             .ReturnsAsync(puzzle);
 
         _mockGameRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>()))
@@ -178,7 +178,7 @@ public class CreateGameCommandHandlerTests : BaseTestByAbstraction<CreateGameCom
         await sut.Handle(command, CancellationToken.None);
 
         // Assert
-        _mockPuzzleRepository.Verify(x => x.GetRandomByDifficultyAsync(
+        _mockPuzzleRepository.Verify(x => x.GeneratePuzzleAsync(
             It.Is<GameDifficulty>(d => d.Name == expectedDifficulty.Name)), Times.Once);
     }
 
