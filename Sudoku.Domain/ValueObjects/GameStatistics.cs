@@ -36,19 +36,10 @@ public record GameStatistics
     
     public void UndoMove()
     {
-        if (TotalMoves > 0 && moveHistory.Count > 0)
-        {
-            TotalMoves--;
-            bool lastMoveWasValid = moveHistory.Pop();
-            if (lastMoveWasValid)
-            {
-                ValidMoves--;
-            }
-            else
-            {
-                InvalidMoves--;
-            }
-        }
+        if (TotalMoves <= 0) return;
+
+        TotalMoves--;
+        ValidMoves--;
     }
 
     public void UpdatePlayDuration(TimeSpan duration)
