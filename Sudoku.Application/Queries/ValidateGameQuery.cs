@@ -1,4 +1,3 @@
-using MediatR;
 using Sudoku.Application.Common;
 using Sudoku.Application.DTOs;
 

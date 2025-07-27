@@ -1,4 +1,3 @@
-using MediatR;
 using Sudoku.Application.Common;
 
 namespace Sudoku.Application.Commands;

@@ -15,14 +15,12 @@ public class DeleteGameCommandHandler(IGameRepository gameRepository, ILogger<De
         {
             var gameId = GameId.Create(request.GameId);
             
-            // Check if the game exists
             var game = await gameRepository.GetByIdAsync(gameId);
             if (game == null)
             {
                 return Result.Failure($"Game not found with ID: {request.GameId}");
             }
             
-            // Delete the game
             await gameRepository.DeleteAsync(gameId);
             
             logger.LogInformation("Deleted game with ID: {GameId}", gameId.Value);

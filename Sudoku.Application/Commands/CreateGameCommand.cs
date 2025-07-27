@@ -1,5 +1,4 @@
 using Sudoku.Application.Common;
-using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Application.Commands;
 
