@@ -33,6 +33,14 @@ public record GameStatistics
 
         LastMoveAt = DateTime.UtcNow;
     }
+    
+    public void UndoMove()
+    {
+        if (TotalMoves <= 0) return;
+
+        TotalMoves--;
+        ValidMoves--;
+    }
 
     public void UpdatePlayDuration(TimeSpan duration)
     {

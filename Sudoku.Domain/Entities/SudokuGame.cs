@@ -3,6 +3,7 @@ namespace Sudoku.Domain.Entities;
 public class SudokuGame : AggregateRoot
 {
     private readonly List<Cell> _cells;
+    private readonly List<MoveHistory> _moveHistory;
 
     public GameId Id { get; private set; }
     public PlayerAlias PlayerAlias { get; private set; }
@@ -17,6 +18,7 @@ public class SudokuGame : AggregateRoot
     private SudokuGame()
     {
         _cells = [];
+        _moveHistory = [];
     }
 
     public static SudokuGame Create(PlayerAlias playerAlias, GameDifficulty difficulty, IEnumerable<Cell> initialCells)
@@ -69,6 +71,10 @@ public class SudokuGame : AggregateRoot
             throw new InvalidMoveException($"Invalid move: {value} at position ({row}, {column})");
         }
 
+        // Record move history before making the change
+        var previousValue = cell.Value;
+        _moveHistory.Add(new MoveHistory(row, column, previousValue, value));
+
         cell.SetValue(value);
         Statistics.RecordMove(true);
 
@@ -78,6 +84,114 @@ public class SudokuGame : AggregateRoot
         {
             CompleteGame();
         }
+    }
+
+    public void UndoLastMove()
+    {
+        if (Status != GameStatus.InProgress)
+        {
+            throw new GameNotInProgressException($"Cannot undo move in {Status} state");
+        }
+
+        if (_moveHistory.Count == 0)
+        {
+            throw new NoMoveHistoryException("No moves to undo");
+        }
+
+        var lastMove = _moveHistory[^1];
+        _moveHistory.RemoveAt(_moveHistory.Count - 1);
+
+        var cell = GetCell(lastMove.Row, lastMove.Column);
+        cell.SetValue(lastMove.PreviousValue);
+
+        // Decrement the move count in statistics
+        Statistics.UndoMove();
+
+        AddDomainEvent(new MoveUndoneEvent(Id, lastMove.Row, lastMove.Column, lastMove.PreviousValue));
+    }
+
+    public void ResetGame()
+    {
+        if (Status == GameStatus.NotStarted)
+        {
+            throw new GameNotInStartStateException("Game is already in its initial state");
+        }
+
+        // Reset all non-fixed cells
+        foreach (var cell in _cells.Where(c => !c.IsFixed))
+        {
+            cell.SetValue(null);
+        }
+
+        // Clear move history
+        _moveHistory.Clear();
+
+        // Reset statistics but keep the original timestamp
+        Statistics = GameStatistics.Create();
+
+        // Set the game state back to InProgress if it was completed or abandoned
+        if (Status == GameStatus.Completed || Status == GameStatus.Abandoned)
+        {
+            Status = GameStatus.InProgress;
+            CompletedAt = null;
+        }
+
+        AddDomainEvent(new GameResetEvent(Id));
+    }
+
+    public ValidationResult ValidateGame()
+    {
+        var errors = new List<string>();
+        var isValid = true;
+
+        // Validate rows
+        for (int row = 0; row < 9; row++)
+        {
+            var rowValues = _cells.Where(c => c.Row == row && c.HasValue)
+                                 .Select(c => c.Value!.Value)
+                                 .ToList();
+            
+            if (rowValues.Count != rowValues.Distinct().Count())
+            {
+                errors.Add($"Row {row + 1} contains duplicate values");
+                isValid = false;
+            }
+        }
+
+        // Validate columns
+        for (int column = 0; column < 9; column++)
+        {
+            var columnValues = _cells.Where(c => c.Column == column && c.HasValue)
+                                    .Select(c => c.Value!.Value)
+                                    .ToList();
+            
+            if (columnValues.Count != columnValues.Distinct().Count())
+            {
+                errors.Add($"Column {column + 1} contains duplicate values");
+                isValid = false;
+            }
+        }
+
+        // Validate 3x3 boxes
+        for (int boxRow = 0; boxRow < 9; boxRow += 3)
+        {
+            for (int boxColumn = 0; boxColumn < 9; boxColumn += 3)
+            {
+                var boxValues = _cells.Where(c => c.Row >= boxRow && c.Row < boxRow + 3 &&
+                                                 c.Column >= boxColumn && c.Column < boxColumn + 3 &&
+                                                 c.HasValue)
+                                     .Select(c => c.Value!.Value)
+                                     .ToList();
+                
+                if (boxValues.Count != boxValues.Distinct().Count())
+                {
+                    errors.Add($"Box at position ({boxRow / 3 + 1}, {boxColumn / 3 + 1}) contains duplicate values");
+                    isValid = false;
+                }
+            }
+        }
+
+        return new ValidationResult(isValid, errors);
     }
 
     public void PauseGame()
@@ -211,3 +325,7 @@ public class SudokuGame : AggregateRoot
         AddDomainEvent(new GameCompletedEvent(Id, Statistics));
     }
 }
+
+public record MoveHistory(int Row, int Column, int? PreviousValue, int? NewValue);
+
+public record ValidationResult(bool IsValid, List<string> Errors);

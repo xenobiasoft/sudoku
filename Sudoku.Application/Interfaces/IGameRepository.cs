@@ -1,7 +1,7 @@
+using Sudoku.Application.Specifications;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
-using Sudoku.Application.Specifications;
 
 namespace Sudoku.Application.Interfaces;
 

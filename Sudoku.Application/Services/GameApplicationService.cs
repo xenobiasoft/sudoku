@@ -3,6 +3,7 @@ using Sudoku.Application.Common;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Queries;
 using Sudoku.Application.DTOs;
+using Sudoku.Application.Interfaces;
 
 namespace Sudoku.Application.Services;
 
@@ -54,7 +55,7 @@ public class GameApplicationService(IMediator mediator) : IGameApplicationServic
         return await mediator.Send(query);
     }
 
-    public async Task<Result> MakeMoveAsync(string gameId, int row, int column, int value)
+    public async Task<Result> MakeMoveAsync(string gameId, int row, int column, int? value)
     {
         var command = new MakeMoveCommand(gameId, row, column, value);
         return await mediator.Send(command);
@@ -82,5 +83,35 @@ public class GameApplicationService(IMediator mediator) : IGameApplicationServic
     {
         var command = new AbandonGameCommand(gameId);
         return await mediator.Send(command);
+    }
+
+    public async Task<Result> DeleteGameAsync(string gameId)
+    {
+        var command = new DeleteGameCommand(gameId);
+        return await mediator.Send(command);
+    }
+
+    public async Task<Result> DeletePlayerGamesAsync(string playerAlias)
+    {
+        var command = new DeletePlayerGamesCommand(playerAlias);
+        return await mediator.Send(command);
+    }
+
+    public async Task<Result> UndoLastMoveAsync(string gameId)
+    {
+        var command = new UndoLastMoveCommand(gameId);
+        return await mediator.Send(command);
+    }
+
+    public async Task<Result> ResetGameAsync(string gameId)
+    {
+        var command = new ResetGameCommand(gameId);
+        return await mediator.Send(command);
+    }
+
+    public async Task<Result<ValidationResultDto>> ValidateGameAsync(string gameId)
+    {
+        var query = new ValidateGameQuery(gameId);
+        return await mediator.Send(query);
     }
 }

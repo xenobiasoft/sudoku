@@ -4,12 +4,41 @@ using Sudoku.Domain.Enums;
 using Sudoku.Domain.Events;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
+using UnitTests.Helpers.Factories;
 using InvalidMoveException = Sudoku.Domain.Exceptions.InvalidMoveException;
 
 namespace UnitTests.Domain;
 
 public class SudokuGameTests : BaseTestByType<SudokuGame>
 {
+    [Fact]
+    public void AbandonGame_WhenGameIsCompleted_ThrowsGameAlreadyCompletedException()
+    {
+        // Arrange
+        var sut = GameFactory.CreateCompletedGame();
+
+        // Act
+        Action act = () => sut.AbandonGame();
+
+        // Assert
+        act.Should().Throw<GameAlreadyCompletedException>();
+    }
+
+    [Fact]
+    public void AbandonGame_WhenGameIsNotCompleted_ChangesStatusToAbandoned()
+    {
+        // Arrange
+        var sut = GameFactory.CreateEmptyGame();
+        sut.StartGame();
+
+        // Act
+        sut.AbandonGame();
+
+        // Assert
+        sut.Status.Should().Be(GameStatus.Abandoned);
+        sut.DomainEvents.Should().Contain(e => e is GameAbandonedEvent);
+    }
+
     [Fact]
     public void Create_WithValidParameters_CreatesGameWithCorrectProperties()
     {
@@ -32,39 +61,84 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
     }
 
     [Fact]
-    public void StartGame_WhenGameIsNotStarted_ChangesStatusToInProgress()
+    public void IsGameComplete_WithAllCellsFilledCorrectly_ReturnsTrue()
     {
         // Arrange
-        var sut = CreateDefaultGame();
+        var sut = GameFactory.CreateCompletedGame();
 
         // Act
-        sut.StartGame();
+        var result = sut.IsGameComplete();
 
         // Assert
-        sut.Status.Should().Be(GameStatus.InProgress);
-        sut.StartedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
-        sut.DomainEvents.Should().Contain(e => e is GameStartedEvent);
+        result.Should().BeTrue();
     }
 
     [Fact]
-    public void StartGame_WhenGameIsAlreadyInProgress_ThrowsGameNotInStartStateException()
+    public void IsGameComplete_WithNotAllCellsFilled_ReturnsFalse()
     {
         // Arrange
-        var sut = CreateDefaultGame();
+        var sut = GameFactory.CreateGameInProgress();
+
+        // Act
+        var result = sut.IsGameComplete();
+
+        // Assert
+        result.Should().BeFalse();
+    }
+
+    [Fact]
+    public void MakeMove_ClearEmptyCell_DoesNotThrow()
+    {
+        // Arrange
+        var sut = GameFactory.CreateGameInProgress();
+
+        // Act
+        Action act = () => sut.MakeMove(0, 0, null);
+
+        // Assert
+        act.Should().NotThrow();
+        sut.GetCell(0, 0).Value.Should().BeNull();
+    }
+
+    [Fact]
+    public void MakeMove_ClearFixedCell_ThrowsCellIsFixedException()
+    {
+        // Arrange
+        var sut = CreateGameWithCells(new[]
+        {
+            Cell.CreateFixed(0, 0, 5)
+        });
         sut.StartGame();
 
         // Act
-        Action act = () => sut.StartGame();
+        Action act = () => sut.MakeMove(0, 0, null);
 
         // Assert
-        act.Should().Throw<GameNotInStartStateException>();
+        act.Should().Throw<CellIsFixedException>();
+    }
+
+    [Fact]
+    public void MakeMove_OnFixedCell_ThrowsCellIsFixedException()
+    {
+        // Arrange
+        var sut = CreateGameWithCells(new[]
+        {
+            Cell.CreateFixed(0, 0, 5)
+        });
+        sut.StartGame();
+
+        // Act
+        Action act = () => sut.MakeMove(0, 0, 6);
+
+        // Assert
+        act.Should().Throw<CellIsFixedException>();
     }
 
     [Fact]
     public void MakeMove_WhenGameIsNotInProgress_ThrowsGameNotInProgressException()
     {
         // Arrange
-        var sut = CreateDefaultGame();
+        var sut = GameFactory.CreateCompletedGame();
 
         // Act
         Action act = () => sut.MakeMove(0, 0, 5);
@@ -89,53 +163,6 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
 
         // Assert
         act.Should().Throw<InvalidMoveException>();
-    }
-
-    [Fact]
-    public void MakeMove_OnFixedCell_ThrowsCellIsFixedException()
-    {
-        // Arrange
-        var sut = CreateGameWithCells(new[]
-        {
-            Cell.CreateFixed(0, 0, 5)
-        });
-        sut.StartGame();
-
-        // Act
-        Action act = () => sut.MakeMove(0, 0, 6);
-
-        // Assert
-        act.Should().Throw<CellIsFixedException>();
-    }
-
-    [Fact]
-    public void MakeMove_WithValidMove_UpdatesCell()
-    {
-        // Arrange
-        var sut = CreateDefaultGame();
-        sut.StartGame();
-
-        // Act
-        sut.MakeMove(0, 0, 5);
-
-        // Assert
-        sut.GetCell(0, 0).Value.Should().Be(5);
-    }
-
-    [Fact]
-    public void MakeMove_WithValidMove_RaisesDomainEvent()
-    {
-        // Arrange
-        var sut = CreateDefaultGame();
-        sut.StartGame();
-        var initialEventCount = sut.DomainEvents.Count;
-
-        // Act
-        sut.MakeMove(0, 0, 5);
-
-        // Assert
-        sut.DomainEvents.Should().Contain(e => e is MoveMadeEvent);
-        sut.DomainEvents.Count.Should().Be(initialEventCount + 1);
     }
 
     [Fact]
@@ -179,43 +206,38 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
     }
 
     [Fact]
-    public void MakeMove_ClearFixedCell_ThrowsCellIsFixedException()
+    public void MakeMove_WithValidMove_RaisesDomainEvent()
     {
         // Arrange
-        var sut = CreateGameWithCells(new[]
-        {
-            Cell.CreateFixed(0, 0, 5)
-        });
-        sut.StartGame();
+        var sut = GameFactory.CreateGameInProgress();
+        var initialEventCount = sut.DomainEvents.Count;
 
         // Act
-        Action act = () => sut.MakeMove(0, 0, null);
+        sut.MakeMove(0, 0, 5);
 
         // Assert
-        act.Should().Throw<CellIsFixedException>();
+        sut.DomainEvents.Should().Contain(e => e is MoveMadeEvent);
+        sut.DomainEvents.Count.Should().Be(initialEventCount + 1);
     }
 
     [Fact]
-    public void MakeMove_ClearEmptyCell_DoesNotThrow()
+    public void MakeMove_WithValidMove_UpdatesCell()
     {
         // Arrange
-        var sut = CreateDefaultGame();
-        sut.StartGame();
+        var sut = GameFactory.CreateGameInProgress();
 
         // Act
-        Action act = () => sut.MakeMove(0, 0, null);
+        sut.MakeMove(0, 0, 5);
 
         // Assert
-        act.Should().NotThrow();
-        sut.GetCell(0, 0).Value.Should().BeNull();
+        sut.GetCell(0, 0).Value.Should().Be(5);
     }
 
     [Fact]
     public void PauseGame_WhenGameIsInProgress_ChangesStatusToPaused()
     {
         // Arrange
-        var sut = CreateDefaultGame();
-        sut.StartGame();
+        var sut = GameFactory.CreateGameInProgress();
 
         // Act
         sut.PauseGame();
@@ -230,7 +252,7 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
     public void PauseGame_WhenGameIsNotInProgress_ThrowsGameNotInProgressException()
     {
         // Arrange
-        var sut = CreateDefaultGame();
+        var sut = GameFactory.CreateEmptyGame();
 
         // Act
         Action act = () => sut.PauseGame();
@@ -240,11 +262,23 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
     }
 
     [Fact]
+    public void ResumeGame_WhenGameIsNotPaused_ThrowsGameNotPausedException()
+    {
+        // Arrange
+        var sut = GameFactory.CreateGameInProgress();
+
+        // Act
+        Action act = () => sut.ResumeGame();
+
+        // Assert
+        act.Should().Throw<GameNotPausedException>();
+    }
+
+    [Fact]
     public void ResumeGame_WhenGameIsPaused_ChangesStatusToInProgress()
     {
         // Arrange
-        var sut = CreateDefaultGame();
-        sut.StartGame();
+        var sut = GameFactory.CreateGameInProgress();
         sut.PauseGame();
 
         // Act
@@ -257,79 +291,38 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
     }
 
     [Fact]
-    public void ResumeGame_WhenGameIsNotPaused_ThrowsGameNotPausedException()
+    public void StartGame_WhenGameIsAlreadyInProgress_ThrowsGameNotInStartStateException()
     {
         // Arrange
-        var sut = CreateDefaultGame();
+        var sut = GameFactory.CreateGameInProgress();
+
+        // Act
+        Action act = () => sut.StartGame();
+
+        // Assert
+        act.Should().Throw<GameNotInStartStateException>();
+    }
+
+    [Fact]
+    public void StartGame_WhenGameIsNotStarted_ChangesStatusToInProgress()
+    {
+        // Arrange
+        var sut = GameFactory.CreateGameNotStarted();
+
+        // Act
         sut.StartGame();
 
-        // Act
-        Action act = () => sut.ResumeGame();
-
         // Assert
-        act.Should().Throw<GameNotPausedException>();
-    }
-
-    [Fact]
-    public void AbandonGame_WhenGameIsNotCompleted_ChangesStatusToAbandoned()
-    {
-        // Arrange
-        var sut = CreateDefaultGame();
-        sut.StartGame();
-
-        // Act
-        sut.AbandonGame();
-
-        // Assert
-        sut.Status.Should().Be(GameStatus.Abandoned);
-        sut.DomainEvents.Should().Contain(e => e is GameAbandonedEvent);
-    }
-
-    [Fact]
-    public void AbandonGame_WhenGameIsCompleted_ThrowsGameAlreadyCompletedException()
-    {
-        // Arrange
-        var sut = CreateCompletedGame();
-
-        // Act
-        Action act = () => sut.AbandonGame();
-
-        // Assert
-        act.Should().Throw<GameAlreadyCompletedException>();
-    }
-
-    [Fact]
-    public void IsGameComplete_WithAllCellsFilledCorrectly_ReturnsTrue()
-    {
-        // Arrange
-        var sut = CreateCompletedGame();
-
-        // Act
-        var result = sut.IsGameComplete();
-
-        // Assert
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void IsGameComplete_WithNotAllCellsFilled_ReturnsFalse()
-    {
-        // Arrange
-        var sut = CreateDefaultGame();
-        sut.StartGame();
-
-        // Act
-        var result = sut.IsGameComplete();
-
-        // Assert
-        result.Should().BeFalse();
+        sut.Status.Should().Be(GameStatus.InProgress);
+        sut.StartedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
+        sut.DomainEvents.Should().Contain(e => e is GameStartedEvent);
     }
 
     [Fact]
     public void UpdatePlayDuration_UpdatesStatisticsDuration()
     {
         // Arrange
-        var sut = CreateDefaultGame();
+        var sut = GameFactory.CreateCompletedGame();
         var duration = TimeSpan.FromMinutes(10);
 
         // Act
@@ -337,14 +330,6 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
 
         // Assert
         sut.Statistics.PlayDuration.Should().Be(duration);
-    }
-
-    private SudokuGame CreateDefaultGame()
-    {
-        var playerAlias = PlayerAlias.Create("TestPlayer");
-        var difficulty = GameDifficulty.Medium;
-        var cells = GenerateEmptyCells();
-        return SudokuGame.Create(playerAlias, difficulty, cells);
     }
 
     private SudokuGame CreateGameWithCells(IEnumerable<Cell> specificCells)
@@ -364,36 +349,6 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
         }
         
         return SudokuGame.Create(playerAlias, difficulty, cells);
-    }
-
-    private SudokuGame CreateCompletedGame()
-    {
-        var cells = new List<Cell>();
-        int[,] validBoard = {
-            {5, 3, 4, 6, 7, 8, 9, 1, 2},
-            {6, 7, 2, 1, 9, 5, 3, 4, 8},
-            {1, 9, 8, 3, 4, 2, 5, 6, 7},
-            {8, 5, 9, 7, 6, 1, 4, 2, 3},
-            {4, 2, 6, 8, 5, 3, 7, 9, 1},
-            {7, 1, 3, 9, 2, 4, 8, 5, 6},
-            {9, 6, 1, 5, 3, 7, 2, 8, 4},
-            {2, 8, 7, 4, 1, 9, 6, 3, 5},
-            {3, 4, 5, 2, 8, 6, 1, 7, 9}
-        };
-
-        for (var row = 0; row < 9; row++)
-        {
-            for (var col = 0; col < 9; col++)
-            {
-                cells.Add(Cell.Create(row, col, validBoard[row, col], false));
-            }
-        }
-
-        var game = SudokuGame.Create(PlayerAlias.Create("TestPlayer"), GameDifficulty.Medium, cells);
-        game.StartGame();
-        game.MakeMove(0, 0, null);
-        game.MakeMove(0, 0, 5);
-        return game;
     }
 
     private IEnumerable<Cell> GenerateEmptyCells()

@@ -6,6 +6,7 @@ using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
 using UnitTests.Helpers.Builders;
+using UnitTests.Helpers.Factories;
 using XenobiaSoft.Sudoku.Infrastructure.Repositories;
 using XenobiaSoft.Sudoku.Infrastructure.Services;
 
@@ -24,8 +25,8 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
 
     protected override void AddContainerCustomizations(Container container)
     {
-        container.AddCustomizations(new PlayerAliasClassBuilder());
-        container.AddCustomizations(new SudokuGameClassBuilder());
+        container.AddCustomizations(new PlayerAliasGenerator());
+        container.AddCustomizations(new SudokuGameGenerator());
     }
 
     [Fact]
@@ -674,24 +675,11 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         _mockStorageService.Verify(x => x.SaveAsync(ContainerName, expectedBlobName, game), Times.Once);
     }
 
-    private static List<Cell> CreateEmptyCells()
-    {
-        var cells = new List<Cell>();
-        for (var row = 0; row < 9; row++)
-        {
-            for (var col = 0; col < 9; col++)
-            {
-                cells.Add(Cell.CreateEmpty(row, col));
-            }
-        }
-        return cells;
-    }
-
     private SudokuGame CreateTestGame(PlayerAlias? playerAlias = null, GameDifficulty? difficulty = null)
     {
         var alias = playerAlias ?? Container.Create<PlayerAlias>();
         var diff = difficulty ?? GameDifficulty.Medium;
-        var cells = CreateEmptyCells();
+        var cells = CellsFactory.CreateEmptyCells();
         return SudokuGame.Create(alias, diff, cells);
     }
 
@@ -728,22 +716,5 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         _mockStorageService
             .Setup(x => x.GetBlobNamesAsync(ContainerName, null))
             .Returns(allBlobNames.ToAsyncEnumerable());
-    }
-}
-
-public static class AsyncEnumerableExtensions
-{
-    public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this IEnumerable<T> enumerable, [EnumeratorCancellation] CancellationToken cancellationToken = default)
-    {
-        if (enumerable == null)
-        {
-            throw new ArgumentNullException(nameof(enumerable));
-        }
-
-        foreach (var item in enumerable)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            yield return item;
-        }
     }
 }

@@ -167,7 +167,7 @@ public void MakeMove_ValidMove_UpdatesCell()
 }
 ```
 
-Testing logging can be accomplished by using the `Logger` object that is a property of the `BaseTestByAbstraction` and `BaseTestByType` class. There are multiple methods to get the specific type of log messages:
+Testing logging can be accomplished by using the `Logger` object that is a property of the `BaseTestByAbstraction` and `BaseTestByType` class. Never create a mocked instance of `ILogger`. There are multiple methods to get the specific type of log messages:
 
 - `Logger.InformationLogs()` for information logs
 - `Logger.WarningLogs()` for warning logs
@@ -189,6 +189,8 @@ public void MakeMove_ValidMove_LogsInformation()
     // Assert
     Logger.InformationLogs().ContainsMessage(expectedMessage);
 }
+
+The `Logger` object also has a method `ContainsMessage()` that can be used to check if a specific, or partial log message was logged.
 
 ### Integration Testing
 
