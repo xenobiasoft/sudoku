@@ -55,7 +55,7 @@ public class GameApplicationService(IMediator mediator) : IGameApplicationServic
         return await mediator.Send(query);
     }
 
-    public async Task<Result> MakeMoveAsync(string gameId, int row, int column, int value)
+    public async Task<Result> MakeMoveAsync(string gameId, int row, int column, int? value)
     {
         var command = new MakeMoveCommand(gameId, row, column, value);
         return await mediator.Send(command);

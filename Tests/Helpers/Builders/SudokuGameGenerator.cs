@@ -1,6 +1,7 @@
 ﻿using AutoFixture.Kernel;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
+using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Helpers.Builders;
 
