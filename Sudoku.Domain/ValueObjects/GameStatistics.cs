@@ -36,10 +36,18 @@ public record GameStatistics
     
     public void UndoMove()
     {
-        if (TotalMoves > 0)
+        if (TotalMoves > 0 && moveHistory.Count > 0)
         {
             TotalMoves--;
-            ValidMoves--; // We only track valid moves in history
+            bool lastMoveWasValid = moveHistory.Pop();
+            if (lastMoveWasValid)
+            {
+                ValidMoves--;
+            }
+            else
+            {
+                InvalidMoves--;
+            }
         }
     }
 
