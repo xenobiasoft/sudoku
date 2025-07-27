@@ -5,7 +5,7 @@ namespace UnitTests.Helpers.Builders;
 
 public class CellGenerator : ISpecimenBuilder
 {
-    private readonly Random _rnd = new Random();
+    private readonly Random _rnd = Random.Shared;
 
     public object Create(object request, ISpecimenContext context)
     {
