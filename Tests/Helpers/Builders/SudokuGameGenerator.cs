@@ -10,16 +10,7 @@ public class SudokuGameGenerator : ISpecimenBuilder
     {
         if (request is Type type && type == typeof(SudokuGame))
         {
-            var cells = new List<Cell>();
-
-            for (var row = 0; row < 9; row++)
-            {
-                for (var col = 0; col < 9; col++)
-                {
-                    cells.Add(Cell.Create(row, col));
-                }
-            }
-
+            var cells = CellsFactory.CreateEmptyCells();
             return SudokuGame.Create(
                 context.Create<PlayerAlias>(),
                 context.Create<GameDifficulty>(),
