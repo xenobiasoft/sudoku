@@ -316,4 +316,4 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
 }
 
 // Request Models
-public record MoveRequest(int Row, int Column, int Value);
+public record MoveRequest(int Row, int Column, int? Value);
