@@ -61,6 +61,24 @@ public class GameApplicationService(IMediator mediator) : IGameApplicationServic
         return await mediator.Send(command);
     }
 
+    public async Task<Result> AddPossibleValueAsync(string gameId, int row, int column, int value)
+    {
+        var command = new AddPossibleValueCommand(gameId, row, column, value);
+        return await mediator.Send(command);
+    }
+
+    public async Task<Result> RemovePossibleValueAsync(string gameId, int row, int column, int value)
+    {
+        var command = new RemovePossibleValueCommand(gameId, row, column, value);
+        return await mediator.Send(command);
+    }
+
+    public async Task<Result> ClearPossibleValuesAsync(string gameId, int row, int column)
+    {
+        var command = new ClearPossibleValuesCommand(gameId, row, column);
+        return await mediator.Send(command);
+    }
+
     public async Task<Result> StartGameAsync(string gameId)
     {
         var command = new StartGameCommand(gameId);

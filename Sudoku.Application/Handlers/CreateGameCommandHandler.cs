@@ -7,7 +7,7 @@ using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Application.Handlers;
 
-public class CreateGameCommandHandler(IGameRepository gameRepository, IPuzzleRepository puzzleRepository) : ICommandHandler<CreateGameCommand>
+public class CreateGameCommandHandler(IGameRepository gameRepository, IPuzzleGenerator puzzleGenerator) : ICommandHandler<CreateGameCommand>
 {
     public async Task<Result> Handle(CreateGameCommand request, CancellationToken cancellationToken)
     {
@@ -15,7 +15,7 @@ public class CreateGameCommandHandler(IGameRepository gameRepository, IPuzzleRep
         {
             var playerAlias = PlayerAlias.Create(request.PlayerAlias);
             var difficulty = GameDifficulty.FromName(request.Difficulty);
-            var puzzle = await puzzleRepository.GetRandomByDifficultyAsync(difficulty);
+            var puzzle = await puzzleGenerator.GeneratePuzzleAsync(difficulty);
 
             if (puzzle == null)
             {

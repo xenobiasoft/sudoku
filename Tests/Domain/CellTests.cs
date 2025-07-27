@@ -276,4 +276,248 @@ public class CellTests : BaseTestByType<Cell>
         // Assert
         result.Should().Be(".");
     }
+
+    // Tests for possible values
+
+    [Fact]
+    public void AddPossibleValue_OnEmptyCell_AddsPossibleValue()
+    {
+        // Arrange
+        var cell = Cell.CreateEmpty(5, 5);
+
+        // Act
+        cell.AddPossibleValue(7);
+
+        // Assert
+        cell.PossibleValues.Should().ContainSingle(v => v == 7);
+    }
+
+    [Fact]
+    public void AddPossibleValue_WithExistingValue_DoesNotAddDuplicate()
+    {
+        // Arrange
+        var cell = Cell.CreateEmpty(5, 5);
+        cell.AddPossibleValue(7);
+
+        // Act
+        cell.AddPossibleValue(7);
+
+        // Assert
+        cell.PossibleValues.Should().ContainSingle(v => v == 7);
+    }
+
+    [Fact]
+    public void AddPossibleValue_WithMultipleValues_AddsPossibleValues()
+    {
+        // Arrange
+        var cell = Cell.CreateEmpty(5, 5);
+
+        // Act
+        cell.AddPossibleValue(3);
+        cell.AddPossibleValue(7);
+        cell.AddPossibleValue(9);
+
+        // Assert
+        cell.PossibleValues.Should().HaveCount(3);
+        cell.PossibleValues.Should().Contain(new[] { 3, 7, 9 });
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(10)]
+    [InlineData(-1)]
+    public void AddPossibleValue_WithInvalidValue_ThrowsInvalidCellValueException(int value)
+    {
+        // Arrange
+        var cell = Cell.CreateEmpty(5, 5);
+
+        // Act
+        Action act = () => cell.AddPossibleValue(value);
+
+        // Assert
+        act.Should().Throw<InvalidCellValueException>()
+            .WithMessage($"*Possible value must be between 1 and 9*");
+    }
+
+    [Fact]
+    public void AddPossibleValue_OnFixedCell_ThrowsCellIsFixedException()
+    {
+        // Arrange
+        var cell = Cell.CreateFixed(5, 5, 7);
+
+        // Act
+        Action act = () => cell.AddPossibleValue(3);
+
+        // Assert
+        act.Should().Throw<CellIsFixedException>()
+            .WithMessage($"*Cannot modify fixed cell at position (5, 5)*");
+    }
+
+    [Fact]
+    public void AddPossibleValue_OnCellWithValue_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var cell = Cell.Create(5, 5, 7);
+
+        // Act
+        Action act = () => cell.AddPossibleValue(3);
+
+        // Assert
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage($"*Cannot add possible values to cell with a definite value*");
+    }
+
+    [Fact]
+    public void RemovePossibleValue_WithExistingValue_RemovesPossibleValue()
+    {
+        // Arrange
+        var cell = Cell.CreateEmpty(5, 5);
+        cell.AddPossibleValue(3);
+        cell.AddPossibleValue(7);
+
+        // Act
+        cell.RemovePossibleValue(3);
+
+        // Assert
+        cell.PossibleValues.Should().ContainSingle(v => v == 7);
+    }
+
+    [Fact]
+    public void RemovePossibleValue_WithNonExistingValue_DoesNothing()
+    {
+        // Arrange
+        var cell = Cell.CreateEmpty(5, 5);
+        cell.AddPossibleValue(7);
+
+        // Act
+        cell.RemovePossibleValue(3);
+
+        // Assert
+        cell.PossibleValues.Should().ContainSingle(v => v == 7);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(10)]
+    [InlineData(-1)]
+    public void RemovePossibleValue_WithInvalidValue_ThrowsInvalidCellValueException(int value)
+    {
+        // Arrange
+        var cell = Cell.CreateEmpty(5, 5);
+        cell.AddPossibleValue(7);
+
+        // Act
+        Action act = () => cell.RemovePossibleValue(value);
+
+        // Assert
+        act.Should().Throw<InvalidCellValueException>()
+            .WithMessage($"*Possible value must be between 1 and 9*");
+    }
+
+    [Fact]
+    public void RemovePossibleValue_OnFixedCell_ThrowsCellIsFixedException()
+    {
+        // Arrange
+        var cell = Cell.CreateFixed(5, 5, 7);
+
+        // Act
+        Action act = () => cell.RemovePossibleValue(3);
+
+        // Assert
+        act.Should().Throw<CellIsFixedException>()
+            .WithMessage($"*Cannot modify fixed cell at position (5, 5)*");
+    }
+
+    [Fact]
+    public void ClearPossibleValues_WithValues_ClearsPossibleValues()
+    {
+        // Arrange
+        var cell = Cell.CreateEmpty(5, 5);
+        cell.AddPossibleValue(3);
+        cell.AddPossibleValue(7);
+        cell.AddPossibleValue(9);
+
+        // Act
+        cell.ClearPossibleValues();
+
+        // Assert
+        cell.PossibleValues.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ClearPossibleValues_WithNoValues_DoesNothing()
+    {
+        // Arrange
+        var cell = Cell.CreateEmpty(5, 5);
+
+        // Act
+        cell.ClearPossibleValues();
+
+        // Assert
+        cell.PossibleValues.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ClearPossibleValues_OnFixedCell_ThrowsCellIsFixedException()
+    {
+        // Arrange
+        var cell = Cell.CreateFixed(5, 5, 7);
+
+        // Act
+        Action act = () => cell.ClearPossibleValues();
+
+        // Assert
+        act.Should().Throw<CellIsFixedException>()
+            .WithMessage($"*Cannot modify fixed cell at position (5, 5)*");
+    }
+
+    [Fact]
+    public void SetValue_ClearsPossibleValues()
+    {
+        // Arrange
+        var cell = Cell.CreateEmpty(5, 5);
+        cell.AddPossibleValue(3);
+        cell.AddPossibleValue(7);
+
+        // Act
+        cell.SetValue(9);
+
+        // Assert
+        cell.Value.Should().Be(9);
+        cell.PossibleValues.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void SetValue_WithNullableInt_ClearsPossibleValuesWhenValueIsSet()
+    {
+        // Arrange
+        var cell = Cell.CreateEmpty(5, 5);
+        cell.AddPossibleValue(3);
+        cell.AddPossibleValue(7);
+
+        // Act
+        cell.SetValue((int?)9);
+
+        // Assert
+        cell.Value.Should().Be(9);
+        cell.PossibleValues.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void SetValue_WithNullableInt_DoesNotClearPossibleValuesWhenValueIsNull()
+    {
+        // Arrange
+        var cell = Cell.Create(5, 5, 9);
+        cell.SetValue((int?)null);
+        cell.AddPossibleValue(3);
+        cell.AddPossibleValue(7);
+
+        // Act
+        cell.SetValue((int?)null);
+
+        // Assert
+        cell.Value.Should().BeNull();
+        cell.PossibleValues.Should().HaveCount(2);
+        cell.PossibleValues.Should().Contain(new[] { 3, 7 });
+    }
 }
