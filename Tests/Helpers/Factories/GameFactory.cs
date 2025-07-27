@@ -16,6 +16,13 @@ public static class GameFactory
         return game;
     }
 
+    public static SudokuGame CreateGameForPlayer(PlayerAlias playerAlias)
+    {
+        var game = CreateGame(CellsFactory.CreateIncompleteCells(), playerAlias: playerAlias);
+
+        return game;
+    }
+
     public static SudokuGame CreateEmptyGame()
     {
         var game = CreateGame(CellsFactory.CreateIncompleteCells());
@@ -38,6 +45,15 @@ public static class GameFactory
         return CreateGame(cells);
     }
 
+    public static SudokuGame CreateGameWithDifficulty(GameDifficulty difficulty)
+    {
+        var game = CreateGame(CellsFactory.CreateIncompleteCells(), difficulty: difficulty);
+
+        game.StartGame();
+
+        return game;
+    }
+
     public static SudokuGame CreateInvalidGame()
     {
         var game = CreateGame(CellsFactory.CreateInvalidCells());
@@ -56,11 +72,13 @@ public static class GameFactory
         return game;
     }
 
-    private static SudokuGame CreateGame(IEnumerable<Cell> cells)
+    private static SudokuGame CreateGame(IEnumerable<Cell> cells, PlayerAlias? playerAlias = null, GameDifficulty? difficulty = null)
     {
+        var withDifficulty = difficulty ?? GameDifficulty.Easy;
+        var withPlayerAlias = playerAlias ?? PlayerAlias.Create("DefaultPlayer");
         var game = SudokuGame.Create(
-            PlayerAlias.Create("Player1"),
-            GameDifficulty.Easy,
+            withPlayerAlias,
+            withDifficulty,
             cells);
 
         return game;

@@ -1,3 +1,5 @@
+using System.Collections;
+
 namespace Sudoku.Domain.Entities;
 
 public class SudokuPuzzle
@@ -104,4 +106,21 @@ public class SudokuPuzzle
     public int GetFixedCellCount() => _cells.Count(c => c.IsFixed);
 
     public int GetEmptyCellCount() => _cells.Count(c => !c.HasValue);
+
+    public IEnumerable<Cell> GetColumnCells(int col)
+    {
+        return _cells.Where(c => c.Column == col).OrderBy(c => c.Row);
+    }
+
+    public IEnumerable<Cell> GetRowCells(int row)
+    {
+        return _cells.Where(c => c.Row == row).OrderBy(c => c.Column);
+    }
+
+    public IEnumerable<Cell> GetMiniGridCells(int boxRow, int boxColumn)
+    {
+        return _cells.Where(c => c.Row >= boxRow * 3 && c.Row < (boxRow + 1) * 3 &&
+                                 c.Column >= boxColumn * 3 && c.Column < (boxColumn + 1) * 3)
+                     .OrderBy(c => c.Row).ThenBy(c => c.Column);
+    }
 }

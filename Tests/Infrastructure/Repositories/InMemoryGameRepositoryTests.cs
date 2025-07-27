@@ -1,11 +1,10 @@
 using DepenMock.XUnit;
-using Microsoft.Extensions.Logging;
-using Moq;
 using Sudoku.Application.Interfaces;
 using Sudoku.Application.Specifications;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
+using UnitTests.Helpers.Builders;
 using UnitTests.Helpers.Factories;
 using XenobiaSoft.Sudoku.Infrastructure.Repositories;
 
@@ -13,23 +12,30 @@ namespace UnitTests.Infrastructure.Repositories;
 
 public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRepository, IGameRepository>
 {
-    private readonly Mock<ILogger<InMemoryGameRepository>> _mockLogger;
+    private readonly IGameRepository _sut;
 
     public InMemoryGameRepositoryTests()
     {
-        _mockLogger = Container.ResolveMock<ILogger<InMemoryGameRepository>>();
+        _sut = ResolveSut();
+    }
+
+    protected override void AddContainerCustomizations(Container container)
+    {
+        container.AddCustomizations(new CellGenerator());
+        container.AddCustomizations(new GameDifficultyGenerator());
+        container.AddCustomizations(new PlayerAliasGenerator());
+        container.AddCustomizations(new SudokuGameGenerator());
     }
 
     [Fact]
     public async Task GetByIdAsync_WithExistingGame_ReturnsGame()
     {
         // Arrange
-        var sut = ResolveSut();
-        var game = CreateTestGame();
-        await sut.SaveAsync(game);
+        var game = GameFactory.CreateGameInProgress();
+        await _sut.SaveAsync(game);
 
         // Act
-        var result = await sut.GetByIdAsync(game.Id);
+        var result = await _sut.GetByIdAsync(game.Id);
 
         // Assert
         result.Should().NotBeNull();
@@ -41,11 +47,10 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetByIdAsync_WithNonExistingGame_ReturnsNull()
     {
         // Arrange
-        var sut = ResolveSut();
         var nonExistingId = GameId.New();
 
         // Act
-        var result = await sut.GetByIdAsync(nonExistingId);
+        var result = await _sut.GetByIdAsync(nonExistingId);
 
         // Assert
         result.Should().BeNull();
@@ -55,14 +60,13 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task SaveAsync_WithValidGame_SavesGameSuccessfully()
     {
         // Arrange
-        var sut = ResolveSut();
-        var game = CreateTestGame();
+        var game = GameFactory.CreateGameInProgress();
 
         // Act
-        await sut.SaveAsync(game);
+        await _sut.SaveAsync(game);
 
         // Assert
-        var savedGame = await sut.GetByIdAsync(game.Id);
+        var savedGame = await _sut.GetByIdAsync(game.Id);
         savedGame.Should().NotBeNull();
         savedGame!.Id.Should().Be(game.Id);
     }
@@ -71,18 +75,17 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task SaveAsync_WithExistingGame_UpdatesGame()
     {
         // Arrange
-        var sut = ResolveSut();
-        var game = CreateTestGame();
-        await sut.SaveAsync(game);
+        var game = GameFactory.CreateGameNotStarted();
+        await _sut.SaveAsync(game);
 
         // Modify the game
         game.StartGame();
 
         // Act
-        await sut.SaveAsync(game);
+        await _sut.SaveAsync(game);
 
         // Assert
-        var updatedGame = await sut.GetByIdAsync(game.Id);
+        var updatedGame = await _sut.GetByIdAsync(game.Id);
         updatedGame.Should().NotBeNull();
         updatedGame!.Status.Should().Be(GameStatus.InProgress);
     }
@@ -92,14 +95,15 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     {
         // Arrange
         var sut = ResolveSut();
-        var game = CreateTestGame();
+        var game = GameFactory.CreateGameInProgress();
+
         await sut.SaveAsync(game);
 
         // Act
-        await sut.DeleteAsync(game.Id);
+        await _sut.DeleteAsync(game.Id);
 
         // Assert
-        var deletedGame = await sut.GetByIdAsync(game.Id);
+        var deletedGame = await _sut.GetByIdAsync(game.Id);
         deletedGame.Should().BeNull();
     }
 
@@ -107,11 +111,10 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task DeleteAsync_WithNonExistingGame_DoesNotThrow()
     {
         // Arrange
-        var sut = ResolveSut();
         var nonExistingId = GameId.New();
 
         // Act
-        Func<Task> act = async () => await sut.DeleteAsync(nonExistingId);
+        Func<Task> act = async () => await _sut.DeleteAsync(nonExistingId);
 
         // Assert
         await act.Should().NotThrowAsync();
@@ -121,12 +124,12 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task ExistsAsync_WithExistingGame_ReturnsTrue()
     {
         // Arrange
-        var sut = ResolveSut();
-        var game = CreateTestGame();
-        await sut.SaveAsync(game);
+        var game = GameFactory.CreateGameInProgress();
+
+        await _sut.SaveAsync(game);
 
         // Act
-        var result = await sut.ExistsAsync(game.Id);
+        var result = await _sut.ExistsAsync(game.Id);
 
         // Assert
         result.Should().BeTrue();
@@ -136,11 +139,10 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task ExistsAsync_WithNonExistingGame_ReturnsFalse()
     {
         // Arrange
-        var sut = ResolveSut();
         var nonExistingId = GameId.New();
 
         // Act
-        var result = await sut.ExistsAsync(nonExistingId);
+        var result = await _sut.ExistsAsync(nonExistingId);
 
         // Assert
         result.Should().BeFalse();
@@ -150,19 +152,18 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetByPlayerAsync_WithExistingPlayer_ReturnsGamesOrderedByCreatedAt()
     {
         // Arrange
-        var sut = ResolveSut();
         var playerAlias = PlayerAlias.Create("TestPlayer");
-        var game1 = CreateTestGame(playerAlias);
-        var game2 = CreateTestGame(playerAlias);
-        var game3 = CreateTestGame(PlayerAlias.Create("AnotherPlayer"));
+        var game1 = GameFactory.CreateGameForPlayer(playerAlias);
+        var game2 = GameFactory.CreateGameForPlayer(playerAlias);
+        var game3 = GameFactory.CreateGameForPlayer(PlayerAlias.Create("AnotherPlayer"));
 
-        await sut.SaveAsync(game1);
+        await _sut.SaveAsync(game1);
         await Task.Delay(10); // Ensure different timestamps
-        await sut.SaveAsync(game2);
-        await sut.SaveAsync(game3);
+        await _sut.SaveAsync(game2);
+        await _sut.SaveAsync(game3);
 
         // Act
-        var result = await sut.GetByPlayerAsync(playerAlias);
+        var result = await _sut.GetByPlayerAsync(playerAlias);
 
         // Assert
         result.Should().HaveCount(2);
@@ -174,11 +175,10 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetByPlayerAsync_WithNonExistingPlayer_ReturnsEmptyCollection()
     {
         // Arrange
-        var sut = ResolveSut();
         var nonExistingPlayer = PlayerAlias.Create("NonExistingPlayer");
 
         // Act
-        var result = await sut.GetByPlayerAsync(nonExistingPlayer);
+        var result = await _sut.GetByPlayerAsync(nonExistingPlayer);
 
         // Assert
         result.Should().BeEmpty();
@@ -188,17 +188,16 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetByPlayerAndStatusAsync_WithMatchingGames_ReturnsFilteredGames()
     {
         // Arrange
-        var sut = ResolveSut();
         var playerAlias = PlayerAlias.Create("TestPlayer");
-        var game1 = CreateTestGame(playerAlias);
-        var game2 = CreateTestGame(playerAlias);
+        var game1 = GameFactory.CreateGameForPlayer(playerAlias);
+        var game2 = GameFactory.CreateGameForPlayer(playerAlias);
         game2.StartGame();
 
-        await sut.SaveAsync(game1);
-        await sut.SaveAsync(game2);
+        await _sut.SaveAsync(game1);
+        await _sut.SaveAsync(game2);
 
         // Act
-        var result = await sut.GetByPlayerAndStatusAsync(playerAlias, GameStatus.InProgress);
+        var result = await _sut.GetByPlayerAndStatusAsync(playerAlias, GameStatus.InProgress);
 
         // Assert
         result.Should().HaveCount(1);
@@ -209,18 +208,17 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetBySpecificationAsync_WithValidSpecification_ReturnsFilteredGames()
     {
         // Arrange
-        var sut = ResolveSut();
         var playerAlias = PlayerAlias.Create("TestPlayer");
-        var game1 = CreateTestGame(playerAlias);
-        var game2 = CreateTestGame(PlayerAlias.Create("AnotherPlayer"));
+        var game1 = GameFactory.CreateGameForPlayer(playerAlias);
+        var game2 = GameFactory.CreateGameForPlayer(PlayerAlias.Create("AnotherPlayer"));
 
-        await sut.SaveAsync(game1);
-        await sut.SaveAsync(game2);
+        await _sut.SaveAsync(game1);
+        await _sut.SaveAsync(game2);
 
         var specification = new GameByPlayerSpecification(playerAlias);
 
         // Act
-        var result = await sut.GetBySpecificationAsync(specification);
+        var result = await _sut.GetBySpecificationAsync(specification);
 
         // Assert
         result.Should().HaveCount(1);
@@ -231,15 +229,14 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetSingleBySpecificationAsync_WithMatchingGame_ReturnsFirstGame()
     {
         // Arrange
-        var sut = ResolveSut();
         var playerAlias = PlayerAlias.Create("TestPlayer");
-        var game = CreateTestGame(playerAlias);
-        await sut.SaveAsync(game);
+        var game = GameFactory.CreateGameForPlayer(playerAlias);
+        await _sut.SaveAsync(game);
 
         var specification = new GameByPlayerSpecification(playerAlias);
 
         // Act
-        var result = await sut.GetSingleBySpecificationAsync(specification);
+        var result = await _sut.GetSingleBySpecificationAsync(specification);
 
         // Assert
         result.Should().NotBeNull();
@@ -250,12 +247,11 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetSingleBySpecificationAsync_WithNoMatchingGame_ReturnsNull()
     {
         // Arrange
-        var sut = ResolveSut();
         var playerAlias = PlayerAlias.Create("TestPlayer");
         var specification = new GameByPlayerSpecification(playerAlias);
 
         // Act
-        var result = await sut.GetSingleBySpecificationAsync(specification);
+        var result = await _sut.GetSingleBySpecificationAsync(specification);
 
         // Assert
         result.Should().BeNull();
@@ -265,20 +261,19 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task CountBySpecificationAsync_WithMatchingGames_ReturnsCorrectCount()
     {
         // Arrange
-        var sut = ResolveSut();
         var playerAlias = PlayerAlias.Create("TestPlayer");
-        var game1 = CreateTestGame(playerAlias);
-        var game2 = CreateTestGame(playerAlias);
-        var game3 = CreateTestGame(PlayerAlias.Create("AnotherPlayer"));
+        var game1 = GameFactory.CreateGameForPlayer(playerAlias);
+        var game2 = GameFactory.CreateGameForPlayer(playerAlias);
+        var game3 = GameFactory.CreateGameForPlayer(PlayerAlias.Create("AnotherPlayer"));
 
-        await sut.SaveAsync(game1);
-        await sut.SaveAsync(game2);
-        await sut.SaveAsync(game3);
+        await _sut.SaveAsync(game1);
+        await _sut.SaveAsync(game2);
+        await _sut.SaveAsync(game3);
 
         var specification = new GameByPlayerSpecification(playerAlias);
 
         // Act
-        var result = await sut.CountBySpecificationAsync(specification);
+        var result = await _sut.CountBySpecificationAsync(specification);
 
         // Assert
         result.Should().Be(2);
@@ -288,18 +283,17 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetRecentGamesAsync_WithMultipleGames_ReturnsLimitedGamesOrderedByCreatedAt()
     {
         // Arrange
-        var sut = ResolveSut();
         var games = new List<SudokuGame>();
-        for (int i = 0; i < 15; i++)
+        for (var i = 0; i < 15; i++)
         {
-            var game = CreateTestGame();
+            var game = GameFactory.CreateGameInProgress();
             games.Add(game);
-            await sut.SaveAsync(game);
+            await _sut.SaveAsync(game);
             await Task.Delay(1); // Ensure different timestamps
         }
 
         // Act
-        var result = await sut.GetRecentGamesAsync(10);
+        var result = await _sut.GetRecentGamesAsync(10);
 
         // Assert
         result.Should().HaveCount(10);
@@ -310,21 +304,15 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetCompletedGamesAsync_WithCompletedGames_ReturnsOnlyCompletedGames()
     {
         // Arrange
-        var sut = ResolveSut();
-        var playerAlias = PlayerAlias.Create("TestPlayer");
-        var game1 = CreateTestGame(playerAlias);
-        var game2 = CreateTestGame(playerAlias);
-        
-        // Complete one game
-        game1.StartGame();
-        game1.MakeMove(0, 0, 1); // This won't complete the game, but we'll set it manually for testing
-        // We can't actually complete the game through normal means in this test setup
-        
-        await sut.SaveAsync(game1);
-        await sut.SaveAsync(game2);
+        var game1 = GameFactory.CreateCompletedGame();
+        var game2 = GameFactory.CreateGameInProgress();
+        var playerAlias = game1.PlayerAlias;
+
+        await _sut.SaveAsync(game1);
+        await _sut.SaveAsync(game2);
 
         // Act
-        var result = await sut.GetCompletedGamesAsync(playerAlias);
+        var result = await _sut.GetCompletedGamesAsync(playerAlias);
 
         // Assert
         result.Should().AllSatisfy(g => g.Status.Should().Be(GameStatus.Completed));
@@ -334,17 +322,16 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetGamesByDifficultyAsync_WithMatchingDifficulty_ReturnsFilteredGames()
     {
         // Arrange
-        var sut = ResolveSut();
-        var game1 = CreateTestGame(difficulty: GameDifficulty.Easy);
-        var game2 = CreateTestGame(difficulty: GameDifficulty.Medium);
-        var game3 = CreateTestGame(difficulty: GameDifficulty.Easy);
+        var game1 = GameFactory.CreateGameWithDifficulty(difficulty: GameDifficulty.Easy);
+        var game2 = GameFactory.CreateGameWithDifficulty(difficulty: GameDifficulty.Medium);
+        var game3 = GameFactory.CreateGameWithDifficulty(difficulty: GameDifficulty.Easy);
 
-        await sut.SaveAsync(game1);
-        await sut.SaveAsync(game2);
-        await sut.SaveAsync(game3);
+        await _sut.SaveAsync(game1);
+        await _sut.SaveAsync(game2);
+        await _sut.SaveAsync(game3);
 
         // Act
-        var result = await sut.GetGamesByDifficultyAsync(GameDifficulty.Easy);
+        var result = await _sut.GetGamesByDifficultyAsync(GameDifficulty.Easy);
 
         // Assert
         result.Should().HaveCount(2);
@@ -355,16 +342,14 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetGamesByStatusAsync_WithMatchingStatus_ReturnsFilteredGames()
     {
         // Arrange
-        var sut = ResolveSut();
-        var game1 = CreateTestGame();
-        var game2 = CreateTestGame();
-        game2.StartGame();
+        var game1 = GameFactory.CreateGameNotStarted();
+        var game2 = GameFactory.CreateGameInProgress();
 
-        await sut.SaveAsync(game1);
-        await sut.SaveAsync(game2);
+        await _sut.SaveAsync(game1);
+        await _sut.SaveAsync(game2);
 
         // Act
-        var result = await sut.GetGamesByStatusAsync(GameStatus.InProgress);
+        var result = await _sut.GetGamesByStatusAsync(GameStatus.InProgress);
 
         // Assert
         result.Should().HaveCount(1);
@@ -375,17 +360,16 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetTotalGamesCountAsync_WithoutPlayerFilter_ReturnsAllGamesCount()
     {
         // Arrange
-        var sut = ResolveSut();
-        var game1 = CreateTestGame();
-        var game2 = CreateTestGame();
-        var game3 = CreateTestGame();
+        var game1 = GameFactory.CreateGameInProgress();
+        var game2 = GameFactory.CreateGameInProgress();
+        var game3 = GameFactory.CreateGameInProgress();
 
-        await sut.SaveAsync(game1);
-        await sut.SaveAsync(game2);
-        await sut.SaveAsync(game3);
+        await _sut.SaveAsync(game1);
+        await _sut.SaveAsync(game2);
+        await _sut.SaveAsync(game3);
 
         // Act
-        var result = await sut.GetTotalGamesCountAsync();
+        var result = await _sut.GetTotalGamesCountAsync();
 
         // Assert
         result.Should().Be(3);
@@ -395,18 +379,17 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetTotalGamesCountAsync_WithPlayerFilter_ReturnsPlayerGamesCount()
     {
         // Arrange
-        var sut = ResolveSut();
         var playerAlias = PlayerAlias.Create("TestPlayer");
-        var game1 = CreateTestGame(playerAlias);
-        var game2 = CreateTestGame(playerAlias);
-        var game3 = CreateTestGame(PlayerAlias.Create("AnotherPlayer"));
+        var game1 = GameFactory.CreateGameForPlayer(playerAlias);
+        var game2 = GameFactory.CreateGameForPlayer(playerAlias);
+        var game3 = GameFactory.CreateGameForPlayer(PlayerAlias.Create("AnotherPlayer"));
 
-        await sut.SaveAsync(game1);
-        await sut.SaveAsync(game2);
-        await sut.SaveAsync(game3);
+        await _sut.SaveAsync(game1);
+        await _sut.SaveAsync(game2);
+        await _sut.SaveAsync(game3);
 
         // Act
-        var result = await sut.GetTotalGamesCountAsync(playerAlias);
+        var result = await _sut.GetTotalGamesCountAsync(playerAlias);
 
         // Assert
         result.Should().Be(2);
@@ -416,16 +399,15 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetCompletedGamesCountAsync_WithCompletedGames_ReturnsCorrectCount()
     {
         // Arrange
-        var sut = ResolveSut();
         var playerAlias = PlayerAlias.Create("TestPlayer");
-        var game1 = CreateTestGame(playerAlias);
-        var game2 = CreateTestGame(playerAlias);
+        var game1 = GameFactory.CreateGameForPlayer(playerAlias);
+        var game2 = GameFactory.CreateGameForPlayer(playerAlias);
         
-        await sut.SaveAsync(game1);
-        await sut.SaveAsync(game2);
+        await _sut.SaveAsync(game1);
+        await _sut.SaveAsync(game2);
 
         // Act
-        var result = await sut.GetCompletedGamesCountAsync(playerAlias);
+        var result = await _sut.GetCompletedGamesCountAsync(playerAlias);
 
         // Assert
         result.Should().Be(0); // No games are actually completed in this test
@@ -435,11 +417,10 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task GetAverageCompletionTimeAsync_WithNoCompletedGames_ReturnsZero()
     {
         // Arrange
-        var sut = ResolveSut();
         var playerAlias = PlayerAlias.Create("TestPlayer");
 
         // Act
-        var result = await sut.GetAverageCompletionTimeAsync(playerAlias);
+        var result = await _sut.GetAverageCompletionTimeAsync(playerAlias);
 
         // Assert
         result.Should().Be(TimeSpan.Zero);
@@ -449,10 +430,9 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public void Dispose_WhenCalled_DisposesResourcesWithoutException()
     {
         // Arrange
-        var sut = ResolveSut();
 
         // Act
-        Action act = () => ((InMemoryGameRepository)sut).Dispose();
+        Action act = () => ((InMemoryGameRepository)_sut).Dispose();
 
         // Assert
         act.Should().NotThrow();
@@ -462,34 +442,25 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     public async Task ConcurrentOperations_WithMultipleThreads_HandlesOperationsSafely()
     {
         // Arrange
-        var sut = ResolveSut();
         var tasks = new List<Task>();
         var games = new List<SudokuGame>();
 
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
-            var game = CreateTestGame();
+            var game = GameFactory.CreateGameInProgress();
             games.Add(game);
         }
 
         // Act
         foreach (var game in games)
         {
-            tasks.Add(sut.SaveAsync(game));
+            tasks.Add(_sut.SaveAsync(game));
         }
 
         await Task.WhenAll(tasks);
 
         // Assert
-        var totalCount = await sut.GetTotalGamesCountAsync();
+        var totalCount = await _sut.GetTotalGamesCountAsync();
         totalCount.Should().Be(10);
-    }
-
-    private static SudokuGame CreateTestGame(PlayerAlias? playerAlias = null, GameDifficulty? difficulty = null)
-    {
-        var alias = playerAlias ?? PlayerAlias.Create("TestPlayer");
-        var diff = difficulty ?? GameDifficulty.Medium;
-        var cells = CellsFactory.CreateEmptyCells();
-        return SudokuGame.Create(alias, diff, cells);
     }
 }

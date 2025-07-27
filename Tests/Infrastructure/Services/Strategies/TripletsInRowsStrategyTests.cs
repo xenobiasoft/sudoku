@@ -3,12 +3,12 @@ using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Strategies;
 
-namespace UnitTests.Sudoku.Strategies;
+namespace UnitTests.Infrastructure.Services.Strategies;
 
-public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInColumnsStrategy, SolverStrategy>
+public class TripletsInRowsStrategyTests : BaseTestByAbstraction<TripletsInRowsStrategy, SolverStrategy>
 {
 	[Fact]
-	public void SolvePuzzle_WhenThreeCellsHaveSamePossibleValuesWithLengthOfThreeInColumn_ThenSetAsTriplets()
+	public void SolvePuzzle_WhenThreeCellsHaveSamePossibleValuesWithLengthOfThreeInRow_ThenSetAsTriplets()
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
@@ -21,13 +21,13 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 		Assert.Multiple(() =>
 		{
 			puzzle.GetCell(0, 0).PossibleValues.Should().BeEquivalentTo([7,8,9]);
-			puzzle.GetCell(1, 0).PossibleValues.Should().BeEquivalentTo([7,8,9]);
-			puzzle.GetCell(2, 0).PossibleValues.Should().BeEquivalentTo([7,8,9]);
+			puzzle.GetCell(0, 1).PossibleValues.Should().BeEquivalentTo([7,8,9]);
+			puzzle.GetCell(0, 2).PossibleValues.Should().BeEquivalentTo([7,8,9]);
 		});
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenTripletsAreFoundInColumn_RemovesTripletsPossibleValuesFromOtherCells()
+	public void SolvePuzzle_WhenTripletsAreFoundInRow_RemovesTripletsPossibleValuesFromOtherCells()
 	{
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
@@ -37,12 +37,11 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		for (var row = 3; row < 9; row++)
+		for (var col = 3; col < 9; col++)
 		{
-			puzzle.GetCell(row, 2).PossibleValues
-				.Should().NotContain(4)
-				.And.NotContain(5)
-				.And.NotContain(6);
+			puzzle.GetCell(0, col).PossibleValues.Should().NotContain(7)
+				.And.NotContain(8)
+				.And.NotContain(9);
 		}
 	}
 
@@ -64,7 +63,18 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsFalse()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetEmptyPuzzle();
+		var values = new int?[,] {
+			{ null, null, null, null, null, null, 4, 5, 6 },
+			{ null, null, null, null, null, null, 5, 6, 4 },
+			{ null, null, null, null, null, null, 6, 4, 5 },
+			{ null, 5, 6, null, null, null, null, null, null },
+			{ null, null, null, null, null, null, null, null, null },
+			{ null, null, null, null, null, null, null, null, null },
+			{ 3, 4, 5, 6, 7, 8, 9, 1, 2 },
+			{ 2, 3, 4, 5, 6, 7, 8, 9, 1 },
+			{ 1, 2, 3, 4, 5, 6, 7, 8, 9 }
+		};
+		var puzzle = PuzzleFactory.PopulateCells(values);
 		var sut = ResolveSut();
 
 		// Act
@@ -80,8 +90,8 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 		// Arrange
 		var puzzle = GetTripletsPuzzle();
 		puzzle.GetCell(3, 3).Value = 4;
-		puzzle.GetCell(3, 4).Value = 7;
-		puzzle.GetCell(3, 8).Value = 9;
+		puzzle.GetCell(4, 3).Value = 7;
+		puzzle.GetCell(8, 3).Value = 9;
 		var sut = ResolveSut();
 
 		// Act
@@ -104,8 +114,6 @@ public class TripletsInColumnsStrategyTests : BaseTestByAbstraction<TripletsInCo
 			{5, 6, 4, null, null, null, 1, 9, 8},
 			{6, 4, 5, null, null, null, 2, 1, 9}
 		};
-
-		values = PuzzleFactory.RotateGrid(values);
 
 		return PuzzleFactory.PopulateCells(values);
 	}
