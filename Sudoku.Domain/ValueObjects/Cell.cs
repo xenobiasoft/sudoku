@@ -7,6 +7,7 @@ public record Cell
     public int? Value { get; private set; }
     public bool IsFixed { get; }
     public bool HasValue => Value.HasValue;
+    public List<int> PossibleValues { get; private set; } = new();
 
     private Cell(int row, int column, int? value, bool isFixed)
     {
@@ -59,6 +60,8 @@ public record Cell
         }
 
         Value = value;
+        // Clear possible values when a definite value is set
+        PossibleValues.Clear();
     }
 
     public void SetValue(int? value)
@@ -77,6 +80,12 @@ public record Cell
         }
 
         Value = value;
+
+        // Clear possible values when a definite value is set
+        if (value.HasValue)
+        {
+            PossibleValues.Clear();
+        }
     }
 
     public void ClearValue()
@@ -87,6 +96,54 @@ public record Cell
         }
 
         Value = null;
+    }
+
+    public void AddPossibleValue(int value)
+    {
+        if (IsFixed)
+        {
+            throw new CellIsFixedException($"Cannot modify fixed cell at position ({Row}, {Column})");
+        }
+
+        if (Value.HasValue)
+        {
+            throw new InvalidOperationException($"Cannot add possible values to cell with a definite value at position ({Row}, {Column})");
+        }
+
+        if (value < 1 || value > 9)
+        {
+            throw new InvalidCellValueException($"Possible value must be between 1 and 9, got: {value}");
+        }
+
+        if (!PossibleValues.Contains(value))
+        {
+            PossibleValues.Add(value);
+        }
+    }
+
+    public void RemovePossibleValue(int value)
+    {
+        if (IsFixed)
+        {
+            throw new CellIsFixedException($"Cannot modify fixed cell at position ({Row}, {Column})");
+        }
+
+        if (value < 1 || value > 9)
+        {
+            throw new InvalidCellValueException($"Possible value must be between 1 and 9, got: {value}");
+        }
+
+        PossibleValues.Remove(value);
+    }
+
+    public void ClearPossibleValues()
+    {
+        if (IsFixed)
+        {
+            throw new CellIsFixedException($"Cannot modify fixed cell at position ({Row}, {Column})");
+        }
+
+        PossibleValues.Clear();
     }
 
     public override string ToString()

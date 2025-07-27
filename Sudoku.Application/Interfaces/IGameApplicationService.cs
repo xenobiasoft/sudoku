@@ -21,4 +21,9 @@ public interface IGameApplicationService
     Task<Result> UndoLastMoveAsync(string gameId);
     Task<Result> ResetGameAsync(string gameId);
     Task<Result<ValidationResultDto>> ValidateGameAsync(string gameId);
+    
+    // New methods for possible values
+    Task<Result> AddPossibleValueAsync(string gameId, int row, int column, int value);
+    Task<Result> RemovePossibleValueAsync(string gameId, int row, int column, int value);
+    Task<Result> ClearPossibleValuesAsync(string gameId, int row, int column);
 }

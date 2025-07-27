@@ -17,3 +17,9 @@ public record GameAbandonedEvent(GameId GameId) : DomainEvent;
 public record MoveUndoneEvent(GameId GameId, int Row, int Column, int? Value) : DomainEvent;
 
 public record GameResetEvent(GameId GameId) : DomainEvent;
+
+public record PossibleValueAddedEvent(GameId GameId, int Row, int Column, int Value) : DomainEvent;
+
+public record PossibleValueRemovedEvent(GameId GameId, int Row, int Column, int Value) : DomainEvent;
+
+public record PossibleValuesClearedEvent(GameId GameId, int Row, int Column) : DomainEvent;

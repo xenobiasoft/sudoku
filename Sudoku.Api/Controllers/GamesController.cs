@@ -134,6 +134,126 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
     }
 
     /// <summary>
+    /// Adds a possible value to a cell
+    /// </summary>
+    /// <param name="alias">The player's alias</param>
+    /// <param name="gameId">The game id</param>
+    /// <param name="request">The possible value request</param>
+    /// <returns>Success or failure result</returns>
+    [HttpPost("{gameId}/possiblevalues")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> AddPossibleValueAsync(string alias, string gameId, [FromBody] PossibleValueRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
+        {
+            return BadRequest("Player alias and game id cannot be null or empty.");
+        }
+
+        // Verify the game exists and belongs to the player
+        var gameResult = await gameService.GetGameAsync(gameId);
+        if (!gameResult.IsSuccess)
+        {
+            return BadRequest(gameResult.Error);
+        }
+        
+        if (gameResult.Value.PlayerAlias != alias)
+        {
+            return NotFound();
+        }
+
+        var result = await gameService.AddPossibleValueAsync(gameId, request.Row, request.Column, request.Value);
+        
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Error);
+        }
+        
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Removes a possible value from a cell
+    /// </summary>
+    /// <param name="alias">The player's alias</param>
+    /// <param name="gameId">The game id</param>
+    /// <param name="request">The possible value request</param>
+    /// <returns>Success or failure result</returns>
+    [HttpDelete("{gameId}/possiblevalues")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> RemovePossibleValueAsync(string alias, string gameId, [FromBody] PossibleValueRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
+        {
+            return BadRequest("Player alias and game id cannot be null or empty.");
+        }
+
+        // Verify the game exists and belongs to the player
+        var gameResult = await gameService.GetGameAsync(gameId);
+        if (!gameResult.IsSuccess)
+        {
+            return BadRequest(gameResult.Error);
+        }
+        
+        if (gameResult.Value.PlayerAlias != alias)
+        {
+            return NotFound();
+        }
+
+        var result = await gameService.RemovePossibleValueAsync(gameId, request.Row, request.Column, request.Value);
+        
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Error);
+        }
+        
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Clears all possible values from a cell
+    /// </summary>
+    /// <param name="alias">The player's alias</param>
+    /// <param name="gameId">The game id</param>
+    /// <param name="request">The cell request</param>
+    /// <returns>Success or failure result</returns>
+    [HttpDelete("{gameId}/possiblevalues/clear")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> ClearPossibleValuesAsync(string alias, string gameId, [FromBody] CellRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
+        {
+            return BadRequest("Player alias and game id cannot be null or empty.");
+        }
+
+        // Verify the game exists and belongs to the player
+        var gameResult = await gameService.GetGameAsync(gameId);
+        if (!gameResult.IsSuccess)
+        {
+            return BadRequest(gameResult.Error);
+        }
+        
+        if (gameResult.Value.PlayerAlias != alias)
+        {
+            return NotFound();
+        }
+
+        var result = await gameService.ClearPossibleValuesAsync(gameId, request.Row, request.Column);
+        
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Error);
+        }
+        
+        return NoContent();
+    }
+
+    /// <summary>
     /// Deletes a specific game for a player
     /// </summary>
     /// <param name="alias">The player's alias</param>
@@ -317,3 +437,5 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
 
 // Request Models
 public record MoveRequest(int Row, int Column, int? Value);
+public record PossibleValueRequest(int Row, int Column, int Value);
+public record CellRequest(int Row, int Column);

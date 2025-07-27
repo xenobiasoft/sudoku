@@ -86,6 +86,62 @@ public class SudokuGame : AggregateRoot
         }
     }
 
+    public void AddPossibleValue(int row, int column, int value)
+    {
+        if (Status != GameStatus.InProgress)
+        {
+            throw new GameNotInProgressException($"Cannot add possible value in {Status} state");
+        }
+
+        var cell = GetCell(row, column);
+        if (cell.IsFixed)
+        {
+            throw new CellIsFixedException($"Cannot modify fixed cell at position ({row}, {column})");
+        }
+
+        if (cell.HasValue)
+        {
+            throw new InvalidOperationException($"Cannot add possible values to cell with a definite value at position ({row}, {column})");
+        }
+
+        cell.AddPossibleValue(value);
+        AddDomainEvent(new PossibleValueAddedEvent(Id, row, column, value));
+    }
+
+    public void RemovePossibleValue(int row, int column, int value)
+    {
+        if (Status != GameStatus.InProgress)
+        {
+            throw new GameNotInProgressException($"Cannot remove possible value in {Status} state");
+        }
+
+        var cell = GetCell(row, column);
+        if (cell.IsFixed)
+        {
+            throw new CellIsFixedException($"Cannot modify fixed cell at position ({row}, {column})");
+        }
+
+        cell.RemovePossibleValue(value);
+        AddDomainEvent(new PossibleValueRemovedEvent(Id, row, column, value));
+    }
+
+    public void ClearPossibleValues(int row, int column)
+    {
+        if (Status != GameStatus.InProgress)
+        {
+            throw new GameNotInProgressException($"Cannot clear possible values in {Status} state");
+        }
+
+        var cell = GetCell(row, column);
+        if (cell.IsFixed)
+        {
+            throw new CellIsFixedException($"Cannot modify fixed cell at position ({row}, {column})");
+        }
+
+        cell.ClearPossibleValues();
+        AddDomainEvent(new PossibleValuesClearedEvent(Id, row, column));
+    }
+
     public void UndoLastMove()
     {
         if (Status != GameStatus.InProgress)
@@ -121,6 +177,7 @@ public class SudokuGame : AggregateRoot
         foreach (var cell in _cells.Where(c => !c.IsFixed))
         {
             cell.SetValue(null);
+            cell.ClearPossibleValues();
         }
 
         // Clear move history

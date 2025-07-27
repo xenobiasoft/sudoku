@@ -56,7 +56,8 @@ public record CellDto(
     int Column,
     int? Value,
     bool IsFixed,
-    bool HasValue)
+    bool HasValue,
+    List<int> PossibleValues)
 {
     public static CellDto FromCell(Cell cell)
     {
@@ -65,7 +66,8 @@ public record CellDto(
             cell.Column,
             cell.Value,
             cell.IsFixed,
-            cell.HasValue
+            cell.HasValue,
+            cell.PossibleValues.ToList()
         );
     }
 }
