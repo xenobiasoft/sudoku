@@ -3,7 +3,7 @@ using Sudoku.Application.Common;
 
 namespace Sudoku.Application.Commands;
 
-public record DeleteGameCommand(string GameId) : IRequest<Result>;
+public record DeleteGameCommand(string GameId) : ICommand;
 
 public class DeleteGameCommandHandler : IRequestHandler<DeleteGameCommand, Result>
 {

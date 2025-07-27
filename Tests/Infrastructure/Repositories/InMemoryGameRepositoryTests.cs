@@ -6,6 +6,7 @@ using Sudoku.Application.Specifications;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
+using UnitTests.Helpers.Factories;
 using XenobiaSoft.Sudoku.Infrastructure.Repositories;
 
 namespace UnitTests.Infrastructure.Repositories;
@@ -488,20 +489,7 @@ public class InMemoryGameRepositoryTests : BaseTestByAbstraction<InMemoryGameRep
     {
         var alias = playerAlias ?? PlayerAlias.Create("TestPlayer");
         var diff = difficulty ?? GameDifficulty.Medium;
-        var cells = CreateEmptyCells();
+        var cells = CellsFactory.CreateEmptyCells();
         return SudokuGame.Create(alias, diff, cells);
-    }
-
-    private static List<Cell> CreateEmptyCells()
-    {
-        var cells = new List<Cell>();
-        for (int row = 0; row < 9; row++)
-        {
-            for (int col = 0; col < 9; col++)
-            {
-                cells.Add(Cell.CreateEmpty(row, col));
-            }
-        }
-        return cells;
     }
 }

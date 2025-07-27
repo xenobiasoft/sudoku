@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.Storage.Azure.GameState;
 using XenobiaSoft.Sudoku.Storage.Azure.GameState.Decorators;
+using XenobiaSoft.Sudoku.Storage.Azure.Services;
 
 namespace XenobiaSoft.Sudoku.Storage.Azure;
 
@@ -30,11 +31,16 @@ public static class ServiceCollectionExtensions
             builder.AddBlobServiceClient(connectionString);
         });
 
-        services.AddScoped<IStorageService, Services.AzureStorageService>()
-            .AddScoped<IPersistentGameStateStorage, AzureBlobGameStateStorage>()
-            .AddScoped<IPersistentGameStateStorage>(x =>
-                ActivatorUtilities.CreateInstance<CachingAzureBlobGameStateStorageDecorator>(x,
-                    ActivatorUtilities.CreateInstance<AzureBlobGameStateStorage>(x)));
+        // Register the Azure Storage service
+        services.AddScoped<IStorageService, AzureStorageService>();
+        
+        // Register the base AzureBlobGameStateStorage as an implementation detail
+        services.AddScoped<AzureBlobGameStateStorage>();
+        
+        // Register the decorator for the IPersistentGameStateStorage interface
+        services.AddScoped<IPersistentGameStateStorage>(provider => 
+            new CachingAzureBlobGameStateStorageDecorator(
+                provider.GetRequiredService<AzureBlobGameStateStorage>()));
 
         return services;
     }

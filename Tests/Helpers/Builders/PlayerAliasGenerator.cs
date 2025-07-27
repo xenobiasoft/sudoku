@@ -4,7 +4,7 @@ using Sudoku.Web.Server.Services;
 
 namespace UnitTests.Helpers.Builders;
 
-public class PlayerAliasClassBuilder : ISpecimenBuilder
+public class PlayerAliasGenerator : ISpecimenBuilder
 {
     public object Create(object request, ISpecimenContext context)
     {

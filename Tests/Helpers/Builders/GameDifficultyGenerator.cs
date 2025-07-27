@@ -3,7 +3,7 @@ using Sudoku.Domain.ValueObjects;
 
 namespace UnitTests.Helpers.Builders;
 
-public class GameDifficultyClassBuilder : ISpecimenBuilder
+public class GameDifficultyGenerator : ISpecimenBuilder
 {
     public object Create(object request, ISpecimenContext context)
     {

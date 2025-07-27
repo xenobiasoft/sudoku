@@ -13,3 +13,7 @@ public record GameResumedEvent(GameId GameId) : DomainEvent;
 public record GameCompletedEvent(GameId GameId, GameStatistics Statistics) : DomainEvent;
 
 public record GameAbandonedEvent(GameId GameId) : DomainEvent;
+
+public record MoveUndoneEvent(GameId GameId, int Row, int Column, int? Value) : DomainEvent;
+
+public record GameResetEvent(GameId GameId) : DomainEvent;

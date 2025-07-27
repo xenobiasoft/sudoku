@@ -18,8 +18,8 @@ public class DomainEventDispatcherTests : BaseTestByAbstraction<DomainEventDispa
 
     protected override void AddContainerCustomizations(Container container)
     {
-        container.AddCustomizations(new PlayerAliasClassBuilder());
-        container.AddCustomizations(new GameDifficultyClassBuilder());
+        container.AddCustomizations(new PlayerAliasGenerator());
+        container.AddCustomizations(new GameDifficultyGenerator());
     }
 
     [Fact]
