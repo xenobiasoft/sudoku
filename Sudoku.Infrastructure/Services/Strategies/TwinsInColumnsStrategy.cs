@@ -21,8 +21,7 @@ public class TwinsInColumnsStrategy : SolverStrategy
 				{
 					if (nonTwinCell.Value.HasValue || nonTwinCell.Row == cell.Row || nonTwinCell.Row == colCell.Row) continue;
 
-					nonTwinCell.PossibleValues.AddRange(nonTwinCell.PossibleValues.Where(x => x != cell.PossibleValues[0]).ToList());
-					nonTwinCell.PossibleValues.AddRange(nonTwinCell.PossibleValues.Where(x => x != cell.PossibleValues[1]).ToList());
+                    nonTwinCell.PossibleValues.RemoveWhere(x => cell.PossibleValues.Contains(x));
 
 					if (!nonTwinCell.PossibleValues.Any())
 					{

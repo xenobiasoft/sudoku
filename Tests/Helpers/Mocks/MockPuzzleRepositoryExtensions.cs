@@ -1,6 +1,5 @@
 ﻿using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
-using Sudoku.Domain.Exceptions;
 
 namespace UnitTests.Helpers.Mocks;
 
@@ -19,5 +18,10 @@ public static class MockPuzzleRepositoryExtensions
         mock
             .Setup(x => x.UndoAsync(alias, puzzleId))
             .ReturnsAsync(puzzle);
+    }
+
+    public static void VerifySaveAsync(this Mock<IPuzzleRepository> mock, Func<Times> times)
+    {
+        mock.Verify(x => x.SaveAsync(It.IsAny<SudokuPuzzle>()), times);
     }
 }

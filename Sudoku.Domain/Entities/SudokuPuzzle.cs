@@ -1,3 +1,5 @@
+using Sudoku.Domain.Helpers;
+
 namespace Sudoku.Domain.Entities;
 
 public class SudokuPuzzle
@@ -55,37 +57,50 @@ public class SudokuPuzzle
 
     private bool IsValidSudoku()
     {
+        // Check rows
         for (var row = 0; row < 9; row++)
         {
-            var rowCells = _cells.Where(c => c.Row == row && c.HasValue).ToList();
-            var rowValues = rowCells.Select(c => c.Value!.Value).ToList();
-            if (rowValues.Count != rowValues.Distinct().Count())
+            var usedValues = new HashSet<int>();
+            var rowCells = GetRowCells(row).Where(c => c.HasValue);
+
+            foreach (var cell in rowCells)
             {
-                return false;
+                if (!usedValues.Add(cell.Value!.Value))
+                {
+                    return false; // Duplicate found
+                }
             }
         }
 
+        // Check columns  
         for (var column = 0; column < 9; column++)
         {
-            var columnCells = _cells.Where(c => c.Column == column && c.HasValue).ToList();
-            var columnValues = columnCells.Select(c => c.Value!.Value).ToList();
-            if (columnValues.Count != columnValues.Distinct().Count())
+            var usedValues = new HashSet<int>();
+            var columnCells = GetColumnCells(column).Where(c => c.HasValue);
+
+            foreach (var cell in columnCells)
             {
-                return false;
+                if (!usedValues.Add(cell.Value!.Value))
+                {
+                    return false; // Duplicate found
+                }
             }
         }
 
-        for (var boxRow = 0; boxRow < 9; boxRow += 3)
+        // Check 3x3 boxes
+        for (var boxRow = 0; boxRow < 3; boxRow++)
         {
-            for (var boxColumn = 0; boxColumn < 9; boxColumn += 3)
+            for (var boxColumn = 0; boxColumn < 3; boxColumn++)
             {
-                var boxCells = _cells.Where(c => c.Row >= boxRow && c.Row < boxRow + 3 &&
-                                                c.Column >= boxColumn && c.Column < boxColumn + 3 &&
-                                                c.HasValue).ToList();
-                var boxValues = boxCells.Select(c => c.Value!.Value).ToList();
-                if (boxValues.Count != boxValues.Distinct().Count())
+                var usedValues = new HashSet<int>();
+                var boxCells = GetMiniGridCells(boxRow, boxColumn).Where(c => c.HasValue);
+
+                foreach (var cell in boxCells)
                 {
-                    return false;
+                    if (!usedValues.Add(cell.Value!.Value))
+                    {
+                        return false; // Duplicate found
+                    }
                 }
             }
         }

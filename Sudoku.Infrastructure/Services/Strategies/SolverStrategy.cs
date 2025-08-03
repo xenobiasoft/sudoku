@@ -6,8 +6,7 @@ public abstract class SolverStrategy
 {
 	public virtual bool SolvePuzzle(SudokuPuzzle puzzle)
 	{
-        // TODO: Implement a method to populate possible values for each cell in the puzzle.
-        //puzzle.PopulatePossibleValues();
+        puzzle.PopulatePossibleValues();
 
         return Execute(puzzle);
 	}

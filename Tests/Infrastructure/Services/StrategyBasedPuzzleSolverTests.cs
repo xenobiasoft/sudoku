@@ -1,6 +1,5 @@
 ﻿using DepenMock.XUnit;
 using Sudoku.Application.Interfaces;
-using Sudoku.Domain.Entities;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Services;
@@ -23,7 +22,7 @@ public class StrategyBasedPuzzleSolverTests : BaseTestByAbstraction<StrategyBase
     public async Task SolvePuzzle_WhenInvalidMoveOccurs_TriggersUndo()
     {
         // Arrange
-        var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
+        var puzzle = PuzzleFactory.GetSolvedPuzzle();
         _puzzleRepository.SaveAsyncThrows(new InvalidMoveException("Invalid move"));
         _puzzleRepository.UndoReturnsPuzzle(Alias, puzzle.PuzzleId, puzzle);
         var sut = ResolveSut();
@@ -61,7 +60,7 @@ public class StrategyBasedPuzzleSolverTests : BaseTestByAbstraction<StrategyBase
         await sut.SolvePuzzle(puzzle!);
 
         // Assert
-        _puzzleRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuPuzzle>()), Times.AtLeastOnce);
+        _puzzleRepository.VerifySaveAsync(Times.AtLeastOnce);
     }
 
     [Fact]
@@ -85,8 +84,8 @@ public class StrategyBasedPuzzleSolverTests : BaseTestByAbstraction<StrategyBase
     {
         // Arrange
         var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
-        _puzzleRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuPuzzle>())).ThrowsAsync(new InvalidMoveException("Invalid move"));
-        _puzzleRepository.Setup(x => x.UndoAsync(Alias, It.IsAny<string>())).ReturnsAsync((SudokuPuzzle?)null);
+        _puzzleRepository.SaveAsyncThrows(new InvalidMoveException("Invalid move"));
+        _puzzleRepository.UndoReturnsPuzzle(Alias, puzzle.PuzzleId, null);
         var sut = ResolveSut();
 
         // Act

@@ -7,7 +7,7 @@ public record Cell
     public int? Value { get; private set; }
     public bool IsFixed { get; }
     public bool HasValue => Value.HasValue;
-    public List<int> PossibleValues { get; private set; } = new();
+    public HashSet<int> PossibleValues { get; private set; } = new();
 
     private Cell(int row, int column, int? value, bool isFixed)
     {

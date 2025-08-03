@@ -39,7 +39,7 @@ public static class PuzzleFactory
         return PopulateCells(SolvedPuzzle);
     }
 
-    private static int?[,] RotateGrid(int?[,] values)
+    public static int?[,] RotateGrid(int?[,] values)
     {
         var grid = new int?[9, 9];
 
@@ -54,7 +54,7 @@ public static class PuzzleFactory
         return grid;
     }
 
-    private static SudokuPuzzle PopulateCells(int?[,] values)
+    public static SudokuPuzzle PopulateCells(int?[,] values)
     {
         var cells = new Cell[81];
         var index = 0;

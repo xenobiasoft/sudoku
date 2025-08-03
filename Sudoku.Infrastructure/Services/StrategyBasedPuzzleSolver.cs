@@ -97,7 +97,7 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
         }
 
         var random = new Random();
-        var value = cell.PossibleValues[random.Next(cell.PossibleValues.Count)];
+        var value = cell.PossibleValues.ElementAt(random.Next(cell.PossibleValues.Count));
         Console.WriteLine($"Setting cell at ({cell.Row}, {cell.Column}) to {value}");
         cell.SetValue(value);
     }

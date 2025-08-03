@@ -3,6 +3,7 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Helpers;
 
+[Obsolete("Use PuzzleFactory in the Factories namespace")]
 public class PuzzleFactory
 {
 	public static ISudokuPuzzle GetPuzzle(GameDifficulty difficulty, bool rotateGrid = false)
