@@ -1,5 +1,3 @@
-using Sudoku.Domain.Exceptions;
-
 namespace Sudoku.Domain.ValueObjects;
 
 public record GameDifficulty

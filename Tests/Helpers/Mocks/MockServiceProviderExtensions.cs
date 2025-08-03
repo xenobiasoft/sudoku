@@ -1,5 +1,5 @@
 ﻿using Sudoku.Domain.Events;
-using XenobiaSoft.Sudoku.Infrastructure.EventHandling;
+using Sudoku.Infrastructure.EventHandling;
 
 namespace UnitTests.Helpers.Mocks;
 

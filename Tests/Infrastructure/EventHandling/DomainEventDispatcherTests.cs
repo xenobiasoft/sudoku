@@ -1,9 +1,9 @@
 using DepenMock.XUnit;
 using Sudoku.Domain.Events;
 using Sudoku.Domain.ValueObjects;
+using Sudoku.Infrastructure.EventHandling;
 using UnitTests.Helpers.Builders;
 using UnitTests.Helpers.Mocks;
-using XenobiaSoft.Sudoku.Infrastructure.EventHandling;
 
 namespace UnitTests.Infrastructure.EventHandling;
 

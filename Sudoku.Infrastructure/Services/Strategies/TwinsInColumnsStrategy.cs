@@ -1,7 +1,7 @@
 ﻿using Sudoku.Domain.Entities;
 using Sudoku.Domain.Exceptions;
 
-namespace XenobiaSoft.Sudoku.Infrastructure.Services.Strategies;
+namespace Sudoku.Infrastructure.Services.Strategies;
 
 public class TwinsInColumnsStrategy : SolverStrategy
 {

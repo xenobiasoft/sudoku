@@ -1,5 +1,6 @@
 ﻿using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Helpers;
 
 namespace UnitTests.Sudoku;
 

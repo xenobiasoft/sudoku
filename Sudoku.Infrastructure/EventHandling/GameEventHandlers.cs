@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Sudoku.Domain.Events;
 
-namespace XenobiaSoft.Sudoku.Infrastructure.EventHandling;
+namespace Sudoku.Infrastructure.EventHandling;
 
 public class GameCreatedEventHandler : IDomainEventHandler<GameCreatedEvent>
 {

@@ -1,4 +1,5 @@
 ﻿using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Exceptions;
 using XenobiaSoft.Sudoku.Solver;
 
 namespace UnitTests.Helpers.Mocks;

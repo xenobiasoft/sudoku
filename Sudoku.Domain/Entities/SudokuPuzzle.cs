@@ -1,5 +1,3 @@
-using System.Collections;
-
 namespace Sudoku.Domain.Entities;
 
 public class SudokuPuzzle
@@ -22,7 +20,9 @@ public class SudokuPuzzle
         var puzzle = new SudokuPuzzle(puzzleId, difficulty, cells);
 
         if (!puzzle.IsValid())
-            throw new InvalidPuzzleException("Puzzle is not valid");
+        {
+            throw new InvalidPuzzleException();
+        }
 
         return puzzle;
     }
@@ -122,5 +122,25 @@ public class SudokuPuzzle
         return _cells.Where(c => c.Row >= boxRow * 3 && c.Row < (boxRow + 1) * 3 &&
                                  c.Column >= boxColumn * 3 && c.Column < (boxColumn + 1) * 3)
                      .OrderBy(c => c.Row).ThenBy(c => c.Column);
+    }
+
+    public void PopulatePossibleValues()
+    {
+        foreach (var cell in _cells)
+        {
+            if (cell.HasValue)
+            {
+                cell.PossibleValues.Clear();
+                continue;
+            }
+            var rowValues = GetRowCells(cell.Row).Where(c => c.HasValue).Select(c => c.Value!.Value).ToHashSet();
+            var columnValues = GetColumnCells(cell.Column).Where(c => c.HasValue).Select(c => c.Value!.Value).ToHashSet();
+            var miniGridValues = GetMiniGridCells(cell.Row / 3, cell.Column / 3)
+                .Where(c => c.HasValue)
+                .Select(c => c.Value!.Value)
+                .ToHashSet();
+            var usedValues = rowValues.Union(columnValues).Union(miniGridValues);
+            cell.PossibleValues.AddRange(Enumerable.Range(1, 9).Where(v => !usedValues.Contains(v)).ToList());
+        }
     }
 }

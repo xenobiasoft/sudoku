@@ -1,8 +1,3 @@
 namespace Sudoku.Domain.Exceptions;
 
-public class NoMoveHistoryException : DomainException
-{
-    public NoMoveHistoryException(string message) : base(message)
-    {
-    }
-}
+public class NoMoveHistoryException() : DomainException("No moves to undo");

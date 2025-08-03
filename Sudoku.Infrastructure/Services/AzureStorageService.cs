@@ -1,8 +1,8 @@
+using System.Text.Json;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 
-namespace XenobiaSoft.Sudoku.Infrastructure.Services;
+namespace Sudoku.Infrastructure.Services;
 
 public interface IAzureStorageService
 {

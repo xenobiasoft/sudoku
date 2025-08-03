@@ -5,10 +5,10 @@ using Sudoku.Application.Specifications;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
+using Sudoku.Infrastructure.Repositories;
+using Sudoku.Infrastructure.Services;
 using UnitTests.Helpers.Builders;
 using UnitTests.Helpers.Factories;
-using XenobiaSoft.Sudoku.Infrastructure.Repositories;
-using XenobiaSoft.Sudoku.Infrastructure.Services;
 
 namespace UnitTests.Infrastructure.Repositories;
 

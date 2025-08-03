@@ -1,6 +1,6 @@
 ﻿using Sudoku.Domain.Entities;
 
-namespace XenobiaSoft.Sudoku.Infrastructure.Services.Strategies;
+namespace Sudoku.Infrastructure.Services.Strategies;
 
 public class SinglesInMiniGridsStrategy : SolverStrategy
 {

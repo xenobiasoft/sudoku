@@ -151,7 +151,7 @@ public class SudokuGame : AggregateRoot
 
         if (_moveHistory.Count == 0)
         {
-            throw new NoMoveHistoryException("No moves to undo");
+            throw new NoMoveHistoryException();
         }
 
         var lastMove = _moveHistory[^1];

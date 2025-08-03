@@ -1,6 +1,6 @@
 ﻿using Sudoku.Application.Interfaces;
 using Sudoku.Application.Services;
-using XenobiaSoft.Sudoku.Infrastructure.Configuration;
+using Sudoku.Infrastructure.Configuration;
 
 namespace Sudoku.Api;
 
@@ -13,9 +13,6 @@ public static class ServiceCollectionExtensions
         
         // Register infrastructure services
         services.AddInfrastructureServices(config);
-        
-        // Use in-memory repository for testing
-        services.AddInMemoryRepository();
 
         // Add CORS policy
         services.AddCors(options =>

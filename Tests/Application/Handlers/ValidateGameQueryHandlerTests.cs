@@ -55,10 +55,9 @@ public class ValidateGameQueryHandlerTests : BaseTestByAbstraction<ValidateGameQ
     public async Task Handle_WhenDomainExceptionThrown_ReturnsFailureResult()
     {
         // Arrange
-        var exceptionMessage = "Invalid game state";
         _mockGameRepository
             .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
-            .ThrowsAsync(new InvalidPuzzleException(exceptionMessage));
+            .ThrowsAsync(new InvalidPuzzleException());
         var sut = ResolveSut();
 
         // Act
@@ -66,7 +65,7 @@ public class ValidateGameQueryHandlerTests : BaseTestByAbstraction<ValidateGameQ
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be(exceptionMessage);
+        result.Error.Should().Be("Puzzle is not valid");
     }
 
     [Fact]

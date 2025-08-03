@@ -2,7 +2,7 @@
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 
-namespace XenobiaSoft.Sudoku.Infrastructure.Services.Strategies;
+namespace Sudoku.Infrastructure.Services.Strategies;
 
 public class TripletsInColumnsStrategy : SolverStrategy
 {

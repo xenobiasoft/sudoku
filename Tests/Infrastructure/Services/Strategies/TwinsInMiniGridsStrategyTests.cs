@@ -1,4 +1,5 @@
 ﻿using DepenMock.XUnit;
+using Sudoku.Domain.Exceptions;
 using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Strategies;

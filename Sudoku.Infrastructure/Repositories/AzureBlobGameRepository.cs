@@ -4,9 +4,9 @@ using Sudoku.Application.Specifications;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
-using XenobiaSoft.Sudoku.Infrastructure.Services;
+using Sudoku.Infrastructure.Services;
 
-namespace XenobiaSoft.Sudoku.Infrastructure.Repositories;
+namespace Sudoku.Infrastructure.Repositories;
 
 public class AzureBlobGameRepository(IAzureStorageService storageService, ILogger<AzureBlobGameRepository> logger) : IGameRepository, IDisposable
 {
