@@ -3,8 +3,8 @@
 public static class RandomGenerator
 {
 	public static int RandomNumber(int? min = null, int? max = null)
-	{
-		var rnd = new Random((int)DateTime.Now.Ticks);
+    {
+        var rnd = Random.Shared;
 
 		if (max.HasValue)
 		{
