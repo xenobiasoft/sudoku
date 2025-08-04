@@ -2,6 +2,7 @@
 
 public class CircularStack<TStackItemType>
 {
+    private readonly Lock _syncRoot = new();
     private TStackItemType[] _buffer;
     private int _top;
 
