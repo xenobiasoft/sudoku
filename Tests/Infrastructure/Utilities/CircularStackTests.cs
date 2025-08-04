@@ -37,7 +37,6 @@ public class CircularStackTests
 			sut.Count.Should().Be(0);
 			sut.IsFull().Should().BeFalse();
 			sut.IsEmpty().Should().BeTrue();
-			sut.Count.Should().Be(0);
 		});
 	}
 
