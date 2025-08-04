@@ -22,7 +22,7 @@ public class CircularStack<TStackItemType>
 
     public void Push(TStackItemType item)
     {
-        lock (_buffer)
+        lock (_syncRoot)
         {
             if (Count == Capacity)
             {
