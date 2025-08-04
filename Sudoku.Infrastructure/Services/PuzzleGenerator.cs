@@ -47,7 +47,7 @@ public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
             "Expert" => RandomGenerator.RandomNumber(54, 58),
             _ => 0
         };
-        var emptyCellCoords = new List<Tuple<int, int>>();
+        var emptyCellCoords = new List<(int Row, int Col)>();
 
         while (emptyCellCoords.Count < numberOfEmptyCells)
         {
@@ -64,8 +64,8 @@ public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
 
         foreach (var rowCol in emptyCellCoords)
         {
-            puzzle.GetCell(rowCol.Item1, rowCol.Item2).SetValue(null);
-            puzzle.GetCell(rowCol.Item1, rowCol.Item1).SetValue(null);
+            puzzle.GetCell(rowCol.Row, rowCol.Col).SetValue(null);
+            puzzle.GetCell(rowCol.Row, rowCol.Row).SetValue(null);
 
             if (puzzle.Cells.Count(x => !x.Value.HasValue) >= numberOfEmptyCells) break;
         }
@@ -83,14 +83,14 @@ public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
         return SudokuPuzzle.Create(puzzle.PuzzleId, puzzle.Difficulty, cells);
     }
 
-    private Tuple<int, int>[] GetRandomCellCoordinates()
+    private (int Row, int Col)[] GetRandomCellCoordinates()
     {
-        var randomCells = new List<Tuple<int, int>>();
+        var randomCells = new List<(int Row, int Col)>();
         var row = RandomGenerator.RandomNumber(0, 9);
         var col = RandomGenerator.RandomNumber(0, 9);
 
-        randomCells.Add(new Tuple<int, int>(row, col));
-        randomCells.Add(new Tuple<int, int>(8 - row, 8 - col));
+        randomCells.Add((row, col));
+        randomCells.Add((8 - row, 8 - col));
 
         return randomCells.ToArray();
     }
