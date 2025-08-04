@@ -5,5 +5,4 @@ global using Moq;
 global using Xunit;
 
 global using Sudoku.Web.Server;
-global using Sudoku.Web.Server.Shared;
 global using DepenMock;
