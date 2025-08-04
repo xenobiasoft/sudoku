@@ -1,44 +1,13 @@
 ﻿using Sudoku.Domain.Entities;
-using Sudoku.Domain.Exceptions;
 
 namespace Sudoku.Infrastructure.Services.Strategies;
 
-public class TwinsInColumnsStrategy : SolverStrategy
+public class TwinsInColumnsStrategy : TwinsStrategyBase
 {
-	public override bool Execute(SudokuPuzzle puzzle)
-	{
-		var changesMade = false;
+    public override bool Execute(SudokuPuzzle puzzle)
+    {
+        var columnGroups = Enumerable.Range(0, 9).Select(puzzle.GetColumnCells);
 
-        foreach (var cell in puzzle.Cells)
-		{
-			if (cell.Value.HasValue || cell.PossibleValues.Count != 2) continue;
-
-			foreach (var colCell in puzzle.GetColumnCells(cell.Column).Where(x => x != cell))
-			{
-				if (!cell.PossibleValues.SequenceEqual(colCell.PossibleValues)) continue;
-
-				foreach (var nonTwinCell in puzzle.GetColumnCells(cell.Column))
-				{
-					if (nonTwinCell.Value.HasValue || nonTwinCell.Row == cell.Row || nonTwinCell.Row == colCell.Row) continue;
-
-                    nonTwinCell.PossibleValues.RemoveWhere(x => cell.PossibleValues.Contains(x));
-
-					if (!nonTwinCell.PossibleValues.Any())
-					{
-						throw new InvalidMoveException($"Invalid move for position: {nonTwinCell.Row}, {nonTwinCell.Column}");
-					}
-
-					if (nonTwinCell.PossibleValues.Count != 1) continue;
-
-					var cellValue = nonTwinCell.PossibleValues.First();
-					Console.WriteLine($"Setting cell:{nonTwinCell.Row}:{nonTwinCell.Column} to value {cellValue}");
-					nonTwinCell.SetValue(cellValue);
-					nonTwinCell.PossibleValues.Clear();
-					changesMade = true;
-                }
-			}
-		}
-
-		return changesMade;
-	}
+        return HandleNakedTwins(columnGroups);
+    }
 }

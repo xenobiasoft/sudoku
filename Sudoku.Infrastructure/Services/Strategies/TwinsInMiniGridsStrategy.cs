@@ -1,49 +1,24 @@
 ﻿using Sudoku.Domain.Entities;
-using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Infrastructure.Services.Strategies;
 
-public class TwinsInMiniGridsStrategy : SolverStrategy
+public class TwinsInMiniGridsStrategy : TwinsStrategyBase
 {
 	public override bool Execute(SudokuPuzzle puzzle)
-	{
-		var changesMade = false;
+    {
+        var miniGrids = new List<IEnumerable<Cell>>();
 
-        foreach (var cell in puzzle.Cells)
-		{
-			if (cell.Value.HasValue || cell.PossibleValues.Count != 2) continue;
+        for (var startRow = 0; startRow < 9; startRow += 3)
+        {
+            for (var startCol = 0; startCol < 9; startCol += 3)
+            {
+                var cells = puzzle.GetMiniGridCells(startRow, startCol);
 
-			var twins = new List<Cell> { cell };
+                miniGrids.Add(cells);
+            }
+        }
 
-			foreach (var twinCell in puzzle.GetMiniGridCells(cell.Row, cell.Column))
-			{
-				if (cell == twinCell || !cell.PossibleValues.SequenceEqual(twinCell.PossibleValues)) continue;
-
-				twins.Add(twinCell);
-
-				foreach (var nonTwinCell in puzzle.GetMiniGridCells(cell.Row, cell.Column).Where(x => !twins.Contains(x)))
-				{
-					if (nonTwinCell.Value.HasValue || nonTwinCell.PossibleValues.SequenceEqual(cell.PossibleValues)) continue;
-
-                    nonTwinCell.PossibleValues.RemoveWhere(x => cell.PossibleValues.Contains(x));
-
-					if (!nonTwinCell.PossibleValues.Any())
-					{
-						throw new InvalidMoveException($"Invalid move for position: {nonTwinCell.Row}, {nonTwinCell.Column}");
-					}
-
-					if (nonTwinCell.PossibleValues.Count != 1) continue;
-
-					var cellValue = nonTwinCell.PossibleValues.First();
-					Console.WriteLine($"Setting cell:{nonTwinCell.Row}:{nonTwinCell.Column} to value {cellValue}");
-					nonTwinCell.SetValue(cellValue);
-					nonTwinCell.PossibleValues.Clear();
-                    changesMade = true;
-                }
-			}
-		}
-
-		return changesMade;
-	}
+        return HandleNakedTwins(miniGrids);
+    }
 }
