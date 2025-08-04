@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sudoku.Domain.Events;
 
-namespace XenobiaSoft.Sudoku.Infrastructure.EventHandling;
+namespace Sudoku.Infrastructure.EventHandling;
 
 public class DomainEventDispatcher(IServiceProvider serviceProvider, ILogger<DomainEventDispatcher> logger) : IDomainEventDispatcher
 {

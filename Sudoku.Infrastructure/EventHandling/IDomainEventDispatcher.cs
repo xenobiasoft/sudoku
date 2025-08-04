@@ -1,6 +1,6 @@
 using Sudoku.Domain.Events;
 
-namespace XenobiaSoft.Sudoku.Infrastructure.EventHandling;
+namespace Sudoku.Infrastructure.EventHandling;
 
 public interface IDomainEventDispatcher
 {

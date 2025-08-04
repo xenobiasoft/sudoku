@@ -3,7 +3,7 @@ using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Strategies;
 
-namespace UnitTests.Sudoku.Strategies;
+namespace UnitTests.Infrastructure.Services.Strategies;
 
 public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<ColumnRowMiniGridEliminationStrategy, SolverStrategy>
 {

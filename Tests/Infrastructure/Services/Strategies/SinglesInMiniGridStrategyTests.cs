@@ -3,12 +3,12 @@ using UnitTests.Helpers;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Strategies;
 
-namespace UnitTests.Sudoku.Strategies;
+namespace UnitTests.Infrastructure.Services.Strategies;
 
-public class SinglesInRowsStrategyTests : BaseTestByAbstraction<SinglesInRowsStrategy, SolverStrategy>
+public class SinglesInMiniGridStrategyTests : BaseTestByAbstraction<SinglesInMiniGridsStrategy, SolverStrategy>
 {
 	[Fact]
-	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInRow_SetValueToThatNumber()
+	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInMiniGrid_SetValueToThatNumber()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
@@ -18,11 +18,11 @@ public class SinglesInRowsStrategyTests : BaseTestByAbstraction<SinglesInRowsStr
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.GetCell(2, 6).Value.Should().Be(5);
+		puzzle.GetCell(5, 2).Value.Should().Be(3);
 	}
 
 	[Fact]
-	public void SolvePuzzle_WhenACellValueIsSet_ReturnsTrue()
+	public void SolvePuzzle_WhenACellValueIsSet_ReturnsExpectedScore()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
@@ -36,7 +36,7 @@ public class SinglesInRowsStrategyTests : BaseTestByAbstraction<SinglesInRowsStr
     }
 
 	[Fact]
-	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsFalse()
+	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsScoreOfZero()
 	{
 		// Arrange
 		var puzzle = PuzzleFactory.GetEmptyPuzzle();

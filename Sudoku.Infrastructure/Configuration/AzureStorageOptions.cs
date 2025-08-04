@@ -1,4 +1,4 @@
-namespace XenobiaSoft.Sudoku.Infrastructure.Configuration;
+namespace Sudoku.Infrastructure.Configuration;
 
 public class AzureStorageOptions
 {

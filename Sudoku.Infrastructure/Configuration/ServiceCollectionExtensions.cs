@@ -3,11 +3,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Events;
-using XenobiaSoft.Sudoku.Infrastructure.EventHandling;
-using XenobiaSoft.Sudoku.Infrastructure.Repositories;
-using XenobiaSoft.Sudoku.Infrastructure.Services;
+using Sudoku.Infrastructure.EventHandling;
+using Sudoku.Infrastructure.Repositories;
+using Sudoku.Infrastructure.Services;
 
-namespace XenobiaSoft.Sudoku.Infrastructure.Configuration;
+namespace Sudoku.Infrastructure.Configuration;
 
 public static class ServiceCollectionExtensions
 {
@@ -62,9 +62,6 @@ public static class ServiceCollectionExtensions
         // Register the repository interface with the Azure implementation
         services.AddScoped<IGameRepository, AzureBlobGameRepository>();
 
-        // Register in-memory repository for testing/development
-        services.AddScoped<InMemoryGameRepository>();
-
         return services;
     }
 
@@ -78,13 +75,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IDomainEventHandler<MoveMadeEvent>, MoveMadeEventHandler>();
         services.AddScoped<IDomainEventHandler<GameCompletedEvent>, GameCompletedEventHandler>();
 
-        return services;
-    }
-
-    public static IServiceCollection AddInMemoryRepository(this IServiceCollection services)
-    {
-        // Replace Azure repository with in-memory repository for testing
-        services.AddScoped<IGameRepository, InMemoryGameRepository>();
         return services;
     }
 }

@@ -1,3 +1,5 @@
+using Sudoku.Domain.Helpers;
+
 namespace Sudoku.Domain.Entities;
 
 public class SudokuPuzzle
@@ -20,7 +22,9 @@ public class SudokuPuzzle
         var puzzle = new SudokuPuzzle(puzzleId, difficulty, cells);
 
         if (!puzzle.IsValid())
-            throw new InvalidPuzzleException("Puzzle is not valid");
+        {
+            throw new InvalidPuzzleException();
+        }
 
         return puzzle;
     }
@@ -53,37 +57,50 @@ public class SudokuPuzzle
 
     private bool IsValidSudoku()
     {
+        // Check rows
         for (var row = 0; row < 9; row++)
         {
-            var rowCells = _cells.Where(c => c.Row == row && c.HasValue).ToList();
-            var rowValues = rowCells.Select(c => c.Value!.Value).ToList();
-            if (rowValues.Count != rowValues.Distinct().Count())
+            var usedValues = new HashSet<int>();
+            var rowCells = GetRowCells(row).Where(c => c.HasValue);
+
+            foreach (var cell in rowCells)
             {
-                return false;
+                if (!usedValues.Add(cell.Value!.Value))
+                {
+                    return false; // Duplicate found
+                }
             }
         }
 
+        // Check columns  
         for (var column = 0; column < 9; column++)
         {
-            var columnCells = _cells.Where(c => c.Column == column && c.HasValue).ToList();
-            var columnValues = columnCells.Select(c => c.Value!.Value).ToList();
-            if (columnValues.Count != columnValues.Distinct().Count())
+            var usedValues = new HashSet<int>();
+            var columnCells = GetColumnCells(column).Where(c => c.HasValue);
+
+            foreach (var cell in columnCells)
             {
-                return false;
+                if (!usedValues.Add(cell.Value!.Value))
+                {
+                    return false; // Duplicate found
+                }
             }
         }
 
-        for (var boxRow = 0; boxRow < 9; boxRow += 3)
+        // Check 3x3 boxes
+        for (var boxRow = 0; boxRow < 3; boxRow++)
         {
-            for (var boxColumn = 0; boxColumn < 9; boxColumn += 3)
+            for (var boxColumn = 0; boxColumn < 3; boxColumn++)
             {
-                var boxCells = _cells.Where(c => c.Row >= boxRow && c.Row < boxRow + 3 &&
-                                                c.Column >= boxColumn && c.Column < boxColumn + 3 &&
-                                                c.HasValue).ToList();
-                var boxValues = boxCells.Select(c => c.Value!.Value).ToList();
-                if (boxValues.Count != boxValues.Distinct().Count())
+                var usedValues = new HashSet<int>();
+                var boxCells = GetMiniGridCells(boxRow, boxColumn).Where(c => c.HasValue);
+
+                foreach (var cell in boxCells)
                 {
-                    return false;
+                    if (!usedValues.Add(cell.Value!.Value))
+                    {
+                        return false; // Duplicate found
+                    }
                 }
             }
         }
@@ -104,4 +121,41 @@ public class SudokuPuzzle
     public int GetFixedCellCount() => _cells.Count(c => c.IsFixed);
 
     public int GetEmptyCellCount() => _cells.Count(c => !c.HasValue);
+
+    public IEnumerable<Cell> GetColumnCells(int col)
+    {
+        return _cells.Where(c => c.Column == col).OrderBy(c => c.Row);
+    }
+
+    public IEnumerable<Cell> GetRowCells(int row)
+    {
+        return _cells.Where(c => c.Row == row).OrderBy(c => c.Column);
+    }
+
+    public IEnumerable<Cell> GetMiniGridCells(int boxRow, int boxColumn)
+    {
+        return _cells.Where(c => c.Row >= boxRow * 3 && c.Row < (boxRow + 1) * 3 &&
+                                 c.Column >= boxColumn * 3 && c.Column < (boxColumn + 1) * 3)
+                     .OrderBy(c => c.Row).ThenBy(c => c.Column);
+    }
+
+    public void PopulatePossibleValues()
+    {
+        foreach (var cell in _cells)
+        {
+            if (cell.HasValue)
+            {
+                cell.PossibleValues.Clear();
+                continue;
+            }
+            var rowValues = GetRowCells(cell.Row).Where(c => c.HasValue).Select(c => c.Value!.Value).ToHashSet();
+            var columnValues = GetColumnCells(cell.Column).Where(c => c.HasValue).Select(c => c.Value!.Value).ToHashSet();
+            var miniGridValues = GetMiniGridCells(cell.Row / 3, cell.Column / 3)
+                .Where(c => c.HasValue)
+                .Select(c => c.Value!.Value)
+                .ToHashSet();
+            var usedValues = rowValues.Union(columnValues).Union(miniGridValues);
+            cell.PossibleValues.AddRange(Enumerable.Range(1, 9).Where(v => !usedValues.Contains(v)).ToList());
+        }
+    }
 }
