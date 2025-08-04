@@ -15,7 +15,7 @@ public class CircularStackTests
 		CircularStack<int> ConstructorTest() => new(capacity);
 
 		// Assert
-		Assert.Throws<ArgumentOutOfRangeException>((Func<CircularStack<int>>)ConstructorTest);
+		Assert.Throws<ArgumentOutOfRangeException>(ConstructorTest);
 	}
 
 	[Fact]
