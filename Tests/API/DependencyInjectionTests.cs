@@ -12,33 +12,6 @@ namespace UnitTests.API;
 
 public class DependencyInjectionTests
 {
-    private IServiceProvider CreateServiceProvider()
-    {
-        var configuration = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["AzureStorage:ConnectionString"] = "DefaultEndpointsProtocol=https;AccountName=test;AccountKey=dGVzdA==;EndpointSuffix=core.windows.net",
-                ["AzureStorage:UseManagedIdentity"] = "false"
-            })
-            .Build();
-
-        var services = new ServiceCollection();
-        
-        // Add required framework services
-        services.AddLogging();
-        services.AddControllers();
-        
-        // Add API services using the extension method
-        services.AddApiDefaults(configuration);
-        
-        // Register controllers manually for testing
-        services.AddTransient<GamesController>();
-        services.AddTransient<PlayersController>();
-
-        var factory = new TestServiceProviderFactory();
-        return factory.CreateServiceProvider(factory.CreateBuilder(services));
-    }
-
     [Fact]
     public void ApiDefaults_WhenServicesRegistered_CanResolveGamesController()
     {
@@ -259,5 +232,32 @@ public class DependencyInjectionTests
 
         // Assert
         mediator.Should().NotBeNull();
+    }
+
+    private IServiceProvider CreateServiceProvider()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["AzureStorage:ConnectionString"] = "DefaultEndpointsProtocol=https;AccountName=test;AccountKey=dGVzdA==;EndpointSuffix=core.windows.net",
+                ["AzureStorage:UseManagedIdentity"] = "false"
+            })
+            .Build();
+
+        var services = new ServiceCollection();
+        
+        // Add required framework services
+        services.AddLogging();
+        services.AddControllers();
+        
+        // Add API services using the extension method
+        services.AddApiDefaults(configuration);
+        
+        // Register controllers manually for testing
+        services.AddTransient<GamesController>();
+        services.AddTransient<PlayersController>();
+
+        var factory = new TestServiceProviderFactory();
+        return factory.CreateServiceProvider(factory.CreateBuilder(services));
     }
 }
