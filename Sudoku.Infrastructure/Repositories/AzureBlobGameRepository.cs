@@ -12,7 +12,6 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private const string ContainerName = "sudoku-games";
-    private const string DefaultRevision = "00001";
 
     public async Task<SudokuGame?> GetByIdAsync(GameId id)
     {

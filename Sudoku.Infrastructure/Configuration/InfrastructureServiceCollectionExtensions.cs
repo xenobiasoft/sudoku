@@ -2,29 +2,42 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Application.Interfaces;
+using Sudoku.Domain.Entities;
 using Sudoku.Domain.Events;
 using Sudoku.Infrastructure.EventHandling;
 using Sudoku.Infrastructure.Repositories;
 using Sudoku.Infrastructure.Services;
+using Sudoku.Infrastructure.Services.Strategies;
 
 namespace Sudoku.Infrastructure.Configuration;
 
-public static class ServiceCollectionExtensions
+public static class InfrastructureServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // Configure Azure Storage options
-        services.Configure<AzureStorageOptions>(
-            configuration.GetSection(AzureStorageOptions.SectionName));
+        services.Configure<AzureStorageOptions>(configuration.GetSection(AzureStorageOptions.SectionName));
 
-        // Register Azure Storage services
         services.AddAzureStorageServices(configuration);
-
-        // Register repositories
+        services.AddDomainEventHandling();
+        services.AddPuzzleServices();
         services.AddRepositories();
 
-        // Register domain event handling
-        services.AddDomainEventHandling();
+        return services;
+    }
+
+    private static IServiceCollection AddPuzzleServices(this IServiceCollection services)
+    {
+        services.AddScoped<IPuzzleGenerator, PuzzleGenerator>();
+        services.AddScoped<IPuzzleSolver, StrategyBasedPuzzleSolver>();
+
+        typeof(SudokuPuzzle).Assembly
+            .GetTypes()
+            .Where(x => x.Name.EndsWith("Strategy") && x is { IsAbstract: false, IsInterface: false })
+            .ToList()
+            .ForEach(x =>
+            {
+                services.AddTransient(typeof(SolverStrategy), x);
+            });
 
         return services;
     }
@@ -51,7 +64,6 @@ public static class ServiceCollectionExtensions
             });
         }
 
-        // Register Azure Storage service
         services.AddScoped<IAzureStorageService, AzureStorageService>();
 
         return services;
@@ -59,18 +71,16 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddRepositories(this IServiceCollection services)
     {
-        // Register the repository interface with the Azure implementation
         services.AddScoped<IGameRepository, AzureBlobGameRepository>();
+        services.AddScoped<IPuzzleRepository, InMemoryPuzzleRepository>();
 
         return services;
     }
 
     private static IServiceCollection AddDomainEventHandling(this IServiceCollection services)
     {
-        // Register domain event dispatcher
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
 
-        // Register domain event handlers
         services.AddScoped<IDomainEventHandler<GameCreatedEvent>, GameCreatedEventHandler>();
         services.AddScoped<IDomainEventHandler<MoveMadeEvent>, MoveMadeEventHandler>();
         services.AddScoped<IDomainEventHandler<GameCompletedEvent>, GameCompletedEventHandler>();

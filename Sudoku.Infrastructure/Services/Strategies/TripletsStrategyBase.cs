@@ -3,9 +3,9 @@ using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Infrastructure.Services.Strategies;
 
-public class TripletStrategies
+public abstract class TripletsStrategyBase : SolverStrategy
 {
-    public static bool HandleNakedTriplets(List<Cell> cells)
+    protected bool HandleNakedTriplets(List<Cell> cells)
     {
         var changesMade = false;
 
@@ -61,7 +61,7 @@ public class TripletStrategies
         return changesMade;
     }
 
-    public static bool HandleHiddenTriplets(List<Cell> cells)
+    protected bool HandleHiddenTriplets(List<Cell> cells)
     {
         var changesMade = false;
         var numbers = Enumerable.Range(1, 9).ToList();
