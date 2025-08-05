@@ -2,7 +2,7 @@
 
 namespace Sudoku.Infrastructure.Services.Strategies;
 
-public class TripletsInMiniGridsStrategy : SolverStrategy
+public class TripletsInMiniGridsStrategy : TripletsStrategyBase
 {
 	public override bool Execute(SudokuPuzzle puzzle)
     {
@@ -16,9 +16,9 @@ public class TripletsInMiniGridsStrategy : SolverStrategy
                     .Where(c => !c.Value.HasValue)
                     .ToList();
 
-                changesMade |= TripletStrategies.HandleNakedTriplets(miniGridCells);
+                changesMade |= HandleNakedTriplets(miniGridCells);
 
-                changesMade |= TripletStrategies.HandleHiddenTriplets(miniGridCells);
+                changesMade |= HandleHiddenTriplets(miniGridCells);
             }
         }
 
