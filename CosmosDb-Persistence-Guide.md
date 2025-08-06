@@ -61,7 +61,8 @@ In `appsettings.json` (or via environment variables/secrets):
 
 ```json
 "ConnectionStrings": {
-  "CosmosDb": "<your-cosmosdb-connection-string>"
+  "CosmosDb": "AccountEndpoint=https://<your-account>.documents.azure.com:443/;AccountKey=<your-account-key>;"
+  // See: https://learn.microsoft.com/azure/cosmos-db/connect-to-account for details on obtaining your CosmosDb connection string
 },
 "CosmosDb": {
   "Database": "SudokuDb",
