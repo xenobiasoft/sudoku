@@ -29,7 +29,11 @@
 
 ### e. Domain Model Mapping
 
-- Ensure domain entities are serializable/deserializable for CosmosDb.
+- **CosmosDb Serialization Requirements:**
+  - Use JSON serialization attributes (e.g., `[JsonPropertyName]`, `[JsonConstructor]`) on your domain entities to ensure correct mapping to/from CosmosDb documents.
+  - If your entities use value objects or complex types, consider implementing custom JSON converters or mapping to DTOs for persistence.
+  - Be aware that private setters or constructors (common in Clean Architecture) can prevent deserialization; use `[JsonConstructor]` or make setters public as needed.
+  - See [System.Text.Json documentation](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json-customize-properties?pivots=dotnet-7-0) for more details.
 
 ### f. Testing
 
