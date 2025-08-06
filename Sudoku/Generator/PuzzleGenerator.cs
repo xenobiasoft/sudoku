@@ -4,6 +4,7 @@ using XenobiaSoft.Sudoku.Solver;
 
 namespace XenobiaSoft.Sudoku.Generator;
 
+[Obsolete("Use Sudoku.Infrastructure.Services.PuzzleGenerator instead.")]
 public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
 {
     public async Task<ISudokuPuzzle> GenerateAsync(GameDifficulty difficulty)

@@ -5,6 +5,7 @@ using XenobiaSoft.Sudoku.Abstractions;
 
 namespace XenobiaSoft.Sudoku.Storage.Azure.Services;
 
+[Obsolete("Use AzureStorageService, located in the Infrastructure project")]
 public class AzureStorageService(BlobServiceClient blobServiceClient) : IStorageService
 {
     public Task DeleteAsync(string containerName, string blobName)

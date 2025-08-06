@@ -1,5 +1,6 @@
 ﻿namespace XenobiaSoft.Sudoku;
 
+[Obsolete("Use Sudoku.Domain.Cell instead")]
 public record Cell(int Row, int Column)
 {
     public List<int> PossibleValues { get; set; } = new();
