@@ -44,7 +44,7 @@ In your `Sudoku.AppHost/Program.cs`, add CosmosDb as a resource:
 ```csharp
 var cosmosDb = builder.AddAzureCosmosDB("cosmosdb")
     .WithDatabase("SudokuDb")
-    .WithContainer("Games", "/partitionKey"); // Adjust partition key as needed
+    .WithContainer("Games", "/gameId"); // Use '/gameId' as the partition key for efficient game lookups
 
 builder.AddProject<Projects.Sudoku_Api>("sudoku-api")
     .WithReference(cosmosDb)
