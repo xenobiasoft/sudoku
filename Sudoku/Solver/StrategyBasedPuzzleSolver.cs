@@ -5,6 +5,7 @@ using XenobiaSoft.Sudoku.Strategies;
 
 namespace XenobiaSoft.Sudoku.Solver;
 
+[Obsolete("Use Sudoku.Infrastructure.Services.StrategyBasedPuzzleSolver instead.")]
 public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, IInMemoryGameStateStorage gameStateStorage)
     : IPuzzleSolver
 {

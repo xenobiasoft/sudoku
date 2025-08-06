@@ -1,5 +1,6 @@
 ﻿namespace XenobiaSoft.Sudoku.Strategies;
 
+[Obsolete("This class is obsolete. Use Sudoku.Infrastructure.Services.Strategies.SinglesInMiniGridsStrategy instead.")]
 public class SinglesInMiniGridsStrategy : SolverStrategy
 {
 	public override bool Execute(ISudokuPuzzle puzzle)

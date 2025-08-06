@@ -2,6 +2,7 @@
 
 namespace XenobiaSoft.Sudoku.Services;
 
+[Obsolete("Use Sudoku.Application.Services.PlayerApplicationService instead.")]
 public class PlayerService : IPlayerService
 {
     private static readonly string[] Adjectives = ["Swift", "Clever", "Brave", "Witty", "Silent", "Happy"];

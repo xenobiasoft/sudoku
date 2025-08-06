@@ -4,6 +4,7 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace XenobiaSoft.Sudoku.Services;
 
+[Obsolete("Use Sudoku.Application.Services.GameApplicationService instead")]
 public class GameService(IPersistentGameStateStorage storage, IPuzzleGenerator puzzleGenerator) : IGameService
 {
     public async Task<string> CreateGameAsync(string alias, GameDifficulty difficulty)

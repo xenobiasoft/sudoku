@@ -3,6 +3,7 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace XenobiaSoft.Sudoku;
 
+[Obsolete("Use Sudoku.Domain.SudokuGame instead")]
 public class SudokuGame(IPuzzleGenerator puzzleGenerator, IGameStateStorage gameStateStorage) : ISudokuGame
 {
     public async Task<GameStateMemory> NewGameAsync(string alias, GameDifficulty difficulty)

@@ -2,6 +2,7 @@
 
 namespace XenobiaSoft.Sudoku.Strategies;
 
+[Obsolete("This class is obsolete. Use Sudoku.Infrastructure.Services.Strategies.TwinsInColumnsStrategy instead.")]
 public class TwinsInColumnsStrategy : SolverStrategy
 {
 	public override bool Execute(ISudokuPuzzle puzzle)

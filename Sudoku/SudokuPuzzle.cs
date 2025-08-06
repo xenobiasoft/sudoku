@@ -4,6 +4,7 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace XenobiaSoft.Sudoku;
 
+[Obsolete("Use Sudoku.Domain.SudokuPuzzle instead")]
 public class SudokuPuzzle : ISudokuPuzzle
 {
     private readonly Cell[] _cells = new Cell[GameDimensions.Columns * GameDimensions.Rows];
