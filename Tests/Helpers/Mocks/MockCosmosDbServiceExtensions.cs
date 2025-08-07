@@ -1,8 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
-using Sudoku.Domain.ValueObjects;
-using Sudoku.Infrastructure.Models;
+﻿using Sudoku.Infrastructure.Models;
 using Sudoku.Infrastructure.Services;
-using Sudoku.Web.Server.Pages;
 
 namespace UnitTests.Helpers.Mocks;
 
