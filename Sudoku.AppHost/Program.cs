@@ -11,11 +11,13 @@ var cosmosDb = builder.Environment.IsDevelopment() ?
 
 builder.AddProject<Projects.Sudoku_Api>("sudoku-api")
     .WithReference(cosmosDb)
-    .WithReference(keyVault);
+    .WithReference(keyVault)
+    .WaitFor(cosmosDb);
 
 builder.AddProject<Projects.Sudoku_Web_Server>("sudoku-blazor")
     .WithReference(cosmosDb)
     .WithReference(keyVault)
-    .WithExternalHttpEndpoints();
+    .WithExternalHttpEndpoints()
+    .WaitFor(cosmosDb);
 
 builder.Build().Run();
