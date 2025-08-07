@@ -1,12 +1,23 @@
+using Microsoft.Extensions.Hosting;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var keyVault = builder.AddConnectionString("AzureKeyVault");
 
+// Add CosmosDB resource - conditionally use emulator for local development
+var cosmosDb = builder.Environment.IsDevelopment() ?
+    builder.AddAzureCosmosDB("cosmosdb").RunAsEmulator() : 
+    builder.AddAzureCosmosDB("cosmosdb");
+
 builder.AddProject<Projects.Sudoku_Api>("sudoku-api")
-    .WithReference(keyVault);
+    .WithReference(cosmosDb)
+    .WithReference(keyVault)
+    .WaitFor(cosmosDb);
 
 builder.AddProject<Projects.Sudoku_Web_Server>("sudoku-blazor")
+    .WithReference(cosmosDb)
     .WithReference(keyVault)
-    .WithExternalHttpEndpoints();
+    .WithExternalHttpEndpoints()
+    .WaitFor(cosmosDb);
 
 builder.Build().Run();

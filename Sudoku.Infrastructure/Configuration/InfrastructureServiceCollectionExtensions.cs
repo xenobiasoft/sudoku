@@ -1,9 +1,12 @@
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Events;
+using Sudoku.Infrastructure.Configuration;
 using Sudoku.Infrastructure.EventHandling;
 using Sudoku.Infrastructure.Repositories;
 using Sudoku.Infrastructure.Services;
@@ -16,11 +19,50 @@ public static class InfrastructureServiceCollectionExtensions
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.Configure<AzureStorageOptions>(configuration.GetSection(AzureStorageOptions.SectionName));
+        services.Configure<CosmosDbOptions>(configuration.GetSection(CosmosDbOptions.SectionName));
 
-        services.AddAzureStorageServices(configuration);
+        // Check which persistence provider to use
+        var useCosmosDb = configuration.GetValue<bool>("UseCosmosDb");
+        
+        if (useCosmosDb)
+        {
+            services.AddCosmosDbServices(configuration);
+        }
+        else
+        {
+            services.AddAzureStorageServices(configuration);
+        }
+
         services.AddDomainEventHandling();
         services.AddPuzzleServices();
-        services.AddRepositories();
+
+        return services;
+    }
+
+    private static IServiceCollection AddCosmosDbServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        // Register CosmosClient manually
+        services.AddSingleton<CosmosClient>(serviceProvider =>
+        {
+            var connectionString = configuration.GetConnectionString("cosmosdb") 
+                ?? configuration.GetConnectionString("CosmosDb");
+            
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                throw new InvalidOperationException(
+                    "CosmosDb connection string not found. Please ensure it's configured in configuration " +
+                    "with the key 'ConnectionStrings:cosmosdb' or 'ConnectionStrings:CosmosDb'.");
+            }
+            
+            return new CosmosClient(connectionString);
+        });
+
+        // Register CosmosDb service and repository
+        services.AddScoped<ICosmosDbService, CosmosDbService>();
+        services.AddScoped<IGameRepository, CosmosDbGameRepository>();
+        
+        // Keep the in-memory puzzle repository for now
+        services.AddScoped<IPuzzleRepository, InMemoryPuzzleRepository>();
 
         return services;
     }
@@ -65,12 +107,6 @@ public static class InfrastructureServiceCollectionExtensions
         }
 
         services.AddScoped<IAzureStorageService, AzureStorageService>();
-
-        return services;
-    }
-
-    private static IServiceCollection AddRepositories(this IServiceCollection services)
-    {
         services.AddScoped<IGameRepository, AzureBlobGameRepository>();
         services.AddScoped<IPuzzleRepository, InMemoryPuzzleRepository>();
 
