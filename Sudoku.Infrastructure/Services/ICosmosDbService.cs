@@ -4,10 +4,10 @@ namespace Sudoku.Infrastructure.Services;
 
 public interface ICosmosDbService
 {
-    Task<T?> GetItemAsync<T>(string id, PartitionKey partitionKey);
-    Task<T> UpsertItemAsync<T>(T item, PartitionKey? partitionKey = null);
-    Task DeleteItemAsync<T>(string id, PartitionKey partitionKey);
-    Task<IEnumerable<T>> QueryItemsAsync<T>(QueryDefinition queryDefinition);
+    Task DeleteItemAsync<T>(string id, string key);
+    Task<bool> ExistsAsync<T>(string id, string key);
+    Task<T?> GetItemAsync<T>(string id, string key);
+    Task<IEnumerable<T>> QueryItemsAsync<T>(string sqlQuery, IDictionary<string, string> queryParams);
     Task<IEnumerable<T>> QueryItemsAsync<T>(string sqlQuery);
-    Task<bool> ExistsAsync<T>(string id, PartitionKey partitionKey);
+    Task<T> UpsertItemAsync<T>(T item, string? key = null);
 }

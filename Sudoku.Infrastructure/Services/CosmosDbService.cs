@@ -17,10 +17,50 @@ public class CosmosDbService : ICosmosDbService
         _container = database.GetContainer(options.Value.ContainerName);
     }
 
-    public async Task<T?> GetItemAsync<T>(string id, PartitionKey partitionKey)
+    public async Task DeleteItemAsync<T>(string id, string key)
     {
         try
         {
+            var partitionKey = new PartitionKey(key);
+            await _container.DeleteItemAsync<T>(id, partitionKey);
+            _logger.LogDebug("Deleted item with ID {Id} from CosmosDB", id);
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            _logger.LogDebug("Item with ID {Id} not found for deletion in CosmosDB", id);
+            // Don't throw exception for item not found during delete
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting item with ID {Id} from CosmosDB", id);
+            throw;
+        }
+    }
+
+    public async Task<bool> ExistsAsync<T>(string id, string key)
+    {
+        try
+        {
+            var partitionKey = new PartitionKey(key);
+            var response = await _container.ReadItemAsync<T>(id, partitionKey);
+            return response.Resource != null;
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return false;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking existence of item with ID {Id} in CosmosDB", id);
+            throw;
+        }
+    }
+
+    public async Task<T?> GetItemAsync<T>(string id, string key)
+    {
+        try
+        {
+            var partitionKey = new PartitionKey(key);
             var response = await _container.ReadItemAsync<T>(id, partitionKey);
             _logger.LogDebug("Retrieved item with ID {Id} from CosmosDB", id);
             return response.Resource;
@@ -37,47 +77,16 @@ public class CosmosDbService : ICosmosDbService
         }
     }
 
-    public async Task<T> UpsertItemAsync<T>(T item, PartitionKey? partitionKey = null)
+    public async Task<IEnumerable<T>> QueryItemsAsync<T>(string sqlQuery, IDictionary<string, string> queryParams)
     {
-        try
-        {
-            var response = partitionKey.HasValue 
-                ? await _container.UpsertItemAsync(item, partitionKey)
-                : await _container.UpsertItemAsync(item);
-            
-            _logger.LogDebug("Upserted item to CosmosDB with RU charge: {RequestCharge}", response.RequestCharge);
-            return response.Resource;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error upserting item to CosmosDB");
-            throw;
-        }
-    }
+        var queryDefinition = new QueryDefinition(sqlQuery);
 
-    public async Task DeleteItemAsync<T>(string id, PartitionKey partitionKey)
-    {
         try
         {
-            await _container.DeleteItemAsync<T>(id, partitionKey);
-            _logger.LogDebug("Deleted item with ID {Id} from CosmosDB", id);
-        }
-        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            _logger.LogDebug("Item with ID {Id} not found for deletion in CosmosDB", id);
-            // Don't throw exception for item not found during delete
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error deleting item with ID {Id} from CosmosDB", id);
-            throw;
-        }
-    }
-
-    public async Task<IEnumerable<T>> QueryItemsAsync<T>(QueryDefinition queryDefinition)
-    {
-        try
-        {
+            foreach (var param in queryParams)
+            {
+                queryDefinition.WithParameter(param.Key, param.Value);
+            }
             var results = new List<T>();
             using var feedIterator = _container.GetItemQueryIterator<T>(queryDefinition);
 
@@ -101,24 +110,23 @@ public class CosmosDbService : ICosmosDbService
 
     public async Task<IEnumerable<T>> QueryItemsAsync<T>(string sqlQuery)
     {
-        var queryDefinition = new QueryDefinition(sqlQuery);
-        return await QueryItemsAsync<T>(queryDefinition);
+        return await QueryItemsAsync<T>(sqlQuery, new Dictionary<string, string>());
     }
 
-    public async Task<bool> ExistsAsync<T>(string id, PartitionKey partitionKey)
+    public async Task<T> UpsertItemAsync<T>(T item, string? key = null)
     {
         try
         {
-            var response = await _container.ReadItemAsync<T>(id, partitionKey);
-            return response.Resource != null;
-        }
-        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-        {
-            return false;
+            var response = string.IsNullOrWhiteSpace(key)
+                ? await _container.UpsertItemAsync(item)
+                : await _container.UpsertItemAsync(item, new PartitionKey(key));
+            
+            _logger.LogDebug("Upserted item to CosmosDB with RU charge: {RequestCharge}", response.RequestCharge);
+            return response.Resource;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking existence of item with ID {Id} in CosmosDB", id);
+            _logger.LogError(ex, "Error upserting item to CosmosDB");
             throw;
         }
     }

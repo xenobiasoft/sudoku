@@ -1,4 +1,3 @@
-using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Sudoku.Application.Interfaces;
 using Sudoku.Application.Specifications;
@@ -16,8 +15,7 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
     {
         try
         {
-            var partitionKey = new PartitionKey(id.Value.ToString());
-            var document = await cosmosDbService.GetItemAsync<Models.SudokuGameDocument>(id.Value.ToString(), partitionKey);
+            var document = await cosmosDbService.GetItemAsync<Models.SudokuGameDocument>(id.Value.ToString(), id);
 
             if (document == null)
             {
@@ -41,10 +39,12 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
         try
         {
             var sqlQuery = "SELECT * FROM c WHERE c.playerAlias = @playerAlias ORDER BY c.createdAt DESC";
-            var queryDefinition = new QueryDefinition(sqlQuery)
-                .WithParameter("@playerAlias", playerAlias.Value);
+            var queryParams = new Dictionary<string, string>
+            {
+                { "@playerAlias", playerAlias.Value }
+            };
 
-            var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(queryDefinition);
+            var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(sqlQuery, queryParams);
             var games = documents.Select(SudokuGameMapper.FromDocument).ToList();
 
             logger.LogDebug("Retrieved {Count} games for player {PlayerAlias} from CosmosDB", games.Count, playerAlias.Value);
@@ -62,11 +62,13 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
         try
         {
             var sqlQuery = "SELECT * FROM c WHERE c.playerAlias = @playerAlias AND c.status = @status ORDER BY c.createdAt DESC";
-            var queryDefinition = new QueryDefinition(sqlQuery)
-                .WithParameter("@playerAlias", playerAlias.Value)
-                .WithParameter("@status", status.ToString());
+            var queryParams = new Dictionary<string, string>
+            {
+                { "@playerAlias", playerAlias.Value },
+                { "@status", status.ToString() }
+            };
 
-            var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(queryDefinition);
+            var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(sqlQuery, queryParams);
             var games = documents.Select(SudokuGameMapper.FromDocument).ToList();
 
             logger.LogDebug("Retrieved {Count} games for player {PlayerAlias} with status {Status} from CosmosDB", 
@@ -86,9 +88,8 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
         try
         {
             var document = SudokuGameMapper.ToDocument(game);
-            var partitionKey = new PartitionKey(document.PartitionKey);
             
-            await cosmosDbService.UpsertItemAsync(document, partitionKey);
+            await cosmosDbService.UpsertItemAsync(document);
             
             logger.LogDebug("Saved game {GameId} to CosmosDB", game.Id.Value);
         }
@@ -103,8 +104,7 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
     {
         try
         {
-            var partitionKey = new PartitionKey(id.Value.ToString());
-            await cosmosDbService.DeleteItemAsync<Models.SudokuGameDocument>(id.Value.ToString(), partitionKey);
+            await cosmosDbService.DeleteItemAsync<Models.SudokuGameDocument>(id.Value.ToString(), id);
             
             logger.LogDebug("Deleted game {GameId} from CosmosDB", id.Value);
         }
@@ -119,8 +119,7 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
     {
         try
         {
-            var partitionKey = new PartitionKey(id.Value.ToString());
-            var exists = await cosmosDbService.ExistsAsync<Models.SudokuGameDocument>(id.Value.ToString(), partitionKey);
+            var exists = await cosmosDbService.ExistsAsync<Models.SudokuGameDocument>(id.Value.ToString(), id);
             
             logger.LogDebug("Game {GameId} exists in CosmosDB: {Exists}", id.Value, exists);
             return exists;
@@ -201,10 +200,12 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
         try
         {
             var sqlQuery = "SELECT * FROM c ORDER BY c.createdAt DESC OFFSET 0 LIMIT @count";
-            var queryDefinition = new QueryDefinition(sqlQuery)
-                .WithParameter("@count", count);
+            var queryParams = new Dictionary<string, string>
+            {
+                { "@count", count.ToString() }
+            };
 
-            var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(queryDefinition);
+            var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(sqlQuery, queryParams);
             var games = documents.Select(SudokuGameMapper.FromDocument).ToList();
 
             logger.LogDebug("Retrieved {Count} recent games from CosmosDB", games.Count);
@@ -222,23 +223,27 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
         try
         {
             string sqlQuery;
-            QueryDefinition queryDefinition;
+            Dictionary<string, string> queryParams;
 
             if (playerAlias != null)
             {
                 sqlQuery = "SELECT * FROM c WHERE c.status = @status AND c.playerAlias = @playerAlias ORDER BY c.completedAt DESC";
-                queryDefinition = new QueryDefinition(sqlQuery)
-                    .WithParameter("@status", GameStatus.Completed.ToString())
-                    .WithParameter("@playerAlias", playerAlias.Value);
+                queryParams = new Dictionary<string, string>
+                {
+                    { "@status", GameStatus.Completed.ToString() },
+                    { "@playerAlias", playerAlias.Value }
+                };
             }
             else
             {
                 sqlQuery = "SELECT * FROM c WHERE c.status = @status ORDER BY c.completedAt DESC";
-                queryDefinition = new QueryDefinition(sqlQuery)
-                    .WithParameter("@status", GameStatus.Completed.ToString());
+                queryParams = new Dictionary<string, string>
+                {
+                    { "@status", GameStatus.Completed.ToString() }
+                };
             }
 
-            var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(queryDefinition);
+            var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(sqlQuery, queryParams);
             var games = documents.Select(SudokuGameMapper.FromDocument).ToList();
 
             logger.LogDebug("Retrieved {Count} completed games from CosmosDB", games.Count);
@@ -256,10 +261,12 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
         try
         {
             var sqlQuery = "SELECT * FROM c WHERE c.difficulty = @difficulty ORDER BY c.createdAt DESC";
-            var queryDefinition = new QueryDefinition(sqlQuery)
-                .WithParameter("@difficulty", difficulty.ToString());
+            var queryParams = new Dictionary<string, string>
+            {
+                { "@difficulty", difficulty.ToString() }
+            };
 
-            var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(queryDefinition);
+            var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(sqlQuery, queryParams);
             var games = documents.Select(SudokuGameMapper.FromDocument).ToList();
 
             logger.LogDebug("Retrieved {Count} games with difficulty {Difficulty} from CosmosDB", games.Count, difficulty);
@@ -277,10 +284,12 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
         try
         {
             var sqlQuery = "SELECT * FROM c WHERE c.status = @status ORDER BY c.createdAt DESC";
-            var queryDefinition = new QueryDefinition(sqlQuery)
-                .WithParameter("@status", status.ToString());
+            var queryParams = new Dictionary<string, string>
+            {
+                { "@status", status.ToString() }
+            };
 
-            var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(queryDefinition);
+            var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(sqlQuery, queryParams);
             var games = documents.Select(SudokuGameMapper.FromDocument).ToList();
 
             logger.LogDebug("Retrieved {Count} games with status {Status} from CosmosDB", games.Count, status);
@@ -298,21 +307,22 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
         try
         {
             string sqlQuery;
-            QueryDefinition queryDefinition;
+            Dictionary<string, string> queryParams = new();
 
             if (playerAlias != null)
             {
                 sqlQuery = "SELECT VALUE COUNT(1) FROM c WHERE c.playerAlias = @playerAlias";
-                queryDefinition = new QueryDefinition(sqlQuery)
-                    .WithParameter("@playerAlias", playerAlias.Value);
+                queryParams = new Dictionary<string, string>
+                {
+                    { "@playerAlias", playerAlias.Value }
+                };
             }
             else
             {
                 sqlQuery = "SELECT VALUE COUNT(1) FROM c";
-                queryDefinition = new QueryDefinition(sqlQuery);
             }
 
-            var results = await cosmosDbService.QueryItemsAsync<int>(queryDefinition);
+            var results = await cosmosDbService.QueryItemsAsync<int>(sqlQuery, queryParams);
             var count = results.FirstOrDefault();
 
             logger.LogDebug("Total games count: {Count}", count);
@@ -330,23 +340,27 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
         try
         {
             string sqlQuery;
-            QueryDefinition queryDefinition;
+            Dictionary<string, string> queryParams;
 
             if (playerAlias != null)
             {
                 sqlQuery = "SELECT VALUE COUNT(1) FROM c WHERE c.status = @status AND c.playerAlias = @playerAlias";
-                queryDefinition = new QueryDefinition(sqlQuery)
-                    .WithParameter("@status", GameStatus.Completed.ToString())
-                    .WithParameter("@playerAlias", playerAlias.Value);
+                queryParams = new Dictionary<string, string>
+                {
+                    { "@status", GameStatus.Completed.ToString() },
+                    { "@playerAlias", playerAlias.Value }
+                };
             }
             else
             {
                 sqlQuery = "SELECT VALUE COUNT(1) FROM c WHERE c.status = @status";
-                queryDefinition = new QueryDefinition(sqlQuery)
-                    .WithParameter("@status", GameStatus.Completed.ToString());
+                queryParams = new Dictionary<string, string>()
+                {
+                    { "@status", GameStatus.Completed.ToString() }
+                };
             }
 
-            var results = await cosmosDbService.QueryItemsAsync<int>(queryDefinition);
+            var results = await cosmosDbService.QueryItemsAsync<int>(sqlQuery, queryParams);
             var count = results.FirstOrDefault();
 
             logger.LogDebug("Completed games count: {Count}", count);

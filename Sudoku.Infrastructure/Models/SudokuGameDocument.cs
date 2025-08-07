@@ -16,8 +16,8 @@ public class SudokuGameDocument
     public string PlayerAlias { get; set; } = string.Empty;
     
     [JsonPropertyName("difficulty")]
-    public GameDifficulty Difficulty { get; set; }
-    
+    public GameDifficulty Difficulty { get; set; } = GameDifficulty.Easy;
+
     [JsonPropertyName("status")]
     public GameStatus Status { get; set; }
     
