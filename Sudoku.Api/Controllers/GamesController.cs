@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Sudoku.Api.Models;
 using Sudoku.Application.DTOs;
 using Sudoku.Application.Interfaces;
 
@@ -434,8 +435,3 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
         return Ok(result.Value);
     }
 }
-
-// Request Models
-public record MoveRequest(int Row, int Column, int? Value);
-public record PossibleValueRequest(int Row, int Column, int Value);
-public record CellRequest(int Row, int Column);

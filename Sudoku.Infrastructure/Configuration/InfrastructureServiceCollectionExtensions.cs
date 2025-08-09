@@ -2,11 +2,9 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Events;
-using Sudoku.Infrastructure.Configuration;
 using Sudoku.Infrastructure.EventHandling;
 using Sudoku.Infrastructure.Repositories;
 using Sudoku.Infrastructure.Services;
@@ -53,8 +51,29 @@ public static class InfrastructureServiceCollectionExtensions
                     "CosmosDb connection string not found. Please ensure it's configured in configuration " +
                     "with the key 'ConnectionStrings:cosmosdb' or 'ConnectionStrings:CosmosDb'.");
             }
-            
-            return new CosmosClient(connectionString);
+
+            var cosmosClientOptions = new CosmosClientOptions();
+
+            // Check configuration for SSL validation setting
+            var disableSslValidation = configuration.GetValue<bool>("CosmosDbOptions:DisableSslValidation");
+
+            if (disableSslValidation)
+            {
+                // Disable SSL validation for development/emulator
+                cosmosClientOptions.HttpClientFactory = () =>
+                {
+                    HttpMessageHandler httpMessageHandler = new HttpClientHandler()
+                    {
+                        ServerCertificateCustomValidationCallback = (req, cert, chain, errors) => true
+                    };
+
+                    return new HttpClient(httpMessageHandler);
+                };
+
+                cosmosClientOptions.ConnectionMode = ConnectionMode.Gateway;
+            }
+
+            return new CosmosClient(connectionString, cosmosClientOptions);
         });
 
         // Register CosmosDb service and repository
