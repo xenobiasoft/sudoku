@@ -2,11 +2,9 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Events;
-using Sudoku.Infrastructure.Configuration;
 using Sudoku.Infrastructure.EventHandling;
 using Sudoku.Infrastructure.Repositories;
 using Sudoku.Infrastructure.Services;
@@ -44,8 +42,7 @@ public static class InfrastructureServiceCollectionExtensions
         // Register CosmosClient manually
         services.AddSingleton<CosmosClient>(serviceProvider =>
         {
-            var connectionString = configuration.GetConnectionString("cosmosdb") 
-                ?? configuration.GetConnectionString("CosmosDb");
+            var connectionString = configuration.GetConnectionString("CosmosDb");
             
             if (string.IsNullOrEmpty(connectionString))
             {
@@ -53,8 +50,33 @@ public static class InfrastructureServiceCollectionExtensions
                     "CosmosDb connection string not found. Please ensure it's configured in configuration " +
                     "with the key 'ConnectionStrings:cosmosdb' or 'ConnectionStrings:CosmosDb'.");
             }
-            
-            return new CosmosClient(connectionString);
+
+            var clientOptions = new CosmosClientOptions
+            {
+                ConnectionMode = ConnectionMode.Gateway,
+                RequestTimeout = TimeSpan.FromSeconds(30),
+                MaxRetryAttemptsOnRateLimitedRequests = 3,
+                MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(15)
+            };
+
+            // Get CosmosDbOptions from configuration
+            var cosmosDbOptions = configuration.GetSection(CosmosDbOptions.SectionName).Get<CosmosDbOptions>();
+
+            if (cosmosDbOptions.DisableSslValidation)
+            {
+                // Disable SSL validation for development/emulator
+                clientOptions.HttpClientFactory = () =>
+                {
+                    HttpMessageHandler httpMessageHandler = new HttpClientHandler()
+                    {
+                        ServerCertificateCustomValidationCallback = (req, cert, chain, errors) => true
+                    };
+
+                    return new HttpClient(httpMessageHandler);
+                };
+            }
+
+            return new CosmosClient(connectionString, clientOptions);
         });
 
         // Register CosmosDb service and repository

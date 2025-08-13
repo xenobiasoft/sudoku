@@ -5,7 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-// Add Key Vault configuration
+// Add Key Vault configuration if available
 var keyVaultUri = builder.Configuration["ConnectionStrings:AzureKeyVault"];
 if (!string.IsNullOrEmpty(keyVaultUri))
 {

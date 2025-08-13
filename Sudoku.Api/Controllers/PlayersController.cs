@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Sudoku.Api.Models;
 using Sudoku.Application.Interfaces;
 
 namespace Sudoku.Api.Controllers
@@ -53,54 +54,5 @@ namespace Sudoku.Api.Controllers
             
             return Ok(result.Value);
         }
-        
-        /// <summary>
-        /// Deletes a player and all their games
-        /// </summary>
-        /// <param name="alias">The player's alias</param>
-        /// <returns>No content if successful</returns>
-        [HttpDelete("{alias}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> DeletePlayerAsync(string alias)
-        {
-            if (string.IsNullOrWhiteSpace(alias))
-            {
-                return BadRequest("Player alias cannot be null or empty.");
-            }
-            
-            // First check if the player exists
-            var existsResult = await _playerService.PlayerExistsAsync(alias);
-            if (!existsResult.IsSuccess)
-            {
-                return BadRequest(existsResult.Error);
-            }
-            
-            if (!existsResult.Value)
-            {
-                return NotFound();
-            }
-            
-            var result = await _playerService.DeletePlayerAsync(alias);
-            
-            if (!result.IsSuccess)
-            {
-                return BadRequest(result.Error);
-            }
-            
-            return NoContent();
-        }
-    }
-    
-    /// <summary>
-    /// Request model for creating a player
-    /// </summary>
-    public class CreatePlayerRequest
-    {
-        /// <summary>
-        /// The player's alias. If not provided, a random alias will be generated.
-        /// </summary>
-        public string? Alias { get; set; }
     }
 }

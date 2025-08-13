@@ -30,18 +30,10 @@ public class Program
                 ?? builder.Configuration["KeyVault:VaultUri"]
                 ?? string.Empty;
 
-            if (string.IsNullOrEmpty(vaultUri))
+            if (!string.IsNullOrEmpty(vaultUri))
             {
-                throw new InvalidOperationException("Key Vault URI is not configured. Please ensure 'ConnectionStrings:AzureKeyVault' is set in AppHost configuration.");
+                builder.Configuration.AddAzureKeyVault(new Uri(vaultUri), new DefaultAzureCredential());
             }
-
-            builder
-                .Configuration
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
-                .AddUserSecrets<Program>()
-                .AddAzureKeyVault(new Uri(vaultUri), new DefaultAzureCredential());
 
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();

@@ -1,6 +1,7 @@
 ﻿using DepenMock.XUnit;
 using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Controllers;
+using Sudoku.Api.Models;
 using Sudoku.Application.Common;
 using Sudoku.Application.Interfaces;
 
@@ -121,100 +122,6 @@ public class PlayersControllerTests : BaseTestByType<PlayersController>
 
         // Assert
         var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
-    }
-
-    [Fact]
-    public async Task DeletePlayerAsync_WithExistingPlayer_ReturnsNoContent()
-    {
-        // Arrange
-        var playerAlias = "TestPlayer";
-        
-        _mockPlayerService
-            .Setup(x => x.PlayerExistsAsync(playerAlias))
-            .ReturnsAsync(Result<bool>.Success(true));
-            
-        _mockPlayerService
-            .Setup(x => x.DeletePlayerAsync(playerAlias))
-            .ReturnsAsync(Result<bool>.Success(true));
-
-        // Act
-        var result = await _sut.DeletePlayerAsync(playerAlias);
-
-        // Assert
-        result.Should().BeOfType<NoContentResult>();
-    }
-
-    [Fact]
-    public async Task DeletePlayerAsync_WithEmptyAlias_ReturnsBadRequest()
-    {
-        // Arrange
-        string playerAlias = "";
-
-        // Act
-        var result = await _sut.DeletePlayerAsync(playerAlias);
-
-        // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be("Player alias cannot be null or empty.");
-    }
-
-    [Fact]
-    public async Task DeletePlayerAsync_WhenPlayerDoesNotExist_ReturnsNotFound()
-    {
-        // Arrange
-        var playerAlias = "NonExistentPlayer";
-        
-        _mockPlayerService
-            .Setup(x => x.PlayerExistsAsync(playerAlias))
-            .ReturnsAsync(Result<bool>.Success(false));
-
-        // Act
-        var result = await _sut.DeletePlayerAsync(playerAlias);
-
-        // Assert
-        result.Should().BeOfType<NotFoundResult>();
-    }
-
-    [Fact]
-    public async Task DeletePlayerAsync_WhenExistsCheckFails_ReturnsBadRequest()
-    {
-        // Arrange
-        var playerAlias = "TestPlayer";
-        var errorMessage = "Failed to check player existence";
-        
-        _mockPlayerService
-            .Setup(x => x.PlayerExistsAsync(playerAlias))
-            .ReturnsAsync(Result<bool>.Failure(errorMessage));
-
-        // Act
-        var result = await _sut.DeletePlayerAsync(playerAlias);
-
-        // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
-    }
-
-    [Fact]
-    public async Task DeletePlayerAsync_WhenDeleteFails_ReturnsBadRequest()
-    {
-        // Arrange
-        var playerAlias = "TestPlayer";
-        var errorMessage = "Failed to delete player";
-        
-        _mockPlayerService
-            .Setup(x => x.PlayerExistsAsync(playerAlias))
-            .ReturnsAsync(Result<bool>.Success(true));
-            
-        _mockPlayerService
-            .Setup(x => x.DeletePlayerAsync(playerAlias))
-            .ReturnsAsync(Result<bool>.Failure(errorMessage));
-
-        // Act
-        var result = await _sut.DeletePlayerAsync(playerAlias);
-
-        // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
         badRequestResult.Value.Should().Be(errorMessage);
     }
 }
