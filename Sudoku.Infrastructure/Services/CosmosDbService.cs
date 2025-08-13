@@ -9,12 +9,40 @@ public class CosmosDbService : ICosmosDbService
 {
     private readonly Container _container;
     private readonly ILogger<CosmosDbService> _logger;
+    private readonly CosmosClient _cosmosClient;
+    private readonly CosmosDbOptions _options;
 
     public CosmosDbService(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options, ILogger<CosmosDbService> logger)
     {
         _logger = logger;
-        var database = cosmosClient.GetDatabase(options.Value.DatabaseName);
-        _container = database.GetContainer(options.Value.ContainerName);
+        _cosmosClient = cosmosClient;
+        _options = options.Value;
+        
+        InitializeCosmosDbAsync().GetAwaiter().GetResult();
+        
+        var database = cosmosClient.GetDatabase(_options.DatabaseName);
+        _container = database.GetContainer(_options.ContainerName);
+    }
+
+    private async Task InitializeCosmosDbAsync()
+    {
+        _logger.LogInformation("Ensuring CosmosDB database and container exist: {Endpoint}", _cosmosClient.Endpoint);
+        
+        var database = await _cosmosClient.CreateDatabaseIfNotExistsAsync(
+            _options.DatabaseName, 
+            throughput: 400);
+        
+        _logger.LogInformation("Database {DatabaseName} ensured", _options.DatabaseName);
+        
+        var containerProperties = new ContainerProperties(
+            id: _options.ContainerName,
+            partitionKeyPath: "/gameId"
+        );
+        
+        // Create the container if it doesn't exist
+        await database.Database.CreateContainerIfNotExistsAsync(containerProperties);
+        
+        _logger.LogInformation("Container {ContainerName} ensured", _options.ContainerName);
     }
 
     public async Task DeleteItemAsync<T>(string id, string key)
@@ -92,10 +120,20 @@ public class CosmosDbService : ICosmosDbService
 
             while (feedIterator.HasMoreResults)
             {
-                var response = await feedIterator.ReadNextAsync();
-                results.AddRange(response);
-                
-                _logger.LogDebug("Query executed with RU charge: {RequestCharge}", response.RequestCharge);
+                try
+                {
+                    // Set timeout for this specific operation
+                    using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+                    var response = await feedIterator.ReadNextAsync(cancellationTokenSource.Token);
+                    results.AddRange(response);
+                    
+                    _logger.LogDebug("Query executed with RU charge: {RequestCharge}", response.RequestCharge);
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogWarning("Cosmos DB query operation timed out after 30 seconds");
+                    throw new TimeoutException("The Cosmos DB query operation timed out. Please check if the emulator is running properly.");
+                }
             }
 
             _logger.LogDebug("Query returned {Count} items from CosmosDB", results.Count);

@@ -42,8 +42,7 @@ public static class InfrastructureServiceCollectionExtensions
         // Register CosmosClient manually
         services.AddSingleton<CosmosClient>(serviceProvider =>
         {
-            var connectionString = configuration.GetConnectionString("cosmosdb") 
-                ?? configuration.GetConnectionString("CosmosDb");
+            var connectionString = configuration.GetConnectionString("CosmosDb");
             
             if (string.IsNullOrEmpty(connectionString))
             {
@@ -52,15 +51,21 @@ public static class InfrastructureServiceCollectionExtensions
                     "with the key 'ConnectionStrings:cosmosdb' or 'ConnectionStrings:CosmosDb'.");
             }
 
-            var cosmosClientOptions = new CosmosClientOptions();
+            var clientOptions = new CosmosClientOptions
+            {
+                ConnectionMode = ConnectionMode.Gateway,
+                RequestTimeout = TimeSpan.FromSeconds(30),
+                MaxRetryAttemptsOnRateLimitedRequests = 3,
+                MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(15)
+            };
 
-            // Check configuration for SSL validation setting
-            var disableSslValidation = configuration.GetValue<bool>("CosmosDbOptions:DisableSslValidation");
+            // Get CosmosDbOptions from configuration
+            var cosmosDbOptions = configuration.GetSection(CosmosDbOptions.SectionName).Get<CosmosDbOptions>();
 
-            if (disableSslValidation)
+            if (cosmosDbOptions.DisableSslValidation)
             {
                 // Disable SSL validation for development/emulator
-                cosmosClientOptions.HttpClientFactory = () =>
+                clientOptions.HttpClientFactory = () =>
                 {
                     HttpMessageHandler httpMessageHandler = new HttpClientHandler()
                     {
@@ -69,11 +74,9 @@ public static class InfrastructureServiceCollectionExtensions
 
                     return new HttpClient(httpMessageHandler);
                 };
-
-                cosmosClientOptions.ConnectionMode = ConnectionMode.Gateway;
             }
 
-            return new CosmosClient(connectionString, cosmosClientOptions);
+            return new CosmosClient(connectionString, clientOptions);
         });
 
         // Register CosmosDb service and repository
