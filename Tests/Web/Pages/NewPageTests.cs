@@ -2,34 +2,30 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Pages;
 using Sudoku.Web.Server.Services.Abstractions;
-using UnitTests.Helpers;
 using UnitTests.Helpers.Mocks;
-using XenobiaSoft.Sudoku;
 
 namespace UnitTests.Web.Pages;
 
 public class NewPageTests : TestContext
 {
-    private readonly Mock<ISudokuGame> _mockSudokuGame;
-    private readonly Mock<IGameStateManager>? _mockGameStateManager;
+    private const string GameAlias = "test-alias";
+    private readonly Mock<IAliasService>? _mockAliasService;
+    private readonly Mock<IApiBasedGameStateManager>? _mockGameStateManager;
 
     public NewPageTests()
     {
-        var alias = "game-alias";
-        _mockSudokuGame = new Mock<ISudokuGame>();
-        _mockGameStateManager = new Mock<IGameStateManager>();
-        var aliasService = new Mock<IAliasService>();
-        aliasService.SetupGetAliasAsync(alias);
+        _mockGameStateManager = new Mock<IApiBasedGameStateManager>();
+        _mockAliasService = new Mock<IAliasService>();
 
-        _mockSudokuGame.SetNewAsync(alias, PuzzleFactory.GetPuzzle(GameDifficulty.Easy));
+        _mockAliasService.SetupGetAliasAsync(GameAlias);
+        _mockGameStateManager.SetupCreateGameAsync(GameAlias);
 
         Services.AddSingleton(_mockGameStateManager.Object);
-        Services.AddSingleton(_mockSudokuGame.Object);
-        Services.AddSingleton(aliasService.Object);
+        Services.AddSingleton(_mockAliasService.Object);
     }
 
     [Fact]
-    public void OnInitializedAsync_GeneratesNewPuzzle()
+    public void OnInitializedAsync_CreatesGame()
     {
         // Arrange
 
@@ -37,11 +33,11 @@ public class NewPageTests : TestContext
         RenderComponent<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
 
         // Assert
-        _mockSudokuGame.VerifyGeneratesNewPuzzle(Times.Once);
+        _mockGameStateManager?.VerifyCreateGameAsync(GameAlias, Times.Once);
     }
 
     [Fact]
-    public void OnInitializedAsync_SavesGameState()
+    public void OnInitializedAsync_GetsAlias()
     {
         // Arrange
 
@@ -49,7 +45,7 @@ public class NewPageTests : TestContext
         RenderComponent<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
 
         // Assert
-        _mockGameStateManager!.VerifySaveAsyncCalled(Times.Once);
+        _mockAliasService?.VerifyGetAliasAsync(Times.Once);
     }
 
     [Fact]
@@ -57,7 +53,6 @@ public class NewPageTests : TestContext
     {
         // Arrange
         var navMan = Services.GetRequiredService<FakeNavigationManager>();
-        _mockSudokuGame.SetLoadAsync(PuzzleFactory.GetPuzzle(GameDifficulty.Easy));
 
         // Act
         RenderComponent<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));

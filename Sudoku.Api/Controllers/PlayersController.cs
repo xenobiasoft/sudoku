@@ -26,8 +26,9 @@ namespace Sudoku.Api.Controllers
             {
                 return BadRequest(result.Error);
             }
-            
-            return CreatedAtAction(nameof(PlayerExistsAsync), new { alias = result.Value }, result.Value);
+
+            var actionName = nameof(PlayerExistsAsync);
+            return CreatedAtAction(actionName, new { alias = result.Value }, result.Value);
         }
         
         /// <summary>

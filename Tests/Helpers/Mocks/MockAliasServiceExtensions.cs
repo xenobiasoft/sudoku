@@ -4,12 +4,15 @@ namespace UnitTests.Helpers.Mocks;
 
 public static class MockAliasServiceExtensions
 {
-    public static Mock<IAliasService> SetupGetAliasAsync(this Mock<IAliasService> mock, string alias)
+    public static void SetupGetAliasAsync(this Mock<IAliasService> mock, string alias)
     {
         mock
             .Setup(x => x.GetAliasAsync())
             .ReturnsAsync(alias);
+    }
 
-        return mock;
+    public static void VerifyGetAliasAsync(this Mock<IAliasService> mock, Func<Times> times)
+    {
+        mock.Verify(x => x.GetAliasAsync(), times);
     }
 }

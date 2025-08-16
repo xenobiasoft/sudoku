@@ -39,7 +39,6 @@ public class Program
             builder.Services.AddServerSideBlazor();
             builder.Services.AddHealthChecks();
             builder.Services
-                .RegisterGameServices(builder.Configuration)
                 .RegisterBlazorGameServices(builder.Configuration)
                 .AddBlazorApplicationInsights(x =>
                 {
