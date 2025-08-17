@@ -1,6 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using Sudoku.Web.Server.Models;
+using Sudoku.Web.Server.Models.Requests;
 
 namespace Sudoku.Web.Server.Services.HttpClients;
 
