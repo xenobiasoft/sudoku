@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Sudoku.Web.Server.Services.Abstractions;
+using Sudoku.Web.Server.Services.Abstractions.V2;
 using Sudoku.Web.Server.Services.Converters;
 using XenobiaSoft.Sudoku.Extensions;
 
@@ -11,7 +12,7 @@ public partial class New
 
     [Parameter] public string Difficulty { get; set; } = "Easy";
     [Inject] public required NavigationManager Navigation { get; set; }
-    [Inject] public required IApiBasedGameStateManager GameStateManager { get; set; }
+    [Inject] public required Services.Abstractions.V2.IGameStateManager GameStateManager { get; set; }
     [Inject] public required IAliasService AliasService { get; set; }
 
     protected override async Task OnInitializedAsync()

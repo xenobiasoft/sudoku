@@ -2,22 +2,22 @@ using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services.Abstractions;
 using Sudoku.Web.Server.Services.HttpClients;
 
-namespace Sudoku.Web.Server.Services;
+namespace Sudoku.Web.Server.Services.V2;
 
 /// <summary>
 /// API-based game state manager that uses the Game API
 /// </summary>
-public class ApiBasedGameStateManager(
+public class GameStateManager(
     IGameApiClient gameApiClient,
     ILocalStorageService localStorageService,
-    ILogger<ApiBasedGameStateManager> logger)
-    : IApiBasedGameStateManager
+    ILogger<GameStateManager> logger)
+    : Abstractions.V2.IGameStateManager
 {
     private readonly IGameApiClient _gameApiClient = gameApiClient ?? throw new ArgumentNullException(nameof(gameApiClient));
     private readonly ILocalStorageService _localStorageService = localStorageService ?? throw new ArgumentNullException(nameof(localStorageService));
-    private readonly ILogger<ApiBasedGameStateManager> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly ILogger<GameStateManager> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-    public async Task<ApiResult> DeleteGameAsync(string alias, string gameId)
+    public async Task<ApiResult<bool>> DeleteGameAsync(string alias, string gameId)
     {
         try
         {
@@ -43,7 +43,7 @@ public class ApiBasedGameStateManager(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while deleting game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 
@@ -100,7 +100,7 @@ public class ApiBasedGameStateManager(
         }
     }
 
-    public async Task<ApiResult> ResetGameAsync(string alias, string gameId)
+    public async Task<ApiResult<bool>> ResetGameAsync(string alias, string gameId)
     {
         try
         {
@@ -122,7 +122,7 @@ public class ApiBasedGameStateManager(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while resetting game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 
@@ -152,7 +152,7 @@ public class ApiBasedGameStateManager(
         }
     }
 
-    public async Task<ApiResult> UndoGameAsync(string alias, string gameId)
+    public async Task<ApiResult<bool>> UndoGameAsync(string alias, string gameId)
     {
         try
         {
@@ -174,11 +174,11 @@ public class ApiBasedGameStateManager(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while undoing move for game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 
-    public async Task<ApiResult> MakeMoveAsync(string alias, string gameId, int row, int column, int? value)
+    public async Task<ApiResult<bool>> MakeMoveAsync(string alias, string gameId, int row, int column, int? value)
     {
         try
         {
@@ -201,11 +201,11 @@ public class ApiBasedGameStateManager(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while making move for game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 
-    public async Task<ApiResult> AddPossibleValueAsync(string alias, string gameId, int row, int column, int value)
+    public async Task<ApiResult<bool>> AddPossibleValueAsync(string alias, string gameId, int row, int column, int value)
     {
         try
         {
@@ -215,11 +215,11 @@ public class ApiBasedGameStateManager(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while adding possible value for game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 
-    public async Task<ApiResult> RemovePossibleValueAsync(string alias, string gameId, int row, int column, int value)
+    public async Task<ApiResult<bool>> RemovePossibleValueAsync(string alias, string gameId, int row, int column, int value)
     {
         try
         {
@@ -229,11 +229,11 @@ public class ApiBasedGameStateManager(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while removing possible value for game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 
-    public async Task<ApiResult> ClearPossibleValuesAsync(string alias, string gameId, int row, int column)
+    public async Task<ApiResult<bool>> ClearPossibleValuesAsync(string alias, string gameId, int row, int column)
     {
         try
         {
@@ -243,7 +243,7 @@ public class ApiBasedGameStateManager(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error occurred while clearing possible values for game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 

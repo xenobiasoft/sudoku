@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.Routing;
 using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services.Abstractions;
+using Sudoku.Web.Server.Services.Abstractions.V2;
 
 namespace Sudoku.Web.Server.Pages;
 
@@ -13,10 +14,10 @@ public partial class Game
     [Inject] public required IInvalidCellNotificationService InvalidCellNotificationService { get; set; }
     [Inject] public required IGameNotificationService GameNotificationService { get; set; }
     [Inject] public required ICellFocusedNotificationService CellFocusedNotificationService { get; set; }
-    [Inject] public required IGameStateManager GameStateManager { get; set; }
+    [Inject] public required Services.Abstractions.IGameStateManager GameStateManager { get; set; }
     [Inject] public required IGameSessionManager SessionManager { get; set; }
     [Inject] public required IAliasService AliasService { get; set; }
-    [Inject] public required IApiBasedGameStateManager ApiGameStateManager { get; set; }
+    [Inject] public required Services.Abstractions.V2.IGameStateManager ApiGameStateManager { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
 
     private ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();

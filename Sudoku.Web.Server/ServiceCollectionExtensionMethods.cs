@@ -1,6 +1,8 @@
 ﻿using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
+using Sudoku.Web.Server.Services.Abstractions.V2;
 using Sudoku.Web.Server.Services.HttpClients;
+using Sudoku.Web.Server.Services.V2;
 
 namespace Sudoku.Web.Server
 {
@@ -32,12 +34,9 @@ namespace Sudoku.Web.Server
             });
 
             // Register API-based services
-            services.AddScoped<IAliasService, ApiBasedAliasService>();
-            services.AddScoped<IApiBasedGameStateManager, ApiBasedGameStateManager>();
+            services.AddScoped<IAliasService, AliasService>();
+            services.AddScoped<Services.Abstractions.V2.IGameStateManager, Services.V2.GameStateManager>();
             
-            // Register legacy compatibility service that implements IGameStateManager using the new API
-            services.AddScoped<IGameStateManager, LegacyCompatibilityGameStateManager>();
-
             // Keep local storage for caching
             services.AddScoped<ILocalStorageService, LocalStorageService>();
 

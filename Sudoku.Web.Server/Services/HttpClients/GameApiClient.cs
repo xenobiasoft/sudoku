@@ -37,7 +37,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
     /// <param name="value">The possible value to add at the specified position.</param>
     /// <returns>An <see cref="ApiResult{T}"/> containing an empty object if the operation succeeds,  or an error message if the
     /// operation fails.</returns>
-    public async Task<ApiResult> AddPossibleValueAsync(string alias, string gameId, int row, int column, int value)
+    public async Task<ApiResult<bool>> AddPossibleValueAsync(string alias, string gameId, int row, int column, int value)
     {
         try
         {
@@ -49,19 +49,19 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
             if (response.IsSuccessStatusCode)
             {
                 _logger.LogInformation("Possible value added successfully for game {GameId}", gameId);
-                return ApiResult.Success();
+                return ApiResult<bool>.Success(true);
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("Failed to add possible value. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
-                return ApiResult.Failure($"Failed to add possible value: {error}");
+                return ApiResult<bool>.Failure($"Failed to add possible value: {error}");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception occurred while adding possible value");
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 
@@ -77,7 +77,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
     /// <param name="column">The column index of the cell to clear, starting from 0.</param>
     /// <returns>An <see cref="ApiResult{T}"/> containing an empty object if the operation succeeds,  or an error message if the
     /// operation fails.</returns>
-    public async Task<ApiResult> ClearPossibleValuesAsync(string alias, string gameId, int row, int column)
+    public async Task<ApiResult<bool>> ClearPossibleValuesAsync(string alias, string gameId, int row, int column)
     {
         try
         {
@@ -94,19 +94,19 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
             if (response.IsSuccessStatusCode)
             {
                 _logger.LogInformation("Possible values cleared successfully for game {GameId}", gameId);
-                return ApiResult.Success();
+                return ApiResult<bool>.Success(true);
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("Failed to clear possible values. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
-                return ApiResult.Failure($"Failed to clear possible values: {error}");
+                return ApiResult<bool>.Failure($"Failed to clear possible values: {error}");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception occurred while clearing possible values");
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 
@@ -165,7 +165,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
     /// <param name="alias">The alias of the player whose games are to be deleted. Cannot be null or empty.</param>
     /// <returns>An <see cref="ApiResult{T}"/> containing the result of the operation.  If successful, the result contains an
     /// empty object.  If the operation fails, the result contains an error message.</returns>
-    public async Task<ApiResult> DeleteAllGamesAsync(string alias)
+    public async Task<ApiResult<bool>> DeleteAllGamesAsync(string alias)
     {
         try
         {
@@ -176,19 +176,19 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
             if (response.IsSuccessStatusCode)
             {
                 _logger.LogInformation("All games deleted successfully for player: {Alias}", alias);
-                return ApiResult.Success();
+                return ApiResult<bool>.Success(true);
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("Failed to delete all games. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
-                return ApiResult.Failure($"Failed to delete all games: {error}");
+                return ApiResult<bool>.Failure($"Failed to delete all games: {error}");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception occurred while deleting all games");
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 
@@ -202,7 +202,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
     /// <param name="gameId">The unique identifier of the game to delete. This value cannot be null or empty.</param>
     /// <returns>An <see cref="ApiResult{T}"/> containing the result of the operation.  If successful, the result contains an
     /// empty object.  If the operation fails, the result contains an error message.</returns>
-    public async Task<ApiResult> DeleteGameAsync(string alias, string gameId)
+    public async Task<ApiResult<bool>> DeleteGameAsync(string alias, string gameId)
     {
         try
         {
@@ -213,19 +213,19 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
             if (response.IsSuccessStatusCode)
             {
                 _logger.LogInformation("Game {GameId} deleted successfully for player: {Alias}", gameId, alias);
-                return ApiResult.Success();
+                return ApiResult<bool>.Success(true);
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("Failed to delete game. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
-                return ApiResult.Failure($"Failed to delete game: {error}");
+                return ApiResult<bool>.Failure($"Failed to delete game: {error}");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception occurred while deleting game");
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 
@@ -326,7 +326,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
     /// <param name="value">The optional value associated with the move, if applicable.</param>
     /// <returns>An <see cref="ApiResult{T}"/> containing the result of the move operation.  If successful, the result contains
     /// an empty object. If the operation fails, the result contains an error message.</returns>
-    public async Task<ApiResult> MakeMoveAsync(string alias, string gameId, int row, int column, int? value)
+    public async Task<ApiResult<bool>> MakeMoveAsync(string alias, string gameId, int row, int column, int? value)
     {
         try
         {
@@ -339,19 +339,19 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
             if (response.IsSuccessStatusCode)
             {
                 _logger.LogInformation("Move made successfully for game {GameId}", gameId);
-                return ApiResult.Success();
+                return ApiResult<bool>.Success(true);
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("Failed to make move. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
-                return ApiResult.Failure($"Failed to make move: {error}");
+                return ApiResult<bool>.Failure($"Failed to make move: {error}");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception occurred while making move");
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 
@@ -368,7 +368,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
     /// <param name="value">The possible value to be removed from the specified cell.</param>
     /// <returns>An <see cref="ApiResult{T}"/> containing an empty object if the operation succeeds, or an error message if it
     /// fails.</returns>
-    public async Task<ApiResult> RemovePossibleValueAsync(string alias, string gameId, int row, int column, int value)
+    public async Task<ApiResult<bool>> RemovePossibleValueAsync(string alias, string gameId, int row, int column, int value)
     {
         try
         {
@@ -385,19 +385,19 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
             if (response.IsSuccessStatusCode)
             {
                 _logger.LogInformation("Possible value removed successfully for game {GameId}", gameId);
-                return ApiResult.Success();
+                return ApiResult<bool>.Success(true);
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("Failed to remove possible value. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
-                return ApiResult.Failure($"Failed to remove possible value: {error}");
+                return ApiResult<bool>.Failure($"Failed to remove possible value: {error}");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception occurred while removing possible value");
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 
@@ -411,7 +411,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
     /// <param name="gameId">The unique identifier of the game to reset. Cannot be null or empty.</param>
     /// <returns>An <see cref="ApiResult{T}"/> containing the result of the operation.  If successful, the result contains an
     /// empty object.  If the operation fails, the result contains an error message.</returns>
-    public async Task<ApiResult> ResetGameAsync(string alias, string gameId)
+    public async Task<ApiResult<bool>> ResetGameAsync(string alias, string gameId)
     {
         try
         {
@@ -422,19 +422,19 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
             if (response.IsSuccessStatusCode)
             {
                 _logger.LogInformation("Game {GameId} reset successfully for player: {Alias}", gameId, alias);
-                return ApiResult.Success();
+                return ApiResult<bool>.Success(true);
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("Failed to reset game. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
-                return ApiResult.Failure($"Failed to reset game: {error}");
+                return ApiResult<bool>.Failure($"Failed to reset game: {error}");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception occurred while resetting game");
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 
@@ -450,7 +450,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
     /// object: <list type="bullet"> <item><description>On success, the result contains an empty
     /// object.</description></item> <item><description>On failure, the result contains an error message describing the
     /// issue.</description></item> </list></returns>
-    public async Task<ApiResult> UndoMoveAsync(string alias, string gameId)
+    public async Task<ApiResult<bool>> UndoMoveAsync(string alias, string gameId)
     {
         try
         {
@@ -461,19 +461,19 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
             if (response.IsSuccessStatusCode)
             {
                 _logger.LogInformation("Move undone successfully for game {GameId}", gameId);
-                return ApiResult.Success();
+                return ApiResult<bool>.Success(true);
             }
             else
             {
                 var error = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("Failed to undo move. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
-                return ApiResult.Failure($"Failed to undo move: {error}");
+                return ApiResult<bool>.Failure($"Failed to undo move: {error}");
             }
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception occurred while undoing move");
-            return ApiResult.Failure($"Exception occurred: {ex.Message}");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }
 

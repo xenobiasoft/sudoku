@@ -16,7 +16,7 @@ public interface IGameApiClient
     /// <param name="column">The column of the cell</param>
     /// <param name="value">The possible value to add</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult> AddPossibleValueAsync(string alias, string gameId, int row, int column, int value);
+    Task<ApiResult<bool>> AddPossibleValueAsync(string alias, string gameId, int row, int column, int value);
 
     /// <summary>
     /// Clears all possible values from a cell
@@ -26,7 +26,7 @@ public interface IGameApiClient
     /// <param name="row">The row of the cell</param>
     /// <param name="column">The column of the cell</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult> ClearPossibleValuesAsync(string alias, string gameId, int row, int column);
+    Task<ApiResult<bool>> ClearPossibleValuesAsync(string alias, string gameId, int row, int column);
 
     /// <summary>
     /// Creates a new game for the specified player with the given difficulty
@@ -41,7 +41,7 @@ public interface IGameApiClient
     /// </summary>
     /// <param name="alias">The player's alias</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult> DeleteAllGamesAsync(string alias);
+    Task<ApiResult<bool>> DeleteAllGamesAsync(string alias);
 
     /// <summary>
     /// Deletes a specific game for a player
@@ -49,7 +49,7 @@ public interface IGameApiClient
     /// <param name="alias">The player's alias</param>
     /// <param name="gameId">The game id to delete</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult> DeleteGameAsync(string alias, string gameId);
+    Task<ApiResult<bool>> DeleteGameAsync(string alias, string gameId);
 
     /// <summary>
     /// Gets all games for a specific player
@@ -75,7 +75,7 @@ public interface IGameApiClient
     /// <param name="column">The column of the move</param>
     /// <param name="value">The value to set</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult> MakeMoveAsync(string alias, string gameId, int row, int column, int? value);
+    Task<ApiResult<bool>> MakeMoveAsync(string alias, string gameId, int row, int column, int? value);
 
     /// <summary>
     /// Removes a possible value from a cell
@@ -86,7 +86,7 @@ public interface IGameApiClient
     /// <param name="column">The column of the cell</param>
     /// <param name="value">The possible value to remove</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult> RemovePossibleValueAsync(string alias, string gameId, int row, int column, int value);
+    Task<ApiResult<bool>> RemovePossibleValueAsync(string alias, string gameId, int row, int column, int value);
 
     /// <summary>
     /// Resets a game to its initial state
@@ -94,7 +94,7 @@ public interface IGameApiClient
     /// <param name="alias">The player's alias</param>
     /// <param name="gameId">The game id</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult> ResetGameAsync(string alias, string gameId);
+    Task<ApiResult<bool>> ResetGameAsync(string alias, string gameId);
 
     /// <summary>
     /// Undoes the last move in a game
@@ -102,7 +102,7 @@ public interface IGameApiClient
     /// <param name="alias">The player's alias</param>
     /// <param name="gameId">The game id</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult> UndoMoveAsync(string alias, string gameId);
+    Task<ApiResult<bool>> UndoMoveAsync(string alias, string gameId);
 
     /// <summary>
     /// Validates a game to check if it's completed correctly

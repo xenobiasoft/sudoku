@@ -1,12 +1,12 @@
 ﻿using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services.Abstractions;
+using Sudoku.Web.Server.Services.Abstractions.V2;
 using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Helpers.Mocks;
 
 public static class MockApiBasedGameStateManagerExtensions
 {
-    public static void SetupCreateGameAsync(this Mock<IApiBasedGameStateManager> mock, string alias)
+    public static void SetupCreateGameAsync(this Mock<IGameStateManager> mock, string alias)
     {
         var game = new GameModel(
             Id: Guid.NewGuid().ToString(),
@@ -35,7 +35,7 @@ public static class MockApiBasedGameStateManagerExtensions
             .ReturnsAsync(apiResult);
     }
 
-    public static void SetupLoadGameAsync(this Mock<IApiBasedGameStateManager> mock, GameStateMemory gameState)
+    public static void SetupLoadGameAsync(this Mock<IGameStateManager> mock, GameStateMemory gameState)
     {
         //mock
         //    .Setup(x => x.LoadGameAsync(gameState.Alias, It.IsAny<string>()))
@@ -43,7 +43,7 @@ public static class MockApiBasedGameStateManagerExtensions
         Assert.Fail("No load game method");
     }
 
-    public static void SetupLoadGamesAsync(this Mock<IApiBasedGameStateManager> mock, IEnumerable<GameStateMemory> gameStates)
+    public static void SetupLoadGamesAsync(this Mock<IGameStateManager> mock, IEnumerable<GameStateMemory> gameStates)
     {
         //mock
         //    .Setup(x => x.LoadGamesAsync(It.IsAny<string>()))
@@ -51,38 +51,38 @@ public static class MockApiBasedGameStateManagerExtensions
         Assert.Fail("No load games method");
     }
 
-    public static void VerifyCreateGameAsync(this Mock<IApiBasedGameStateManager> mock, string alias, Func<Times> times)
+    public static void VerifyCreateGameAsync(this Mock<IGameStateManager> mock, string alias, Func<Times> times)
     {
         mock.Verify(x => x.CreateGameAsync(alias, It.IsAny<string>()), times);
     }
 
-    public static void VerifyDeleteGameAsyncCalled(this Mock<IApiBasedGameStateManager> mock, Func<Times> times)
+    public static void VerifyDeleteGameAsyncCalled(this Mock<IGameStateManager> mock, Func<Times> times)
     {
         mock.Verify(x => x.DeleteGameAsync(It.IsAny<string>(), It.IsAny<string>()), times);
     }
 
-    public static void VerifyDeleteGameAsyncCalled(this Mock<IApiBasedGameStateManager> mock, string alias, string puzzleId, Func<Times> times)
+    public static void VerifyDeleteGameAsyncCalled(this Mock<IGameStateManager> mock, string alias, string puzzleId, Func<Times> times)
     {
         mock.Verify(x => x.DeleteGameAsync(alias, puzzleId), times);
     }
 
-    public static void VerifyLoadsAsyncCalled(this Mock<IApiBasedGameStateManager> mock, string alias, string puzzleId, Func<Times> times)
+    public static void VerifyLoadsAsyncCalled(this Mock<IGameStateManager> mock, string alias, string puzzleId, Func<Times> times)
     {
         mock.Verify(x => x.LoadGameAsync(alias, puzzleId), times);
     }
 
-    public static void VerifyResetAsyncCalled(this Mock<IApiBasedGameStateManager> mock, string alias, string puzzleId, Func<Times> times)
+    public static void VerifyResetAsyncCalled(this Mock<IGameStateManager> mock, string alias, string puzzleId, Func<Times> times)
     {
         mock.Verify(x => x.ResetGameAsync(alias, puzzleId), times);
     }
 
-    public static void VerifySaveAsyncCalled(this Mock<IApiBasedGameStateManager> mock, Func<Times> times)
+    public static void VerifySaveAsyncCalled(this Mock<IGameStateManager> mock, Func<Times> times)
     {
         //mock.Verify(x => x.SaveGameAsync(It.IsAny<GameStateMemory>()), times);
         Assert.Fail("No save method");
     }
 
-    public static void VerifyUndoAsyncCalled(this Mock<IApiBasedGameStateManager> mock, string alias, string puzzleId, Func<Times> times)
+    public static void VerifyUndoAsyncCalled(this Mock<IGameStateManager> mock, string alias, string puzzleId, Func<Times> times)
     {
         mock.Verify(x => x.UndoGameAsync(alias, puzzleId), times);
     }

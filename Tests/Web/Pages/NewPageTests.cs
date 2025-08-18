@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Pages;
 using Sudoku.Web.Server.Services.Abstractions;
+using Sudoku.Web.Server.Services.Abstractions.V2;
 using UnitTests.Helpers.Mocks;
 
 namespace UnitTests.Web.Pages;
@@ -10,11 +11,11 @@ public class NewPageTests : TestContext
 {
     private const string GameAlias = "test-alias";
     private readonly Mock<IAliasService>? _mockAliasService;
-    private readonly Mock<IApiBasedGameStateManager>? _mockGameStateManager;
+    private readonly Mock<global::Sudoku.Web.Server.Services.Abstractions.V2.IGameStateManager>? _mockGameStateManager;
 
     public NewPageTests()
     {
-        _mockGameStateManager = new Mock<IApiBasedGameStateManager>();
+        _mockGameStateManager = new Mock<global::Sudoku.Web.Server.Services.Abstractions.V2.IGameStateManager>();
         _mockAliasService = new Mock<IAliasService>();
 
         _mockAliasService.SetupGetAliasAsync(GameAlias);
