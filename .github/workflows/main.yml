@@ -42,6 +42,15 @@ jobs:
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
 
+      - name: Configure GA Measurement Id in App Settings
+        uses: azure/appservice-settings@v1
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          app-settings-json: |
+            [
+              { "name": "GA_MEASUREMENT_ID", "value": "${{ secrets.GA_MEASUREMENT_ID }}", "slotSetting": false }
+            ]
+
       - name: Deploy Azure Bicep
         uses: azure/login@v1
         with:
