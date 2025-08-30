@@ -9,7 +9,12 @@ builder.Services.AddLogging(logging =>
     logging.SetMinimumLevel(LogLevel.Information);
 });
 
-var logger = builder.Services.BuildServiceProvider().GetRequiredService<ILogger<Program>>();
+using var loggerFactory = LoggerFactory.Create(logging =>
+{
+    logging.AddConsole();
+    logging.SetMinimumLevel(LogLevel.Information);
+});
+var logger = loggerFactory.CreateLogger<Program>();
 
 try
 {
