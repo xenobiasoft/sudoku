@@ -20,31 +20,31 @@ try
 {
     logger.LogInformation("Starting Sudoku Distributed Application...");
 
-    logger.LogInformation("Configuring connection strings...");
+    logger.LogDebug("Configuring connection strings...");
     var appConfig = builder.AddConnectionString("appconfig");
     var cosmosDb = builder.AddConnectionString("CosmosDb");
-    logger.LogInformation("Connection strings configured successfully");
+    logger.LogDebug("Connection strings configured successfully");
 
-    logger.LogInformation("Configuring Sudoku API project...");
+    logger.LogDebug("Configuring Sudoku API project...");
     builder.AddProject<Projects.Sudoku_Api>("sudoku-api")
         .WithUrlForEndpoint("https", url =>
         {
             url.DisplayText = "Swagger (HTTPS)";
             url.Url = "/swagger";
-            logger.LogInformation("Configured HTTPS Swagger endpoint for Sudoku API");
+            logger.LogDebug("Configured HTTPS Swagger endpoint for Sudoku API");
         })
         .WithUrlForEndpoint("http", url =>
         {
             url.DisplayText = "Swagger (HTTP)";
             url.Url = "/swagger";
-            logger.LogInformation("Configured HTTP Swagger endpoint for Sudoku API");
+            logger.LogDebug("Configured HTTP Swagger endpoint for Sudoku API");
         })
         .WithReference(cosmosDb)
         .WithReference(appConfig)
         .WaitFor(cosmosDb);
     logger.LogInformation("Sudoku API project configured successfully");
 
-    logger.LogInformation("Configuring Sudoku Blazor Server project...");
+    logger.LogDebug("Configuring Sudoku Blazor Server project...");
     builder.AddProject<Projects.Sudoku_Web_Server>("sudoku-blazor")
         .WithReference(cosmosDb)
         .WithReference(appConfig)
