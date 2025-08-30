@@ -1,263 +1,102 @@
-using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services.Abstractions;
+﻿using Sudoku.Web.Server.Models;
+using Sudoku.Web.Server.Services.Abstractions.V2;
 using Sudoku.Web.Server.Services.HttpClients;
 
 namespace Sudoku.Web.Server.Services.V2;
 
-/// <summary>
-/// API-based game state manager that uses the Game API
-/// </summary>
-public class GameStateManager(
-    IGameApiClient gameApiClient,
-    ILocalStorageService localStorageService,
-    ILogger<GameStateManager> logger)
-    : Abstractions.V2.IGameStateManager
+public partial class GameManager(ILocalStorageService localStorageService, IGameApiClient gameApiClient) : IGameStateManager
 {
-    private readonly IGameApiClient _gameApiClient = gameApiClient ?? throw new ArgumentNullException(nameof(gameApiClient));
-    private readonly ILocalStorageService _localStorageService = localStorageService ?? throw new ArgumentNullException(nameof(localStorageService));
-    private readonly ILogger<GameStateManager> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    public GameModel? Game { get; private set; }
 
-    public async Task<ApiResult<bool>> DeleteGameAsync(string alias, string gameId)
+    public async Task DeleteGameAsync(string alias, string gameId)
     {
-        try
+        var result = await gameApiClient.DeleteGameAsync(alias, gameId);
+        if (!result.IsSuccess)
         {
-            _logger.LogInformation("Deleting game {GameId} for player {Alias}", gameId, alias);
-            
-            // Delete from local storage first
-            await _localStorageService.DeleteGameAsync(gameId);
-            
-            // Then delete from server
-            var result = await _gameApiClient.DeleteGameAsync(alias, gameId);
-            
-            if (result.IsSuccess)
-            {
-                _logger.LogInformation("Successfully deleted game {GameId} for player {Alias}", gameId, alias);
-            }
-            else
-            {
-                _logger.LogWarning("Failed to delete game {GameId} from server for player {Alias}: {Error}", gameId, alias, result.Error);
-            }
-            
-            return result;
+            throw new Exception("Failed to delete game from server.");
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while deleting game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
-        }
+        await localStorageService.DeleteGameAsync(gameId);
     }
 
-    public async Task<ApiResult<GameModel>> LoadGameAsync(string alias, string gameId)
+    public async Task<GameModel> LoadGameAsync(string alias, string gameId)
     {
-        try
+        var game = await localStorageService.LoadGameAsync(gameId);
+        if (game != null)
         {
-            _logger.LogInformation("Loading game {GameId} for player {Alias}", gameId, alias);
-            
-            var result = await _gameApiClient.GetGameAsync(alias, gameId);
-            
-            if (result.IsSuccess)
-            {
-                _logger.LogInformation("Successfully loaded game {GameId} for player {Alias}", gameId, alias);
-                // TODO: Consider caching in local storage if needed
-            }
-            else
-            {
-                _logger.LogWarning("Failed to load game {GameId} for player {Alias}: {Error}", gameId, alias, result.Error);
-            }
-            
-            return result;
+            Game = game;
+            return Game;
         }
-        catch (Exception ex)
+
+        var response = await gameApiClient.GetGameAsync(alias, gameId);
+        if (!response.IsSuccess || response.Value == null)
         {
-            _logger.LogError(ex, "Error occurred while loading game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult<GameModel>.Failure($"Exception occurred: {ex.Message}");
+            throw new Exception("Failed to load game.");
         }
+
+        Game = response.Value;
+        return Game;
     }
 
-    public async Task<ApiResult<List<GameModel>>> LoadGamesAsync(string alias)
+    public async Task<List<GameModel>> LoadGamesAsync()
     {
-        try
+        var games = await localStorageService.LoadGameStatesAsync();
+        if (games.Any())
         {
-            _logger.LogInformation("Loading all games for player {Alias}", alias);
-            
-            var result = await _gameApiClient.GetAllGamesAsync(alias);
-            
-            if (result.IsSuccess)
-            {
-                _logger.LogInformation("Successfully loaded {Count} games for player {Alias}", result.Value?.Count ?? 0, alias);
-            }
-            else
-            {
-                _logger.LogWarning("Failed to load games for player {Alias}: {Error}", alias, result.Error);
-            }
-            
-            return result;
+            return games;
         }
-        catch (Exception ex)
+        var alias = await localStorageService.GetAliasAsync();
+        if (string.IsNullOrEmpty(alias))
         {
-            _logger.LogError(ex, "Error occurred while loading games for player {Alias}", alias);
-            return ApiResult<List<GameModel>>.Failure($"Exception occurred: {ex.Message}");
+            throw new Exception("Alias not set.");
         }
+        var response = await gameApiClient.GetAllGamesAsync(alias);
+        if (!response.IsSuccess || response.Value == null)
+        {
+            throw new Exception("Failed to load games.");
+        }
+        foreach (var game in response.Value)
+        {
+            await localStorageService.SaveGameStateAsync(game);
+        }
+        return response.Value;
     }
 
-    public async Task<ApiResult<bool>> ResetGameAsync(string alias, string gameId)
+    public async Task<GameModel> ResetGameAsync(string alias, string gameId)
     {
-        try
+        var resetResponse = await gameApiClient.ResetGameAsync(alias, gameId);
+        if (!resetResponse.IsSuccess || resetResponse.Value == null)
         {
-            _logger.LogInformation("Resetting game {GameId} for player {Alias}", gameId, alias);
-            
-            var result = await _gameApiClient.ResetGameAsync(alias, gameId);
-            
-            if (result.IsSuccess)
-            {
-                _logger.LogInformation("Successfully reset game {GameId} for player {Alias}", gameId, alias);
-            }
-            else
-            {
-                _logger.LogWarning("Failed to reset game {GameId} for player {Alias}: {Error}", gameId, alias, result.Error);
-            }
-            
-            return result;
+            throw new Exception("Failed to reset game.");
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while resetting game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
-        }
+
+        Game = await LoadGameAsync(alias, gameId);
+
+        await localStorageService.SaveGameStateAsync(Game);
+
+        return Game;
     }
 
-    public async Task<ApiResult<GameModel>> CreateGameAsync(string alias, string difficulty)
+    public async Task SaveGameAsync(GameModel gameState)
     {
-        try
-        {
-            _logger.LogInformation("Creating game for player {Alias} with difficulty {Difficulty}", alias, difficulty);
-            
-            var result = await _gameApiClient.CreateGameAsync(alias, difficulty);
-            
-            if (result.IsSuccess)
-            {
-                _logger.LogInformation("Successfully created game {GameId} for player {Alias}", result.Value?.Id, alias);
-            }
-            else
-            {
-                _logger.LogWarning("Failed to create game for player {Alias}: {Error}", alias, result.Error);
-            }
-            
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while creating game for player {Alias}", alias);
-            return ApiResult<GameModel>.Failure($"Exception occurred: {ex.Message}");
-        }
+        await gameApiClient.SaveGameAsync(gameState);
+        await localStorageService.SaveGameStateAsync(gameState);
     }
 
-    public async Task<ApiResult<bool>> UndoGameAsync(string alias, string gameId)
+    public async Task<GameModel> UndoGameAsync(string alias, string gameId)
     {
-        try
+        if (Game!.Statistics.TotalMoves < 1)
         {
-            _logger.LogInformation("Undoing move for game {GameId} for player {Alias}", gameId, alias);
-            
-            var result = await _gameApiClient.UndoMoveAsync(alias, gameId);
-            
-            if (result.IsSuccess)
-            {
-                _logger.LogInformation("Successfully undid move for game {GameId} for player {Alias}", gameId, alias);
-            }
-            else
-            {
-                _logger.LogWarning("Failed to undo move for game {GameId} for player {Alias}: {Error}", gameId, alias, result.Error);
-            }
-            
-            return result;
+            return Game;
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while undoing move for game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
-        }
-    }
 
-    public async Task<ApiResult<bool>> MakeMoveAsync(string alias, string gameId, int row, int column, int? value)
-    {
-        try
+        var response = await gameApiClient.UndoMoveAsync(alias, gameId);
+        if (!response.IsSuccess || response.Value == null)
         {
-            _logger.LogInformation("Making move for game {GameId} for player {Alias} at ({Row}, {Column}) with value {Value}", 
-                gameId, alias, row, column, value);
-            
-            var result = await _gameApiClient.MakeMoveAsync(alias, gameId, row, column, value);
-            
-            if (result.IsSuccess)
-            {
-                _logger.LogInformation("Successfully made move for game {GameId} for player {Alias}", gameId, alias);
-            }
-            else
-            {
-                _logger.LogWarning("Failed to make move for game {GameId} for player {Alias}: {Error}", gameId, alias, result.Error);
-            }
-            
-            return result;
+            throw new Exception("Failed to undo move.");
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while making move for game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
-        }
-    }
+        Game = await LoadGameAsync(alias, gameId);
+        await localStorageService.SaveGameStateAsync(Game);
 
-    public async Task<ApiResult<bool>> AddPossibleValueAsync(string alias, string gameId, int row, int column, int value)
-    {
-        try
-        {
-            var result = await _gameApiClient.AddPossibleValueAsync(alias, gameId, row, column, value);
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while adding possible value for game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
-        }
-    }
-
-    public async Task<ApiResult<bool>> RemovePossibleValueAsync(string alias, string gameId, int row, int column, int value)
-    {
-        try
-        {
-            var result = await _gameApiClient.RemovePossibleValueAsync(alias, gameId, row, column, value);
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while removing possible value for game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
-        }
-    }
-
-    public async Task<ApiResult<bool>> ClearPossibleValuesAsync(string alias, string gameId, int row, int column)
-    {
-        try
-        {
-            var result = await _gameApiClient.ClearPossibleValuesAsync(alias, gameId, row, column);
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while clearing possible values for game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
-        }
-    }
-
-    public async Task<ApiResult<ValidationResultModel>> ValidateGameAsync(string alias, string gameId)
-    {
-        try
-        {
-            var result = await _gameApiClient.ValidateGameAsync(alias, gameId);
-            return result;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error occurred while validating game {GameId} for player {Alias}", gameId, alias);
-            return ApiResult<ValidationResultModel>.Failure($"Exception occurred: {ex.Message}");
-        }
+        return Game;
     }
 }

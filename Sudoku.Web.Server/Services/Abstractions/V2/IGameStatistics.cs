@@ -1,11 +1,6 @@
-using Sudoku.Web.Server.Services.Abstractions.V2;
+﻿namespace Sudoku.Web.Server.Services.Abstractions.V2;
 
-namespace Sudoku.Web.Server.Models;
-
-/// <summary>
-/// Represents game statistics
-/// </summary>
-public class GameStatisticsModel : IGameStatistics
+public interface IGameStatistics
 {
     public int TotalMoves { get; set; }
     public int ValidMoves { get; set; }

@@ -67,17 +67,6 @@ public interface IGameApiClient
     Task<ApiResult<GameModel>> GetGameAsync(string alias, string gameId);
 
     /// <summary>
-    /// Makes a move in a game
-    /// </summary>
-    /// <param name="alias">The player's alias</param>
-    /// <param name="gameId">The game id</param>
-    /// <param name="row">The row of the move</param>
-    /// <param name="column">The column of the move</param>
-    /// <param name="value">The value to set</param>
-    /// <returns>Success or failure result</returns>
-    Task<ApiResult<bool>> MakeMoveAsync(string alias, string gameId, int row, int column, int? value);
-
-    /// <summary>
     /// Removes a possible value from a cell
     /// </summary>
     /// <param name="alias">The player's alias</param>
@@ -95,6 +84,18 @@ public interface IGameApiClient
     /// <param name="gameId">The game id</param>
     /// <returns>Success or failure result</returns>
     Task<ApiResult<bool>> ResetGameAsync(string alias, string gameId);
+
+    /// <summary>
+    /// Saves the game state for the specified alias and game identifier asynchronously.
+    /// </summary>
+    /// <remarks>The method performs the save operation asynchronously and returns an <see
+    /// cref="ApiResult{T}"/> that includes the success status and any relevant error information. Ensure that both
+    /// <paramref name="alias"/> and <paramref name="gameId"/> are valid and non-empty to avoid errors.</remarks>
+    /// <param name="alias">The alias representing the user or entity for whom the game state is being saved. Cannot be null or empty.</param>
+    /// <param name="gameId">The unique identifier of the game whose state is being saved. Cannot be null or empty.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains an <see cref="ApiResult{T}"/>
+    /// indicating whether the save operation was successful.</returns>
+    Task<ApiResult<bool>> SaveGameAsync(string alias, string gameId);
 
     /// <summary>
     /// Undoes the last move in a game
