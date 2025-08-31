@@ -56,11 +56,6 @@ jobs:
               { "name": "GA_MEASUREMENT_ID", "value": "${{ secrets.GA_MEASUREMENT_ID }}", "slotSetting": false }
             ]
 
-      - name: Deploy Azure Bicep
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
       - name: Deploy Bicep template
         uses: azure/arm-deploy@v1
         with:
