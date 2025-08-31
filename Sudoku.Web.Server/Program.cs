@@ -25,6 +25,8 @@ public class Program
                 .AddDebug()
                 .AddAzureWebAppDiagnostics();
 
+            builder.Configuration.AddEnvironmentVariables();
+
             // Try to get the key vault URI from the connection string (Aspire way) or direct configuration
             var vaultUri = builder.Configuration["ConnectionStrings:AzureKeyVault"]
                 ?? builder.Configuration["KeyVault:VaultUri"]

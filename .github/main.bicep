@@ -1,7 +1,6 @@
 param siteName string = 'XenobiaSoftSudoku'
 param location string = resourceGroup().location
-param appServicePlanSku string = 'B1' // Parameterize the SKU
-param sslThumbprint string
+param appServicePlanSku string = 'B1'
 
 // App Service Plan
 resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
@@ -31,7 +30,6 @@ resource sudokuApp 'Microsoft.Web/sites@2022-09-01' = {
       {
         name: 'sudoku.xenobiasoft.com'
         sslState: 'SniEnabled'
-        thumbprint: sslThumbprint
         hostType: 'Standard'
       }
       {
@@ -78,7 +76,12 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2022-09-01' = {
   }
 }
 
-// Custom Domain Binding
+// Reference existing Azure Managed Certificate
+resource managedCert 'Microsoft.Web/certificates@2022-09-01' existing = {
+  name: 'sudoku.xenobiasoft.com'
+}
+
+// Custom Domain Binding with Managed Certificate
 resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2024-04-01' = {
   parent: sudokuApp
   name: 'sudoku.xenobiasoft.com'
@@ -86,6 +89,8 @@ resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2024-04-01' =
     siteName: siteName
     hostNameType: 'Verified'
     sslState: 'SniEnabled'
-    thumbprint: sslThumbprint
+    certificate: {
+      id: managedCert.id
+    }
   }
 }
