@@ -63,6 +63,4 @@ jobs:
           resourceGroupName: rg-xenobiasoft
           template: ./.github/main.bicep
           scope: resourcegroup
-          parameters: |
-            sslThumbprint=${{ secrets.SSL_THUMBPRINT }}
           failOnStdErr: false
