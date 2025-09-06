@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Components.Routing;
 using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services.Abstractions;
+using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Pages;
 
@@ -16,7 +17,6 @@ public partial class Game
     [Inject] public required IGameStateManager GameStateManager { get; set; }
     [Inject] public required IGameSessionManager SessionManager { get; set; }
     [Inject] public required IAliasService AliasService { get; set; }
-    [Inject] public required Services.Abstractions.V2.IGameStateManager ApiGameStateManager { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
 
     private ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
@@ -45,28 +45,10 @@ public partial class Game
 
     private async Task LoadGameStateAsync()
     {
-        try
-        {
-            Alias = await AliasService.GetAliasAsync();
-            var gameState = await GameStateManager.LoadGameAsync(Alias, PuzzleId!);
-            
-            if (gameState != null)
-            {
-                await SessionManager.StartNewSession(gameState);
-                Puzzle.Load(gameState);
-            }
-            else
-            {
-                // Game not found, navigate to home
-                NavigationManager.NavigateTo("/");
-            }
-        }
-        catch (Exception ex)
-        {
-            // Log error and navigate to home
-            Console.WriteLine($"Error loading game: {ex.Message}");
-            NavigationManager.NavigateTo("/");
-        }
+        Alias = await AliasService.GetAliasAsync();
+        var gameState = await GameStateManager.LoadGameAsync(Alias, PuzzleId!);
+        await SessionManager.StartNewSession(gameState!);
+        Puzzle.Load(gameState);
     }
 
     private void NotifyGameStart()
@@ -89,78 +71,33 @@ public partial class Game
 
     public async Task HandleReset()
     {
-        try
-        {
-            await SessionManager.PauseSession();
-            var result = await ApiGameStateManager.ResetGameAsync(Alias, PuzzleId!);
-            
-            if (result.IsSuccess)
-            {
-                // Reload the game state after reset
-                var gameState = await GameStateManager.LoadGameAsync(Alias, PuzzleId!);
-                if (gameState != null)
-                {
-                    await SessionManager.ResumeSession(gameState);
-                    Puzzle.Load(gameState);
-                    StateHasChanged();
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error resetting game: {ex.Message}");
-        }
+        await UpdateGameStateAsync(() => GameStateManager.ResetGameAsync(Alias, PuzzleId!));
     }
 
     public async Task HandleUndo()
     {
-        try
-        {
-            await SessionManager.PauseSession();
-            var result = await ApiGameStateManager.UndoGameAsync(Alias, PuzzleId!);
-            
-            if (result.IsSuccess)
-            {
-                // Reload the game state after undo
-                var gameState = await GameStateManager.LoadGameAsync(Alias, PuzzleId!);
-                if (gameState != null)
-                {
-                    await SessionManager.ResumeSession(gameState);
-                    Puzzle.Load(gameState);
-                    StateHasChanged();
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error undoing move: {ex.Message}");
-        }
+        await UpdateGameStateAsync(() => GameStateManager.UndoGameAsync(Alias, PuzzleId!));
     }
 
-    private async Task HandleCellChanged(CellChangedEventArgs args) =>
-        await HandleCellUpdate(args.Row, args.Column, args.Value);
+    private async Task UpdateGameStateAsync(Func<Task<GameStateMemory>> stateUpdateAction)
+    {
+        await SessionManager.PauseSession();
+        var gameState = await stateUpdateAction();
+        SessionManager.ResumeSession(gameState);
+        Puzzle.Load(gameState);
+        StateHasChanged();
+    }
 
-    private async Task HandleCellValueChanged(CellValueChangedEventArgs args) =>
-        await HandleCellUpdate(SelectedCell.Row, SelectedCell.Column, args.Value);
+    private Task HandleCellChanged(CellChangedEventArgs args) =>
+        HandleCellUpdate(args.Row, args.Column, args.Value);
+
+    private Task HandleCellValueChanged(CellValueChangedEventArgs args) =>
+        HandleCellUpdate(SelectedCell.Row, SelectedCell.Column, args.Value);
 
     private async Task HandleCellUpdate(int row, int column, int? value)
     {
-        try
-        {
-            // Make the move via API
-            var result = await ApiGameStateManager.MakeMoveAsync(Alias, PuzzleId!, row, column, value);
-            
-            if (result.IsSuccess)
-            {
-                // Update local puzzle state
-                UpdatePuzzleCell(row, column, value);
-                await ValidateAndUpdateGameState();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error making move: {ex.Message}");
-        }
+        UpdatePuzzleCell(row, column, value);
+        await ValidateAndUpdateGameState();
     }
 
     private void UpdatePuzzleCell(int row, int column, int? value)
@@ -195,48 +132,10 @@ public partial class Game
         StateHasChanged();
     }
 
-    private async Task HandlePossibleValueChanged(CellPossibleValueChangedEventArgs arg)
+    private void HandlePossibleValueChanged(CellPossibleValueChangedEventArgs arg)
     {
-        try
-        {
-            if (!arg.Value.HasValue)
-            {
-                // Clear possible values
-                var result = await ApiGameStateManager.ClearPossibleValuesAsync(Alias, PuzzleId!, SelectedCell.Row, SelectedCell.Column);
-                if (result.IsSuccess)
-                {
-                    UpdatePossibleValues(arg.Value);
-                }
-            }
-            else
-            {
-                // Check if we need to add or remove the possible value
-                if (SelectedCell.PossibleValues.Contains(arg.Value.Value))
-                {
-                    // Remove possible value
-                    var result = await ApiGameStateManager.RemovePossibleValueAsync(Alias, PuzzleId!, SelectedCell.Row, SelectedCell.Column, arg.Value.Value);
-                    if (result.IsSuccess)
-                    {
-                        UpdatePossibleValues(arg.Value);
-                    }
-                }
-                else
-                {
-                    // Add possible value
-                    var result = await ApiGameStateManager.AddPossibleValueAsync(Alias, PuzzleId!, SelectedCell.Row, SelectedCell.Column, arg.Value.Value);
-                    if (result.IsSuccess)
-                    {
-                        UpdatePossibleValues(arg.Value);
-                    }
-                }
-            }
-            
-            StateHasChanged();
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error updating possible values: {ex.Message}");
-        }
+        UpdatePossibleValues(arg.Value);
+        StateHasChanged();
     }
 
     private void UpdatePossibleValues(int? value)

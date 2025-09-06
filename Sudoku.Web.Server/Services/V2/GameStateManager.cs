@@ -1,10 +1,12 @@
 ﻿using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services.Abstractions.V2;
+using Sudoku.Web.Server.Services.Abstractions;
 using Sudoku.Web.Server.Services.HttpClients;
+using IGameStateManager = Sudoku.Web.Server.Services.Abstractions.V2.IGameStateManager;
+using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.V2.ILocalStorageService;
 
 namespace Sudoku.Web.Server.Services.V2;
 
-public partial class GameManager(ILocalStorageService localStorageService, IGameApiClient gameApiClient) : IGameStateManager
+public partial class GameManager(ILocalStorageService localStorageService, IGameApiClient gameApiClient, IGameTimer gameTimer) : IGameStateManager
 {
     public GameModel? Game { get; private set; }
 
@@ -76,10 +78,10 @@ public partial class GameManager(ILocalStorageService localStorageService, IGame
         return Game;
     }
 
-    public async Task SaveGameAsync(GameModel gameState)
+    public async Task SaveGameAsync()
     {
-        await gameApiClient.SaveGameAsync(gameState);
-        await localStorageService.SaveGameStateAsync(gameState);
+        await gameApiClient.SaveGameAsync(Game);
+        await localStorageService.SaveGameStateAsync(Game);
     }
 
     public async Task<GameModel> UndoGameAsync(string alias, string gameId)

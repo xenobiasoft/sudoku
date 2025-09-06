@@ -1,19 +1,18 @@
-﻿using XenobiaSoft.Sudoku.GameState;
+﻿using Sudoku.Web.Server.Models;
 
 namespace Sudoku.Web.Server.Services.Abstractions.V2;
 
 public interface IGameStatisticsManager
 {
     /// <summary>
-    /// Gets the current game session
+    /// Gets the current game statistics, including metrics such as score, time played, and other relevant data.
     /// </summary>
-    IGameStatistics CurrentSession { get; }
+    GameStatisticsModel CurrentStatistics { get; }
 
     /// <summary>
     /// Starts a new game session
     /// </summary>
-    /// <param name="gameState">The initial game state</param>
-    Task StartNewSession(GameStateMemory gameState);
+    Task StartNewSession();
 
     /// <summary>
     /// Pauses the current game session
@@ -23,8 +22,7 @@ public interface IGameStatisticsManager
     /// <summary>
     /// Resumes the current game session
     /// </summary>
-    /// <param name="gameState">The game state to resume with</param>
-    Task ResumeSession(GameStateMemory gameState);
+    Task ResumeSession();
 
     /// <summary>
     /// Ends the current game session

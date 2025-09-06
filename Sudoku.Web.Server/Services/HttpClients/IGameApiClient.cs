@@ -86,16 +86,12 @@ public interface IGameApiClient
     Task<ApiResult<bool>> ResetGameAsync(string alias, string gameId);
 
     /// <summary>
-    /// Saves the game state for the specified alias and game identifier asynchronously.
+    /// Saves the specified game asynchronously.
     /// </summary>
-    /// <remarks>The method performs the save operation asynchronously and returns an <see
-    /// cref="ApiResult{T}"/> that includes the success status and any relevant error information. Ensure that both
-    /// <paramref name="alias"/> and <paramref name="gameId"/> are valid and non-empty to avoid errors.</remarks>
-    /// <param name="alias">The alias representing the user or entity for whom the game state is being saved. Cannot be null or empty.</param>
-    /// <param name="gameId">The unique identifier of the game whose state is being saved. Cannot be null or empty.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains an <see cref="ApiResult{T}"/>
+    /// <param name="game">The game model to be saved. Cannot be null.</param>
+    /// <returns>A task that represents the asynchronous save operation. The task result contains an  <see cref="ApiResult{T}"/>
     /// indicating whether the save operation was successful.</returns>
-    Task<ApiResult<bool>> SaveGameAsync(string alias, string gameId);
+    Task<ApiResult<bool>> SaveGameAsync(GameModel game);
 
     /// <summary>
     /// Undoes the last move in a game

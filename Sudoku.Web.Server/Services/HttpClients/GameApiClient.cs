@@ -439,6 +439,38 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
     }
 
     /// <summary>
+    /// Saves the specified game asynchronously.
+    /// </summary>
+    /// <param name="game">The game model to be saved. Cannot be <see langword="null"/>.</param>
+    /// <returns>A task that represents the asynchronous save operation. The task result contains  an <see cref="ApiResult{T}"/>
+    /// indicating whether the save operation was successful.</returns>
+    public async Task<ApiResult<bool>> SaveGameAsync(GameModel game)
+    {
+        try
+        {
+            if (game == null) throw new ArgumentNullException(nameof(game));
+
+            _logger.LogInformation("Saving game {GameId} for player: {Alias}", game.Id, game.PlayerAlias);
+            
+            var response = await _httpClient.PutAsJsonAsync($"api/players/{Uri.EscapeDataString(game.PlayerAlias)}/games/{Uri.EscapeDataString(game.Id)}", game, _jsonOptions);
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("Game {GameId} saved successfully for player: {Alias}", game.Id, game.PlayerAlias);
+                return ApiResult<bool>.Success(true);
+            }
+
+            var error = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning("Failed to save game. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
+            return ApiResult<bool>.Failure($"Failed to save game: {error}");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Exception occurred while saving game");
+            return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
+        }
+    }
+
+    /// <summary>
     /// Attempts to undo the last move for a specified player in a given game.
     /// </summary>
     /// <remarks>This method sends a request to the server to undo the last move for the specified player in
