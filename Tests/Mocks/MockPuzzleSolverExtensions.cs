@@ -1,8 +1,9 @@
-﻿using XenobiaSoft.Sudoku;
+﻿using UnitTests.Helpers;
+using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Exceptions;
 using XenobiaSoft.Sudoku.Solver;
 
-namespace UnitTests.Helpers.Mocks;
+namespace UnitTests.Mocks;
 
 public static class MockPuzzleSolverExtensions
 {

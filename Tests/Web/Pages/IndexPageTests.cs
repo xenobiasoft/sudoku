@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Services.Abstractions;
-using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku.GameState;
 using IndexPage = Sudoku.Web.Server.Pages.Index;
 
@@ -9,7 +8,7 @@ namespace UnitTests.Web.Pages;
 public class IndexPageTests : TestContext
 {
     private const string Alias = "test-alias";
-    private readonly Mock<IGameStateManager> _mockGameStateManager = new();
+    private readonly Mock<IGameManager> _mockGameManager = new();
     private readonly Mock<IAliasService> _mockAliasService = new();
 
     public IndexPageTests()
@@ -19,9 +18,9 @@ public class IndexPageTests : TestContext
             new() { Board = [], LastUpdated = DateTime.UtcNow.AddMinutes(-10), PuzzleId = Guid.NewGuid().ToString() },
             new() { Board = [], LastUpdated = DateTime.UtcNow.AddMinutes(-5), PuzzleId = Guid.NewGuid().ToString() }
         };
-        _mockGameStateManager.SetupLoadGamesAsync(savedGames);
+        _mockGameManager.SetupLoadGamesAsync(savedGames);
         _mockAliasService.Setup(x => x.GetAliasAsync()).ReturnsAsync(Alias);
-        Services.AddSingleton(_mockGameStateManager.Object);
+        Services.AddSingleton(_mockGameManager.Object);
         Services.AddSingleton(_mockAliasService.Object);
     }
 
@@ -36,7 +35,7 @@ public class IndexPageTests : TestContext
         delGameElement.Click();
 
         // Assert
-        _mockGameStateManager.VerifyDeleteGameAsyncCalled(Times.Once);
+        _mockGameManager.VerifyDeleteGameAsyncCalled(Times.Once);
     }
 
     [Fact]
@@ -104,7 +103,7 @@ public class IndexPageTests : TestContext
             new() { Board = [], LastUpdated = DateTime.UtcNow.AddMinutes(-10), PuzzleId = Guid.NewGuid().ToString() },
             new() {Board =[], LastUpdated = DateTime.UtcNow.AddMinutes(-5), PuzzleId = Guid.NewGuid().ToString()}
         };
-        _mockGameStateManager.SetupLoadGamesAsync(savedGames);
+        _mockGameManager.SetupLoadGamesAsync(savedGames);
         var component = RenderComponent<IndexPage>();
 
         // Act

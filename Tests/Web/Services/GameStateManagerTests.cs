@@ -1,13 +1,12 @@
 ﻿using DepenMock.XUnit;
 using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
-using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Web.Services;
 
-public class GameStateManagerTests : BaseTestByAbstraction<GameStateManager, IGameStateManager>
+public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameStateManager>
 {
     private const string Alias = "TestAlias";
     private const string GameId = "TestGameId";

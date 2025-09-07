@@ -6,10 +6,9 @@ namespace Sudoku.Web.Server.Services;
 /// <summary>
 /// Manages game sessions and their persistence
 /// </summary>
-public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateManager) : IGameSessionManager
+public partial class GameManager : IGameManager
 {
     private readonly IGameTimer _timer = timer ?? throw new ArgumentNullException(nameof(timer));
-    private readonly IGameStateManager _gameStateManager = gameStateManager ?? throw new ArgumentNullException(nameof(gameStateManager));
     private IGameSession _currentSession = NullGameSession.Instance;
 
     public IGameSession CurrentSession => _currentSession;
@@ -70,6 +69,6 @@ public class GameSessionManager(IGameTimer timer, IGameStateManager gameStateMan
     {
         if (_currentSession.IsNull) return;
 
-        await _gameStateManager.SaveGameAsync(_currentSession.GameState);
+        await SaveGameAsync(_currentSession.GameState);
     }
 }

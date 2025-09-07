@@ -14,8 +14,7 @@ public partial class Game
     [Inject] public required IInvalidCellNotificationService InvalidCellNotificationService { get; set; }
     [Inject] public required IGameNotificationService GameNotificationService { get; set; }
     [Inject] public required ICellFocusedNotificationService CellFocusedNotificationService { get; set; }
-    [Inject] public required IGameStateManager GameStateManager { get; set; }
-    [Inject] public required IGameSessionManager SessionManager { get; set; }
+    [Inject] public required IGameManager GameManager { get; set; }
     [Inject] public required IAliasService AliasService { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
 
@@ -46,8 +45,8 @@ public partial class Game
     private async Task LoadGameStateAsync()
     {
         Alias = await AliasService.GetAliasAsync();
-        var gameState = await GameStateManager.LoadGameAsync(Alias, PuzzleId!);
-        await SessionManager.StartNewSession(gameState!);
+        var gameState = await GameManager.LoadGameAsync(Alias, PuzzleId!);
+        await GameManager.StartNewSession(gameState!);
         Puzzle.Load(gameState);
     }
 
@@ -59,7 +58,7 @@ public partial class Game
 
     private async ValueTask OnLocationChanging(LocationChangingContext context)
     {
-        await SessionManager.PauseSession();
+        await GameManager.PauseSession();
         _locationChangingRegistration?.Dispose();
     }
 
@@ -71,19 +70,19 @@ public partial class Game
 
     public async Task HandleReset()
     {
-        await UpdateGameStateAsync(() => GameStateManager.ResetGameAsync(Alias, PuzzleId!));
+        await UpdateGameStateAsync(() => GameManager.ResetGameAsync(Alias, PuzzleId!));
     }
 
     public async Task HandleUndo()
     {
-        await UpdateGameStateAsync(() => GameStateManager.UndoGameAsync(Alias, PuzzleId!));
+        await UpdateGameStateAsync(() => GameManager.UndoGameAsync(Alias, PuzzleId!));
     }
 
     private async Task UpdateGameStateAsync(Func<Task<GameStateMemory>> stateUpdateAction)
     {
-        await SessionManager.PauseSession();
+        await GameManager.PauseSession();
         var gameState = await stateUpdateAction();
-        SessionManager.ResumeSession(gameState);
+        GameManager.ResumeSession(gameState);
         Puzzle.Load(gameState);
         StateHasChanged();
     }
@@ -109,7 +108,7 @@ public partial class Game
 
     private async Task ValidateAndUpdateGameState()
     {
-        await SessionManager.RecordMove(Puzzle.IsValid());
+        await GameManager.RecordMove(Puzzle.IsValid());
 
         if (Puzzle.IsSolved())
         {
@@ -121,8 +120,8 @@ public partial class Game
 
     private async Task HandleGameCompletion()
     {
-        await SessionManager.EndSession();
-        await GameStateManager.DeleteGameAsync(Alias, PuzzleId!);
+        await GameManager.EndSession();
+        await GameManager.DeleteGameAsync(Alias, PuzzleId!);
         GameNotificationService.NotifyGameEnded();
     }
 

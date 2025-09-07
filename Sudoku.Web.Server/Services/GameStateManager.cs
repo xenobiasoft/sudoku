@@ -4,7 +4,7 @@ using XenobiaSoft.Sudoku.GameState;
 
 namespace Sudoku.Web.Server.Services;
 
-public class GameStateManager(ILocalStorageService localStorageService, IPersistentGameStateStorage gameStateStorage) : IGameStateManager
+public partial class GameManager(ILocalStorageService localStorageService, IPersistentGameStateStorage gameStateStorage, IGameTimer timer) : IGameManager
 {
     public async Task DeleteGameAsync(string alias, string gameId)
     {

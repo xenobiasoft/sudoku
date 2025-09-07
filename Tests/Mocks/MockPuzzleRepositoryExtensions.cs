@@ -1,7 +1,7 @@
 ﻿using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 
-namespace UnitTests.Helpers.Mocks;
+namespace UnitTests.Mocks;
 
 public static class MockPuzzleRepositoryExtensions
 {

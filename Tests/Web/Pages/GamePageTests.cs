@@ -6,7 +6,6 @@ using Sudoku.Web.Server.Pages;
 using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
 using UnitTests.Helpers;
-using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.GameState;
 
@@ -19,8 +18,7 @@ public class GamePageTests : TestContext
 
     private readonly Mock<IInvalidCellNotificationService> _mockInvalidCellNotifier = new();
     private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
-    private readonly Mock<IGameStateManager> _mockGameStateManager = new();
-    private readonly Mock<IGameSessionManager> _mockGameSessionManager = new();
+    private readonly Mock<IGameManager> _mockGameManager = new();
     private readonly Mock<IAliasService> _mockAliasService = new();
 
     public GamePageTests()
@@ -34,9 +32,9 @@ public class GamePageTests : TestContext
             PuzzleId = PuzzleId,
             TotalMoves = 5
         };
-        _mockGameStateManager.SetupLoadGameAsync(loadedGameState);
+        _mockGameManager.SetupLoadGameAsync(loadedGameState);
         _mockAliasService.Setup(x => x.GetAliasAsync()).ReturnsAsync(Alias);
-        _mockGameSessionManager.Setup(x => x.CurrentSession).Returns(new GameSession(loadedGameState, new Mock<IGameTimer>().Object));
+        _mockGameManager.Setup(x => x.CurrentSession).Returns(new GameSession(loadedGameState, new Mock<IGameTimer>().Object));
         var mockGameSession = new Mock<IGameSession>();
         var mockGameTimer = new Mock<IGameTimer>();
         mockGameSession.Setup(x => x.Timer).Returns(mockGameTimer.Object);
@@ -45,8 +43,7 @@ public class GamePageTests : TestContext
         Services.AddSingleton(new Mock<ICellFocusedNotificationService>().Object);
         Services.AddSingleton(new Mock<ISudokuPuzzle>().Object);
         Services.AddSingleton(mockGameSession.Object);
-        Services.AddSingleton(_mockGameSessionManager.Object);
-        Services.AddSingleton(_mockGameStateManager.Object);
+        Services.AddSingleton(_mockGameManager.Object);
         Services.AddSingleton(_mockAliasService.Object);
     }
 
@@ -104,7 +101,7 @@ public class GamePageTests : TestContext
             Board = PuzzleFactory.GetSolvedPuzzle().GetAllCells(),
             PuzzleId = PuzzleId
         };
-        _mockGameStateManager.SetupLoadGameAsync(gameState);
+        _mockGameManager.SetupLoadGameAsync(gameState);
         var sut = RenderComponent<Game>(x => x.Add(p => p.PuzzleId, PuzzleId));
         var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
@@ -127,7 +124,7 @@ public class GamePageTests : TestContext
             Board = PuzzleFactory.GetSolvedPuzzle().GetAllCells(),
             PuzzleId = PuzzleId
         };
-        _mockGameStateManager.SetupLoadGameAsync(gameState);
+        _mockGameManager.SetupLoadGameAsync(gameState);
         var sut = RenderComponent<Game>(x => x.Add(p => p.PuzzleId, PuzzleId));
         var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
@@ -151,7 +148,7 @@ public class GamePageTests : TestContext
             Board = PuzzleFactory.GetSolvedPuzzle().GetAllCells(),
             PuzzleId = PuzzleId
         };
-        _mockGameStateManager.SetupLoadGameAsync(gameState);
+        _mockGameManager.SetupLoadGameAsync(gameState);
         var sut = RenderComponent<Game>(x => x.Add(p => p.PuzzleId, PuzzleId));
         var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
@@ -161,7 +158,7 @@ public class GamePageTests : TestContext
         await sut.InvokeAsync(() => buttonGroup.OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(1)));
 
         // Assert
-        _mockGameStateManager.VerifyDeleteGameAsyncCalled(gameState.Alias, gameState.PuzzleId, Times.Once);
+        _mockGameManager.VerifyDeleteGameAsyncCalled(gameState.Alias, gameState.PuzzleId, Times.Once);
     }
 
     [Fact]
@@ -173,7 +170,7 @@ public class GamePageTests : TestContext
         RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
 
         // Assert
-        _mockGameStateManager.VerifyLoadsAsyncCalled(Alias, PuzzleId, Times.Once);
+        _mockGameManager.VerifyLoadsAsyncCalled(Alias, PuzzleId, Times.Once);
     }
 
     [Fact]
@@ -206,14 +203,14 @@ public class GamePageTests : TestContext
             Board = [],
             PuzzleId = PuzzleId,
         };
-        _mockGameStateManager.Setup(x => x.UndoGameAsync(Alias, PuzzleId)).ReturnsAsync(gameState);
+        _mockGameManager.Setup(x => x.UndoGameAsync(Alias, PuzzleId)).ReturnsAsync(gameState);
         var game = RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
 
         // Act
         await game.InvokeAsync(() => game.Instance.HandleUndo());
 
         // Assert
-        _mockGameStateManager.VerifyUndoAsyncCalled(Alias, PuzzleId, Times.Once);
+        _mockGameManager.VerifyUndoAsyncCalled(Alias, PuzzleId, Times.Once);
     }
 
     [Fact]
@@ -221,14 +218,14 @@ public class GamePageTests : TestContext
     {
         // Arrange
         var gameState = new GameStateMemory();
-        _mockGameStateManager.Setup(x => x.ResetGameAsync(Alias, PuzzleId)).ReturnsAsync(gameState);
+        _mockGameManager.Setup(x => x.ResetGameAsync(Alias, PuzzleId)).ReturnsAsync(gameState);
         var game = RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
 
         // Act
         await game.InvokeAsync(() => game.Instance.HandleReset());
 
         // Assert
-        _mockGameStateManager.VerifyResetAsyncCalled(Alias, PuzzleId, Times.Once);
+        _mockGameManager.VerifyResetAsyncCalled(Alias, PuzzleId, Times.Once);
     }
 
     [Fact]
@@ -242,7 +239,7 @@ public class GamePageTests : TestContext
         await sut.InvokeAsync(() => navigationManager.NavigateTo("/another-page"));
 
         // Assert
-        _mockGameSessionManager.Verify(x => x.PauseSession(), Times.Once);
+        _mockGameManager.Verify(x => x.PauseSession(), Times.Once);
     }
 
     [Fact]
@@ -255,7 +252,7 @@ public class GamePageTests : TestContext
             Board = PuzzleFactory.GetSolvedPuzzle().GetAllCells(),
             PuzzleId = PuzzleId
         };
-        _mockGameStateManager.SetupLoadGameAsync(gameState);
+        _mockGameManager.SetupLoadGameAsync(gameState);
         var sut = RenderComponent<Game>();
 
         // Act
@@ -292,6 +289,6 @@ public class GamePageTests : TestContext
         await sut.InvokeAsync(() => buttonGroup.OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(3)));
 
         // Assert
-        _mockGameSessionManager.VerifyMoveRecorded(Times.Once);
+        _mockGameManager.VerifyMoveRecorded(Times.Once);
     }
 }

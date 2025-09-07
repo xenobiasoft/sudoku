@@ -13,10 +13,9 @@ namespace Sudoku.Web.Server
                 .AddScoped<IInvalidCellNotificationService, InvalidCellNotificationService>()
                 .AddScoped<IGameNotificationService, GameNotificationService>()
                 .AddScoped<ILocalStorageService, LocalStorageService>()
-                .AddScoped<IGameStateManager, GameStateManager>()
+                .AddScoped<IGameManager, GameManager>()
                 .AddScoped<IJsRuntimeWrapper, JsRuntimeWrapper>()
                 .AddScoped<IGameTimer>(sp => new GameTimer(TimeSpan.FromSeconds(1)))
-                .AddScoped<IGameSessionManager, GameSessionManager>()
                 .AddScoped<IAliasService, AliasService>();
 
             services.AddAzureStorage(config);

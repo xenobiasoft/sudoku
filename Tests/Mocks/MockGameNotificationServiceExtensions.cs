@@ -1,6 +1,6 @@
 ﻿using Sudoku.Web.Server.Services.Abstractions;
 
-namespace UnitTests.Helpers.Mocks;
+namespace UnitTests.Mocks;
 
 public static class MockGameNotificationServiceExtensions
 {

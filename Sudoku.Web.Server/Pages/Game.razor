@@ -6,9 +6,9 @@
 <div class="mat-layout-grid">
     <div class="mat-layout-grid-inner">
         <div class="game-view">
-            @if (SessionManager.CurrentSession is not NullGameSession)
+            @if (GameManager.CurrentSession is not NullGameSession)
             {
-                <GameStats Session="@SessionManager.CurrentSession" />
+                <GameStats Session="@GameManager.CurrentSession" />
             }
             <GameBoard Puzzle="Puzzle"
                        OnCellFocus="HandleSetSelectedCell"
@@ -22,9 +22,9 @@
                          OnUndo="HandleUndo"
                          OnPencilMode="HandlePencilModeToggle"
                          OnPossibleValueChanged="HandlePossibleValueChanged"
-                         TotalMoves="@SessionManager.CurrentSession.GameState.Board.Count(x => x is { Value: not null, Locked: false })" />
+                          TotalMoves="@GameManager.CurrentSession.GameState.Board.Count(x => x is { Value: not null, Locked: false })" />
             <VictoryDisplay IsVictory="@Puzzle.IsSolved()"
-                            ElapsedTime="@SessionManager.CurrentSession.GameState.PlayDuration" />
+                            ElapsedTime="@GameManager.CurrentSession.GameState.PlayDuration" />
         </div>
     </div>
 </div>

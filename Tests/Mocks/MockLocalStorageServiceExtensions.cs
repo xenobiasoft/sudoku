@@ -1,7 +1,7 @@
 ﻿using Sudoku.Web.Server.Services.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 
-namespace UnitTests.Helpers.Mocks;
+namespace UnitTests.Mocks;
 
 public static class MockLocalStorageServiceExtensions
 {

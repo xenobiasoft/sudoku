@@ -1,5 +1,5 @@
 ﻿using DepenMock.XUnit;
-using UnitTests.Helpers.Mocks;
+using UnitTests.Mocks;
 using XenobiaSoft.Sudoku;
 using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;

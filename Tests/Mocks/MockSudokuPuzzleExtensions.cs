@@ -1,6 +1,6 @@
 ﻿using XenobiaSoft.Sudoku;
 
-namespace UnitTests.Helpers.Mocks;
+namespace UnitTests.Mocks;
 
 public static class MockSudokuPuzzleExtensions
 {

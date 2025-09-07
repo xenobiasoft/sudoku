@@ -2,7 +2,7 @@
 using Sudoku.Domain.ValueObjects;
 using UnitTests.Helpers.Factories;
 
-namespace UnitTests.Helpers.Mocks;
+namespace UnitTests.Mocks;
 
 public static class MockGameRepositoryExtensions
 {

@@ -9,7 +9,7 @@ using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 using UnitTests.Helpers.Builders;
 using UnitTests.Helpers.Factories;
-using UnitTests.Helpers.Mocks;
+using UnitTests.Mocks;
 
 namespace UnitTests.Application.Handlers;
 
