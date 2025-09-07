@@ -11,7 +11,7 @@ public partial class New
     [Parameter] public string Difficulty { get; set; } = "Easy";
     [Inject] public required NavigationManager Navigation { get; set; }
     [Inject] public required ISudokuGame SudokuGame { get; set; }
-    [Inject] public required IGameStateManager GameStorageManager { get; set; }
+    [Inject] public required IGameManager GameManager { get; set; }
     [Inject] public required IAliasService AliasService { get; set; }
 
     protected override async Task OnInitializedAsync()
@@ -23,7 +23,7 @@ public partial class New
     {
         var alias = await AliasService.GetAliasAsync();
         var gameState = await SudokuGame.NewGameAsync(alias, Difficulty.ParseLevel());
-        await GameStorageManager.SaveGameAsync(gameState);
+        await GameManager.SaveGameAsync(gameState);
         Navigation.NavigateTo($"/game/{gameState.PuzzleId}");
     }
 }

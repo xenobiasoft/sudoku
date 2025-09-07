@@ -6,3 +6,4 @@ global using Xunit;
 
 global using Sudoku.Web.Server;
 global using DepenMock;
+global using UnitTests.Mocks;

@@ -1,7 +1,7 @@
 ﻿using Sudoku.Infrastructure.Models;
 using Sudoku.Infrastructure.Services;
 
-namespace UnitTests.Helpers.Mocks;
+namespace UnitTests.Mocks;
 
 public static class MockCosmosDbServiceExtensions
 {

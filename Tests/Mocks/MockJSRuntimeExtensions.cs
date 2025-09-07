@@ -2,7 +2,7 @@
 using System.Text.Json;
 using XenobiaSoft.Sudoku.GameState;
 
-namespace UnitTests.Helpers.Mocks;
+namespace UnitTests.Mocks;
 
 public static class MockJsRuntimeExtensions
 {

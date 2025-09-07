@@ -4,7 +4,7 @@ using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Services;
 using UnitTests.Helpers;
-using UnitTests.Helpers.Mocks;
+using UnitTests.Mocks;
 using PuzzleFactory = UnitTests.Helpers.Factories.PuzzleFactory;
 
 namespace UnitTests.Infrastructure.Services;

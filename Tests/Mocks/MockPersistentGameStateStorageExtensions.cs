@@ -1,7 +1,7 @@
 ﻿using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
 
-namespace UnitTests.Helpers.Mocks;
+namespace UnitTests.Mocks;
 
 public static class MockPersistentGameStateStorageExtensions
 {

@@ -1,8 +1,9 @@
 ﻿using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Exceptions;
+using PuzzleFactory = UnitTests.Helpers.Factories.PuzzleFactory;
 
-namespace UnitTests.Helpers.Mocks;
+namespace UnitTests.Mocks;
 
 public static class MockPuzzleSolverExtensions2
 {
@@ -11,7 +12,7 @@ public static class MockPuzzleSolverExtensions2
         mock
             .SetupSequence(x => x.SolvePuzzle(It.IsAny<SudokuPuzzle>()))
             .Throws<InvalidPuzzleException>()
-            .ReturnsAsync(Factories.PuzzleFactory.GetSolvedPuzzle);
+            .ReturnsAsync(PuzzleFactory.GetSolvedPuzzle);
 
         return mock;
     }

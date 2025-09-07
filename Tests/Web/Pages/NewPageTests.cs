@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Pages;
 using Sudoku.Web.Server.Services.Abstractions;
 using UnitTests.Helpers;
-using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
 
 namespace UnitTests.Web.Pages;
@@ -11,19 +10,19 @@ namespace UnitTests.Web.Pages;
 public class NewPageTests : TestContext
 {
     private readonly Mock<ISudokuGame> _mockSudokuGame;
-    private readonly Mock<IGameStateManager>? _mockGameStateManager;
+    private readonly Mock<IGameManager>? _mockGameManager;
 
     public NewPageTests()
     {
         var alias = "game-alias";
         _mockSudokuGame = new Mock<ISudokuGame>();
-        _mockGameStateManager = new Mock<IGameStateManager>();
+        _mockGameManager = new Mock<IGameManager>();
         var aliasService = new Mock<IAliasService>();
         aliasService.SetupGetAliasAsync(alias);
 
         _mockSudokuGame.SetNewAsync(alias, PuzzleFactory.GetPuzzle(GameDifficulty.Easy));
 
-        Services.AddSingleton(_mockGameStateManager.Object);
+        Services.AddSingleton(_mockGameManager.Object);
         Services.AddSingleton(_mockSudokuGame.Object);
         Services.AddSingleton(aliasService.Object);
     }
@@ -49,7 +48,7 @@ public class NewPageTests : TestContext
         RenderComponent<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
 
         // Assert
-        _mockGameStateManager!.VerifySaveAsyncCalled(Times.Once);
+        _mockGameManager!.VerifySaveAsyncCalled(Times.Once);
     }
 
     [Fact]
