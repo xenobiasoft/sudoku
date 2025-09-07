@@ -16,7 +16,7 @@ public static class MockGameManagerExtensions
     {
         mock
             .Setup(x => x.LoadGamesAsync())
-            .ReturnsAsync(gameStates.ToList);
+            .ReturnsAsync(gameStates.ToList());
     }
 
     public static void VerifyDeleteGameAsyncCalled(this Mock<IGameManager> mock, Func<Times> times)
