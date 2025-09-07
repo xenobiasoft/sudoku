@@ -15,7 +15,7 @@ public class GameBoardTests : TestContext
     public GameBoardTests()
     {
         Services.AddSingleton(_mockNotificationService.Object);
-        Services.AddSingleton(new Mock<IGameStateManager>().Object);
+        Services.AddSingleton(new Mock<IGameManager>().Object);
     }
 
 	[Fact]
