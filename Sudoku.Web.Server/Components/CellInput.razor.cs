@@ -7,8 +7,7 @@ namespace Sudoku.Web.Server.Components;
 
 public partial class CellInput : IDisposable
 {
-    [Inject] private ICellFocusedNotificationService? CellFocusedNotificationService { get; set; }
-    [Inject] private IInvalidCellNotificationService? InvalidCellNotificationService { get; set; }
+    [Inject] private INotificationService? NotificationService { get; set; }
 
     [Parameter] public bool IsPencilMode { get; set; }
     [Parameter] public Cell Cell { get; set; } = new(0, 0);
@@ -23,8 +22,8 @@ public partial class CellInput : IDisposable
 
     protected override void OnInitialized()
     {
-        CellFocusedNotificationService!.SetCellFocus += HandleCellSetFocus;
-        InvalidCellNotificationService!.NotifyInvalidCells += HandleInvalidCells;
+        NotificationService!.SetCellFocus += HandleCellSetFocus;
+        NotificationService!.InvalidCellsNotified += HandleInvalidCells;
     }
 
     private void HandleInvalidCells(object? sender, IEnumerable<Cell> e)
@@ -45,13 +44,13 @@ public partial class CellInput : IDisposable
     private void OnFocus()
     {
         OnCellFocus.InvokeAsync(Cell);
-        CellFocusedNotificationService!.Notify(Cell);
+        NotificationService!.NotifyCellFocused(Cell);
     }
 
     public void Dispose()
     {
-        CellFocusedNotificationService!.SetCellFocus -= HandleCellSetFocus;
-        InvalidCellNotificationService!.NotifyInvalidCells -= HandleInvalidCells;
+        NotificationService!.SetCellFocus -= HandleCellSetFocus;
+        NotificationService!.InvalidCellsNotified -= HandleInvalidCells;
     }
 
     private bool ShouldHighlight(Cell? cell)

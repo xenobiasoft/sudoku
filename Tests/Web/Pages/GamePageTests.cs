@@ -16,8 +16,7 @@ public class GamePageTests : TestContext
     private const string Alias = "test-alias";
     private const string PuzzleId = "test-puzzleId";
 
-    private readonly Mock<IInvalidCellNotificationService> _mockInvalidCellNotifier = new();
-    private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
+    private readonly Mock<INotificationService> _mockNotificationService = new();
     private readonly Mock<IGameManager> _mockGameManager = new();
     private readonly Mock<IAliasService> _mockAliasService = new();
 
@@ -38,9 +37,7 @@ public class GamePageTests : TestContext
         var mockGameSession = new Mock<IGameSession>();
         var mockGameTimer = new Mock<IGameTimer>();
         mockGameSession.Setup(x => x.Timer).Returns(mockGameTimer.Object);
-        Services.AddSingleton(_mockInvalidCellNotifier.Object);
-        Services.AddSingleton(_mockGameNotificationService.Object);
-        Services.AddSingleton(new Mock<ICellFocusedNotificationService>().Object);
+        Services.AddSingleton(_mockNotificationService.Object);
         Services.AddSingleton(new Mock<ISudokuPuzzle>().Object);
         Services.AddSingleton(mockGameSession.Object);
         Services.AddSingleton(_mockGameManager.Object);
@@ -76,7 +73,7 @@ public class GamePageTests : TestContext
         await sut.InvokeAsync(() => buttonGroup.OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(5)));
 
         // Assert
-        _mockInvalidCellNotifier.VerifyNotificationSent(Times.Once);
+        _mockNotificationService.Verify(x => x.NotifyInvalidCells(It.IsAny<IEnumerable<Cell>>()), Times.Once);
     }
 
     [Fact]
@@ -88,7 +85,7 @@ public class GamePageTests : TestContext
         RenderComponent<Game>();
 
         // Assert
-        _mockGameNotificationService.VerifyGameStartedSent(Times.Once);
+        _mockNotificationService.Verify(x => x.NotifyGameStarted(), Times.Once);
     }
 
     [Fact]
@@ -111,7 +108,7 @@ public class GamePageTests : TestContext
         await sut.InvokeAsync(() => buttonGroup.OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(1)));
 
         // Assert
-        _mockGameNotificationService.VerifyGameEndedSent(Times.Once);
+        _mockNotificationService.Verify(x => x.NotifyGameEnded(), Times.Once);
     }
 
     [Fact]

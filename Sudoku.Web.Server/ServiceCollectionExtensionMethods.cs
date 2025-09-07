@@ -8,10 +8,9 @@ namespace Sudoku.Web.Server
     {
         public static IServiceCollection RegisterBlazorGameServices(this IServiceCollection services, IConfiguration config)
         {
+            services.AddScoped<INotificationService, NotificationService>();
+
             services
-                .AddScoped<ICellFocusedNotificationService, CellFocusedNotificationService>()
-                .AddScoped<IInvalidCellNotificationService, InvalidCellNotificationService>()
-                .AddScoped<IGameNotificationService, GameNotificationService>()
                 .AddScoped<ILocalStorageService, LocalStorageService>()
                 .AddScoped<IGameManager, GameManager>()
                 .AddScoped<IJsRuntimeWrapper, JsRuntimeWrapper>()

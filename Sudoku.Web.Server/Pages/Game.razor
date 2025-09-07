@@ -13,7 +13,7 @@
             <GameBoard Puzzle="Puzzle"
                        OnCellFocus="HandleSetSelectedCell"
                        OnCellChanged="HandleCellChanged"
-                       NotificationService="CellFocusedNotificationService"
+                       NotificationService="@NotificationService"
                        IsPencilMode="IsPencilMode"
                        OnPossibleValueChanged="HandlePossibleValueChanged"/>
             <GameControls OnValueChanged="HandleCellValueChanged"

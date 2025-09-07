@@ -10,13 +10,11 @@ namespace UnitTests.Web.Components;
 
 public class GameBoardTests : TestContext
 {
-    private readonly Mock<ICellFocusedNotificationService> _mockCellFocusedNotificationService = new();
+    private readonly Mock<INotificationService> _mockNotificationService = new();
 
     public GameBoardTests()
     {
-        Services.AddSingleton(_mockCellFocusedNotificationService.Object);
-        Services.AddSingleton(new Mock<IInvalidCellNotificationService>().Object);
-        Services.AddSingleton(new Mock<IGameNotificationService>().Object);
+        Services.AddSingleton(_mockNotificationService.Object);
         Services.AddSingleton(new Mock<IGameStateManager>().Object);
     }
 
@@ -79,7 +77,7 @@ public class GameBoardTests : TestContext
         var gameBoard = RenderComponent<GameBoard>(p =>
         {
             p.Add(x => x.Puzzle, puzzle);
-            p.Add(x => x.NotificationService, _mockCellFocusedNotificationService.Object);
+            p.Add(x => x.NotificationService, _mockNotificationService.Object);
         });
         var cellInputs = gameBoard.FindComponents<CellInput>();
         var cellInput = cellInputs[50];
@@ -90,7 +88,7 @@ public class GameBoardTests : TestContext
         await gameBoard.Find(".game-board-container").KeyUpAsync(new KeyboardEventArgs { Code = KeyCodes.DownKey });
 
         // Assert
-        _mockCellFocusedNotificationService.Verify(s => s.Notify(focusedCell), Times.Once);
+        _mockNotificationService.Verify(s => s.NotifyCellFocused(focusedCell), Times.Once);
     }
 
     [Fact]
@@ -101,7 +99,7 @@ public class GameBoardTests : TestContext
         var gameBoard = RenderComponent<GameBoard>(p =>
         {
             p.Add(x => x.Puzzle, puzzle);
-            p.Add(x => x.NotificationService, _mockCellFocusedNotificationService.Object);
+            p.Add(x => x.NotificationService, _mockNotificationService.Object);
         });
         var cellInputs = gameBoard.FindComponents<CellInput>();
         var cellInput = cellInputs[50];
@@ -112,7 +110,7 @@ public class GameBoardTests : TestContext
         await gameBoard.Find(".game-board-container").KeyUpAsync(new KeyboardEventArgs { Code = KeyCodes.LeftKey});
 
         // Assert
-        _mockCellFocusedNotificationService.Verify(s => s.Notify(focusedCell), Times.Once);
+        _mockNotificationService.Verify(s => s.NotifyCellFocused(focusedCell), Times.Once);
     }
 
     [Fact]
@@ -123,7 +121,7 @@ public class GameBoardTests : TestContext
         var gameBoard = RenderComponent<GameBoard>(p =>
         {
             p.Add(x => x.Puzzle, puzzle);
-            p.Add(x => x.NotificationService, _mockCellFocusedNotificationService.Object);
+            p.Add(x => x.NotificationService, _mockNotificationService.Object);
         });
         var cellInputs = gameBoard.FindComponents<CellInput>();
         var cellInput = cellInputs[50];
@@ -134,7 +132,7 @@ public class GameBoardTests : TestContext
         await gameBoard.Find(".game-board-container").KeyUpAsync(new KeyboardEventArgs { Code = KeyCodes.RightKey });
 
         // Assert
-        _mockCellFocusedNotificationService.Verify(s => s.Notify(focusedCell), Times.Once);
+        _mockNotificationService.Verify(s => s.NotifyCellFocused(focusedCell), Times.Once);
     }
 
     [Fact]
@@ -145,7 +143,7 @@ public class GameBoardTests : TestContext
         var gameBoard = RenderComponent<GameBoard>(p =>
         {
             p.Add(x => x.Puzzle, puzzle);
-            p.Add(x => x.NotificationService, _mockCellFocusedNotificationService.Object);
+            p.Add(x => x.NotificationService, _mockNotificationService.Object);
         });
         var cellInputs = gameBoard.FindComponents<CellInput>();
         var cellInput = cellInputs[50];
@@ -156,6 +154,6 @@ public class GameBoardTests : TestContext
         await gameBoard.Find(".game-board-container").KeyUpAsync(new KeyboardEventArgs { Code = KeyCodes.UpKey });
 
         // Assert
-        _mockCellFocusedNotificationService.Verify(s => s.Notify(focusedCell), Times.Once);
+        _mockNotificationService.Verify(s => s.NotifyCellFocused(focusedCell), Times.Once);
     }
 }

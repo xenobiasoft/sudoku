@@ -11,9 +11,7 @@ public partial class Game
     private IDisposable? _locationChangingRegistration;
 
     [Parameter] public string? PuzzleId { get; set; }
-    [Inject] public required IInvalidCellNotificationService InvalidCellNotificationService { get; set; }
-    [Inject] public required IGameNotificationService GameNotificationService { get; set; }
-    [Inject] public required ICellFocusedNotificationService CellFocusedNotificationService { get; set; }
+    [Inject] public required INotificationService NotificationService { get; set; }
     [Inject] public required IGameManager GameManager { get; set; }
     [Inject] public required IAliasService AliasService { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
@@ -52,7 +50,7 @@ public partial class Game
 
     private void NotifyGameStart()
     {
-        GameNotificationService.NotifyGameStarted();
+        NotificationService.NotifyGameStarted();
         StateHasChanged();
     }
 
@@ -103,7 +101,7 @@ public partial class Game
     {
         Puzzle.SetCell(row, column, value);
         var isValid = Puzzle.IsValid();
-        InvalidCellNotificationService.Notify(Puzzle.Validate().ToList());
+        NotificationService.NotifyInvalidCells(Puzzle.Validate().ToList());
     }
 
     private async Task ValidateAndUpdateGameState()
@@ -122,7 +120,7 @@ public partial class Game
     {
         await GameManager.EndSession();
         await GameManager.DeleteGameAsync(Alias, PuzzleId!);
-        GameNotificationService.NotifyGameEnded();
+        NotificationService.NotifyGameEnded();
     }
 
     private void HandlePencilModeToggle(bool isPencilMode)
