@@ -10,7 +10,7 @@ namespace Sudoku.Web.Server.Components
         private Cell _selectedCell = new(0, 0);
 
         [Parameter] public ISudokuPuzzle? Puzzle { get; set; }
-        [Parameter] public ICellFocusedNotificationService? NotificationService { get; set; }
+        [Parameter] public INotificationService? NotificationService { get; set; }
         [Parameter] public EventCallback<Cell> OnCellFocus { set; get; }
         [Parameter] public EventCallback<CellChangedEventArgs> OnCellChanged { get; set; }
         [Parameter] public EventCallback<CellPossibleValueChangedEventArgs> OnPossibleValueChanged { get; set; }
@@ -48,7 +48,7 @@ namespace Sudoku.Web.Server.Components
                 .Where(x => x.Row < _selectedCell.Row)
                 .MaxBy(x => x.Row);
 
-            NotificationService!.Notify(cell!);
+            NotificationService!.NotifyCellFocused(cell!);
         }
 
         private void FocusRight()
@@ -58,7 +58,7 @@ namespace Sudoku.Web.Server.Components
                 .Where(x => x.Column > _selectedCell.Column)
                 .MinBy(x => x.Column);
 
-            NotificationService!.Notify(cell!);
+            NotificationService!.NotifyCellFocused(cell!);
         }
 
         private void FocusLeft()
@@ -68,7 +68,7 @@ namespace Sudoku.Web.Server.Components
                 .Where(x => x.Column < _selectedCell.Column)
                 .MaxBy(x => x.Column);
 
-            NotificationService!.Notify(cell!);
+            NotificationService!.NotifyCellFocused(cell!);
         }
 
         private void FocusDown()
@@ -78,7 +78,7 @@ namespace Sudoku.Web.Server.Components
                 .Where(x => x.Row > _selectedCell.Row)
                 .MinBy(x => x.Row);
 
-            NotificationService!.Notify(cell!);
+            NotificationService!.NotifyCellFocused(cell!);
         }
     }
 }

@@ -6,6 +6,7 @@ namespace Sudoku.Web.Server.Models;
 public class GameModel
 {
     public string Id { get; set; } = string.Empty;
+    public string Alias { get; set; } = string.Empty;
     public string PlayerAlias { get; set; } = string.Empty;
     public string Difficulty { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;

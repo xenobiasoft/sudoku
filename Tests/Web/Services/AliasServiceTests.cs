@@ -3,7 +3,6 @@ using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
 using Sudoku.Web.Server.Services.HttpClients;
-using UnitTests.Helpers.Mocks;
 
 namespace UnitTests.Web.Services;
 

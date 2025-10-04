@@ -3,23 +3,17 @@ using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services.Abstractions;
 using UnitTests.Helpers;
-using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
-using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Web.Components;
 
 public class CellInputTests : TestContext
 {
-    private readonly Mock<ICellFocusedNotificationService> _mockCellFocusNotifier = new();
-    private readonly Mock<IInvalidCellNotificationService> _mockInvalidCellNotificationService = new();
-    private readonly Mock<IGameNotificationService> _mockGameNotificationService = new();
+    private readonly Mock<INotificationService> _mockNotificationService = new();
 
     public CellInputTests()
     {
-        Services.AddSingleton(_mockCellFocusNotifier.Object);
-        Services.AddSingleton(_mockInvalidCellNotificationService.Object);
-        Services.AddSingleton(_mockGameNotificationService.Object);
+        Services.AddSingleton(_mockNotificationService.Object);
     }
 
 	[Fact]
@@ -81,12 +75,12 @@ public class CellInputTests : TestContext
         };
         var renderedCell = RenderComponent<CellInput>(x => x
             .Add(p => p.Cell, cell));
-        _mockCellFocusNotifier
-            .Setup(x => x.Notify(cell))
+        _mockNotificationService
+            .Setup(x => x.NotifyCellFocused(cell))
             .Raises(x => x.SetCellFocus += null, this, cell);
 
         // Act
-        await renderedCell.InvokeAsync(() => _mockCellFocusNotifier.Object.Notify(cell));
+        await renderedCell.InvokeAsync(() => _mockNotificationService.Object.NotifyCellFocused(cell));
         renderedCell.Render();
 
         // Assert
@@ -119,12 +113,12 @@ public class CellInputTests : TestContext
         var invalidCells = new List<Cell> { cell };
         var renderedCell = RenderComponent<CellInput>(x => x
             .Add(p => p.Cell, cell));
-        _mockInvalidCellNotificationService
-            .Setup(x => x.Notify(invalidCells))
-            .Raises(x => x.NotifyInvalidCells += null, this, invalidCells);
+        _mockNotificationService
+            .Setup(x => x.NotifyInvalidCells(invalidCells))
+            .Raises(x => x.InvalidCellsNotified += null, this, invalidCells);
 
         // Act
-        await renderedCell.InvokeAsync(() => _mockInvalidCellNotificationService.Object.Notify(invalidCells));
+        await renderedCell.InvokeAsync(() => _mockNotificationService.Object.NotifyInvalidCells(invalidCells));
         renderedCell.Render();
 
         // Assert

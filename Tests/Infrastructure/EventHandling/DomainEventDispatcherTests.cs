@@ -3,7 +3,7 @@ using Sudoku.Domain.Events;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.EventHandling;
 using UnitTests.Helpers.Builders;
-using UnitTests.Helpers.Mocks;
+using UnitTests.Mocks;
 
 namespace UnitTests.Infrastructure.EventHandling;
 

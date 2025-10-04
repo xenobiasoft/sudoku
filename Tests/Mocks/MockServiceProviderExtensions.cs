@@ -1,7 +1,7 @@
 ﻿using Sudoku.Domain.Events;
 using Sudoku.Infrastructure.EventHandling;
 
-namespace UnitTests.Helpers.Mocks;
+namespace UnitTests.Mocks;
 
 public static class MockServiceProviderExtensions
 {

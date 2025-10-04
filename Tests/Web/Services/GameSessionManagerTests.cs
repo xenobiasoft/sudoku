@@ -2,22 +2,21 @@
 using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
 using UnitTests.Helpers;
-using UnitTests.Helpers.Mocks;
 using XenobiaSoft.Sudoku;
+using XenobiaSoft.Sudoku.Abstractions;
 using XenobiaSoft.Sudoku.GameState;
-using FluentAssertions;
 
 namespace UnitTests.Web.Services;
 
-public class GameSessionManagerTests : BaseTestByAbstraction<GameSessionManager, IGameSessionManager>
+public class GameSessionManagerTests : BaseTestByAbstraction<GameManager, IGameSessionManager>
 {
     private readonly Mock<IGameTimer> _mockTimer;
-    private readonly Mock<IGameStateManager> _mockGameStateManager;
+    private readonly Mock<IPersistentGameStateStorage> _mockGameStateStorage;
 
     public GameSessionManagerTests()
     {
         _mockTimer = Container.ResolveMock<IGameTimer>();
-        _mockGameStateManager = Container.ResolveMock<IGameStateManager>();
+        _mockGameStateStorage = Container.ResolveMock<IPersistentGameStateStorage>();
     }
 
     [Fact]
@@ -40,13 +39,13 @@ public class GameSessionManagerTests : BaseTestByAbstraction<GameSessionManager,
         // Arrange
         var sut = ResolveSut();
         await sut.StartNewSession(Container.Create<GameStateMemory>());
-        _mockGameStateManager.Reset();
+        _mockGameStateStorage.Reset();
 
         // Act
         await sut.EndSession();
 
         // Assert
-        _mockGameStateManager.VerifySaveAsyncCalled(Times.Once);
+        _mockGameStateStorage.VerifySaveAsyncCalled(Times.Once);
     }
 
     [Fact]
@@ -83,13 +82,13 @@ public class GameSessionManagerTests : BaseTestByAbstraction<GameSessionManager,
         // Arrange
         var sut = ResolveSut();
         await sut.StartNewSession(Container.Create<GameStateMemory>());
-        _mockGameStateManager.Reset();
+        _mockGameStateStorage.Reset();
 
         // Act
         await sut.PauseSession();
 
         // Assert
-        _mockGameStateManager.VerifySaveAsyncCalled(Times.Once);
+        _mockGameStateStorage.VerifySaveAsyncCalled(Times.Once);
     }
 
     [Fact]
@@ -134,13 +133,13 @@ public class GameSessionManagerTests : BaseTestByAbstraction<GameSessionManager,
         // Arrange
         var sut = ResolveSut();
         await sut.StartNewSession(Container.Create<GameStateMemory>());
-        _mockGameStateManager.Reset();
+        _mockGameStateStorage.Reset();
 
         // Act
         await sut.RecordMove(true);
 
         // Assert
-        _mockGameStateManager.VerifySaveAsyncCalled(Times.Once);
+        _mockGameStateStorage.VerifySaveAsyncCalled(Times.Once);
     }
 
     [Theory]

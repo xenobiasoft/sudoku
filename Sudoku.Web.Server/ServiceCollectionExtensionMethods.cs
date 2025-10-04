@@ -8,22 +8,14 @@ namespace Sudoku.Web.Server
     {
         public static IServiceCollection RegisterBlazorGameServices(this IServiceCollection services, IConfiguration config)
         {
-            // Register notification services
+            services.AddScoped<INotificationService, NotificationService>();
+
             services
-                .AddScoped<ICellFocusedNotificationService, CellFocusedNotificationService>()
-                .AddScoped<IInvalidCellNotificationService, InvalidCellNotificationService>()
-                .AddScoped<IGameNotificationService, GameNotificationService>()
                 .AddScoped<ILocalStorageService, LocalStorageService>()
+                .AddScoped<IGameManager, GameManager>()
                 .AddScoped<IJsRuntimeWrapper, JsRuntimeWrapper>()
                 .AddScoped<IGameTimer>(sp => new GameTimer(TimeSpan.FromSeconds(1)))
-                .AddScoped<IGameSessionManager, GameSessionManager>();
-
-            // Register HTTP clients for API communication using Aspire service discovery
-            services.AddHttpClient<IPlayerApiClient, PlayerApiClient>(client =>
-            {
-                // This will be resolved by Aspire service discovery to sudoku-api service
-                client.BaseAddress = new Uri("http://sudoku-api");
-            });
+                .AddScoped<IAliasService, AliasService>();
 
             services.AddHttpClient<IGameApiClient, GameApiClient>(client =>
             {

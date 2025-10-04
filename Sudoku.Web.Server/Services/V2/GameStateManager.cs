@@ -10,6 +10,37 @@ public partial class GameManager(ILocalStorageService localStorageService, IGame
 {
     public GameModel? Game { get; private set; }
 
+    public async Task<GameModel> CreateGameAsync(string alias, string difficulty)
+    {
+        if (string.IsNullOrEmpty(alias))
+        {
+            throw new Exception("Alias not set.");
+        }
+        if (string.IsNullOrEmpty(difficulty))
+        {
+            throw new Exception("Difficulty not set.");
+        }
+        var response = await gameApiClient.CreateGameAsync(alias, difficulty);
+        if (!response.IsSuccess || response.Value == null)
+        {
+            throw new Exception("Failed to create game.");
+        }
+        Game = response.Value;
+        await localStorageService.SaveGameStateAsync(Game);
+        return Game;
+    }
+
+    public async Task DeleteGameAsync()
+    {
+        if (Game == null)
+        {
+            throw new Exception("No game loaded.");
+        }
+
+        await DeleteGameAsync(Game.Alias, Game.Id);
+        Game = null;
+    }
+
     public async Task DeleteGameAsync(string alias, string gameId)
     {
         var result = await gameApiClient.DeleteGameAsync(alias, gameId);
@@ -39,17 +70,17 @@ public partial class GameManager(ILocalStorageService localStorageService, IGame
         return Game;
     }
 
-    public async Task<List<GameModel>> LoadGamesAsync()
+    public async Task<List<GameModel>> LoadGamesAsync(string alias)
     {
+        if (string.IsNullOrEmpty(alias))
+        {
+            throw new Exception("Alias not set.");
+        }
+
         var games = await localStorageService.LoadGameStatesAsync();
         if (games.Any())
         {
             return games;
-        }
-        var alias = await localStorageService.GetAliasAsync();
-        if (string.IsNullOrEmpty(alias))
-        {
-            throw new Exception("Alias not set.");
         }
         var response = await gameApiClient.GetAllGamesAsync(alias);
         if (!response.IsSuccess || response.Value == null)
@@ -63,15 +94,15 @@ public partial class GameManager(ILocalStorageService localStorageService, IGame
         return response.Value;
     }
 
-    public async Task<GameModel> ResetGameAsync(string alias, string gameId)
+    public async Task<GameModel> ResetGameAsync()
     {
-        var resetResponse = await gameApiClient.ResetGameAsync(alias, gameId);
+        var resetResponse = await gameApiClient.ResetGameAsync(Game.Alias, Game.Id);
         if (!resetResponse.IsSuccess || resetResponse.Value == null)
         {
             throw new Exception("Failed to reset game.");
         }
 
-        Game = await LoadGameAsync(alias, gameId);
+        Game = await LoadGameAsync(Game.Alias, Game.Id);
 
         await localStorageService.SaveGameStateAsync(Game);
 
@@ -84,19 +115,19 @@ public partial class GameManager(ILocalStorageService localStorageService, IGame
         await localStorageService.SaveGameStateAsync(Game);
     }
 
-    public async Task<GameModel> UndoGameAsync(string alias, string gameId)
+    public async Task<GameModel> UndoGameAsync()
     {
         if (Game!.Statistics.TotalMoves < 1)
         {
             return Game;
         }
 
-        var response = await gameApiClient.UndoMoveAsync(alias, gameId);
+        var response = await gameApiClient.UndoMoveAsync(Game.Alias, Game.Id);
         if (!response.IsSuccess || response.Value == null)
         {
             throw new Exception("Failed to undo move.");
         }
-        Game = await LoadGameAsync(alias, gameId);
+        Game = await LoadGameAsync(Game.Alias, Game.Id);
         await localStorageService.SaveGameStateAsync(Game);
 
         return Game;

@@ -2,13 +2,12 @@
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Services.Abstractions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace UnitTests.Web.Components;
 
 public class GameControlsTests : TestContext
 {
-    private readonly Mock<IGameStateManager> _mockGameStateManager = new();
+    private readonly Mock<IGameManager> _mockGameStateManager = new();
 
     public GameControlsTests()
     {

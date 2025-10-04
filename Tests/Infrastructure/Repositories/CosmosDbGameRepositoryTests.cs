@@ -8,7 +8,7 @@ using Sudoku.Infrastructure.Repositories;
 using Sudoku.Infrastructure.Services;
 using UnitTests.Helpers.Builders;
 using UnitTests.Helpers.Factories;
-using UnitTests.Helpers.Mocks;
+using UnitTests.Mocks;
 
 namespace UnitTests.Infrastructure.Repositories;
 

@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.Services.Abstractions;
-using UnitTests.Helpers.Mocks;
+using UnitTests.Mocks;
 using XenobiaSoft.Sudoku.GameState;
 
 namespace UnitTests.Web.Components;
