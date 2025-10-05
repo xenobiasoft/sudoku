@@ -20,10 +20,8 @@ try
 {
     logger.LogInformation("Starting Sudoku Distributed Application...");
 
-    logger.LogDebug("Configuring connection strings...");
     var appConfig = builder.AddConnectionString("appconfig");
     var cosmosDb = builder.AddConnectionString("CosmosDb");
-    logger.LogDebug("Connection strings configured successfully");
 
     logger.LogDebug("Configuring Sudoku API project...");
     builder.AddProject<Projects.Sudoku_Api>("sudoku-api")
@@ -42,7 +40,6 @@ try
         .WithReference(cosmosDb)
         .WithReference(appConfig)
         .WaitFor(cosmosDb);
-    logger.LogInformation("Sudoku API project configured successfully");
 
     logger.LogDebug("Configuring Sudoku Blazor Server project...");
     builder.AddProject<Projects.Sudoku_Web_Server>("sudoku-blazor")
@@ -50,12 +47,10 @@ try
         .WithReference(appConfig)
         .WithExternalHttpEndpoints()
         .WaitFor(cosmosDb);
-    logger.LogInformation("Sudoku Blazor Server project configured successfully");
 
     logger.LogInformation("Building and starting application...");
     var app = builder.Build();
-    
-    logger.LogInformation("Sudoku Distributed Application started successfully");
+
     app.Run();
 }
 catch (Exception ex)

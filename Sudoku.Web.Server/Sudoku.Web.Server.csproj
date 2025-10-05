@@ -15,12 +15,14 @@
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.13.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.23.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.9" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Sudoku.ServiceDefaults\Sudoku.ServiceDefaults.csproj" />
-    <ProjectReference Include="..\Sudoku\Sudoku.csproj" />
     <ProjectReference Include="..\Sudoku.Storage.Azure\Sudoku.Storage.Azure.csproj" />
+    <!-- Keep the old Sudoku project for legacy compatibility during migration -->
+    <ProjectReference Include="..\Sudoku\Sudoku.csproj" />
   </ItemGroup>
 
   <ItemGroup>

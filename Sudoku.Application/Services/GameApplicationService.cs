@@ -9,6 +9,24 @@ namespace Sudoku.Application.Services;
 
 public class GameApplicationService(IMediator mediator) : IGameApplicationService
 {
+    public async Task<Result> AbandonGameAsync(string gameId)
+    {
+        var command = new AbandonGameCommand(gameId);
+        return await mediator.Send(command);
+    }
+
+    public async Task<Result> AddPossibleValueAsync(string gameId, int row, int column, int value)
+    {
+        var command = new AddPossibleValueCommand(gameId, row, column, value);
+        return await mediator.Send(command);
+    }
+
+    public async Task<Result> ClearPossibleValuesAsync(string gameId, int row, int column)
+    {
+        var command = new ClearPossibleValuesCommand(gameId, row, column);
+        return await mediator.Send(command);
+    }
+
     public async Task<Result<GameDto>> CreateGameAsync(string playerAlias, string difficulty)
     {
         var command = new CreateGameCommand(playerAlias, difficulty);
@@ -37,6 +55,18 @@ public class GameApplicationService(IMediator mediator) : IGameApplicationServic
         return Result<GameDto>.Success(latestGame);
     }
 
+    public async Task<Result> DeleteGameAsync(string gameId)
+    {
+        var command = new DeleteGameCommand(gameId);
+        return await mediator.Send(command);
+    }
+
+    public async Task<Result> DeletePlayerGamesAsync(string playerAlias)
+    {
+        var command = new DeletePlayerGamesCommand(playerAlias);
+        return await mediator.Send(command);
+    }
+
     public async Task<Result<GameDto>> GetGameAsync(string gameId)
     {
         var query = new GetGameQuery(gameId);
@@ -61,9 +91,9 @@ public class GameApplicationService(IMediator mediator) : IGameApplicationServic
         return await mediator.Send(command);
     }
 
-    public async Task<Result> AddPossibleValueAsync(string gameId, int row, int column, int value)
+    public async Task<Result> PauseGameAsync(string gameId)
     {
-        var command = new AddPossibleValueCommand(gameId, row, column, value);
+        var command = new PauseGameCommand(gameId);
         return await mediator.Send(command);
     }
 
@@ -73,21 +103,9 @@ public class GameApplicationService(IMediator mediator) : IGameApplicationServic
         return await mediator.Send(command);
     }
 
-    public async Task<Result> ClearPossibleValuesAsync(string gameId, int row, int column)
+    public async Task<Result> ResetGameAsync(string gameId)
     {
-        var command = new ClearPossibleValuesCommand(gameId, row, column);
-        return await mediator.Send(command);
-    }
-
-    public async Task<Result> StartGameAsync(string gameId)
-    {
-        var command = new StartGameCommand(gameId);
-        return await mediator.Send(command);
-    }
-
-    public async Task<Result> PauseGameAsync(string gameId)
-    {
-        var command = new PauseGameCommand(gameId);
+        var command = new ResetGameCommand(gameId);
         return await mediator.Send(command);
     }
 
@@ -97,33 +115,15 @@ public class GameApplicationService(IMediator mediator) : IGameApplicationServic
         return await mediator.Send(command);
     }
 
-    public async Task<Result> AbandonGameAsync(string gameId)
+    public async Task<Result> StartGameAsync(string gameId)
     {
-        var command = new AbandonGameCommand(gameId);
-        return await mediator.Send(command);
-    }
-
-    public async Task<Result> DeleteGameAsync(string gameId)
-    {
-        var command = new DeleteGameCommand(gameId);
-        return await mediator.Send(command);
-    }
-
-    public async Task<Result> DeletePlayerGamesAsync(string playerAlias)
-    {
-        var command = new DeletePlayerGamesCommand(playerAlias);
+        var command = new StartGameCommand(gameId);
         return await mediator.Send(command);
     }
 
     public async Task<Result> UndoLastMoveAsync(string gameId)
     {
         var command = new UndoLastMoveCommand(gameId);
-        return await mediator.Send(command);
-    }
-
-    public async Task<Result> ResetGameAsync(string gameId)
-    {
-        var command = new ResetGameCommand(gameId);
         return await mediator.Send(command);
     }
 

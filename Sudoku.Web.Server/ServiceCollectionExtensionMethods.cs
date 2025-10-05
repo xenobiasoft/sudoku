@@ -1,6 +1,6 @@
 ﻿using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
-using XenobiaSoft.Sudoku.Storage.Azure;
+using Sudoku.Web.Server.Services.HttpClients;
 
 namespace Sudoku.Web.Server
 {
@@ -15,10 +15,16 @@ namespace Sudoku.Web.Server
                 .AddScoped<IGameManager, GameManager>()
                 .AddScoped<IJsRuntimeWrapper, JsRuntimeWrapper>()
                 .AddScoped<IGameTimer>(sp => new GameTimer(TimeSpan.FromSeconds(1)))
-                .AddScoped<IAliasService, AliasService>();
+                .AddScoped<IAliasService, AliasService>()
+                .AddScoped<IPlayerApiClient, PlayerApiClient>()
+                .AddScoped<IGameApiClient, GameApiClient>();
 
-            services.AddAzureStorage(config);
-
+            services.AddHttpClient<IGameApiClient, GameApiClient>(client =>
+            {
+                // This will be resolved by Aspire service discovery to sudoku-api service  
+                client.BaseAddress = new Uri("http://sudoku-api");
+            });
+            
             return services;
         }
     }
