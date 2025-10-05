@@ -2,6 +2,7 @@ using Azure.Identity;
 using BlazorApplicationInsights;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using System.Diagnostics.CodeAnalysis;
+using XenobiaSoft.Sudoku.Storage.Azure;
 
 namespace Sudoku.Web.Server;
 
@@ -41,7 +42,9 @@ public class Program
             builder.Services.AddServerSideBlazor();
             builder.Services.AddHealthChecks();
             builder.Services
+                .RegisterGameServices(builder.Configuration)
                 .RegisterBlazorGameServices(builder.Configuration)
+                .AddAzureStorage(builder.Configuration)
                 .AddBlazorApplicationInsights(x =>
                 {
                     x.InstrumentationKey = builder.Configuration["AppInsightsKey"];

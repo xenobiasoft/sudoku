@@ -15,7 +15,9 @@ namespace Sudoku.Web.Server
                 .AddScoped<IGameManager, GameManager>()
                 .AddScoped<IJsRuntimeWrapper, JsRuntimeWrapper>()
                 .AddScoped<IGameTimer>(sp => new GameTimer(TimeSpan.FromSeconds(1)))
-                .AddScoped<IAliasService, AliasService>();
+                .AddScoped<IAliasService, AliasService>()
+                .AddScoped<IPlayerApiClient, PlayerApiClient>()
+                .AddScoped<IGameApiClient, GameApiClient>();
 
             services.AddHttpClient<IGameApiClient, GameApiClient>(client =>
             {
