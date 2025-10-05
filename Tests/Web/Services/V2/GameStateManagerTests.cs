@@ -58,53 +58,31 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         _mockLocalStorageService.Verify(x => x.SaveGameStateAsync(expectedGame), Times.Once);
     }
 
-    [Fact]
-    public async Task CreateGameAsync_WithEmptyAlias_ThrowsArgumentException()
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task CreateGameAsync_WithEmptyOrNullAlias_ThrowsArgumentException(string alias)
     {
         // Arrange
         var sut = ResolveSut();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.CreateGameAsync(string.Empty, TestDifficulty));
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.CreateGameAsync(alias, TestDifficulty));
 
         // Assert
         exception.Message.Should().Be("Alias not set.");
     }
 
-    [Fact]
-    public async Task CreateGameAsync_WithNullAlias_ThrowsArgumentException()
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task CreateGameAsync_WithEmptyOrNullDifficulty_ThrowsArgumentException(string difficulty)
     {
         // Arrange
         var sut = ResolveSut();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.CreateGameAsync(null!, TestDifficulty));
-
-        // Assert
-        exception.Message.Should().Be("Alias not set.");
-    }
-
-    [Fact]
-    public async Task CreateGameAsync_WithEmptyDifficulty_ThrowsArgumentException()
-    {
-        // Arrange
-        var sut = ResolveSut();
-
-        // Act
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.CreateGameAsync(TestAlias, string.Empty));
-
-        // Assert
-        exception.Message.Should().Be("Difficulty not set.");
-    }
-
-    [Fact]
-    public async Task CreateGameAsync_WithNullDifficulty_ThrowsArgumentException()
-    {
-        // Arrange
-        var sut = ResolveSut();
-
-        // Act
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.CreateGameAsync(TestAlias, null!));
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.CreateGameAsync(TestAlias, difficulty));
 
         // Assert
         exception.Message.Should().Be("Difficulty not set.");
@@ -248,27 +226,31 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         _mockLocalStorageService.Verify(x => x.DeleteGameAsync(TestGameId), Times.Once);
     }
 
-    [Fact]
-    public async Task DeleteGameAsync_WithEmptyAlias_ThrowsArgumentException()
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task DeleteGameAsync_WithEmptyOrNullAlias_ThrowsArgumentException(string alias)
     {
         // Arrange
         var sut = ResolveSut();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.DeleteGameAsync(string.Empty, TestGameId));
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.DeleteGameAsync(alias, TestGameId));
 
         // Assert
         exception.Message.Should().Be("Alias not set.");
     }
 
-    [Fact]
-    public async Task DeleteGameAsync_WithEmptyGameId_ThrowsArgumentException()
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task DeleteGameAsync_WithEmptyOrNullGameId_ThrowsArgumentException(string gameId)
     {
         // Arrange
         var sut = ResolveSut();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.DeleteGameAsync(TestAlias, string.Empty));
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.DeleteGameAsync(TestAlias, gameId));
 
         // Assert
         exception.Message.Should().Be("Game ID not set.");
@@ -332,26 +314,51 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
     }
 
     [Fact]
-    public async Task LoadGameAsync_WithEmptyAlias_ThrowsArgumentException()
+    public async Task LoadGameAsync_FromApi_SavesGameToLocalStorage()
+    {
+        // Arrange
+        var expectedGame = CreateTestGameModel();
+        _mockLocalStorageService
+            .Setup(x => x.LoadGameAsync(TestGameId))
+            .ReturnsAsync((GameModel)null!);
+        var successResult = ApiResult<GameModel>.Success(expectedGame);
+        _mockGameApiClient
+            .Setup(x => x.GetGameAsync(TestAlias, TestGameId))
+            .ReturnsAsync(successResult);
+        var sut = ResolveSut();
+
+        // Act
+        await sut.LoadGameAsync(TestAlias, TestGameId);
+
+        // Assert
+        _mockLocalStorageService.Verify(x => x.SaveGameStateAsync(expectedGame), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task LoadGameAsync_WithEmptyOrNullAlias_ThrowsArgumentException(string alias)
     {
         // Arrange
         var sut = ResolveSut();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.LoadGameAsync(string.Empty, TestGameId));
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.LoadGameAsync(alias, TestGameId));
 
         // Assert
         exception.Message.Should().Be("Alias not set.");
     }
 
-    [Fact]
-    public async Task LoadGameAsync_WithEmptyGameId_ThrowsArgumentException()
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task LoadGameAsync_WithEmptyOrNullGameId_ThrowsArgumentException(string gameId)
     {
         // Arrange
         var sut = ResolveSut();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.LoadGameAsync(TestAlias, string.Empty));
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.LoadGameAsync(TestAlias, gameId));
 
         // Assert
         exception.Message.Should().Be("Game ID not set.");
@@ -368,6 +375,26 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         _mockGameApiClient
             .Setup(x => x.GetGameAsync(TestAlias, TestGameId))
             .ReturnsAsync(failureResult);
+        var sut = ResolveSut();
+
+        // Act
+        var exception = await Assert.ThrowsAsync<Exception>(() => sut.LoadGameAsync(TestAlias, TestGameId));
+
+        // Assert
+        exception.Message.Should().Be("Failed to load game.");
+    }
+
+    [Fact]
+    public async Task LoadGameAsync_WhenApiReturnsNull_ThrowsException()
+    {
+        // Arrange
+        _mockLocalStorageService
+            .Setup(x => x.LoadGameAsync(TestGameId))
+            .ReturnsAsync((GameModel)null!);
+        var successResult = ApiResult<GameModel>.Success(null!);
+        _mockGameApiClient
+            .Setup(x => x.GetGameAsync(TestAlias, TestGameId))
+            .ReturnsAsync(successResult);
         var sut = ResolveSut();
 
         // Act
@@ -401,7 +428,7 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         var expectedGames = new List<GameModel> { CreateTestGameModel() };
         _mockLocalStorageService
             .Setup(x => x.LoadGameStatesAsync())
-            .ReturnsAsync(new List<GameModel>());
+            .ReturnsAsync([]);
         var successResult = ApiResult<List<GameModel>>.Success(expectedGames);
         _mockGameApiClient
             .Setup(x => x.GetAllGamesAsync(TestAlias))
@@ -422,7 +449,7 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         var expectedGames = new List<GameModel> { CreateTestGameModel() };
         _mockLocalStorageService
             .Setup(x => x.LoadGameStatesAsync())
-            .ReturnsAsync(new List<GameModel>());
+            .ReturnsAsync([]);
         var successResult = ApiResult<List<GameModel>>.Success(expectedGames);
         _mockGameApiClient
             .Setup(x => x.GetAllGamesAsync(TestAlias))
@@ -436,14 +463,16 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         _mockLocalStorageService.Verify(x => x.SaveGameStateAsync(expectedGames[0]), Times.Once);
     }
 
-    [Fact]
-    public async Task LoadGamesAsync_WithEmptyAlias_ThrowsArgumentException()
+    [Theory]
+    [InlineData("")]
+    [InlineData(null)]
+    public async Task LoadGamesAsync_WithEmptyOrNullAlias_ThrowsArgumentException(string alias)
     {
         // Arrange
         var sut = ResolveSut();
 
         // Act
-        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.LoadGamesAsync(string.Empty));
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => sut.LoadGamesAsync(alias));
 
         // Assert
         exception.Message.Should().Be("Alias not set.");
@@ -455,11 +484,31 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         // Arrange
         _mockLocalStorageService
             .Setup(x => x.LoadGameStatesAsync())
-            .ReturnsAsync(new List<GameModel>());
+            .ReturnsAsync([]);
         var failureResult = ApiResult<List<GameModel>>.Failure("API Error");
         _mockGameApiClient
             .Setup(x => x.GetAllGamesAsync(TestAlias))
             .ReturnsAsync(failureResult);
+        var sut = ResolveSut();
+
+        // Act
+        var exception = await Assert.ThrowsAsync<Exception>(() => sut.LoadGamesAsync(TestAlias));
+
+        // Assert
+        exception.Message.Should().Be("Failed to load games.");
+    }
+
+    [Fact]
+    public async Task LoadGamesAsync_WhenApiReturnsNull_ThrowsException()
+    {
+        // Arrange
+        _mockLocalStorageService
+            .Setup(x => x.LoadGameStatesAsync())
+            .ReturnsAsync([]);
+        var successResult = ApiResult<List<GameModel>>.Success(null!);
+        _mockGameApiClient
+            .Setup(x => x.GetAllGamesAsync(TestAlias))
+            .ReturnsAsync(successResult);
         var sut = ResolveSut();
 
         // Act
@@ -538,6 +587,17 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
     }
 
     [Fact]
+    public async Task ResetGameAsync_WithNullGame_ThrowsNullReferenceException()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        SetGameProperty(sut, null);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<NullReferenceException>(() => sut.ResetGameAsync());
+    }
+
+    [Fact]
     public async Task SaveGameAsync_SavesGameSuccessfully()
     {
         // Arrange
@@ -613,6 +673,17 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exception>(() => sut.UndoGameAsync());
         exception.Message.Should().Be("Failed to undo move.");
+    }
+
+    [Fact]
+    public async Task UndoGameAsync_WithNullGame_ThrowsNullReferenceException()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        SetGameProperty(sut, null);
+
+        // Act & Assert
+        await Assert.ThrowsAsync<NullReferenceException>(() => sut.UndoGameAsync());
     }
 
     private static GameModel CreateTestGameModel()
