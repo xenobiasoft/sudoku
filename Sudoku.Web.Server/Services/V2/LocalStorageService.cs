@@ -46,7 +46,14 @@ public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageSer
             return [];
         }
 
-        return JsonSerializer.Deserialize<List<GameModel>>(json) ?? [];
+        try
+        {
+            return JsonSerializer.Deserialize<List<GameModel>>(json) ?? [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
     }
 
     public async Task SaveGameStateAsync(GameModel gameState)
