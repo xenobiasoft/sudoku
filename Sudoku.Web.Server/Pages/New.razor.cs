@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Sudoku.Web.Server.Services.Abstractions;
-using XenobiaSoft.Sudoku.Extensions;
+using Sudoku.Web.Server.Services.Abstractions.V2;
 
 namespace Sudoku.Web.Server.Pages;
 
@@ -10,9 +9,8 @@ public partial class New
 
     [Parameter] public string Difficulty { get; set; } = "Easy";
     [Inject] public required NavigationManager Navigation { get; set; }
-    [Inject] public required ISudokuGame SudokuGame { get; set; }
     [Inject] public required IGameManager GameManager { get; set; }
-    [Inject] public required IAliasService AliasService { get; set; }
+    [Inject] public required IPlayerManager PlayerManager { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -21,9 +19,8 @@ public partial class New
 
     private async Task StartNewGameAsync()
     {
-        var alias = await AliasService.GetAliasAsync();
-        var gameState = await SudokuGame.NewGameAsync(alias, Difficulty.ParseLevel());
-        await GameManager.SaveGameAsync(gameState);
-        Navigation.NavigateTo($"/game/{gameState.PuzzleId}");
+        var alias = await PlayerManager.GetCurrentPlayerAsync();
+        var gameState = await GameManager.CreateGameAsync(alias, Difficulty);
+        Navigation.NavigateTo($"/game/{gameState.Id}");
     }
 }
