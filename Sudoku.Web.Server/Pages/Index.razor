@@ -24,7 +24,7 @@
                 <ul class="sub-menu @(_showSavedGames ? "open" : "")">
                     @if (_savedGames != null)
                     {
-                        foreach (var game in _savedGames.OrderByDescending(g => g.LastUpdated))
+                        foreach (var game in _savedGames.OrderBy(g => g.CreatedAt))
                         {
                             <li>
                                 <GameThumbnail Game="@game" OnDeleteGame="@DeleteGameAsync" OnLoadGame="@LoadGame" />
