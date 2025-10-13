@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Sudoku.Web.Server.Services.Abstractions;
-using XenobiaSoft.Sudoku.GameState;
+using Sudoku.Web.Server.Models;
+using Sudoku.Web.Server.Services.Abstractions.V2;
 using IndexPage = Sudoku.Web.Server.Pages.Index;
 
 namespace UnitTests.Web.Pages;
@@ -9,33 +9,19 @@ public class IndexPageTests : TestContext
 {
     private const string Alias = "test-alias";
     private readonly Mock<IGameManager> _mockGameManager = new();
-    private readonly Mock<IAliasService> _mockAliasService = new();
+    private readonly Mock<IPlayerManager> _mockPlayerManager = new();
 
     public IndexPageTests()
     {
-        var savedGames = new List<GameStateMemory>
+        var savedGames = new List<GameModel>
         {
-            new() { Board = [], LastUpdated = DateTime.UtcNow.AddMinutes(-10), PuzzleId = Guid.NewGuid().ToString() },
-            new() { Board = [], LastUpdated = DateTime.UtcNow.AddMinutes(-5), PuzzleId = Guid.NewGuid().ToString() }
+            new() { Id = Guid.NewGuid().ToString(), Alias = Alias},
+            new() { Id = Guid.NewGuid().ToString(), Alias = Alias},
         };
         _mockGameManager.SetupLoadGamesAsync(savedGames);
-        _mockAliasService.Setup(x => x.GetAliasAsync()).ReturnsAsync(Alias);
+        _mockPlayerManager.SetupGetCurrentPlayerAsync(Alias);
         Services.AddSingleton(_mockGameManager.Object);
-        Services.AddSingleton(_mockAliasService.Object);
-    }
-
-    [Fact]
-    public void DeleteGame_WhenClicked_RemovesGameFromGameStateManager()
-    {
-        // Arrange
-        var component = RenderComponent<IndexPage>();
-        var delGameElement = component.Find(".del-game-icon");
-
-        // Act
-        delGameElement.Click();
-
-        // Assert
-        _mockGameManager.VerifyDeleteGameAsyncCalled(Times.Once);
+        Services.AddSingleton(_mockPlayerManager.Object);
     }
 
     [Fact]
@@ -50,6 +36,20 @@ public class IndexPageTests : TestContext
 
         // Assert
         component.FindAll(".del-game-icon").Count.Should().Be(1);
+    }
+
+    [Fact]
+    public void DeleteGame_WhenClicked_RemovesGameFromGameStateManager()
+    {
+        // Arrange
+        var component = RenderComponent<IndexPage>();
+        var delGameElement = component.Find(".del-game-icon");
+
+        // Act
+        delGameElement.Click();
+
+        // Assert
+        _mockGameManager.VerifyDeleteGameAsyncCalled(Times.Once);
     }
 
     [Fact]
@@ -98,10 +98,8 @@ public class IndexPageTests : TestContext
     public void ShowsSavedGames_WhenLoadGameClicked()
     {
         // Arrange
-        var savedGames = new List<GameStateMemory>
+        var savedGames = new List<GameModel>
         {
-            new() { Board = [], LastUpdated = DateTime.UtcNow.AddMinutes(-10), PuzzleId = Guid.NewGuid().ToString() },
-            new() {Board =[], LastUpdated = DateTime.UtcNow.AddMinutes(-5), PuzzleId = Guid.NewGuid().ToString()}
         };
         _mockGameManager.SetupLoadGamesAsync(savedGames);
         var component = RenderComponent<IndexPage>();

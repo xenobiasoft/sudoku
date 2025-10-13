@@ -5,6 +5,26 @@ namespace UnitTests.Mocks;
 
 public static class MockGameManagerV2Extensions
 {
+    public static void SetupCreateGameAsync(this Mock<IGameManager> mock, string alias, string difficulty)
+    {
+        var game = new GameModel
+        {
+            Id = Guid.NewGuid().ToString(),
+            PlayerAlias = alias,
+            Difficulty = difficulty,
+            Status = "New",
+            Statistics = new(),
+            CreatedAt = DateTime.UtcNow,
+            StartedAt = null,
+            CompletedAt = null,
+            PausedAt = null,
+            Cells = []
+        };
+        mock
+            .Setup(x => x.CreateGameAsync(alias, difficulty))
+            .ReturnsAsync(game);
+    }
+
     public static void SetupLoadGameAsync(this Mock<IGameManager> mock, GameModel game)
     {
         mock
