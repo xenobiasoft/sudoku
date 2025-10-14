@@ -15,6 +15,8 @@ namespace Sudoku.Web.Server
                 .AddScoped<AbstractionsV2.ILocalStorageService, ServicesV2.LocalStorageService>()
                 .AddScoped<AbstractionsV2.IGameStateManager, ServicesV2.GameManager>()
                 .AddScoped<AbstractionsV2.IGameStatisticsManager, ServicesV2.GameManager>()
+                .AddScoped<AbstractionsV2.IGameManager, ServicesV2.GameManager>()
+                .AddScoped<AbstractionsV2.IPlayerManager, ServicesV2.PlayerManager>()
                 .AddScoped<IJsRuntimeWrapper, JsRuntimeWrapper>()
                 .AddScoped<IGameTimer>(sp => new GameTimer(TimeSpan.FromSeconds(1)))
                 .AddScoped<IPlayerApiClient, PlayerApiClient>()
