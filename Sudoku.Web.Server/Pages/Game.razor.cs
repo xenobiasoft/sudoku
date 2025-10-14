@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Sudoku.Web.Server.EventArgs;
-using Sudoku.Web.Server.Services.Abstractions;
-using XenobiaSoft.Sudoku.GameState;
+using Sudoku.Web.Server.Models;
+using Sudoku.Web.Server.Services.Abstractions.V2;
 
 namespace Sudoku.Web.Server.Pages;
 
@@ -13,11 +13,11 @@ public partial class Game
     [Parameter] public string? PuzzleId { get; set; }
     [Inject] public required INotificationService NotificationService { get; set; }
     [Inject] public required IGameManager GameManager { get; set; }
-    [Inject] public required IAliasService AliasService { get; set; }
+    [Inject] public required IPlayerManager PlayerManager { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
 
-    private ISudokuPuzzle Puzzle { get; set; } = new SudokuPuzzle();
-    public Cell SelectedCell { get; private set; } = new(0, 0);
+    private GameModel CurrentGame => GameManager.Game;
+    public CellModel SelectedCell { get; private set; } = new();
     private bool IsPencilMode { get; set; }
     private string Alias { get; set; } = string.Empty;
 
@@ -42,10 +42,9 @@ public partial class Game
 
     private async Task LoadGameStateAsync()
     {
-        Alias = await AliasService.GetAliasAsync();
-        var gameState = await GameManager.LoadGameAsync(Alias, PuzzleId!);
-        await GameManager.StartNewSession(gameState!);
-        Puzzle.Load(gameState);
+        Alias = await PlayerManager.GetCurrentPlayerAsync();
+        await GameManager.LoadGameAsync(Alias!, PuzzleId!);
+        await GameManager.StartNewSession();
     }
 
     private void NotifyGameStart()
@@ -60,7 +59,7 @@ public partial class Game
         _locationChangingRegistration?.Dispose();
     }
 
-    private void HandleSetSelectedCell(Cell cell)
+    private void HandleSetSelectedCell(CellModel cell)
     {
         SelectedCell = cell;
         StateHasChanged();
@@ -68,47 +67,51 @@ public partial class Game
 
     public async Task HandleReset()
     {
-        await UpdateGameStateAsync(() => GameManager.ResetGameAsync(Alias, PuzzleId!));
+        await UpdateGameStateAsync(() => GameManager.ResetGameAsync());
     }
 
     public async Task HandleUndo()
     {
-        await UpdateGameStateAsync(() => GameManager.UndoGameAsync(Alias, PuzzleId!));
+        await UpdateGameStateAsync(() => GameManager.UndoGameAsync());
     }
 
-    private async Task UpdateGameStateAsync(Func<Task<GameStateMemory>> stateUpdateAction)
+    private async Task UpdateGameStateAsync(Func<Task<GameModel>> action)
     {
         await GameManager.PauseSession();
-        var gameState = await stateUpdateAction();
-        GameManager.ResumeSession(gameState);
-        Puzzle.Load(gameState);
+        _ = await action();
+        await GameManager.ResumeSession();
         StateHasChanged();
     }
 
-    private Task HandleCellChanged(CellChangedEventArgs args) =>
-        HandleCellUpdate(args.Row, args.Column, args.Value);
+    private Task HandleCellChanged(CellChangedEventArgs args) => HandleCellUpdate(args.Row, args.Column, args.Value);
 
-    private Task HandleCellValueChanged(CellValueChangedEventArgs args) =>
-        HandleCellUpdate(SelectedCell.Row, SelectedCell.Column, args.Value);
+    private Task HandleCellValueChanged(CellValueChangedEventArgs args) => HandleCellUpdate(SelectedCell.Row, SelectedCell.Column, args.Value);
 
     private async Task HandleCellUpdate(int row, int column, int? value)
     {
-        UpdatePuzzleCell(row, column, value);
+        UpdateGameCell(row, column, value);
         await ValidateAndUpdateGameState();
     }
 
-    private void UpdatePuzzleCell(int row, int column, int? value)
+    private void UpdateGameCell(int row, int column, int? value)
     {
-        Puzzle.SetCell(row, column, value);
-        var isValid = Puzzle.IsValid();
-        NotificationService.NotifyInvalidCells(Puzzle.Validate().ToList());
+        var cell = CurrentGame.Cells.FirstOrDefault(c => c.Row == row && c.Column == column);
+        if (cell != null)
+        {
+            cell.Value = value;
+            cell.HasValue = value.HasValue;
+        }
+
+        var invalidCells = CurrentGame.Validate();
+        NotificationService.NotifyInvalidCells(invalidCells);
     }
 
     private async Task ValidateAndUpdateGameState()
     {
-        await GameManager.RecordMove(Puzzle.IsValid());
+        var isValid = CurrentGame.IsValid();
+        await GameManager.RecordMove(isValid);
 
-        if (Puzzle.IsSolved())
+        if (CurrentGame.IsSolved())
         {
             await HandleGameCompletion();
         }

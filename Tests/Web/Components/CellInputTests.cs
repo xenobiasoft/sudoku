@@ -1,9 +1,10 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Sudoku.Domain.ValueObjects;
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.EventArgs;
-using Sudoku.Web.Server.Services.Abstractions;
-using UnitTests.Helpers;
-using XenobiaSoft.Sudoku;
+using Sudoku.Web.Server.Models;
+using Sudoku.Web.Server.Services.Abstractions.V2;
+using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Web.Components;
 
@@ -16,61 +17,15 @@ public class CellInputTests : TestContext
         Services.AddSingleton(_mockNotificationService.Object);
     }
 
-	[Fact]
-	public void RenderingCellInput_WhenCellIsLocked_RendersLabel()
-	{
-		// Arrange
-        var cell = new Cell(0, 0)
-        {
-			Locked = true,
-			Value = 4
-        };
-
-		// Act
-        var renderComponent = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
-
-		// Assert
-        renderComponent.MarkupMatches("<td class=\"cell\"><label tabindex=\"0\" class=\"\">4</label></td>");
-    }
-
-    [Fact]
-    public void RenderingCellInput_WhenCellIsNotLocked_RendersInput()
-    {
-        // Arrange
-        var cell = new Cell(0, 0)
-        {
-            Locked = false,
-            Value = 7
-        };
-
-        // Act
-        var renderedComponent = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
-
-        // Assert
-        renderedComponent.MarkupMatches(@"
-                                           <td class=""cell"">
-                                              <div class=""pencil-values"">
-                                                  <span class=""pencil-entry""></span>
-                                                  <span class=""pencil-entry""></span>
-                                                  <span class=""pencil-entry""></span>
-                                                  <span class=""pencil-entry""></span>
-                                                  <span class=""pencil-entry""></span>
-                                                  <span class=""pencil-entry""></span>
-                                                  <span class=""pencil-entry""></span>
-                                                  <span class=""pencil-entry""></span>
-                                                  <span class=""pencil-entry""></span>
-                                              </div>
-                                              <input class="""" type=""text"" maxlength=""1"" readonly="""" value=""7"">
-                                          </td>");
-    }
-
     [Fact]
     public async Task CellFocusNotify_WhenCellIsInRowColumnOrMiniGrid_HighlightsCell()
     {
         // Arrange
-        var cell = new Cell(0, 0)
+        var cell = new CellModel
         {
-            Locked = false,
+            Row = 0,
+            Column = 0,
+            IsFixed = false,
             Value = 7
         };
         var renderedCell = RenderComponent<CellInput>(x => x
@@ -102,98 +57,14 @@ public class CellInputTests : TestContext
     }
 
     [Fact]
-    public async Task InvalidCellNotify_WhenCellIncludedInInvalidListOfCells_MarksInvalid()
-    {
-        // Arrange
-        var cell = new Cell(0, 0)
-        {
-            Locked = false,
-            Value = 7
-        };
-        var invalidCells = new List<Cell> { cell };
-        var renderedCell = RenderComponent<CellInput>(x => x
-            .Add(p => p.Cell, cell));
-        _mockNotificationService
-            .Setup(x => x.NotifyInvalidCells(invalidCells))
-            .Raises(x => x.InvalidCellsNotified += null, this, invalidCells);
-
-        // Act
-        await renderedCell.InvokeAsync(() => _mockNotificationService.Object.NotifyInvalidCells(invalidCells));
-        renderedCell.Render();
-
-        // Assert
-        renderedCell.MarkupMatches(@"
-                                      <td class=""cell"">
-                                         <div class=""pencil-values"">
-                                             <span class=""pencil-entry""></span>
-                                             <span class=""pencil-entry""></span>
-                                             <span class=""pencil-entry""></span>
-                                             <span class=""pencil-entry""></span>
-                                             <span class=""pencil-entry""></span>
-                                             <span class=""pencil-entry""></span>
-                                             <span class=""pencil-entry""></span>
-                                             <span class=""pencil-entry""></span>
-                                             <span class=""pencil-entry""></span>
-                                         </div>
-                                         <input class=""invalid"" type=""text"" maxlength=""1"" readonly="""" value=""7"">
-                                     </td>");
-    }
-
-    [Fact]
-    public void CellInput_WhenValueChangedNotInPencilMode_RaisesCellChangedEvent()
-    {
-        // Arrange
-        var calledArgs = (CellChangedEventArgs)null!;
-        var cellInput = RenderComponent<CellInput>(x => x
-            .Add(c => c.Cell, new Cell(1, 2))
-            .Add(c => c.Puzzle, PuzzleFactory.GetPuzzle(GameDifficulty.Easy))
-            .Add(c => c.OnCellChanged, args => calledArgs = args)
-            .Add(c => c.IsPencilMode, false));
-
-        // Act
-        cellInput.Find("input").KeyPress(Key.NumberPad5);
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            calledArgs.Should().NotBeNull();
-            calledArgs.Row.Should().Be(1);
-            calledArgs.Column.Should().Be(2);
-            calledArgs.Value.Should().Be(5);
-        });
-    }
-
-    [Fact]
-    public void CellInput_WhenValueChangedInPencilMode_RaisesCellChangedEvent()
-    {
-        // Arrange
-        var calledArgs = (CellPossibleValueChangedEventArgs)null!;
-        var cellInput = RenderComponent<CellInput>(x => x
-            .Add(c => c.Cell, new Cell(1, 2))
-            .Add(c => c.Puzzle, PuzzleFactory.GetPuzzle(GameDifficulty.Easy))
-            .Add(c => c.OnPossibleValueChanged, args => calledArgs = args)
-            .Add(c => c.IsPencilMode, true));
-
-        // Act
-        cellInput.Find("input").KeyPress(Key.NumberPad5);
-
-        // Assert
-        Assert.Multiple(() =>
-        {
-            calledArgs.Should().NotBeNull();
-            calledArgs.Row.Should().Be(1);
-            calledArgs.Column.Should().Be(2);
-            calledArgs.Value.Should().Be(5);
-        });
-    }
-
-    [Fact]
     public void CellInput_WhenPossibleNumbersEntered_DisplaysInCell()
     {
         // Arrange
-        var cell = new Cell(0, 0)
+        var cell = new CellModel
         {
-            Locked = false,
+            Row = 0,
+            Column = 0,
+            IsFixed = false,
             PossibleValues = [1,2,7]
         };
 
@@ -216,6 +87,54 @@ public class CellInputTests : TestContext
                                               </div>
                                               <input class="""" type=""text"" maxlength=""1"" readonly="""">
                                           </td>");
+    }
+
+    [Fact]
+    public void CellInput_WhenValueChangedInPencilMode_RaisesCellChangedEvent()
+    {
+        // Arrange
+        var calledArgs = (CellPossibleValueChangedEventArgs)null!;
+        var cellInput = RenderComponent<CellInput>(x => x
+            .Add(c => c.Cell, new CellModel{ Row = 1, Column = 2 })
+            .Add(c => c.CurrentGame, GameModelFactory.GetPuzzle(GameDifficulty.Easy))
+            .Add(c => c.OnPossibleValueChanged, args => calledArgs = args)
+            .Add(c => c.IsPencilMode, true));
+
+        // Act
+        cellInput.Find("input").KeyPress(Key.NumberPad5);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            calledArgs.Should().NotBeNull();
+            calledArgs.Row.Should().Be(1);
+            calledArgs.Column.Should().Be(2);
+            calledArgs.Value.Should().Be(5);
+        });
+    }
+
+    [Fact]
+    public void CellInput_WhenValueChangedNotInPencilMode_RaisesCellChangedEvent()
+    {
+        // Arrange
+        var calledArgs = (CellChangedEventArgs)null!;
+        var cellInput = RenderComponent<CellInput>(x => x
+            .Add(c => c.Cell, new CellModel { Row = 1, Column = 2 })
+            .Add(c => c.CurrentGame, GameModelFactory.GetPuzzle(GameDifficulty.Easy))
+            .Add(c => c.OnCellChanged, args => calledArgs = args)
+            .Add(c => c.IsPencilMode, false));
+
+        // Act
+        cellInput.Find("input").KeyPress(Key.NumberPad5);
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            calledArgs.Should().NotBeNull();
+            calledArgs.Row.Should().Be(1);
+            calledArgs.Column.Should().Be(2);
+            calledArgs.Value.Should().Be(5);
+        });
     }
 
     [Fact]
@@ -252,9 +171,11 @@ public class CellInputTests : TestContext
               </div>
               <input class="""" type=""text"" maxlength=""1"" readonly="""" value=""7"">
           </td>";
-        var cell = new Cell(0, 0)
+        var cell = new CellModel
         {
-            Locked = false,
+            Row = 0,
+            Column = 0,
+            IsFixed = false,
             PossibleValues = [1, 2, 7]
         };
         var cellInput = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
@@ -265,5 +186,97 @@ public class CellInputTests : TestContext
 
         // Assert
         cellInput.MarkupMatches(expectedAfter);
+    }
+
+    [Fact]
+    public async Task InvalidCellNotify_WhenCellIncludedInInvalidListOfCells_MarksInvalid()
+    {
+        // Arrange
+        var cell = new CellModel
+        {
+            Row = 0,
+            Column = 0,
+            IsFixed = false,
+            Value = 7
+        };
+        var invalidCells = new List<CellModel> { cell };
+        var renderedCell = RenderComponent<CellInput>(x => x
+            .Add(p => p.Cell, cell));
+        _mockNotificationService
+            .Setup(x => x.NotifyInvalidCells(invalidCells))
+            .Raises(x => x.InvalidCellsNotified += null, this, invalidCells);
+
+        // Act
+        await renderedCell.InvokeAsync(() => _mockNotificationService.Object.NotifyInvalidCells(invalidCells));
+        renderedCell.Render();
+
+        // Assert
+        renderedCell.MarkupMatches(@"
+                                      <td class=""cell"">
+                                         <div class=""pencil-values"">
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                             <span class=""pencil-entry""></span>
+                                         </div>
+                                         <input class=""invalid"" type=""text"" maxlength=""1"" readonly="""" value=""7"">
+                                     </td>");
+    }
+
+    [Fact]
+	public void RenderingCellInput_WhenCellIsLocked_RendersLabel()
+	{
+		// Arrange
+        var cell = new CellModel
+        {
+            Row = 0,
+            Column = 0,
+            IsFixed = true,
+			Value = 4
+        };
+
+		// Act
+        var renderComponent = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
+
+		// Assert
+        renderComponent.MarkupMatches("<td class=\"cell\"><label tabindex=\"0\" class=\"\">4</label></td>");
+    }
+
+    [Fact]
+    public void RenderingCellInput_WhenCellIsNotLocked_RendersInput()
+    {
+        // Arrange
+        var cell = new CellModel
+        {
+            Row = 0,
+            Column = 0,
+            IsFixed = false,
+            Value = 7
+        };
+
+        // Act
+        var renderedComponent = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
+
+        // Assert
+        renderedComponent.MarkupMatches(@"
+                                           <td class=""cell"">
+                                              <div class=""pencil-values"">
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                                  <span class=""pencil-entry""></span>
+                                              </div>
+                                              <input class="""" type=""text"" maxlength=""1"" readonly="""" value=""7"">
+                                          </td>");
     }
 }

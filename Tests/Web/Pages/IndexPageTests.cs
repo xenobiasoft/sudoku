@@ -15,8 +15,8 @@ public class IndexPageTests : TestContext
     {
         var savedGames = new List<GameModel>
         {
-            new() { Id = Guid.NewGuid().ToString(), Alias = Alias},
-            new() { Id = Guid.NewGuid().ToString(), Alias = Alias},
+            new() { Id = Guid.NewGuid().ToString(), PlayerAlias = Alias},
+            new() { Id = Guid.NewGuid().ToString(), PlayerAlias = Alias},
         };
         _mockGameManager.SetupLoadGamesAsync(savedGames);
         _mockPlayerManager.SetupGetCurrentPlayerAsync(Alias);

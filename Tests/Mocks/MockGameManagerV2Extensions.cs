@@ -28,7 +28,7 @@ public static class MockGameManagerV2Extensions
     public static void SetupLoadGameAsync(this Mock<IGameManager> mock, GameModel game)
     {
         mock
-            .Setup(x => x.LoadGameAsync(game.Alias, It.IsAny<string>()))
+            .Setup(x => x.LoadGameAsync(game.PlayerAlias, It.IsAny<string>()))
             .ReturnsAsync(game);
     }
 

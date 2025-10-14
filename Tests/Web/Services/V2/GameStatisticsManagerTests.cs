@@ -21,7 +21,6 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         _testGame = new GameModel
         {
             Id = "test-game-id",
-            Alias = "test-alias",
             PlayerAlias = "test-player",
             Difficulty = "Easy",
             Status = "InProgress",

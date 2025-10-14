@@ -48,7 +48,7 @@ public partial class GameManager(ILocalStorageService localStorageService, IGame
             throw new Exception("No game loaded.");
         }
 
-        await DeleteGameAsync(Game.Alias, Game.Id);
+        await DeleteGameAsync(Game.PlayerAlias, Game.Id);
         Game = null;
     }
 
@@ -132,13 +132,13 @@ public partial class GameManager(ILocalStorageService localStorageService, IGame
 
     public async Task<GameModel> ResetGameAsync()
     {
-        var resetResponse = await gameApiClient.ResetGameAsync(Game.Alias, Game.Id);
+        var resetResponse = await gameApiClient.ResetGameAsync(Game.PlayerAlias, Game.Id);
         if (!resetResponse.IsSuccess)
         {
             throw new Exception("Failed to reset game.");
         }
 
-        Game = await LoadGameAsync(Game.Alias, Game.Id, forceRefresh: true);
+        Game = await LoadGameAsync(Game.PlayerAlias, Game.Id, forceRefresh: true);
 
         return Game;
     }
@@ -156,13 +156,13 @@ public partial class GameManager(ILocalStorageService localStorageService, IGame
             return Game;
         }
 
-        var response = await gameApiClient.UndoMoveAsync(Game.Alias, Game.Id);
+        var response = await gameApiClient.UndoMoveAsync(Game.PlayerAlias, Game.Id);
         if (!response.IsSuccess)
         {
             throw new Exception("Failed to undo move.");
         }
 
-        Game = await LoadGameAsync(Game.Alias, Game.Id, forceRefresh: true);
+        Game = await LoadGameAsync(Game.PlayerAlias, Game.Id, forceRefresh: true);
 
         return Game;
     }

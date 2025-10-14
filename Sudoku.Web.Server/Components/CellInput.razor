@@ -1,5 +1,5 @@
 ﻿<td class="cell">
-    @if (Cell.Locked)
+    @if (Cell.IsFixed)
     {
         <label @ref="_element" class="@CssClass" @onkeypress="KeyPressAsync" @onfocus="OnFocus" tabindex="0">@Cell.Value</label>
     }

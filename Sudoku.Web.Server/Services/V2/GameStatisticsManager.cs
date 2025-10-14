@@ -1,4 +1,5 @@
 ﻿using Sudoku.Web.Server.Models;
+using Sudoku.Web.Server.Services.Abstractions;
 using Sudoku.Web.Server.Services.Abstractions.V2;
 
 namespace Sudoku.Web.Server.Services.V2;
@@ -15,10 +16,12 @@ namespace Sudoku.Web.Server.Services.V2;
 /// state.</remarks>
 public partial class GameManager : IGameStatisticsManager
 {
+    public IGameTimer Timer => gameTimer;
+
     /// <summary>
     /// Gets the current game statistics.
     /// </summary>
-    public GameStatisticsModel CurrentStatistics => Game!.Statistics;
+    public GameStatisticsModel CurrentStatistics => Game?.Statistics!;
 
     /// <summary>
     /// Ends the current session asynchronously.

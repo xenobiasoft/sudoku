@@ -9,7 +9,6 @@ using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 using UnitTests.Helpers.Builders;
 using UnitTests.Helpers.Factories;
-using UnitTests.Mocks;
 
 namespace UnitTests.Application.Handlers;
 
@@ -65,7 +64,7 @@ public class ValidateGameQueryHandlerTests : BaseTestByAbstraction<ValidateGameQ
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        result.Error.Should().Be("Puzzle is not valid");
+        result.Error.Should().Be("Game is not valid");
     }
 
     [Fact]

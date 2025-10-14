@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Sudoku.Web.Server.Services.Abstractions;
+using Sudoku.Web.Server.Services.Abstractions.V2;
 
 namespace Sudoku.Web.Server.Components;
 
 public partial class GameStats : ComponentBase, IDisposable
 {
-    [Parameter] public required IGameSession Session { get; set; } = null!;
+    [Parameter] public required IGameStatisticsManager GameManager { get; set; }
 
     private int _totalMoves;
     private int _invalidMoves;
@@ -24,16 +24,12 @@ public partial class GameStats : ComponentBase, IDisposable
 
     private void SubscribeToSessionEvents()
     {
-        if (Session.IsNull) return;
-
-        Session.Timer.OnTick += OnTimerTick;
+        GameManager.Timer.OnTick += OnTimerTick;
     }
 
     private void UnsubscribeFromSessionEvents()
     {
-        if (Session.IsNull) return;
-
-        Session.Timer.OnTick -= OnTimerTick;
+        GameManager.Timer.OnTick -= OnTimerTick;
     }
 
     private void OnTimerTick(object? sender, TimeSpan elapsedTime)
@@ -61,10 +57,8 @@ public partial class GameStats : ComponentBase, IDisposable
 
     private void UpdateStats()
     {
-        if (Session.IsNull) return;
-
-        _invalidMoves = Session.GameState.InvalidMoves;
-        _totalMoves = Session.GameState.TotalMoves;
-        _playDuration = Session.GameState.PlayDuration;
+        _invalidMoves = GameManager.CurrentStatistics.InvalidMoves;
+        _totalMoves = GameManager.CurrentStatistics.TotalMoves;
+        _playDuration = GameManager.CurrentStatistics.PlayDuration;
     }
 }

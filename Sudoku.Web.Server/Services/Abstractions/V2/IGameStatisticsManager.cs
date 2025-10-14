@@ -4,6 +4,8 @@ namespace Sudoku.Web.Server.Services.Abstractions.V2;
 
 public interface IGameStatisticsManager
 {
+    IGameTimer Timer { get; }
+
     /// <summary>
     /// Gets the current game statistics, including metrics such as score, time played, and other relevant data.
     /// </summary>

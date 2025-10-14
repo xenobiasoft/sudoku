@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Sudoku.Web.Server.EventArgs;
-using Sudoku.Web.Server.Services.Abstractions;
+using Sudoku.Web.Server.Models;
+using Sudoku.Web.Server.Services.Abstractions.V2;
 
 namespace Sudoku.Web.Server.Components;
 
@@ -10,11 +11,11 @@ public partial class CellInput : IDisposable
     [Inject] private INotificationService? NotificationService { get; set; }
 
     [Parameter] public bool IsPencilMode { get; set; }
-    [Parameter] public Cell Cell { get; set; } = new(0, 0);
-    [Parameter] public EventCallback<Cell> OnCellFocus { get; set; }
+    [Parameter] public CellModel Cell { get; set; } = new();
+    [Parameter] public EventCallback<CellModel> OnCellFocus { get; set; }
     [Parameter] public EventCallback<CellChangedEventArgs> OnCellChanged { get; set; }
     [Parameter] public EventCallback<CellPossibleValueChangedEventArgs> OnPossibleValueChanged { get; set; }
-    [Parameter] public ISudokuPuzzle? Puzzle { get; set; }
+    [Parameter] public GameModel? CurrentGame { get; set; }
 
     private string CssClass { get; set; } = string.Empty;
 
@@ -26,12 +27,12 @@ public partial class CellInput : IDisposable
         NotificationService!.InvalidCellsNotified += HandleInvalidCells;
     }
 
-    private void HandleInvalidCells(object? sender, IEnumerable<Cell> e)
+    private void HandleInvalidCells(object? sender, IEnumerable<CellModel> e)
     {
         CssClass = e.Contains(Cell) ? "invalid" : string.Empty;
     }
 
-    private void HandleCellSetFocus(object? sender, Cell e)
+    private void HandleCellSetFocus(object? sender, CellModel e)
     {
         if (Cell == e)
         {
@@ -53,7 +54,7 @@ public partial class CellInput : IDisposable
         NotificationService!.InvalidCellsNotified -= HandleInvalidCells;
     }
 
-    private bool ShouldHighlight(Cell? cell)
+    private bool ShouldHighlight(CellModel? cell)
     {
         return cell != null &&
                (Cell.Row == cell.Row ||

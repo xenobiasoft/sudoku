@@ -129,7 +129,7 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         var game = CreateTestGameModel();
         var successResult = ApiResult<bool>.Success(true);
         _mockGameApiClient
-            .Setup(x => x.DeleteGameAsync(game.Alias, game.Id))
+            .Setup(x => x.DeleteGameAsync(game.PlayerAlias, game.Id))
             .ReturnsAsync(successResult);
         var sut = ResolveSut();
         SetGameProperty(sut, game);
@@ -148,7 +148,7 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         var game = CreateTestGameModel();
         var successResult = ApiResult<bool>.Success(true);
         _mockGameApiClient
-            .Setup(x => x.DeleteGameAsync(game.Alias, game.Id))
+            .Setup(x => x.DeleteGameAsync(game.PlayerAlias, game.Id))
             .ReturnsAsync(successResult);
         var sut = ResolveSut();
         SetGameProperty(sut, game);
@@ -157,7 +157,7 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         await sut.DeleteGameAsync();
 
         // Assert
-        _mockGameApiClient.Verify(x => x.DeleteGameAsync(game.Alias, game.Id), Times.Once);
+        _mockGameApiClient.Verify(x => x.DeleteGameAsync(game.PlayerAlias, game.Id), Times.Once);
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         var game = CreateTestGameModel();
         var successResult = ApiResult<bool>.Success(true);
         _mockGameApiClient
-            .Setup(x => x.DeleteGameAsync(game.Alias, game.Id))
+            .Setup(x => x.DeleteGameAsync(game.PlayerAlias, game.Id))
             .ReturnsAsync(successResult);
         var sut = ResolveSut();
         SetGameProperty(sut, game);
@@ -527,10 +527,10 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         var successResult = ApiResult<bool>.Success(true);
         var gameResult = ApiResult<GameModel>.Success(resetGame);
         _mockGameApiClient
-            .Setup(x => x.ResetGameAsync(game.Alias, game.Id))
+            .Setup(x => x.ResetGameAsync(game.PlayerAlias, game.Id))
             .ReturnsAsync(successResult);
         _mockGameApiClient
-            .Setup(x => x.GetGameAsync(game.Alias, game.Id))
+            .Setup(x => x.GetGameAsync(game.PlayerAlias, game.Id))
             .ReturnsAsync(gameResult);
         var sut = ResolveSut();
         SetGameProperty(sut, game);
@@ -552,10 +552,10 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         var successResult = ApiResult<bool>.Success(true);
         var gameResult = ApiResult<GameModel>.Success(resetGame);
         _mockGameApiClient
-            .Setup(x => x.ResetGameAsync(game.Alias, game.Id))
+            .Setup(x => x.ResetGameAsync(game.PlayerAlias, game.Id))
             .ReturnsAsync(successResult);
         _mockGameApiClient
-            .Setup(x => x.GetGameAsync(game.Alias, game.Id))
+            .Setup(x => x.GetGameAsync(game.PlayerAlias, game.Id))
             .ReturnsAsync(gameResult);
         var sut = ResolveSut();
         SetGameProperty(sut, game);
@@ -574,7 +574,7 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         var game = CreateTestGameModel();
         var failureResult = ApiResult<bool>.Failure("API Error");
         _mockGameApiClient
-            .Setup(x => x.ResetGameAsync(game.Alias, game.Id))
+            .Setup(x => x.ResetGameAsync(game.PlayerAlias, game.Id))
             .ReturnsAsync(failureResult);
         var sut = ResolveSut();
         SetGameProperty(sut, game);
@@ -626,10 +626,10 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         var successResult = ApiResult<bool>.Success(true);
         var gameResult = ApiResult<GameModel>.Success(undoGame);
         _mockGameApiClient
-            .Setup(x => x.UndoMoveAsync(game.Alias, game.Id))
+            .Setup(x => x.UndoMoveAsync(game.PlayerAlias, game.Id))
             .ReturnsAsync(successResult);
         _mockGameApiClient
-            .Setup(x => x.GetGameAsync(game.Alias, game.Id))
+            .Setup(x => x.GetGameAsync(game.PlayerAlias, game.Id))
             .ReturnsAsync(gameResult);
         var sut = ResolveSut();
         SetGameProperty(sut, game);
@@ -665,7 +665,7 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         var game = CreateTestGameModelWithMoves();
         var failureResult = ApiResult<bool>.Failure("API Error");
         _mockGameApiClient
-            .Setup(x => x.UndoMoveAsync(game.Alias, game.Id))
+            .Setup(x => x.UndoMoveAsync(game.PlayerAlias, game.Id))
             .ReturnsAsync(failureResult);
         var sut = ResolveSut();
         SetGameProperty(sut, game);
@@ -691,7 +691,6 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         return new GameModel
         {
             Id = TestGameId,
-            Alias = TestAlias,
             PlayerAlias = TestAlias,
             Difficulty = TestDifficulty,
             Status = "InProgress",
@@ -706,7 +705,6 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
         var game = new GameModel
         {
             Id = TestGameId,
-            Alias = TestAlias,
             PlayerAlias = TestAlias,
             Difficulty = TestDifficulty,
             Status = "InProgress",
