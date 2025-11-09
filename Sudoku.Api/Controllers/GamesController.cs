@@ -112,7 +112,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
             return BadRequest(result.Error);
         }
         
-        return CreatedAtAction(nameof(GetGameAsync), new { alias, gameId = result.Value.Id }, result.Value);
+        return Created($"/api/players/{alias}/games/{result.Value.Id}", result.Value);
     }
 
     /// <summary>

@@ -190,10 +190,8 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         var result = await _sut.CreateGameAsync(playerAlias, difficulty);
 
         // Assert
-        var createdAtActionResult = result.Result.Should().BeOfType<CreatedAtActionResult>().Subject;
-        createdAtActionResult.ActionName.Should().Be(nameof(GamesController.GetGameAsync));
-        createdAtActionResult.RouteValues.Should().ContainKey("alias").WhoseValue.Should().Be(playerAlias);
-        createdAtActionResult.RouteValues.Should().ContainKey("gameId").WhoseValue.Should().Be(gameId);
+        var createdAtActionResult = result.Result.Should().BeOfType<CreatedResult>().Subject;
+        createdAtActionResult.Location.Should().Be($"/api/players/{playerAlias}/games/{gameId}");
         var returnedGame = createdAtActionResult.Value.Should().BeAssignableTo<GameDto>().Subject;
         returnedGame.Should().BeEquivalentTo(game);
     }
