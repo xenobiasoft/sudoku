@@ -8,22 +8,22 @@
             @if (GameManager is { CurrentStatistics: not null })
             {
                 <GameStats GameManager="@GameManager" />
+                <GameBoard Game="@CurrentGame"
+                           OnCellFocus="HandleSetSelectedCell"
+                           OnCellChanged="HandleCellChanged"
+                           NotificationService="@NotificationService"
+                           IsPencilMode="IsPencilMode"
+                           OnPossibleValueChanged="HandlePossibleValueChanged" />
+                <GameControls OnValueChanged="HandleCellValueChanged"
+                              PuzzleId="@PuzzleId"
+                              OnReset="HandleReset"
+                              OnUndo="HandleUndo"
+                              OnPencilMode="HandlePencilModeToggle"
+                              OnPossibleValueChanged="HandlePossibleValueChanged"
+                              TotalMoves="@GameManager.CurrentStatistics.TotalMoves" />
+                <VictoryDisplay IsVictory="@GameManager.Game.IsSolved()"
+                                ElapsedTime="@GameManager.CurrentStatistics.PlayDuration" />
             }
-            <GameBoard Game="@CurrentGame"
-                       OnCellFocus="HandleSetSelectedCell"
-                       OnCellChanged="HandleCellChanged"
-                       NotificationService="@NotificationService"
-                       IsPencilMode="IsPencilMode"
-                       OnPossibleValueChanged="HandlePossibleValueChanged"/>
-            <GameControls OnValueChanged="HandleCellValueChanged"
-                          PuzzleId="@PuzzleId"
-                          OnReset="HandleReset"
-                          OnUndo="HandleUndo"
-                          OnPencilMode="HandlePencilModeToggle"
-                          OnPossibleValueChanged="HandlePossibleValueChanged"
-                          TotalMoves="@GameManager.CurrentStatistics.TotalMoves" />
-            <VictoryDisplay IsVictory="@GameManager.Game.IsSolved()"
-                            ElapsedTime="@GameManager.CurrentStatistics.PlayDuration" />
         </div>
     </div>
 </div>

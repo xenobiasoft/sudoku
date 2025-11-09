@@ -12,8 +12,10 @@ public partial class GameStats : ComponentBase, IDisposable
     private TimeSpan _playDuration = TimeSpan.Zero;
     private bool _isCollapsed = true;
 
-    protected override void OnInitialized()
+    protected override void OnAfterRender(bool firstRender)
     {
+        if (!firstRender) return;
+
         SubscribeToSessionEvents();
     }
 
