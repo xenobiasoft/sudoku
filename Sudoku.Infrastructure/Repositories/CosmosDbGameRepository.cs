@@ -89,7 +89,7 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
         {
             var document = SudokuGameMapper.ToDocument(game);
             
-            await cosmosDbService.UpsertItemAsync(document);
+            await cosmosDbService.UpsertItemAsync(document, game.Id);
             
             logger.LogDebug("Saved game {GameId} to CosmosDB", game.Id.Value);
         }
