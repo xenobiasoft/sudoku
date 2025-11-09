@@ -21,4 +21,6 @@ public class TwinsInMiniGridsStrategy : TwinsStrategyBase
 
         return HandleNakedTwins(miniGrids);
     }
+
+    public override int Order { get; } = 6;
 }

@@ -2,6 +2,7 @@ using Azure.Identity;
 using BlazorApplicationInsights;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using System.Diagnostics.CodeAnalysis;
+using Sudoku.Web.Server.Services.HttpClients;
 using XenobiaSoft.Sudoku.Storage.Azure;
 
 namespace Sudoku.Web.Server;
@@ -41,6 +42,33 @@ public class Program
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddHealthChecks();
+
+            // Configure HttpClient for GameApiClient with custom resilience settings
+            builder.Services.AddHttpClient<IGameApiClient, GameApiClient>(client =>
+                {
+                    var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? "https://localhost:7001";
+                    client.BaseAddress = new Uri(apiBaseUrl);
+                })
+                .AddStandardResilienceHandler(options =>
+                {
+                    // Configure retry policy to only retry idempotent methods (GET, HEAD, OPTIONS, etc.)
+                    options.Retry.ShouldHandle = args =>
+                    {
+                        // Only retry for GET requests
+                        if (args.Outcome.Result?.RequestMessage?.Method == HttpMethod.Get)
+                        {
+                            return ValueTask.FromResult(args.Outcome.Result.StatusCode >= System.Net.HttpStatusCode.InternalServerError);
+                        }
+
+                        // Don't retry POST, PUT, DELETE, PATCH
+                        return ValueTask.FromResult(false);
+                    };
+
+                    // Reduce max retry attempts
+                    options.Retry.MaxRetryAttempts = 2;
+                    options.Retry.Delay = TimeSpan.FromMilliseconds(500);
+                });
+
             builder.Services
                 .RegisterGameServices(builder.Configuration)
                 .RegisterBlazorGameServices(builder.Configuration)

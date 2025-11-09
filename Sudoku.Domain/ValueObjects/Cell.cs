@@ -1,3 +1,5 @@
+using Sudoku.Domain.Exceptions;
+
 namespace Sudoku.Domain.ValueObjects;
 
 public record Cell
@@ -149,5 +151,22 @@ public record Cell
     public override string ToString()
     {
         return Value?.ToString() ?? ".";
+    }
+
+    /// <summary>
+    /// Creates a deep copy of the current cell.
+    /// </summary>
+    /// <returns>A deep copy of the current cell with all possible values copied.</returns>
+    public Cell DeepCopy()
+    {
+        var clonedCell = new Cell(Row, Column, Value, IsFixed);
+        
+        // Deep copy the possible values
+        foreach (var possibleValue in PossibleValues)
+        {
+            clonedCell.PossibleValues.Add(possibleValue);
+        }
+        
+        return clonedCell;
     }
 }

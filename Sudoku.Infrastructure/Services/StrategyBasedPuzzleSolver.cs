@@ -1,11 +1,12 @@
-﻿using Sudoku.Application.Interfaces;
+﻿using Microsoft.Extensions.Logging;
+using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Infrastructure.Services.Strategies;
 
 namespace Sudoku.Infrastructure.Services;
 
-public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, IPuzzleRepository puzzleRepository)
+public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, IPuzzleRepository puzzleRepository, ILogger<StrategyBasedPuzzleSolver> logger)
     : IPuzzleSolver
 {
     private const string Alias = "SudokuSolverAlias";
@@ -36,11 +37,13 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
                     break;
                 }
 
-                changesMade = ApplyStrategies();
-
-                if (changesMade) continue;
+                changesMade = await ApplyStrategies();
 
                 changesMade = TryBruteForceMethod();
+            }
+            catch (InvalidPuzzleException)
+            {
+                await UndoAsync();
             }
             catch (InvalidMoveException)
             {
@@ -49,20 +52,20 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
         }
     }
 
-    private bool ApplyStrategies()
+    private async Task<bool> ApplyStrategies()
     {
         var changesMade = false;
 
-        foreach (var strategy in strategies)
+        foreach (var strategy in strategies.OrderBy(x => x.Order))
         {
-            Console.WriteLine($"Solving with {strategy.GetType().Name}");
+            logger.LogInformation($"Solving with {strategy.GetType().Name}");
 
             changesMade = changesMade || strategy.SolvePuzzle(_puzzle);
 
             if (!_puzzle.IsValid())
             {
-                Console.WriteLine($"Failure in solving puzzle using {strategy.GetType().Name} strategy");
-                throw new InvalidPuzzleException();
+                logger.LogWarning($"Failure in solving puzzle using {strategy.GetType().Name} strategy");
+                await UndoAsync();
             }
 
             if (IsPuzzleSolved())
@@ -76,7 +79,7 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
 
     private bool TryBruteForceMethod()
     {
-        Console.WriteLine("Solving with BruteForce technique");
+        logger.LogInformation("Solving with BruteForce technique");
         _puzzle.PopulatePossibleValues();
         SetCellWithFewestPossibleValues();
 
@@ -85,6 +88,7 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
 
     private void SetCellWithFewestPossibleValues()
     {
+        var rnd = Random.Shared;
         var cell = _puzzle.Cells
             .Where(c => !c.HasValue && c.PossibleValues.Any())
             .OrderBy(c => c.PossibleValues.Count)
@@ -92,13 +96,12 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
 
         if (cell == null)
         {
-            Console.WriteLine("No cell with possible values found, puzzle might be solved or invalid.");
+            logger.LogWarning("No cell with possible values found, puzzle might be solved or invalid.");
             return;
         }
 
-        var random = new Random();
-        var value = cell.PossibleValues.ElementAt(random.Next(cell.PossibleValues.Count));
-        Console.WriteLine($"Setting cell at ({cell.Row}, {cell.Column}) to {value}");
+        var value = cell.PossibleValues.ElementAt(rnd.Next(cell.PossibleValues.Count));
+        logger.LogInformation($"Setting cell at ({cell.Row}, {cell.Column}) to {value}");
         cell.SetValue(value);
     }
 

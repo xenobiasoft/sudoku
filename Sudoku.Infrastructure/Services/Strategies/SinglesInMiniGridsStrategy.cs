@@ -42,5 +42,7 @@ public class SinglesInMiniGridsStrategy : SolverStrategy
 		}
 
 		return changesMade;
-	}
+    }
+
+    public override int Order { get; } = 3;
 }

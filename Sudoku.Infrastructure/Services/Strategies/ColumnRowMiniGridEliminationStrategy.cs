@@ -21,4 +21,6 @@ public class ColumnRowMiniGridEliminationStrategy : SolverStrategy
 
 		return changesMade;
 	}
+
+    public override int Order { get; } = 0;
 }

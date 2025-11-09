@@ -21,4 +21,6 @@ public class TripletsInRowsStrategy : TripletsStrategyBase
 
         return changesMade;
     }
+
+    public override int Order { get; } = 8;
 }

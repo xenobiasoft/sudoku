@@ -1,4 +1,4 @@
-﻿using XenobiaSoft.Sudoku.GameState;
+﻿using Sudoku.Infrastructure.Utilities;
 
 namespace UnitTests.Infrastructure.Utilities;
 

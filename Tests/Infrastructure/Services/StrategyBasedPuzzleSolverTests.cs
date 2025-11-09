@@ -4,7 +4,6 @@ using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Services;
 using UnitTests.Helpers.Factories;
-using UnitTests.Mocks;
 
 namespace UnitTests.Infrastructure.Services;
 
@@ -32,21 +31,6 @@ public class StrategyBasedPuzzleSolverTests : BaseTestByAbstraction<StrategyBase
 
         // Assert
         _puzzleRepository.Verify(x => x.UndoAsync(Alias, puzzle!.PuzzleId), Times.AtLeastOnce);
-    }
-
-    [Fact]
-    public async Task SolvePuzzle_WhenPuzzleIsInvalid_ThrowsInvalidPuzzleException()
-    {
-        // Arrange
-        var puzzle = PuzzleFactory.GetInvalidPuzzle();
-        _puzzleRepository.SaveAsyncThrows(new InvalidPuzzleException());
-        var sut = ResolveSut();
-
-        // Act
-        Task Solve() => sut.SolvePuzzle(puzzle!);
-
-        // Assert
-        await Assert.ThrowsAsync<InvalidPuzzleException>(Solve);
     }
 
     [Fact]

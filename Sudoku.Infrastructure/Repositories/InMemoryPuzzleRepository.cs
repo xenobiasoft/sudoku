@@ -7,7 +7,7 @@ namespace Sudoku.Infrastructure.Repositories;
 
 public class InMemoryPuzzleRepository : IPuzzleRepository
 {
-	private readonly CircularStack<SudokuPuzzle> _gameState = new(50);
+	private readonly CircularStack<SudokuPuzzle> _gameState = new(100);
     
     public Task<SudokuPuzzle> CreateAsync(string alias, GameDifficulty difficulty)
     {
@@ -70,10 +70,10 @@ public class InMemoryPuzzleRepository : IPuzzleRepository
         return AreBoardsEqual(gameState1.Cells, gameState2.Cells);
     }
 
-    private bool AreBoardsEqual(IEnumerable<Cell> board1,IEnumerable<Cell> board2)
+    private bool AreBoardsEqual(IEnumerable<Cell> board1, IEnumerable<Cell> board2)
     {
-        var cells1 = board1.ToDictionary(c => (c.Row, c.Column), c => c.Value);
-        var cells2 = board2.ToDictionary(c => (c.Row, c.Column), c => c.Value);
+        var cells1 = board1.ToDictionary(c => (c.Row, c.Column), c => c);
+        var cells2 = board2.ToDictionary(c => (c.Row, c.Column), c => c);
         
         if (cells1.Count != cells2.Count)
         {
@@ -82,7 +82,24 @@ public class InMemoryPuzzleRepository : IPuzzleRepository
 
         foreach (var cell in cells1)
         {
-            if (!cells2.TryGetValue(cell.Key, out var value) || value != cell.Value)
+            if (!cells2.TryGetValue(cell.Key, out var cell2))
+            {
+                return false;
+            }
+
+            var cell1 = cell.Value;
+
+            if (cell1.Value != cell2.Value)
+            {
+                return false;
+            }
+
+            if (cell1.PossibleValues.Count != cell2.PossibleValues.Count)
+            {
+                return false;
+            }
+
+            if (!cell1.PossibleValues.SetEquals(cell2.PossibleValues))
             {
                 return false;
             }
