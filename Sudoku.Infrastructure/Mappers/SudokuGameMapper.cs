@@ -8,7 +8,7 @@ public static class SudokuGameMapper
 {
     public static SudokuGameDocument ToDocument(SudokuGame game)
     {
-        return new SudokuGameDocument
+        var sudokuGameDocument = new SudokuGameDocument
         {
             Id = game.Id.Value.ToString(),
             GameId = game.Id.Value.ToString(),
@@ -17,59 +17,45 @@ public static class SudokuGameMapper
             Status = game.Status,
             Cells = game.GetCells().Select(ToDocument).ToList(),
             Statistics = ToDocument(game.Statistics),
-            MoveHistory = [], // Move history is private, will need domain changes or reflection if needed
+            MoveHistory = game.MoveHistory
+                .Select(m => new MoveHistoryDocument
+                {
+                    Row = m.Row,
+                    Column = m.Column,
+                    PreviousValue = m.PreviousValue,
+                    NewValue = m.NewValue
+                })
+                .ToList(),
             CreatedAt = game.CreatedAt,
             StartedAt = game.StartedAt,
             CompletedAt = game.CompletedAt,
             PausedAt = game.PausedAt
         };
+        return sudokuGameDocument;
     }
 
-    public static SudokuGame FromDocument(SudokuGameDocument document)
+    public static SudokuGame ToDomain(SudokuGameDocument document)
     {
-        var cells = document.Cells.Select(FromDocument).ToList();
-        var playerAlias = PlayerAlias.Create(document.PlayerAlias);
-        
-        // Create game using factory method
-        var game = SudokuGame.Create(playerAlias, document.Difficulty, cells);
-        
-        // Use reflection to set private fields since we need to restore the full state
-        var gameType = typeof(SudokuGame);
-        
-        // Set the ID (override the generated one)
-        var idField = gameType.GetField("<Id>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        idField?.SetValue(game, GameId.Create(document.GameId));
-        
-        // Set status
-        var statusField = gameType.GetField("<Status>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        statusField?.SetValue(game, document.Status);
-        
-        // Set statistics
-        var statisticsField = gameType.GetField("<Statistics>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        statisticsField?.SetValue(game, FromDocument(document.Statistics));
-        
-        // Set dates
-        var createdAtField = gameType.GetField("<CreatedAt>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        createdAtField?.SetValue(game, document.CreatedAt);
-        
-        var startedAtField = gameType.GetField("<StartedAt>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        startedAtField?.SetValue(game, document.StartedAt);
-        
-        var completedAtField = gameType.GetField("<CompletedAt>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        completedAtField?.SetValue(game, document.CompletedAt);
-        
-        var pausedAtField = gameType.GetField("<PausedAt>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        pausedAtField?.SetValue(game, document.PausedAt);
-        
-        // Clear any domain events created during construction
-        game.ClearDomainEvents();
-        
-        return game;
+        var sudokuGame = SudokuGame.Reconstitute(
+            GameId.Create(document.GameId),
+            PlayerAlias.Create(document.PlayerAlias),
+            document.Difficulty,
+            document.Status,
+            document.Statistics.ToDomain(),
+            document.Cells.Select(ToDomain).ToList(),
+            document.MoveHistory.Select(m => new MoveHistory(m.Row, m.Column, m.PreviousValue, m.NewValue)),
+            document.CreatedAt,
+            document.StartedAt,
+            document.CompletedAt,
+            document.PausedAt
+        );
+
+        return sudokuGame;
     }
 
-    private static CellDocument ToDocument(Cell cell)
+    private static CellDocument ToDocument(this Cell cell)
     {
-        return new CellDocument
+        var cellDocument = new CellDocument
         {
             Row = cell.Row,
             Column = cell.Column,
@@ -77,9 +63,10 @@ public static class SudokuGameMapper
             IsFixed = cell.IsFixed,
             PossibleValues = cell.PossibleValues.ToHashSet()
         };
+        return cellDocument;
     }
 
-    private static Cell FromDocument(CellDocument document)
+    private static Cell ToDomain(this CellDocument document)
     {
         var cell = Cell.Create(document.Row, document.Column, document.Value, document.IsFixed);
         
@@ -91,9 +78,9 @@ public static class SudokuGameMapper
         return cell;
     }
 
-    private static GameStatisticsDocument ToDocument(GameStatistics statistics)
+    private static GameStatisticsDocument ToDocument(this GameStatistics statistics)
     {
-        return new GameStatisticsDocument
+        var gameStatisticsDocument = new GameStatisticsDocument
         {
             TotalMoves = statistics.TotalMoves,
             ValidMoves = statistics.ValidMoves,
@@ -101,9 +88,10 @@ public static class SudokuGameMapper
             PlayDuration = statistics.PlayDuration,
             LastMoveAt = statistics.LastMoveAt
         };
+        return gameStatisticsDocument;
     }
 
-    private static GameStatistics FromDocument(GameStatisticsDocument document)
+    private static GameStatistics ToDomain(this GameStatisticsDocument document)
     {
         var statistics = GameStatistics.Create();
         

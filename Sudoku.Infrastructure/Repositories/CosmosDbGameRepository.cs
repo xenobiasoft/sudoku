@@ -23,7 +23,7 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
                 return null;
             }
 
-            var game = SudokuGameMapper.FromDocument(document);
+            var game = SudokuGameMapper.ToDomain(document);
             logger.LogDebug("Retrieved game {GameId} from CosmosDB", id.Value);
             return game;
         }
@@ -45,7 +45,7 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
             };
 
             var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(sqlQuery, queryParams);
-            var games = documents.Select(SudokuGameMapper.FromDocument).ToList();
+            var games = documents.Select(SudokuGameMapper.ToDomain).ToList();
 
             logger.LogDebug("Retrieved {Count} games for player {PlayerAlias} from CosmosDB", games.Count, playerAlias.Value);
             return games;
@@ -69,7 +69,7 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
             };
 
             var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(sqlQuery, queryParams);
-            var games = documents.Select(SudokuGameMapper.FromDocument).ToList();
+            var games = documents.Select(SudokuGameMapper.ToDomain).ToList();
 
             logger.LogDebug("Retrieved {Count} games for player {PlayerAlias} with status {Status} from CosmosDB", 
                 games.Count, playerAlias.Value, status);
@@ -138,7 +138,7 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
             // For now, we'll get all games and apply the specification in memory
             // In a production scenario, you'd want to convert the specification to SQL
             var allDocuments = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>("SELECT * FROM c");
-            var allGames = allDocuments.Select(SudokuGameMapper.FromDocument);
+            var allGames = allDocuments.Select(SudokuGameMapper.ToDomain);
 
             var query = allGames.AsQueryable();
 
@@ -206,7 +206,7 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
             };
 
             var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(sqlQuery, queryParams);
-            var games = documents.Select(SudokuGameMapper.FromDocument).ToList();
+            var games = documents.Select(SudokuGameMapper.ToDomain).ToList();
 
             logger.LogDebug("Retrieved {Count} recent games from CosmosDB", games.Count);
             return games;
@@ -244,7 +244,7 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
             }
 
             var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(sqlQuery, queryParams);
-            var games = documents.Select(SudokuGameMapper.FromDocument).ToList();
+            var games = documents.Select(SudokuGameMapper.ToDomain).ToList();
 
             logger.LogDebug("Retrieved {Count} completed games from CosmosDB", games.Count);
             return games;
@@ -267,7 +267,7 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
             };
 
             var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(sqlQuery, queryParams);
-            var games = documents.Select(SudokuGameMapper.FromDocument).ToList();
+            var games = documents.Select(SudokuGameMapper.ToDomain).ToList();
 
             logger.LogDebug("Retrieved {Count} games with difficulty {Difficulty} from CosmosDB", games.Count, difficulty);
             return games;
@@ -290,7 +290,7 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
             };
 
             var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(sqlQuery, queryParams);
-            var games = documents.Select(SudokuGameMapper.FromDocument).ToList();
+            var games = documents.Select(SudokuGameMapper.ToDomain).ToList();
 
             logger.LogDebug("Retrieved {Count} games with status {Status} from CosmosDB", games.Count, status);
             return games;

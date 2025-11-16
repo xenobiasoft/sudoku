@@ -14,6 +14,7 @@ public class SudokuGame : AggregateRoot
     public DateTime? StartedAt { get; private set; }
     public DateTime? CompletedAt { get; private set; }
     public DateTime? PausedAt { get; private set; }
+    public List<MoveHistory> MoveHistory => _moveHistory;
 
     private SudokuGame()
     {
@@ -36,6 +37,38 @@ public class SudokuGame : AggregateRoot
         game._cells.AddRange(initialCells);
 
         game.AddDomainEvent(new GameCreatedEvent(game.Id, playerAlias, difficulty));
+        return game;
+    }
+
+    public static SudokuGame Reconstitute(
+        GameId id,
+        PlayerAlias playerAlias,
+        GameDifficulty difficulty,
+        GameStatus status,
+        GameStatistics statistics,
+        IEnumerable<Cell> cells,
+        IEnumerable<MoveHistory> moveHistory,
+        DateTime createdAt,
+        DateTime? startedAt,
+        DateTime? completedAt,
+        DateTime? pausedAt)
+    {
+        var game = new SudokuGame
+        {
+            Id = id,
+            PlayerAlias = playerAlias,
+            Difficulty = difficulty,
+            Status = status,
+            Statistics = statistics,
+            CreatedAt = createdAt,
+            StartedAt = startedAt,
+            CompletedAt = completedAt,
+            PausedAt = pausedAt
+        };
+
+        game._cells.AddRange(cells);
+        game._moveHistory.AddRange(moveHistory);
+
         return game;
     }
 
