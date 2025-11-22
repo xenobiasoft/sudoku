@@ -1,8 +1,5 @@
 ﻿using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services.Abstractions;
-using Sudoku.Web.Server.Services.HttpClients;
 using IGameStateManager = Sudoku.Web.Server.Services.Abstractions.V2.IGameStateManager;
-using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.V2.ILocalStorageService;
 
 namespace Sudoku.Web.Server.Services.V2;
 
@@ -17,10 +14,8 @@ namespace Sudoku.Web.Server.Services.V2;
 /// <param name="localStorageService"></param>
 /// <param name="gameApiClient"></param>
 /// <param name="gameTimer"></param>
-public partial class GameManager(ILocalStorageService localStorageService, IGameApiClient gameApiClient, IGameTimer gameTimer) : IGameStateManager
+public partial class GameManager : IGameStateManager
 {
-    public GameModel? Game { get; private set; }
-
     public async Task<GameModel> CreateGameAsync(string alias, string difficulty)
     {
         if (string.IsNullOrEmpty(alias))

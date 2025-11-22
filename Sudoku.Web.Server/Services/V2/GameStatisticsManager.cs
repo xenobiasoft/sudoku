@@ -1,6 +1,7 @@
 ﻿using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services.Abstractions;
 using Sudoku.Web.Server.Services.Abstractions.V2;
+using Sudoku.Web.Server.Services.States;
 
 namespace Sudoku.Web.Server.Services.V2;
 
@@ -32,6 +33,7 @@ public partial class GameManager : IGameStatisticsManager
     /// <returns>A task that represents the asynchronous operation of ending the session.</returns>
     public async Task EndSession()
     {
+        Game.Status = Game.IsSolved() ? GameStatus.Completed : GameStatus.Abandoned;
         gameTimer.OnTick -= OnTimerTick;
         gameTimer.Reset();
         await SaveGameAsync();
@@ -45,6 +47,7 @@ public partial class GameManager : IGameStatisticsManager
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task PauseSession()
     {
+        Game.Status = GameStatus.Paused;
         gameTimer.Pause();
         await SaveGameAsync();
     }
@@ -71,6 +74,7 @@ public partial class GameManager : IGameStatisticsManager
     /// <returns>A task that represents the asynchronous operation. The task completes when the session is successfully resumed.</returns>
     public Task ResumeSession()
     {
+        Game.Status = GameStatus.InProgress;
         var playDuration = CurrentStatistics.PlayDuration;
         gameTimer.Resume(playDuration);
         return Task.CompletedTask;
@@ -84,6 +88,7 @@ public partial class GameManager : IGameStatisticsManager
     /// <returns>A task that represents the asynchronous operation of starting a new session.</returns>
     public async Task StartNewSession()
     {
+        Game.Status = GameStatus.InProgress;
         CurrentStatistics.Reset();
         gameTimer.Reset();
         gameTimer.Start();

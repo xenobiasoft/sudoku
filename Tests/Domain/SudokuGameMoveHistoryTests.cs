@@ -89,7 +89,7 @@ public class SudokuGameMoveHistoryTests : BaseTestByType<SudokuGame>
             GameId.New(),
             PlayerAlias.Create("TestPlayer"),
             GameDifficulty.Easy,
-            GameStatus.InProgress,
+            GameStatusEnum.InProgress,
             GameStatistics.Create(),
             cells,
             moveHistory,

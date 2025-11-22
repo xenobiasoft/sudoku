@@ -5,9 +5,8 @@ namespace Sudoku.Web.Server.Services.Abstractions.V2;
 /// <summary>
 /// Interface for API-based game state management
 /// </summary>
-public interface IGameStateManager
+public interface IGameStateManager : IGameProvider
 {
-    GameModel Game { get; }
     Task<GameModel> CreateGameAsync(string alias, string difficulty);
     Task DeleteGameAsync();
     Task DeleteGameAsync(string alias, string gameId);

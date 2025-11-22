@@ -19,7 +19,7 @@ public class SudokuGameDocument
     public GameDifficulty Difficulty { get; set; } = GameDifficulty.Easy;
 
     [JsonProperty("status")]
-    public GameStatus Status { get; set; }
+    public GameStatusEnum Status { get; set; }
     
     [JsonProperty("cells")]
     public List<CellDocument> Cells { get; set; } = [];

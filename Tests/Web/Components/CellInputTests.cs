@@ -94,9 +94,13 @@ public class CellInputTests : TestContext
     {
         // Arrange
         var calledArgs = (CellPossibleValueChangedEventArgs)null!;
+        var game = GameModelFactory
+            .Build()
+            .WithDifficulty(GameDifficulty.Easy)
+            .Create();
         var cellInput = RenderComponent<CellInput>(x => x
             .Add(c => c.Cell, new CellModel{ Row = 1, Column = 2 })
-            .Add(c => c.CurrentGame, GameModelFactory.GetPuzzle(GameDifficulty.Easy))
+            .Add(c => c.CurrentGame, game)
             .Add(c => c.OnPossibleValueChanged, args => calledArgs = args)
             .Add(c => c.IsPencilMode, true));
 
@@ -118,9 +122,13 @@ public class CellInputTests : TestContext
     {
         // Arrange
         var calledArgs = (CellChangedEventArgs)null!;
+        var game = GameModelFactory
+            .Build()
+            .WithDifficulty(GameDifficulty.Easy)
+            .Create();
         var cellInput = RenderComponent<CellInput>(x => x
             .Add(c => c.Cell, new CellModel { Row = 1, Column = 2 })
-            .Add(c => c.CurrentGame, GameModelFactory.GetPuzzle(GameDifficulty.Easy))
+            .Add(c => c.CurrentGame, game)
             .Add(c => c.OnCellChanged, args => calledArgs = args)
             .Add(c => c.IsPencilMode, false));
 

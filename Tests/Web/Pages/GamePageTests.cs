@@ -25,13 +25,12 @@ public class GamePageTests : TestContext
     public GamePageTests()
     {
         var gameStatistics = new GameStatisticsModel();
-        var loadedGameState = new GameModel
-        {
-            PlayerAlias = Alias,
-            Cells = GameModelFactory.GetPuzzle(GameDifficulty.Easy).Cells,
-            Statistics = gameStatistics,
-            Id = PuzzleId,
-        };
+        var loadedGameState = GameModelFactory
+            .Build()
+            .WithDifficulty(GameDifficulty.Easy)
+            .WithPlayerAlias(Alias)
+            .WithId(PuzzleId)
+            .Create();
         var mockGameTimer = new Mock<IGameTimer>();
         _mockGameManager.Setup(x => x.CurrentStatistics).Returns(gameStatistics);
         _mockGameManager.Setup(x => x.Game).Returns(loadedGameState);
@@ -285,5 +284,17 @@ public class GamePageTests : TestContext
 
         // Assert
         _mockGameManager.VerifyLoadsAsyncCalled(Alias, PuzzleId, Times.Once);
+    }
+
+    [Fact]
+    public void OnAfterRenderAsync_StartsGame()
+    {
+        // Arrange
+
+        // Act
+        RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
+
+        // Assert
+        _mockGameManager.VerifyStartsGameAsync(Times.Once);
     }
 }

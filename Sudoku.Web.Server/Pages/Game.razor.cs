@@ -44,7 +44,8 @@ public partial class Game
     {
         Alias = await PlayerManager.GetCurrentPlayerAsync();
         await GameManager.LoadGameAsync(Alias!, PuzzleId!);
-        await GameManager.StartNewSession();
+
+        await GameManager.StartGameAsync();
     }
 
     private void NotifyGameStart()

@@ -74,6 +74,11 @@ public static class MockGameManagerV2Extensions
         mock.Verify(x => x.SaveGameAsync(), times);
     }
 
+    public static void VerifyStartsGameAsync(this Mock<IGameManager> mock, Func<Times> times)
+    {
+        mock.Verify(x => x.StartGameAsync(), times);
+    }
+
     public static void VerifyUndoAsyncCalled(this Mock<IGameManager> mock, Func<Times> times)
     {
         mock.Verify(x => x.UndoGameAsync(), times);

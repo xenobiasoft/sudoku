@@ -45,6 +45,11 @@ public class GameModel
 
     public bool IsSolved()
     {
+        if (!Cells.Any())
+        {
+            return false;
+        }
+
         foreach (var cell in Cells)
         {
             var pattern = GetColumnCells(cell.Column).Aggregate("123456789", (current, columnCell) => current.Replace(columnCell.Value.GetValueOrDefault().ToString(), string.Empty));

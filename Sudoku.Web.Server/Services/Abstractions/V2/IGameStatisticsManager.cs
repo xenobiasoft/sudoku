@@ -2,7 +2,7 @@
 
 namespace Sudoku.Web.Server.Services.Abstractions.V2;
 
-public interface IGameStatisticsManager
+public interface IGameStatisticsManager : IGameProvider
 {
     IGameTimer Timer { get; }
 

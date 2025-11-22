@@ -57,28 +57,28 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
         }
     }
 
-    public async Task<IEnumerable<SudokuGame>> GetByPlayerAndStatusAsync(PlayerAlias playerAlias, GameStatus status)
+    public async Task<IEnumerable<SudokuGame>> GetByPlayerAndStatusAsync(PlayerAlias playerAlias, GameStatusEnum statusEnum)
     {
         try
         {
-            var sqlQuery = "SELECT * FROM c WHERE c.playerAlias = @playerAlias AND c.status = @status ORDER BY c.createdAt DESC";
+            var sqlQuery = "SELECT * FROM c WHERE c.playerAlias = @playerAlias AND c.statusEnum = @statusEnum ORDER BY c.createdAt DESC";
             var queryParams = new Dictionary<string, string>
             {
                 { "@playerAlias", playerAlias.Value },
-                { "@status", status.ToString() }
+                { "@statusEnum", statusEnum.ToString() }
             };
 
             var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(sqlQuery, queryParams);
             var games = documents.Select(SudokuGameMapper.ToDomain).ToList();
 
-            logger.LogDebug("Retrieved {Count} games for player {PlayerAlias} with status {Status} from CosmosDB", 
-                games.Count, playerAlias.Value, status);
+            logger.LogDebug("Retrieved {Count} games for player {PlayerAlias} with statusEnum {StatusEnum} from CosmosDB", 
+                games.Count, playerAlias.Value, statusEnum);
             return games;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error retrieving games for player {PlayerAlias} with status {Status} from CosmosDB", 
-                playerAlias.Value, status);
+            logger.LogError(ex, "Error retrieving games for player {PlayerAlias} with statusEnum {StatusEnum} from CosmosDB", 
+                playerAlias.Value, statusEnum);
             throw;
         }
     }
@@ -227,19 +227,19 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
 
             if (playerAlias != null)
             {
-                sqlQuery = "SELECT * FROM c WHERE c.status = @status AND c.playerAlias = @playerAlias ORDER BY c.completedAt DESC";
+                sqlQuery = "SELECT * FROM c WHERE c.statusEnum = @statusEnum AND c.playerAlias = @playerAlias ORDER BY c.completedAt DESC";
                 queryParams = new Dictionary<string, string>
                 {
-                    { "@status", GameStatus.Completed.ToString() },
+                    { "@statusEnum", GameStatusEnum.Completed.ToString() },
                     { "@playerAlias", playerAlias.Value }
                 };
             }
             else
             {
-                sqlQuery = "SELECT * FROM c WHERE c.status = @status ORDER BY c.completedAt DESC";
+                sqlQuery = "SELECT * FROM c WHERE c.statusEnum = @statusEnum ORDER BY c.completedAt DESC";
                 queryParams = new Dictionary<string, string>
                 {
-                    { "@status", GameStatus.Completed.ToString() }
+                    { "@statusEnum", GameStatusEnum.Completed.ToString() }
                 };
             }
 
@@ -279,25 +279,25 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
         }
     }
 
-    public async Task<IEnumerable<SudokuGame>> GetGamesByStatusAsync(GameStatus status)
+    public async Task<IEnumerable<SudokuGame>> GetGamesByStatusAsync(GameStatusEnum statusEnum)
     {
         try
         {
-            var sqlQuery = "SELECT * FROM c WHERE c.status = @status ORDER BY c.createdAt DESC";
+            var sqlQuery = "SELECT * FROM c WHERE c.statusEnum = @statusEnum ORDER BY c.createdAt DESC";
             var queryParams = new Dictionary<string, string>
             {
-                { "@status", status.ToString() }
+                { "@statusEnum", statusEnum.ToString() }
             };
 
             var documents = await cosmosDbService.QueryItemsAsync<Models.SudokuGameDocument>(sqlQuery, queryParams);
             var games = documents.Select(SudokuGameMapper.ToDomain).ToList();
 
-            logger.LogDebug("Retrieved {Count} games with status {Status} from CosmosDB", games.Count, status);
+            logger.LogDebug("Retrieved {Count} games with statusEnum {StatusEnum} from CosmosDB", games.Count, statusEnum);
             return games;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error retrieving games by status {Status} from CosmosDB", status);
+            logger.LogError(ex, "Error retrieving games by statusEnum {StatusEnum} from CosmosDB", statusEnum);
             throw;
         }
     }
@@ -344,19 +344,19 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
 
             if (playerAlias != null)
             {
-                sqlQuery = "SELECT VALUE COUNT(1) FROM c WHERE c.status = @status AND c.playerAlias = @playerAlias";
+                sqlQuery = "SELECT VALUE COUNT(1) FROM c WHERE c.statusEnum = @statusEnum AND c.playerAlias = @playerAlias";
                 queryParams = new Dictionary<string, string>
                 {
-                    { "@status", GameStatus.Completed.ToString() },
+                    { "@statusEnum", GameStatusEnum.Completed.ToString() },
                     { "@playerAlias", playerAlias.Value }
                 };
             }
             else
             {
-                sqlQuery = "SELECT VALUE COUNT(1) FROM c WHERE c.status = @status";
+                sqlQuery = "SELECT VALUE COUNT(1) FROM c WHERE c.statusEnum = @statusEnum";
                 queryParams = new Dictionary<string, string>()
                 {
-                    { "@status", GameStatus.Completed.ToString() }
+                    { "@statusEnum", GameStatusEnum.Completed.ToString() }
                 };
             }
 

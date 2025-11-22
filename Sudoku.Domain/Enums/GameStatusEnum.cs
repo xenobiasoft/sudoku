@@ -1,6 +1,6 @@
 namespace Sudoku.Domain.Enums;
 
-public enum GameStatus
+public enum GameStatusEnum
 {
     NotStarted = 0,
     InProgress = 1,

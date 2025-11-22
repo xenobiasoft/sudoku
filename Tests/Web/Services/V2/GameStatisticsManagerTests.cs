@@ -1,9 +1,12 @@
 ﻿using DepenMock.XUnit;
+using Sudoku.Domain.ValueObjects;
 using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services.Abstractions;
 using Sudoku.Web.Server.Services.Abstractions.V2;
 using Sudoku.Web.Server.Services.HttpClients;
+using Sudoku.Web.Server.Services.States;
 using Sudoku.Web.Server.Services.V2;
+using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Web.Services.V2;
 
@@ -18,14 +21,10 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         _mockGameApiClient = Container.ResolveMock<IGameApiClient>();
         _mockGameTimer = Container.ResolveMock<IGameTimer>();
 
-        _testGame = new GameModel
-        {
-            Id = "test-game-id",
-            PlayerAlias = "test-player",
-            Difficulty = "Easy",
-            Status = "InProgress",
-            Statistics = new GameStatisticsModel()
-        };
+        _testGame = GameModelFactory
+            .Build()
+            .WithStatus(GameStatus.NotStarted)
+            .Create();
     }
 
     [Fact]
@@ -54,6 +53,35 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
 
         // Assert
         _mockGameTimer.Verify(x => x.Reset(), Times.Once);
+    }
+
+    [Fact]
+    public async Task EndSession_WhenGameIsSolved_SetsGameStatusToCompleted()
+    {
+        // Arrange
+        var game = GameModelFactory.GetSolvedPuzzle();
+        var sut = ResolveSut();
+        SetGameProperty(sut, game);
+
+        // Act
+        await sut.EndSession();
+
+        // Assert
+        sut.Game.Status.Should().Be(GameStatus.Completed);
+    }
+
+    [Fact]
+    public async Task EndSession_WhenGameNotComplete_SetsGameStatusToAbandoned()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        SetGameProperty(sut, _testGame);
+
+        // Act
+        await sut.EndSession();
+
+        // Assert
+        sut.Game.Status.Should().Be(GameStatus.Abandoned);
     }
 
     [Fact]
@@ -131,6 +159,20 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
 
         // Assert
         _testGame.Statistics.PlayDuration.Should().Be(expectedElapsedTime);
+    }
+
+    [Fact]
+    public async Task PauseSession_SetsGameStatusToPaused()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        SetGameProperty(sut, _testGame);
+
+        // Act
+        await sut.PauseSession();
+
+        // Assert
+        sut.Game.Status.Should().Be(GameStatus.Paused);
     }
 
     [Fact]
@@ -297,6 +339,24 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
+    public async Task ResumeSession_SetsGameStatusToInProgress()
+    {
+        // Arrange
+        var game = GameModelFactory
+            .Build()
+            .WithStatus(GameStatus.Paused)
+            .Create();
+        var sut = ResolveSut();
+        SetGameProperty(sut, game);
+
+        // Act
+        await sut.ResumeSession();
+
+        // Assert
+        sut.Game.Status.Should().Be(GameStatus.InProgress);
+    }
+
+    [Fact]
     public async Task ResumeSession_WithZeroPlayDuration_ResumesTimerWithZeroDuration()
     {
         // Arrange
@@ -341,6 +401,20 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
 
         // Assert
         _mockGameTimer.Verify(x => x.Reset(), Times.Once);
+    }
+
+    [Fact]
+    public async Task StartNewSession_SetsGameStatusToInProgress()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        SetGameProperty(sut, _testGame);
+
+        // Act
+        await sut.StartNewSession();
+
+        // Assert
+        sut.Game.Status.Should().Be(GameStatus.InProgress);
     }
 
     [Fact]

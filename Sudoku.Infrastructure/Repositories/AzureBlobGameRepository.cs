@@ -100,9 +100,9 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
         }
     }
 
-    public async Task<IEnumerable<SudokuGame>> GetByPlayerAndStatusAsync(PlayerAlias playerAlias, GameStatus status)
+    public async Task<IEnumerable<SudokuGame>> GetByPlayerAndStatusAsync(PlayerAlias playerAlias, GameStatusEnum statusEnum)
     {
-        var specification = new GameByPlayerAndStatusSpecification(playerAlias, status);
+        var specification = new GameByPlayerAndStatusSpecification(playerAlias, statusEnum);
         return await GetBySpecificationAsync(specification);
     }
 
@@ -259,9 +259,9 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
         return await GetBySpecificationAsync(specification);
     }
 
-    public async Task<IEnumerable<SudokuGame>> GetGamesByStatusAsync(GameStatus status)
+    public async Task<IEnumerable<SudokuGame>> GetGamesByStatusAsync(GameStatusEnum statusEnum)
     {
-        var specification = new GameByStatusSpecification(status);
+        var specification = new GameByStatusSpecification(statusEnum);
         return await GetBySpecificationAsync(specification);
     }
 
