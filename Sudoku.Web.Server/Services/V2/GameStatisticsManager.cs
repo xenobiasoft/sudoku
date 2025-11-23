@@ -59,11 +59,14 @@ public partial class GameManager : IGameStatisticsManager
     /// their validity assessed. The specific behavior of the method depends on the implementation.</remarks>
     /// <param name="isValid">A boolean value indicating whether the move is valid.  <see langword="true"/> if the move is valid; otherwise,
     /// <see langword="false"/>.</param>
+    /// <param name="row"></param>
+    /// <param name="column"></param>
+    /// <param name="value"></param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public async Task RecordMove(bool isValid)
+    public async Task RecordMove(int row, int column, int? value, bool isValid)
     {
         CurrentStatistics.RecordMove(isValid);
-        await SaveGameAsync();
+        await SaveGameAsync(row, column, value);
     }
 
     /// <summary>

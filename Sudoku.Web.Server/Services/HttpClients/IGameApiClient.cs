@@ -67,6 +67,21 @@ public interface IGameApiClient
     Task<ApiResult<GameModel>> GetGameAsync(string alias, string gameId);
 
     /// <summary>
+    /// Attempts to make a move in the specified game for the given player alias asynchronously.
+    /// </summary>
+    /// <remarks>This method validates the move according to the current game state and rules. If the move is
+    /// invalid or the game is not found, the result will indicate failure. Thread safety and concurrent moves are
+    /// managed internally.</remarks>
+    /// <param name="alias">The unique identifier or username representing the player making the move. Cannot be null or empty.</param>
+    /// <param name="gameId">The identifier of the game in which the move is to be made. Cannot be null or empty.</param>
+    /// <param name="row">The zero-based row index where the move will be placed. Must be within the valid range for the game board.</param>
+    /// <param name="column">The zero-based column index where the move will be placed. Must be within the valid range for the game board.</param>
+    /// <param name="value">The value to place at the specified position, if applicable. If null, the default move value will be used.</param>
+    /// <returns>A task that represents the asynchronous operation. The result contains an ApiResult indicating whether the move
+    /// was successful (<see langword="true"/> if the move was made; otherwise, <see langword="false"/>).</returns>
+    Task<ApiResult<bool>> MakeMoveAsync(string alias, string gameId, int row, int column, int? value);
+
+    /// <summary>
     /// Removes a possible value from a cell
     /// </summary>
     /// <param name="alias">The player's alias</param>

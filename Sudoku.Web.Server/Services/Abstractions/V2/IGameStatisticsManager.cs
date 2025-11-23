@@ -32,8 +32,12 @@ public interface IGameStatisticsManager : IGameProvider
     Task EndSession();
 
     /// <summary>
-    /// Records a move in the current game session
+    /// Records a move made by the player
     /// </summary>
-    /// <param name="isValid">Whether the move was valid</param>
-    Task RecordMove(bool isValid);
+    /// <param name="row"></param>
+    /// <param name="column"></param>
+    /// <param name="value"></param>
+    /// <param name="isValid"></param>
+    /// <returns></returns>
+    Task RecordMove(int row, int column, int? value, bool isValid);
 }

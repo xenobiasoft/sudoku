@@ -14,5 +14,6 @@ public interface IGameStateManager : IGameProvider
     Task<List<GameModel>> LoadGamesAsync(string alias);
     Task<GameModel> ResetGameAsync();
     Task SaveGameAsync();
+    Task SaveGameAsync(int row, int column, int? value);
     Task<GameModel> UndoGameAsync();
 }

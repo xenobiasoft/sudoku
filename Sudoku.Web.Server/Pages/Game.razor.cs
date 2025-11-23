@@ -91,7 +91,7 @@ public partial class Game
     private async Task HandleCellUpdate(int row, int column, int? value)
     {
         UpdateGameCell(row, column, value);
-        await ValidateAndUpdateGameState();
+        await ValidateAndUpdateGameState(row, column, value);
     }
 
     private void UpdateGameCell(int row, int column, int? value)
@@ -107,10 +107,10 @@ public partial class Game
         NotificationService.NotifyInvalidCells(invalidCells);
     }
 
-    private async Task ValidateAndUpdateGameState()
+    private async Task ValidateAndUpdateGameState(int row, int column, int? value)
     {
         var isValid = CurrentGame.IsValid();
-        await GameManager.RecordMove(isValid);
+        await GameManager.RecordMove(row, column, value, isValid);
 
         if (CurrentGame.IsSolved())
         {

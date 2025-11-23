@@ -59,9 +59,9 @@ public static class MockGameManagerV2Extensions
         mock.Verify(x => x.LoadGameAsync(alias, puzzleId), times);
     }
 
-    public static void VerifyMoveRecorded(this Mock<IGameManager> mock, Func<Times> times)
+    public static void VerifyMoveRecorded(this Mock<IGameManager> mock, int row, int column, int? value, Func<Times> times)
     {
-        mock.Verify(x => x.RecordMove(It.IsAny<bool>()), times);
+        mock.Verify(x => x.RecordMove(row, column, value, It.IsAny<bool>()), times);
     }
 
     public static void VerifyResetAsyncCalled(this Mock<IGameManager> mock, Func<Times> times)

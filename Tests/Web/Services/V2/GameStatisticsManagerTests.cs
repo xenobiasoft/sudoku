@@ -213,7 +213,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         var initialInvalidMoves = _testGame.Statistics.InvalidMoves;
 
         // Act
-        await sut.RecordMove(true);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
 
         // Assert
         _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 1);
@@ -230,7 +230,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         var initialInvalidMoves = _testGame.Statistics.InvalidMoves;
 
         // Act
-        await sut.RecordMove(false);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
 
         // Assert
         _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 1);
@@ -245,7 +245,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         SetGameProperty(sut, _testGame);
 
         // Act
-        await sut.RecordMove(true);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
 
         // Assert
         _mockGameApiClient.Verify(x => x.SaveGameAsync(_testGame), Times.Once);
@@ -259,7 +259,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         SetGameProperty(sut, _testGame);
 
         // Act
-        await sut.RecordMove(false);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
 
         // Assert
         _mockGameApiClient.Verify(x => x.SaveGameAsync(_testGame), Times.Once);
@@ -274,9 +274,9 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         var initialTotalMoves = _testGame.Statistics.TotalMoves;
 
         // Act
-        await sut.RecordMove(true);
-        await sut.RecordMove(true);
-        await sut.RecordMove(true);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
 
         // Assert
         _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 3);
@@ -293,8 +293,8 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         var initialTotalMoves = _testGame.Statistics.TotalMoves;
 
         // Act
-        await sut.RecordMove(false);
-        await sut.RecordMove(false);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
 
         // Assert
         _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 2);
@@ -311,10 +311,10 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         var initialTotalMoves = _testGame.Statistics.TotalMoves;
 
         // Act
-        await sut.RecordMove(true);
-        await sut.RecordMove(false);
-        await sut.RecordMove(true);
-        await sut.RecordMove(false);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
 
         // Assert
         _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 4);

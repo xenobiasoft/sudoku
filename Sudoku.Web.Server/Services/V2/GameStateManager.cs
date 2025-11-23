@@ -144,6 +144,16 @@ public partial class GameManager : IGameStateManager
         await localStorageService.SaveGameStateAsync(Game);
     }
 
+    public async Task SaveGameAsync(int row, int column, int? value)
+    {
+        var response = await gameApiClient.MakeMoveAsync(Game.PlayerAlias, Game.Id, row, column, value);
+        if (!response.IsSuccess)
+        {
+            throw new Exception("Failed to save move.");
+        }
+        Game = await LoadGameAsync(Game.PlayerAlias, Game.Id, forceRefresh: true);
+    }
+
     public async Task<GameModel> UndoGameAsync()
     {
         if (Game!.Statistics.TotalMoves < 1)

@@ -118,7 +118,7 @@ public class GamePageTests : TestContext
         await sut.InvokeAsync(() => buttonGroup.OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(3)));
 
         // Assert
-        _mockGameManager.VerifyMoveRecorded(Times.Once);
+        _mockGameManager.VerifyMoveRecorded(cellInput.Cell.Row, cellInput.Cell.Column, 3, Times.Once);
     }
 
     [Fact]
