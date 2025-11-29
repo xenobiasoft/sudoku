@@ -36,7 +36,7 @@ public partial class GameManager : IGameStatisticsManager
         Game.Status = Game.IsSolved() ? GameStatus.Completed : GameStatus.Abandoned;
         gameTimer.OnTick -= OnTimerTick;
         gameTimer.Reset();
-        await SaveGameAsync();
+        await SaveGameStatusAsync();
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ public partial class GameManager : IGameStatisticsManager
     {
         Game.Status = GameStatus.Paused;
         gameTimer.Pause();
-        await SaveGameAsync();
+        await SaveGameStatusAsync();
     }
 
     /// <summary>
@@ -80,7 +80,7 @@ public partial class GameManager : IGameStatisticsManager
         Game.Status = GameStatus.InProgress;
         var playDuration = CurrentStatistics.PlayDuration;
         gameTimer.Resume(playDuration);
-        return Task.CompletedTask;
+        return SaveGameStatusAsync();
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public partial class GameManager : IGameStatisticsManager
         gameTimer.Reset();
         gameTimer.Start();
         gameTimer.OnTick += OnTimerTick;
-        await SaveGameAsync();
+        await SaveGameStatusAsync();
     }
 
     private void OnTimerTick(object? sender, TimeSpan elapsedTime)

@@ -470,6 +470,11 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
         }
     }
 
+    public async Task SaveGameStatusAsync(string alias, string gameId, string gameStatus)
+    {
+        throw new NotImplementedException();
+    }
+
     /// <summary>
     /// Attempts to undo the last move for a specified player in a given game.
     /// </summary>

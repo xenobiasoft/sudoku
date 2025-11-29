@@ -2,6 +2,7 @@
 using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services.Abstractions.V2;
 using Sudoku.Web.Server.Services.HttpClients;
+using Sudoku.Web.Server.Services.States;
 using Sudoku.Web.Server.Services.V2;
 
 namespace UnitTests.Web.Services.V2;
@@ -595,6 +596,20 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
 
         // Act & Assert
         await Assert.ThrowsAsync<NullReferenceException>(() => sut.ResetGameAsync());
+    }
+
+    [Fact]
+    public async Task SaveGameStatusAsync_CallsApiClient_SaveGameStatusAsync()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        SetGameProperty(sut, CreateTestGameModel());
+
+        // Act
+        await sut.SaveGameStatusAsync();
+
+        // Assert
+        _mockGameApiClient.VerifySavesGameStatus(TestAlias, TestGameId, GameStatus.InProgress, Times.Once);
     }
 
     [Fact]

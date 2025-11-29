@@ -154,6 +154,11 @@ public partial class GameManager : IGameStateManager
         Game = await LoadGameAsync(Game.PlayerAlias, Game.Id, forceRefresh: true);
     }
 
+    public async Task SaveGameStatusAsync()
+    {
+        await gameApiClient.SaveGameStatusAsync(Game.PlayerAlias, Game.Id, Game.Status);
+    }
+
     public async Task<GameModel> UndoGameAsync()
     {
         if (Game!.Statistics.TotalMoves < 1)

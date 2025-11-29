@@ -16,8 +16,8 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     private readonly Mock<IGameTimer> _mockGameTimer;
     private readonly GameModel _testGame;
 
-    private string _testAlias;
-    private string _testGameId;
+    private readonly string _testAlias;
+    private readonly string _testGameId;
 
     public GameStatisticsManagerTests()
     {
@@ -82,6 +82,21 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
+    public async Task EndSession_WhenGameCompleted_SavesGameStatus()
+    {
+        // Arrange
+        var game = GameModelFactory.GetSolvedPuzzle();
+        var sut = ResolveSut();
+        SetGameProperty(sut, game);
+
+        // Act
+        await sut.EndSession();
+
+        // Assert
+        _mockGameApiClient.VerifySavesGameStatus(game.PlayerAlias, game.Id, GameStatus.Completed, Times.Once);
+    }
+
+    [Fact]
     public async Task EndSession_WhenGameNotComplete_SetsGameStatusToAbandoned()
     {
         // Arrange
@@ -96,7 +111,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
-    public async Task EndSession_SavesGame()
+    public async Task EndSession_WhenGameNotComplete_SavesGameStatus()
     {
         // Arrange
         var sut = ResolveSut();
@@ -106,7 +121,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         await sut.EndSession();
 
         // Assert
-        _mockGameApiClient.Verify(x => x.SaveGameAsync(_testGame), Times.Once);
+        _mockGameApiClient.VerifySavesGameStatus(_testAlias, _testGameId, GameStatus.Abandoned, Times.Once);
     }
 
     [Fact]
@@ -201,7 +216,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
-    public async Task PauseSession_SavesGame()
+    public async Task PauseSession_SavesGameStatus()
     {
         // Arrange
         var sut = ResolveSut();
@@ -211,7 +226,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         await sut.PauseSession();
 
         // Assert
-        _mockGameApiClient.Verify(x => x.SaveGameAsync(_testGame), Times.Once);
+        _mockGameApiClient.VerifySavesGameStatus(_testAlias, _testGameId, GameStatus.Paused, Times.Once);
     }
 
     [Fact]
@@ -245,7 +260,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         await sut.RecordMove(row, column, value, false);
 
         // Assert
-        _mockGameApiClient.VerifyMakesMove(_testAlias, _testGameId, row, column, value);
+        _mockGameApiClient.VerifyMakesMove(_testAlias, _testGameId, row, column, value, Times.Once);
     }
 
     [Fact]
@@ -356,6 +371,21 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
+    public async Task ResumeSession_SavesGameStatus()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        SetGameProperty(sut, _testGame);
+        _testGame.Statistics.SetPlayDuration(TimeSpan.Zero);
+
+        // Act
+        await sut.ResumeSession();
+
+        // Assert
+        _mockGameApiClient.VerifySavesGameStatus(_testAlias, _testGameId, GameStatus.InProgress, Times.Once);
+    }
+
+    [Fact]
     public async Task ResumeSession_SetsGameStatusToInProgress()
     {
         // Arrange
@@ -463,7 +493,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
-    public async Task StartNewSession_SavesGame()
+    public async Task StartNewSession_SavesGameStatus()
     {
         // Arrange
         var sut = ResolveSut();
@@ -473,7 +503,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         await sut.StartNewSession();
 
         // Assert
-        _mockGameApiClient.Verify(x => x.SaveGameAsync(_testGame), Times.Once);
+        _mockGameApiClient.VerifySavesGameStatus(_testAlias, _testGameId, GameStatus.InProgress, Times.Once);
     }
 
     private void SetGameProperty(IGameStatisticsManager gameStatisticsManager, GameModel game)
