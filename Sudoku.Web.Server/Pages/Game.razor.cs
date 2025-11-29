@@ -133,9 +133,61 @@ public partial class Game
         StateHasChanged();
     }
 
-    private void HandlePossibleValueChanged(CellPossibleValueChangedEventArgs arg)
+    // Now async: persist possible value changes through GameManager
+    private async Task HandlePossibleValueChanged(CellPossibleValueChangedEventArgs arg)
     {
-        UpdatePossibleValues(arg.Value);
+        // Ensure we have a selected cell
+        if (SelectedCell == null) return;
+
+        var row = SelectedCell.Row;
+        var column = SelectedCell.Column;
+
+        if (!arg.Value.HasValue)
+        {
+            // Clear all possible values
+            SelectedCell.PossibleValues.Clear();
+            try
+            {
+                await GameManager.ClearPossibleValuesAsync(row, column);
+            }
+            catch
+            {
+                // ignore persistence failures for now
+            }
+        }
+        else
+        {
+            var val = arg.Value.Value;
+            var containsBefore = SelectedCell.PossibleValues.Contains(val);
+
+            if (containsBefore)
+            {
+                // remove
+                SelectedCell.PossibleValues.Remove(val);
+                try
+                {
+                    await GameManager.RemovePossibleValueAsync(row, column, val);
+                }
+                catch
+                {
+                    // ignore persistence failures for now
+                }
+            }
+            else
+            {
+                // add
+                SelectedCell.PossibleValues.Add(val);
+                try
+                {
+                    await GameManager.AddPossibleValueAsync(row, column, val);
+                }
+                catch
+                {
+                    // ignore persistence failures for now
+                }
+            }
+        }
+
         StateHasChanged();
     }
 

@@ -16,15 +16,26 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     private readonly Mock<IGameTimer> _mockGameTimer;
     private readonly GameModel _testGame;
 
+    private string _testAlias;
+    private string _testGameId;
+
     public GameStatisticsManagerTests()
     {
         _mockGameApiClient = Container.ResolveMock<IGameApiClient>();
         _mockGameTimer = Container.ResolveMock<IGameTimer>();
 
+        _testAlias = Container.Create<string>();
+        _testGameId = Container.Create<string>();
         _testGame = GameModelFactory
             .Build()
             .WithStatus(GameStatus.NotStarted)
+            .WithPlayerAlias(_testAlias)
+            .WithId(_testGameId)
             .Create();
+
+        _mockGameApiClient
+            .Setup(x => x.GetGameAsync(_testAlias, _testGameId))
+            .ReturnsAsync(ApiResult<GameModel>.Success(_testGame));
     }
 
     [Fact]
@@ -204,23 +215,6 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
-    public async Task RecordMove_ValidMove_RecordsValidMove()
-    {
-        // Arrange
-        var sut = ResolveSut();
-        SetGameProperty(sut, _testGame);
-        var initialTotalMoves = _testGame.Statistics.TotalMoves;
-        var initialInvalidMoves = _testGame.Statistics.InvalidMoves;
-
-        // Act
-        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
-
-        // Assert
-        _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 1);
-        _testGame.Statistics.InvalidMoves.Should().Be(initialInvalidMoves);
-    }
-
-    [Fact]
     public async Task RecordMove_InvalidMove_RecordsInvalidMove()
     {
         // Arrange
@@ -238,31 +232,58 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
-    public async Task RecordMove_ValidMove_SavesGame()
-    {
-        // Arrange
-        var sut = ResolveSut();
-        SetGameProperty(sut, _testGame);
-
-        // Act
-        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
-
-        // Assert
-        _mockGameApiClient.Verify(x => x.SaveGameAsync(_testGame), Times.Once);
-    }
-
-    [Fact]
     public async Task RecordMove_InvalidMove_SavesGame()
     {
         // Arrange
+        var row = Container.Create<int>();
+        var column = Container.Create<int>();
+        var value = Container.Create<int>();
         var sut = ResolveSut();
         SetGameProperty(sut, _testGame);
 
         // Act
+        await sut.RecordMove(row, column, value, false);
+
+        // Assert
+        _mockGameApiClient.VerifyMakesMove(_testAlias, _testGameId, row, column, value);
+    }
+
+    [Fact]
+    public async Task RecordMove_MixedValidAndInvalidMoves_CalculatesCorrectly()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        SetGameProperty(sut, _testGame);
+        var initialTotalMoves = sut.CurrentStatistics.TotalMoves;
+
+        // Act
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
         await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
 
         // Assert
-        _mockGameApiClient.Verify(x => x.SaveGameAsync(_testGame), Times.Once);
+        sut.CurrentStatistics.TotalMoves.Should().Be(initialTotalMoves + 4);
+        sut.CurrentStatistics.InvalidMoves.Should().Be(2);
+        sut.CurrentStatistics.ValidMoves.Should().Be(initialTotalMoves + 2);
+    }
+
+    [Fact]
+    public async Task RecordMove_MultipleInvalidMoves_IncrementsCountCorrectly()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        SetGameProperty(sut, _testGame);
+        var initialTotalMoves = _testGame.Statistics.TotalMoves;
+
+        // Act
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
+
+        // Assert
+        _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 2);
+        _testGame.Statistics.InvalidMoves.Should().Be(2);
+        _testGame.Statistics.ValidMoves.Should().Be(initialTotalMoves);
     }
 
     [Fact]
@@ -285,41 +306,37 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
-    public async Task RecordMove_MultipleInvalidMoves_IncrementsCountCorrectly()
+    public async Task RecordMove_ValidMove_RecordsValidMove()
     {
         // Arrange
         var sut = ResolveSut();
         SetGameProperty(sut, _testGame);
         var initialTotalMoves = _testGame.Statistics.TotalMoves;
+        var initialInvalidMoves = _testGame.Statistics.InvalidMoves;
 
         // Act
-        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
-        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
 
         // Assert
-        _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 2);
-        _testGame.Statistics.InvalidMoves.Should().Be(2);
-        _testGame.Statistics.ValidMoves.Should().Be(initialTotalMoves);
+        _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 1);
+        _testGame.Statistics.InvalidMoves.Should().Be(initialInvalidMoves);
     }
 
     [Fact]
-    public async Task RecordMove_MixedValidAndInvalidMoves_CalculatesCorrectly()
+    public async Task RecordMove_ValidMove_SavesGame()
     {
         // Arrange
+        var row = Container.Create<int>();
+        var column = Container.Create<int>();
+        var value = Container.Create<int>();
         var sut = ResolveSut();
         SetGameProperty(sut, _testGame);
-        var initialTotalMoves = _testGame.Statistics.TotalMoves;
 
         // Act
-        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
-        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
-        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
-        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
+        await sut.RecordMove(row, column, value, true);
 
         // Assert
-        _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 4);
-        _testGame.Statistics.InvalidMoves.Should().Be(2);
-        _testGame.Statistics.ValidMoves.Should().Be(initialTotalMoves + 2);
+        _mockGameApiClient.Verify(x => x.MakeMoveAsync(_testAlias, _testGameId, row, column, value), Times.Once);
     }
 
     [Fact]

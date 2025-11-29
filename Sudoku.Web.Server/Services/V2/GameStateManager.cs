@@ -171,4 +171,62 @@ public partial class GameManager : IGameStateManager
 
         return Game;
     }
+
+    public async Task AddPossibleValueAsync(int row, int column, int value)
+    {
+        var response = await gameApiClient.AddPossibleValueAsync(Game.PlayerAlias, Game.Id, row, column, value);
+        if (!response.IsSuccess)
+        {
+            throw new Exception("Failed to add possible value.");
+        }
+
+        // Update local model and persist
+        var cell = Game.Cells.FirstOrDefault(c => c.Row == row && c.Column == column);
+        if (cell != null)
+        {
+            if (!cell.PossibleValues.Contains(value))
+            {
+                cell.PossibleValues.Add(value);
+            }
+        }
+
+        await localStorageService.SaveGameStateAsync(Game);
+    }
+
+    public async Task RemovePossibleValueAsync(int row, int column, int value)
+    {
+        var response = await gameApiClient.RemovePossibleValueAsync(Game.PlayerAlias, Game.Id, row, column, value);
+        if (!response.IsSuccess)
+        {
+            throw new Exception("Failed to remove possible value.");
+        }
+
+        var cell = Game.Cells.FirstOrDefault(c => c.Row == row && c.Column == column);
+        if (cell != null)
+        {
+            if (cell.PossibleValues.Contains(value))
+            {
+                cell.PossibleValues.Remove(value);
+            }
+        }
+
+        await localStorageService.SaveGameStateAsync(Game);
+    }
+
+    public async Task ClearPossibleValuesAsync(int row, int column)
+    {
+        var response = await gameApiClient.ClearPossibleValuesAsync(Game.PlayerAlias, Game.Id, row, column);
+        if (!response.IsSuccess)
+        {
+            throw new Exception("Failed to clear possible values.");
+        }
+
+        var cell = Game.Cells.FirstOrDefault(c => c.Row == row && c.Column == column);
+        if (cell != null)
+        {
+            cell.PossibleValues.Clear();
+        }
+
+        await localStorageService.SaveGameStateAsync(Game);
+    }
 }
