@@ -38,10 +38,10 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
             new List<CellDto>()
         );
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<CreateGameCommand>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<CreateGameCommand>(), CancellationToken.None))
             .ReturnsAsync(Result.Success());
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<GetPlayerGamesQuery>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<GetPlayerGamesQuery>(), CancellationToken.None))
             .ReturnsAsync(Result<List<GameDto>>.Success(new List<GameDto> { gameDto }));
 
         var sut = ResolveSut();
@@ -65,7 +65,7 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
         var difficulty = "Medium";
         var errorMessage = "Failed to create game";
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<CreateGameCommand>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<CreateGameCommand>(), CancellationToken.None))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         var sut = ResolveSut();
@@ -86,10 +86,10 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
         var difficulty = "Medium";
         var errorMessage = "Failed to get player games";
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<CreateGameCommand>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<CreateGameCommand>(), CancellationToken.None))
             .ReturnsAsync(Result.Success());
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<GetPlayerGamesQuery>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<GetPlayerGamesQuery>(), CancellationToken.None))
             .ReturnsAsync(Result<List<GameDto>>.Failure(errorMessage));
 
         var sut = ResolveSut();
@@ -109,10 +109,10 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
         var playerAlias = "TestPlayer";
         var difficulty = "Medium";
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<CreateGameCommand>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<CreateGameCommand>(), CancellationToken.None))
             .ReturnsAsync(Result.Success());
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<GetPlayerGamesQuery>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<GetPlayerGamesQuery>(), CancellationToken.None))
             .ReturnsAsync(Result<List<GameDto>>.Success(new List<GameDto>()));
 
         var sut = ResolveSut();
@@ -143,7 +143,7 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
             new List<CellDto>()
         );
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<GetGameQuery>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<GetGameQuery>(), CancellationToken.None))
             .ReturnsAsync(Result<GameDto>.Success(gameDto));
 
         var sut = ResolveSut();
@@ -164,7 +164,7 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
         var gameId = Guid.NewGuid().ToString();
         var errorMessage = "Game not found";
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<GetGameQuery>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<GetGameQuery>(), CancellationToken.None))
             .ReturnsAsync(Result<GameDto>.Failure(errorMessage));
 
         var sut = ResolveSut();
@@ -198,7 +198,7 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
             )
         };
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<GetPlayerGamesQuery>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<GetPlayerGamesQuery>(), CancellationToken.None))
             .ReturnsAsync(Result<List<GameDto>>.Success(games));
 
         var sut = ResolveSut();
@@ -235,7 +235,7 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
             )
         };
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<GetPlayerGamesByStatusQuery>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<GetPlayerGamesByStatusQuery>(), CancellationToken.None))
             .ReturnsAsync(Result<List<GameDto>>.Success(games));
 
         var sut = ResolveSut();
@@ -259,13 +259,13 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
         var column = 0;
         var value = 5;
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<MakeMoveCommand>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<MakeMoveCommand>(), CancellationToken.None))
             .ReturnsAsync(Result.Success());
 
         var sut = ResolveSut();
 
         // Act
-        var result = await sut.MakeMoveAsync(gameId, row, column, value);
+        var result = await sut.MakeMoveAsync(gameId, row, column, value, TimeSpan.FromSeconds(30));
 
         // Assert
         result.IsSuccess.Should().BeTrue();
@@ -281,13 +281,13 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
         var value = 5;
         var errorMessage = "Invalid move";
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<MakeMoveCommand>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<MakeMoveCommand>(), CancellationToken.None))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         var sut = ResolveSut();
 
         // Act
-        var result = await sut.MakeMoveAsync(gameId, row, column, value);
+        var result = await sut.MakeMoveAsync(gameId, row, column, value, TimeSpan.FromSeconds(30));
 
         // Assert
         result.IsSuccess.Should().BeFalse();
@@ -301,7 +301,7 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
         var gameId = Guid.NewGuid().ToString();
         var status = "InProgress";
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<ResumeGameCommand>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<ResumeGameCommand>(), CancellationToken.None))
             .ReturnsAsync(Result.Success());
 
         var sut = ResolveSut();
@@ -320,7 +320,7 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
         var gameId = Guid.NewGuid().ToString();
         var status = "Paused";
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<PauseGameCommand>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<PauseGameCommand>(), CancellationToken.None))
             .ReturnsAsync(Result.Success());
 
         var sut = ResolveSut();
@@ -339,7 +339,7 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
         var gameId = Guid.NewGuid().ToString();
         var status = "Abandoned";
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<AbandonGameCommand>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<AbandonGameCommand>(), CancellationToken.None))
             .ReturnsAsync(Result.Success());
 
         var sut = ResolveSut();
@@ -358,7 +358,7 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
         var gameId = Guid.NewGuid().ToString();
         var status = "Completed";
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<CompleteGameCommand>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<CompleteGameCommand>(), CancellationToken.None))
             .ReturnsAsync(Result.Success());
 
         var sut = ResolveSut();
@@ -412,7 +412,7 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
         var status = "InProgress";
         var errorMessage = "Failed to resume";
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<ResumeGameCommand>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<ResumeGameCommand>(), CancellationToken.None))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         var sut = ResolveSut();
@@ -433,7 +433,7 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
         var status = "Completed";
         var errorMessage = "Failed to complete game";
 
-        _mockMediator.Setup(m => m.Send(It.IsAny<CompleteGameCommand>(), default))
+        _mockMediator.Setup(m => m.Send(It.IsAny<CompleteGameCommand>(), CancellationToken.None))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         var sut = ResolveSut();

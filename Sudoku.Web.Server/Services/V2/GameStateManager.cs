@@ -146,7 +146,7 @@ public partial class GameManager : IGameStateManager
 
     public async Task SaveGameAsync(int row, int column, int? value)
     {
-        var response = await gameApiClient.MakeMoveAsync(Game.PlayerAlias, Game.Id, row, column, value);
+        var response = await gameApiClient.MakeMoveAsync(Game.PlayerAlias, Game.Id, row, column, value, CurrentStatistics.PlayDuration);
         if (!response.IsSuccess)
         {
             throw new Exception("Failed to save move.");

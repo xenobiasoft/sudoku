@@ -324,16 +324,17 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
     /// <param name="row">The row index of the move. Must be a valid row within the game board.</param>
     /// <param name="column">The column index of the move. Must be a valid column within the game board.</param>
     /// <param name="value">The optional value associated with the move, if applicable.</param>
+    /// <param name="playDuration">The duration of the player's turn.</param>
     /// <returns>An <see cref="ApiResult{T}"/> containing the result of the move operation.  If successful, the result contains
     /// an empty object. If the operation fails, the result contains an error message.</returns>
-    public async Task<ApiResult<bool>> MakeMoveAsync(string alias, string gameId, int row, int column, int? value)
+    public async Task<ApiResult<bool>> MakeMoveAsync(string alias, string gameId, int row, int column, int? value, TimeSpan playDuration)
     {
         try
         {
             _logger.LogInformation("Making move for game {GameId}, player: {Alias}, position: ({Row}, {Column}), value: {Value}", 
                 gameId, alias, row, column, value);
             
-            var request = new MoveRequest(row, column, value);
+            var request = new MoveRequest(row, column, value, playDuration);
             var response = await _httpClient.PutAsJsonAsync($"api/players/{Uri.EscapeDataString(alias)}/games/{Uri.EscapeDataString(gameId)}", request, _jsonOptions);
 
             if (response.IsSuccessStatusCode)

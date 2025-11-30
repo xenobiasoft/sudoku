@@ -77,9 +77,10 @@ public interface IGameApiClient
     /// <param name="row">The zero-based row index where the move will be placed. Must be within the valid range for the game board.</param>
     /// <param name="column">The zero-based column index where the move will be placed. Must be within the valid range for the game board.</param>
     /// <param name="value">The value to place at the specified position, if applicable. If null, the default move value will be used.</param>
+    /// <param name="playDuration">The duration of the player's turn.</param>
     /// <returns>A task that represents the asynchronous operation. The result contains an ApiResult indicating whether the move
     /// was successful (<see langword="true"/> if the move was made; otherwise, <see langword="false"/>).</returns>
-    Task<ApiResult<bool>> MakeMoveAsync(string alias, string gameId, int row, int column, int? value);
+    Task<ApiResult<bool>> MakeMoveAsync(string alias, string gameId, int row, int column, int? value, TimeSpan playDuration);
 
     /// <summary>
     /// Removes a possible value from a cell

@@ -48,6 +48,7 @@ public partial class GameManager : IGameStatisticsManager
     public async Task PauseSession()
     {
         Game.Status = GameStatus.Paused;
+        gameTimer.OnTick -= OnTimerTick;
         gameTimer.Pause();
         await SaveGameStatusAsync();
     }
@@ -79,6 +80,7 @@ public partial class GameManager : IGameStatisticsManager
     {
         Game.Status = GameStatus.InProgress;
         var playDuration = CurrentStatistics.PlayDuration;
+        gameTimer.OnTick += OnTimerTick;
         gameTimer.Resume(playDuration);
         return SaveGameStatusAsync();
     }

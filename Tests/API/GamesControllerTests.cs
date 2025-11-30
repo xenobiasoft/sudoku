@@ -254,7 +254,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var move = new MoveRequest(1, 1, 5);
+        var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
         var game = CreateTestGameDto(playerAlias, "Medium", gameId);
         
         _mockGameService
@@ -262,7 +262,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
             .ReturnsAsync(Result<GameDto>.Success(game));
         
         _mockGameService
-            .Setup(x => x.MakeMoveAsync(gameId, move.Row, move.Column, move.Value))
+            .Setup(x => x.MakeMoveAsync(gameId, move.Row, move.Column, move.Value, move.PlayDuration))
             .ReturnsAsync(Result.Success());
 
         // Act
@@ -278,7 +278,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         // Arrange
         var emptyAlias = string.Empty;
         var gameId = Guid.NewGuid().ToString();
-        var move = new MoveRequest(1, 1, 5);
+        var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
 
         // Act
         var result = await _sut.UpdateGameAsync(emptyAlias, gameId, move);
@@ -293,7 +293,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         // Arrange
         var playerAlias = "TestPlayer";
         var emptyGameId = string.Empty;
-        var move = new MoveRequest(1, 1, 5);
+        var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
 
         // Act
         var result = await _sut.UpdateGameAsync(playerAlias, emptyGameId, move);
@@ -308,7 +308,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var move = new MoveRequest(1, 1, 5);
+        var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
         var errorMessage = "Failed to get game";
         
         _mockGameService
@@ -329,7 +329,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var move = new MoveRequest(1, 1, 5);
+        var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
         var differentPlayerAlias = "OtherPlayer";
         var game = CreateTestGameDto(differentPlayerAlias, "Medium", gameId);
         
@@ -350,7 +350,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var move = new MoveRequest(1, 1, 5);
+        var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
         var game = CreateTestGameDto(playerAlias, "Medium", gameId);
         var errorMessage = "Failed to make move";
         
@@ -359,7 +359,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
             .ReturnsAsync(Result<GameDto>.Success(game));
         
         _mockGameService
-            .Setup(x => x.MakeMoveAsync(gameId, move.Row, move.Column, move.Value))
+            .Setup(x => x.MakeMoveAsync(gameId, move.Row, move.Column, move.Value, move.PlayDuration))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         // Act

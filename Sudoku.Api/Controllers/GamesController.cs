@@ -260,7 +260,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
         var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
         if (error != null) return error;
 
-        var result = await gameService.MakeMoveAsync(gameId, move.Row, move.Column, move.Value);
+        var result = await gameService.MakeMoveAsync(gameId, move.Row, move.Column, move.Value, move.PlayDuration);
         return HandleUnitResult(result);
     }
 

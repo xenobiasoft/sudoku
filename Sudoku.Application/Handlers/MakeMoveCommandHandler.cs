@@ -21,6 +21,7 @@ public class MakeMoveCommandHandler(IGameRepository gameRepository) : ICommandHa
             }
 
             game.MakeMove(request.Row, request.Column, request.Value);
+            game.UpdatePlayDuration(request.PlayDuration);
 
             await gameRepository.SaveAsync(game);
 

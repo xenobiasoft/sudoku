@@ -351,7 +351,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         await sut.RecordMove(row, column, value, true);
 
         // Assert
-        _mockGameApiClient.Verify(x => x.MakeMoveAsync(_testAlias, _testGameId, row, column, value), Times.Once);
+        _mockGameApiClient.VerifyMakesMove(_testAlias, _testGameId, row, column, value, Times.Once);
     }
 
     [Fact]

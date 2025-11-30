@@ -26,7 +26,7 @@ public class MakeMoveCommandHandlerTests : BaseTestByAbstraction<MakeMoveCommand
         var column = 0;
         var value = 5;
         var game = CreateTestGameInProgress();
-        var command = new MakeMoveCommand(gameId, row, column, value);
+        var command = new MakeMoveCommand(gameId, row, column, value, TimeSpan.FromSeconds(30));
 
         _mockGameRepository.Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
             .ReturnsAsync(game);
@@ -53,7 +53,7 @@ public class MakeMoveCommandHandlerTests : BaseTestByAbstraction<MakeMoveCommand
         var row = 0;
         var column = 0;
         var value = 5;
-        var command = new MakeMoveCommand(gameId, row, column, value);
+        var command = new MakeMoveCommand(gameId, row, column, value, TimeSpan.FromSeconds(30));
 
         _mockGameRepository.Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
             .ReturnsAsync((SudokuGame?)null);
@@ -77,7 +77,7 @@ public class MakeMoveCommandHandlerTests : BaseTestByAbstraction<MakeMoveCommand
         var row = 0;
         var column = 0;
         var value = 5;
-        var command = new MakeMoveCommand(invalidGameId, row, column, value);
+        var command = new MakeMoveCommand(invalidGameId, row, column, value, TimeSpan.FromSeconds(30));
 
         var sut = ResolveSut();
 
@@ -97,7 +97,7 @@ public class MakeMoveCommandHandlerTests : BaseTestByAbstraction<MakeMoveCommand
         var row = 0;
         var column = 0;
         var value = 5;
-        var command = new MakeMoveCommand(gameId, row, column, value);
+        var command = new MakeMoveCommand(gameId, row, column, value, TimeSpan.FromSeconds(30));
 
         // Create a game with a cell that already has value 5, so attempting to place 5 in the same row will fail
         var game = CreateTestGameWithDuplicateValue();
@@ -125,7 +125,7 @@ public class MakeMoveCommandHandlerTests : BaseTestByAbstraction<MakeMoveCommand
         var column = 0;
         var value = 5;
         var game = CreateTestGameInProgress();
-        var command = new MakeMoveCommand(gameId, row, column, value);
+        var command = new MakeMoveCommand(gameId, row, column, value, TimeSpan.FromSeconds(30));
         var exceptionMessage = "Database error";
 
         _mockGameRepository.Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
@@ -153,7 +153,7 @@ public class MakeMoveCommandHandlerTests : BaseTestByAbstraction<MakeMoveCommand
         var column = 0;
         var value = 5;
         var game = CreateTestGameInProgress();
-        var command = new MakeMoveCommand(gameId, row, column, value);
+        var command = new MakeMoveCommand(gameId, row, column, value, TimeSpan.FromSeconds(30));
 
         _mockGameRepository.Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
             .ReturnsAsync(game);
@@ -179,7 +179,7 @@ public class MakeMoveCommandHandlerTests : BaseTestByAbstraction<MakeMoveCommand
         var row = 2;
         var column = 3;
         var value = 7;
-        var command = new MakeMoveCommand(gameId, row, column, value);
+        var command = new MakeMoveCommand(gameId, row, column, value, TimeSpan.FromSeconds(30));
 
         var game = CreateTestGameInProgress();
         var initialCellValue = game.GetCell(row, column).Value;
@@ -210,7 +210,7 @@ public class MakeMoveCommandHandlerTests : BaseTestByAbstraction<MakeMoveCommand
         var row = 0;
         var column = 0;
         var value = 5;
-        var command = new MakeMoveCommand(gameId, row, column, value);
+        var command = new MakeMoveCommand(gameId, row, column, value, TimeSpan.FromSeconds(30));
         var domainException = new GameNotInProgressException(GameId.Create(gameId));
 
         _mockGameRepository.Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
