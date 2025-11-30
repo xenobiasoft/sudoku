@@ -299,9 +299,15 @@ public class SudokuGame : AggregateRoot
 
     public void ResumeGame()
     {
-        if (Status != GameStatusEnum.Paused)
+        if (Status != GameStatusEnum.Paused && Status != GameStatusEnum.NotStarted)
         {
-            throw new GameNotPausedException($"Cannot resume game in {Status} state");
+            throw new GameNotPausedException($"Cannot resume game in {Status} state. Game must be NotStarted or Paused.");
+        }
+
+        // If starting from NotStarted, set the StartedAt timestamp
+        if (Status == GameStatusEnum.NotStarted)
+        {
+            StartedAt = DateTime.UtcNow;
         }
 
         Status = GameStatusEnum.InProgress;

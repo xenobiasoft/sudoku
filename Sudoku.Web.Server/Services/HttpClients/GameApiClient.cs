@@ -487,7 +487,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
         {
             _logger.LogInformation("Saving game status for game {GameId}, player: {Alias}", gameId, alias);
             
-            var response = await _httpClient.PostAsJsonAsync($"api/players/{Uri.EscapeDataString(alias)}/games/{Uri.EscapeDataString(gameId)}/status", gameStatus, _jsonOptions);
+            var response = await _httpClient.PatchAsJsonAsync($"api/players/{Uri.EscapeDataString(alias)}/games/{Uri.EscapeDataString(gameId)}/status/{gameStatus}", _jsonOptions);
             if (response.IsSuccessStatusCode)
             {
                 _logger.LogInformation("Game status saved successfully for game {GameId}", gameId);

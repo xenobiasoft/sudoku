@@ -231,7 +231,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
     /// <returns>An <see cref="ActionResult"/> indicating the result of the operation. Returns 204 No Content if the update is
     /// successful, 400 Bad Request if the input is invalid or the update fails, or 404 Not Found if the game does not
     /// exist or does not belong to the specified player.</returns>
-    [HttpPatch("{gameId}/status")]
+    [HttpPatch("{gameId}/status/{gameStatus}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -288,9 +288,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
 
         return Ok(result.Value);
     }
-
-    // -- Helpers --
-
+    
     private async Task<(GameDto? game, ActionResult? error)> GetAuthorizedGameAsync(string alias, string gameId)
     {
         if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
