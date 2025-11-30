@@ -295,46 +295,11 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
     }
 
     [Fact]
-    public async Task StartGameAsync_WithValidGameId_ReturnsSuccessResult()
+    public async Task UpdateGameStatusAsync_InProgress_UsesResumeCommand()
     {
         // Arrange
         var gameId = Guid.NewGuid().ToString();
-
-        _mockMediator.Setup(m => m.Send(It.IsAny<StartGameCommand>(), default))
-            .ReturnsAsync(Result.Success());
-
-        var sut = ResolveSut();
-
-        // Act
-        var result = await sut.StartGameAsync(gameId);
-
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task PauseGameAsync_WithValidGameId_ReturnsSuccessResult()
-    {
-        // Arrange
-        var gameId = Guid.NewGuid().ToString();
-
-        _mockMediator.Setup(m => m.Send(It.IsAny<PauseGameCommand>(), default))
-            .ReturnsAsync(Result.Success());
-
-        var sut = ResolveSut();
-
-        // Act
-        var result = await sut.PauseGameAsync(gameId);
-
-        // Assert
-        result.IsSuccess.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task ResumeGameAsync_WithValidGameId_ReturnsSuccessResult()
-    {
-        // Arrange
-        var gameId = Guid.NewGuid().ToString();
+        var status = "InProgress";
 
         _mockMediator.Setup(m => m.Send(It.IsAny<ResumeGameCommand>(), default))
             .ReturnsAsync(Result.Success());
@@ -342,17 +307,37 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
         var sut = ResolveSut();
 
         // Act
-        var result = await sut.ResumeGameAsync(gameId);
+        var result = await sut.UpdateGameStatusAsync(gameId, status);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
     }
 
     [Fact]
-    public async Task AbandonGameAsync_WithValidGameId_ReturnsSuccessResult()
+    public async Task UpdateGameStatusAsync_Paused_UsesPauseCommand()
     {
         // Arrange
         var gameId = Guid.NewGuid().ToString();
+        var status = "Paused";
+
+        _mockMediator.Setup(m => m.Send(It.IsAny<PauseGameCommand>(), default))
+            .ReturnsAsync(Result.Success());
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.UpdateGameStatusAsync(gameId, status);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task UpdateGameStatusAsync_Abandoned_UsesAbandonCommand()
+    {
+        // Arrange
+        var gameId = Guid.NewGuid().ToString();
+        var status = "Abandoned";
 
         _mockMediator.Setup(m => m.Send(It.IsAny<AbandonGameCommand>(), default))
             .ReturnsAsync(Result.Success());
@@ -360,9 +345,104 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
         var sut = ResolveSut();
 
         // Act
-        var result = await sut.AbandonGameAsync(gameId);
+        var result = await sut.UpdateGameStatusAsync(gameId, status);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task UpdateGameStatusAsync_Completed_UsesCompleteCommand()
+    {
+        // Arrange
+        var gameId = Guid.NewGuid().ToString();
+        var status = "Completed";
+
+        _mockMediator.Setup(m => m.Send(It.IsAny<CompleteGameCommand>(), default))
+            .ReturnsAsync(Result.Success());
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.UpdateGameStatusAsync(gameId, status);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task UpdateGameStatusAsync_NotStarted_ReturnsFailure()
+    {
+        // Arrange
+        var gameId = Guid.NewGuid().ToString();
+        var status = "NotStarted";
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.UpdateGameStatusAsync(gameId, status);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be("Cannot manually set status to NotStarted");
+    }
+
+    [Fact]
+    public async Task UpdateGameStatusAsync_InvalidStatus_ReturnsFailure()
+    {
+        // Arrange
+        var gameId = Guid.NewGuid().ToString();
+        var status = "NotAStatus";
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.UpdateGameStatusAsync(gameId, status);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be($"Invalid game status: {status}");
+    }
+
+    [Fact]
+    public async Task UpdateGameStatusAsync_WhenMediatorReturnsFailure_PropagatesFailure()
+    {
+        // Arrange
+        var gameId = Guid.NewGuid().ToString();
+        var status = "InProgress";
+        var errorMessage = "Failed to resume";
+
+        _mockMediator.Setup(m => m.Send(It.IsAny<ResumeGameCommand>(), default))
+            .ReturnsAsync(Result.Failure(errorMessage));
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.UpdateGameStatusAsync(gameId, status);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be(errorMessage);
+    }
+
+    [Fact]
+    public async Task UpdateGameStatusAsync_Completed_WhenMediatorFails_PropagatesFailure()
+    {
+        // Arrange
+        var gameId = Guid.NewGuid().ToString();
+        var status = "Completed";
+        var errorMessage = "Failed to complete game";
+
+        _mockMediator.Setup(m => m.Send(It.IsAny<CompleteGameCommand>(), default))
+            .ReturnsAsync(Result.Failure(errorMessage));
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.UpdateGameStatusAsync(gameId, status);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be(errorMessage);
     }
 }

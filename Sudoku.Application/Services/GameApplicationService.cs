@@ -4,17 +4,12 @@ using Sudoku.Application.Commands;
 using Sudoku.Application.Queries;
 using Sudoku.Application.DTOs;
 using Sudoku.Application.Interfaces;
+using Sudoku.Domain.Enums;
 
 namespace Sudoku.Application.Services;
 
 public class GameApplicationService(IMediator mediator) : IGameApplicationService
 {
-    public async Task<Result> AbandonGameAsync(string gameId)
-    {
-        var command = new AbandonGameCommand(gameId);
-        return await mediator.Send(command);
-    }
-
     public async Task<Result> AddPossibleValueAsync(string gameId, int row, int column, int value)
     {
         var command = new AddPossibleValueCommand(gameId, row, column, value);
@@ -91,12 +86,6 @@ public class GameApplicationService(IMediator mediator) : IGameApplicationServic
         return await mediator.Send(command);
     }
 
-    public async Task<Result> PauseGameAsync(string gameId)
-    {
-        var command = new PauseGameCommand(gameId);
-        return await mediator.Send(command);
-    }
-
     public async Task<Result> RemovePossibleValueAsync(string gameId, int row, int column, int value)
     {
         var command = new RemovePossibleValueCommand(gameId, row, column, value);
@@ -109,22 +98,38 @@ public class GameApplicationService(IMediator mediator) : IGameApplicationServic
         return await mediator.Send(command);
     }
 
-    public async Task<Result> ResumeGameAsync(string gameId)
-    {
-        var command = new ResumeGameCommand(gameId);
-        return await mediator.Send(command);
-    }
-
-    public async Task<Result> StartGameAsync(string gameId)
-    {
-        var command = new StartGameCommand(gameId);
-        return await mediator.Send(command);
-    }
-
     public async Task<Result> UndoLastMoveAsync(string gameId)
     {
         var command = new UndoLastMoveCommand(gameId);
         return await mediator.Send(command);
+    }
+
+    public async Task<Result> UpdateGameStatusAsync(string gameId, string gameStatus)
+    {
+        if (string.IsNullOrWhiteSpace(gameId))
+        {
+            return Result.Failure("Game id cannot be null or empty");
+        }
+
+        if (string.IsNullOrWhiteSpace(gameStatus))
+        {
+            return Result.Failure("Game status cannot be null or empty");
+        }
+
+        if (!Enum.TryParse<GameStatusEnum>(gameStatus, true, out var status))
+        {
+            return Result.Failure($"Invalid game status: {gameStatus}");
+        }
+
+        return status switch
+        {
+            GameStatusEnum.NotStarted => Result.Failure("Cannot manually set status to NotStarted"),
+            GameStatusEnum.InProgress => await mediator.Send(new ResumeGameCommand(gameId)),
+            GameStatusEnum.Paused => await mediator.Send(new PauseGameCommand(gameId)),
+            GameStatusEnum.Abandoned => await mediator.Send(new AbandonGameCommand(gameId)),
+            GameStatusEnum.Completed => await mediator.Send(new CompleteGameCommand(gameId)),
+            _ => Result.Failure($"Unsupported game status: {gameStatus}")
+        };
     }
 
     public async Task<Result<ValidationResultDto>> ValidateGameAsync(string gameId)

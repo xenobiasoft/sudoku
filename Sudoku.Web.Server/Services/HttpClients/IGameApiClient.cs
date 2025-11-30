@@ -115,7 +115,7 @@ public interface IGameApiClient
     /// <param name="gameId">The identifier of the game for which the status is being saved. Cannot be null or empty.</param>
     /// <param name="gameStatus">The serialized status data of the game to be saved. Cannot be null or empty.</param>
     /// <returns>A task that represents the asynchronous save operation.</returns>
-    Task SaveGameStatusAsync(string alias, string gameId, string gameStatus);
+    Task<ApiResult<bool>> SaveGameStatusAsync(string alias, string gameId, string gameStatus);
 
     /// <summary>
     /// Undoes the last move in a game

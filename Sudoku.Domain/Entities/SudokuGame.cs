@@ -407,7 +407,7 @@ public class SudokuGame : AggregateRoot
         return true;
     }
 
-    private void CompleteGame()
+    public void CompleteGame()
     {
         Status = GameStatusEnum.Completed;
         CompletedAt = DateTime.UtcNow;

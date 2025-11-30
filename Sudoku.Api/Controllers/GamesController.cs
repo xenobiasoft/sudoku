@@ -16,37 +16,17 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
     /// <param name="gameId">The game id</param>
     /// <param name="request">The possible value request</param>
     /// <returns>Success or failure result</returns>
-    [HttpPost("{gameId}/possiblevalues")]
+    [HttpPost("{gameId}/possible-values")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> AddPossibleValueAsync(string alias, string gameId, [FromBody] PossibleValueRequest request)
     {
-        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
-        {
-            return BadRequest("Player alias and game id cannot be null or empty.");
-        }
-
-        // Verify the game exists and belongs to the player
-        var gameResult = await gameService.GetGameAsync(gameId);
-        if (!gameResult.IsSuccess)
-        {
-            return BadRequest(gameResult.Error);
-        }
-        
-        if (gameResult.Value.PlayerAlias != alias)
-        {
-            return NotFound();
-        }
+        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+        if (error != null) return error;
 
         var result = await gameService.AddPossibleValueAsync(gameId, request.Row, request.Column, request.Value);
-        
-        if (!result.IsSuccess)
-        {
-            return BadRequest(result.Error);
-        }
-        
-        return NoContent();
+        return HandleUnitResult(result);
     }
 
     /// <summary>
@@ -56,37 +36,17 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
     /// <param name="gameId">The game id</param>
     /// <param name="request">The cell request</param>
     /// <returns>Success or failure result</returns>
-    [HttpDelete("{gameId}/possiblevalues/clear")]
+    [HttpDelete("{gameId}/possible-values/clear")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> ClearPossibleValuesAsync(string alias, string gameId, [FromBody] CellRequest request)
     {
-        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
-        {
-            return BadRequest("Player alias and game id cannot be null or empty.");
-        }
-
-        // Verify the game exists and belongs to the player
-        var gameResult = await gameService.GetGameAsync(gameId);
-        if (!gameResult.IsSuccess)
-        {
-            return BadRequest(gameResult.Error);
-        }
-        
-        if (gameResult.Value.PlayerAlias != alias)
-        {
-            return NotFound();
-        }
+        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+        if (error != null) return error;
 
         var result = await gameService.ClearPossibleValuesAsync(gameId, request.Row, request.Column);
-        
-        if (!result.IsSuccess)
-        {
-            return BadRequest(result.Error);
-        }
-        
-        return NoContent();
+        return HandleUnitResult(result);
     }
 
     /// <summary>
@@ -106,12 +66,12 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
         }
 
         var result = await gameService.CreateGameAsync(alias, difficulty);
-        
+
         if (!result.IsSuccess)
         {
             return BadRequest(result.Error);
         }
-        
+
         return Created($"/api/players/{alias}/games/{result.Value.Id}", result.Value);
     }
 
@@ -131,12 +91,12 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
         }
 
         var result = await gameService.DeletePlayerGamesAsync(alias);
-        
+
         if (!result.IsSuccess)
         {
             return BadRequest(result.Error);
         }
-        
+
         return NoContent();
     }
 
@@ -152,31 +112,11 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteGameAsync(string alias, string gameId)
     {
-        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
-        {
-            return BadRequest("Player alias and game id cannot be null or empty.");
-        }
-
-        // Verify the game exists and belongs to the player
-        var gameResult = await gameService.GetGameAsync(gameId);
-        if (!gameResult.IsSuccess)
-        {
-            return BadRequest(gameResult.Error);
-        }
-        
-        if (gameResult.Value.PlayerAlias != alias)
-        {
-            return NotFound();
-        }
+        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+        if (error != null) return error;
 
         var result = await gameService.DeleteGameAsync(gameId);
-        
-        if (!result.IsSuccess)
-        {
-            return BadRequest(result.Error);
-        }
-        
-        return NoContent();
+        return HandleUnitResult(result);
     }
 
     /// <summary>
@@ -196,12 +136,12 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
         }
 
         var result = await gameService.GetPlayerGamesAsync(alias);
-        
+
         if (!result.IsSuccess)
         {
             return BadRequest(result.Error);
         }
-        
+
         return Ok(result.Value);
     }
 
@@ -217,25 +157,11 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<GameDto>> GetGameAsync(string alias, string gameId)
     {
-        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
-        {
-            return BadRequest("Player alias and game id cannot be null or empty.");
-        }
+        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+        if (error != null) return error;
 
-        var result = await gameService.GetGameAsync(gameId);
-        
-        if (!result.IsSuccess)
-        {
-            return BadRequest(result.Error);
-        }
-
-        // Verify the game belongs to the player
-        if (result.Value.PlayerAlias != alias)
-        {
-            return NotFound();
-        }
-        
-        return Ok(result.Value);
+        // We already fetched the game in GetAuthorizedGameAsync, so return it directly.
+        return Ok(game);
     }
 
     /// <summary>
@@ -245,37 +171,17 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
     /// <param name="gameId">The game id</param>
     /// <param name="request">The possible value request</param>
     /// <returns>Success or failure result</returns>
-    [HttpDelete("{gameId}/possiblevalues")]
+    [HttpDelete("{gameId}/possible-values")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> RemovePossibleValueAsync(string alias, string gameId, [FromBody] PossibleValueRequest request)
     {
-        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
-        {
-            return BadRequest("Player alias and game id cannot be null or empty.");
-        }
-
-        // Verify the game exists and belongs to the player
-        var gameResult = await gameService.GetGameAsync(gameId);
-        if (!gameResult.IsSuccess)
-        {
-            return BadRequest(gameResult.Error);
-        }
-        
-        if (gameResult.Value.PlayerAlias != alias)
-        {
-            return NotFound();
-        }
+        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+        if (error != null) return error;
 
         var result = await gameService.RemovePossibleValueAsync(gameId, request.Row, request.Column, request.Value);
-        
-        if (!result.IsSuccess)
-        {
-            return BadRequest(result.Error);
-        }
-        
-        return NoContent();
+        return HandleUnitResult(result);
     }
 
     /// <summary>
@@ -290,31 +196,11 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> ResetGameAsync(string alias, string gameId)
     {
-        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
-        {
-            return BadRequest("Player alias and game id cannot be null or empty.");
-        }
-
-        // Verify the game exists and belongs to the player
-        var gameResult = await gameService.GetGameAsync(gameId);
-        if (!gameResult.IsSuccess)
-        {
-            return BadRequest(gameResult.Error);
-        }
-        
-        if (gameResult.Value.PlayerAlias != alias)
-        {
-            return NotFound();
-        }
+        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+        if (error != null) return error;
 
         var result = await gameService.ResetGameAsync(gameId);
-        
-        if (!result.IsSuccess)
-        {
-            return BadRequest(result.Error);
-        }
-        
-        return NoContent();
+        return HandleUnitResult(result);
     }
 
     /// <summary>
@@ -329,31 +215,33 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UndoMoveAsync(string alias, string gameId)
     {
-        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
-        {
-            return BadRequest("Player alias and game id cannot be null or empty.");
-        }
-
-        // Verify the game exists and belongs to the player
-        var gameResult = await gameService.GetGameAsync(gameId);
-        if (!gameResult.IsSuccess)
-        {
-            return BadRequest(gameResult.Error);
-        }
-        
-        if (gameResult.Value.PlayerAlias != alias)
-        {
-            return NotFound();
-        }
+        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+        if (error != null) return error;
 
         var result = await gameService.UndoLastMoveAsync(gameId);
-        
-        if (!result.IsSuccess)
-        {
-            return BadRequest(result.Error);
-        }
-        
-        return NoContent();
+        return HandleUnitResult(result);
+    }
+
+    /// <summary>
+    /// Updates the status of a game for the specified player.
+    /// </summary>
+    /// <param name="alias">The alias of the player associated with the game. Cannot be null or empty.</param>
+    /// <param name="gameId">The unique identifier of the game to update. Cannot be null or empty.</param>
+    /// <param name="gameStatus">The new status to set for the game.</param>
+    /// <returns>An <see cref="ActionResult"/> indicating the result of the operation. Returns 204 No Content if the update is
+    /// successful, 400 Bad Request if the input is invalid or the update fails, or 404 Not Found if the game does not
+    /// exist or does not belong to the specified player.</returns>
+    [HttpPatch("{gameId}/status")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult> UpdateGameStatusAsync(string alias, string gameId, string gameStatus)
+    {
+        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+        if (error != null) return error;
+
+        var result = await gameService.UpdateGameStatusAsync(gameId, gameStatus);
+        return HandleUnitResult(result);
     }
 
     /// <summary>
@@ -369,31 +257,11 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UpdateGameAsync(string alias, string gameId, [FromBody] MoveRequest move)
     {
-        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
-        {
-            return BadRequest("Player alias and game id cannot be null or empty.");
-        }
-
-        // Verify the game exists and belongs to the player
-        var gameResult = await gameService.GetGameAsync(gameId);
-        if (!gameResult.IsSuccess)
-        {
-            return BadRequest(gameResult.Error);
-        }
-        
-        if (gameResult.Value.PlayerAlias != alias)
-        {
-            return NotFound();
-        }
+        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+        if (error != null) return error;
 
         var result = await gameService.MakeMoveAsync(gameId, move.Row, move.Column, move.Value);
-        
-        if (!result.IsSuccess)
-        {
-            return BadRequest(result.Error);
-        }
-        
-        return NoContent();
+        return HandleUnitResult(result);
     }
 
     /// <summary>
@@ -408,30 +276,50 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ValidationResultDto>> ValidateGameAsync(string alias, string gameId)
     {
-        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
-        {
-            return BadRequest("Player alias and game id cannot be null or empty.");
-        }
-
-        // Verify the game exists and belongs to the player
-        var gameResult = await gameService.GetGameAsync(gameId);
-        if (!gameResult.IsSuccess)
-        {
-            return BadRequest(gameResult.Error);
-        }
-        
-        if (gameResult.Value.PlayerAlias != alias)
-        {
-            return NotFound();
-        }
+        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+        if (error != null) return error;
 
         var result = await gameService.ValidateGameAsync(gameId);
-        
+
         if (!result.IsSuccess)
         {
             return BadRequest(result.Error);
         }
-        
+
         return Ok(result.Value);
+    }
+
+    // -- Helpers --
+
+    private async Task<(GameDto? game, ActionResult? error)> GetAuthorizedGameAsync(string alias, string gameId)
+    {
+        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
+        {
+            return (null, BadRequest("Player alias and game id cannot be null or empty."));
+        }
+
+        var gameResult = await gameService.GetGameAsync(gameId);
+        if (!gameResult.IsSuccess)
+        {
+            return (null, BadRequest(gameResult.Error));
+        }
+
+        if (gameResult.Value.PlayerAlias != alias)
+        {
+            return (null, NotFound());
+        }
+
+        return (gameResult.Value, null);
+    }
+
+    private ActionResult HandleUnitResult(dynamic result)
+    {
+        // result is expected to have IsSuccess and Error members.
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.Error);
+        }
+
+        return NoContent();
     }
 }
