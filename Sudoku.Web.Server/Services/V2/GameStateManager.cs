@@ -49,10 +49,12 @@ public partial class GameManager : IGameStateManager
 
     public async Task DeleteGameAsync(string alias, string gameId)
     {
-        if (string.IsNullOrEmpty(alias)) {
+        if (string.IsNullOrEmpty(alias))
+        {
             throw new ArgumentException("Alias not set.");
         }
-        if (string.IsNullOrEmpty(gameId)) {
+        if (string.IsNullOrEmpty(gameId))
+        {
             throw new ArgumentException("Game ID not set.");
         }
         var result = await gameApiClient.DeleteGameAsync(alias, gameId);
@@ -185,14 +187,10 @@ public partial class GameManager : IGameStateManager
             throw new Exception("Failed to add possible value.");
         }
 
-        // Update local model and persist
         var cell = Game.Cells.FirstOrDefault(c => c.Row == row && c.Column == column);
-        if (cell != null)
+        if (cell != null && !cell.PossibleValues.Contains(value))
         {
-            if (!cell.PossibleValues.Contains(value))
-            {
-                cell.PossibleValues.Add(value);
-            }
+            cell.PossibleValues.Add(value);
         }
 
         await localStorageService.SaveGameStateAsync(Game);
@@ -207,12 +205,9 @@ public partial class GameManager : IGameStateManager
         }
 
         var cell = Game.Cells.FirstOrDefault(c => c.Row == row && c.Column == column);
-        if (cell != null)
+        if (cell != null && cell.PossibleValues.Contains(value))
         {
-            if (cell.PossibleValues.Contains(value))
-            {
-                cell.PossibleValues.Remove(value);
-            }
+            cell.PossibleValues.Remove(value);
         }
 
         await localStorageService.SaveGameStateAsync(Game);
