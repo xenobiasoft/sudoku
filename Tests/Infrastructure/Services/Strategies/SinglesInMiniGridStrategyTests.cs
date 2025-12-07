@@ -1,7 +1,7 @@
 ﻿using DepenMock.XUnit;
-using UnitTests.Helpers;
-using XenobiaSoft.Sudoku;
-using XenobiaSoft.Sudoku.Strategies;
+using Sudoku.Domain.ValueObjects;
+using Sudoku.Infrastructure.Services.Strategies;
+using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Services.Strategies;
 
@@ -11,21 +11,21 @@ public class SinglesInMiniGridStrategyTests : BaseTestByAbstraction<SinglesInMin
 	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInMiniGrid_SetValueToThatNumber()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Medium);
 		var sut = ResolveSut();
 
 		// Act
 		sut.SolvePuzzle(puzzle);
 
 		// Assert
-		puzzle.GetCell(5, 2).Value.Should().Be(3);
+		puzzle.GetCell(0, 2).Value.Should().Be(8);
 	}
 
 	[Fact]
 	public void SolvePuzzle_WhenACellValueIsSet_ReturnsExpectedScore()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Medium);
 		var sut = ResolveSut();
 
 		// Act

@@ -1,10 +1,11 @@
 ﻿using DepenMock.XUnit;
+using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
 using System.Text.Json;
-using XenobiaSoft.Sudoku.GameState;
+using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.ILocalStorageService;
 
-namespace UnitTests.Web.Services;
+namespace UnitTests.Web.Services.V2;
 
 public class LocalStorageServiceTests : BaseTestByAbstraction<LocalStorageService, ILocalStorageService>
 {
@@ -13,120 +14,223 @@ public class LocalStorageServiceTests : BaseTestByAbstraction<LocalStorageServic
     public LocalStorageServiceTests()
     {
         _mockJsRuntime = Container.ResolveMock<IJsRuntimeWrapper>();
-
-        _mockJsRuntime.SetupSavedGames([]);
     }
 
+    #region DeleteGameAsync Tests
+
     [Fact]
-    public async Task DeleteGameAsync_RemovesSpecifiedGame()
+    public async Task DeleteGameAsync_WithExistingGame_RemovesGameFromStorage()
     {
         // Arrange
-        var game1 = Container.Create<GameStateMemory>();
-        var game2 = Container.Create<GameStateMemory>();
-        _mockJsRuntime.SetupSavedGames([game1, game2]);
+        var gameToDelete = Container.Create<GameModel>();
+        var gameToKeep = Container.Create<GameModel>();
+        var games = new List<GameModel> { gameToDelete, gameToKeep };
+        
+        _mockJsRuntime.SetupSavedGamesV2(games);
         var sut = ResolveSut();
 
         // Act
-        await sut.DeleteGameAsync(game1.PuzzleId);
+        await sut.DeleteGameAsync(gameToDelete.Id);
 
         // Assert
-        _mockJsRuntime.VerifySavesGame(JsonSerializer.Serialize(new List<GameStateMemory> { game2 }), Times.Once);
+        var expectedJson = JsonSerializer.Serialize(new List<GameModel> { gameToKeep });
+        _mockJsRuntime.VerifySavesGameV2(expectedJson, Times.Once);
     }
 
     [Fact]
-    public async Task DeleteGameAsync_WhenGameDoesNotExist_DoesNotChangeStorage()
+    public async Task DeleteGameAsync_WithNonExistentGame_DoesNotModifyStorage()
     {
         // Arrange
-        var game = Container.Create<GameStateMemory>();
-        _mockJsRuntime.SetupSavedGames([game]);
-        var sut = ResolveSut();
-        var nonExistentId = Container.Create<string>();
-
-        // Act
-        await sut.DeleteGameAsync(nonExistentId);
-
-        // Assert
-        _mockJsRuntime.VerifySavesGame(JsonSerializer.Serialize(new List<GameStateMemory>() { game }), Times.Once);
-    }
-
-    [Fact]
-    public async Task GetAliasAsync_ReturnsAliasFromStorage()
-    {
-        // Arrange
+        var existingGame = Container.Create<GameModel>();
+        var games = new List<GameModel> { existingGame };
+        var nonExistentGameId = Container.Create<string>();
+        
+        _mockJsRuntime.SetupSavedGamesV2(games);
         var sut = ResolveSut();
 
         // Act
-        await sut.GetAliasAsync();
+        await sut.DeleteGameAsync(nonExistentGameId);
 
         // Assert
-        _mockJsRuntime.VerifyGetsAlias(Times.Once);
+        var expectedJson = JsonSerializer.Serialize(games);
+        _mockJsRuntime.VerifySavesGameV2(expectedJson, Times.Once);
     }
 
     [Fact]
-    public async Task GetAliasAsync_WhenAliasNotSet_ReturnsNull()
+    public async Task DeleteGameAsync_WithEmptyStorage_DoesNotThrow()
     {
         // Arrange
-        _mockJsRuntime.SetupAlias(null);
+        _mockJsRuntime.SetupSavedGamesV2(new List<GameModel>());
+        var sut = ResolveSut();
+        var gameId = Container.Create<string>();
+
+        // Act & Assert
+        await sut.DeleteGameAsync(gameId);
+        
+        var expectedJson = JsonSerializer.Serialize(new List<GameModel>());
+        _mockJsRuntime.VerifySavesGameV2(expectedJson, Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteGameAsync_LoadsGamesFromStorage()
+    {
+        // Arrange
+        _mockJsRuntime.SetupSavedGamesV2(new List<GameModel>());
+        var sut = ResolveSut();
+        var gameId = Container.Create<string>();
+
+        // Act
+        await sut.DeleteGameAsync(gameId);
+
+        // Assert
+        _mockJsRuntime.VerifyLoadsSavedGamesV2(Times.Once);
+    }
+
+    #endregion
+
+    #region GetAliasAsync Tests
+
+    [Fact]
+    public async Task GetAliasAsync_WhenAliasExists_ReturnsAlias()
+    {
+        // Arrange
+        var expectedAlias = Container.Create<string>();
+        _mockJsRuntime.SetupAliasV2(expectedAlias);
         var sut = ResolveSut();
 
         // Act
         var result = await sut.GetAliasAsync();
 
         // Assert
-        result.Should().BeNull();
+        result.Should().Be(expectedAlias);
     }
 
     [Fact]
-    public async Task LoadGameAsync_FetchesAllGamesFromLocalStorage()
+    public async Task GetAliasAsync_WhenAliasIsNull_ReturnsNull()
     {
         // Arrange
-        var savedGames = Container.CreateMany<GameStateMemory>().ToList();
-        _mockJsRuntime.SetupSavedGames(savedGames);
+        _mockJsRuntime.SetupAliasV2(null);
         var sut = ResolveSut();
 
         // Act
-        await sut.LoadGameAsync("gameId");
+        var result = await sut.GetAliasAsync();
 
         // Assert
-        _mockJsRuntime.VerifyLoadsSavedGames(Times.Once);
+        result.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task LoadGameAsync_WhenGameExists_ReturnsGameState()
+    public async Task GetAliasAsync_CallsJsRuntimeWithCorrectKey()
     {
         // Arrange
-        var expectedGameState = Container.Create<GameStateMemory>();
-        _mockJsRuntime.SetupSavedGames([expectedGameState]);
+        _mockJsRuntime.SetupAliasV2("test");
         var sut = ResolveSut();
 
         // Act
-        var result = await sut.LoadGameAsync(expectedGameState.PuzzleId);
+        await sut.GetAliasAsync();
 
         // Assert
-        result.Should().BeEquivalentTo(expectedGameState);
+        _mockJsRuntime.VerifyGetsAliasV2(Times.Once);
     }
 
-    [Fact]
-    public async Task LoadGameAsync_WhenGameDoesNotExist_ReturnsNull()
-    {
-        // Arrange
-        var puzzleId = Container.Create<string>();
-        var sut = ResolveSut();
+    #endregion
 
-        // Act
-        var result = await sut.LoadGameAsync(puzzleId);
-
-        // Assert
-        result.Should().BeNull();
-    }
+    #region LoadGameAsync Tests
 
     [Fact]
-    public async Task LoadGameStatesAsync_ReturnsEmptyList_WhenStorageIsEmpty()
+    public async Task LoadGameAsync_WithExistingGame_ReturnsGame()
     {
         // Arrange
-        _mockJsRuntime.SetupSavedGames([]);
-        var sut = ResolveSut();
+        var targetGame = Container.Create<GameModel>();
+        var otherGame = Container.Create<GameModel>();
+        var games = new List<GameModel> { targetGame, otherGame };
         
+        _mockJsRuntime.SetupSavedGamesV2(games);
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.LoadGameAsync(targetGame.Id);
+
+        // Assert
+        result.Should().NotBeNull();
+        result!.Id.Should().Be(targetGame.Id);
+    }
+
+    [Fact]
+    public async Task LoadGameAsync_WithNonExistentGame_ReturnsNull()
+    {
+        // Arrange
+        var existingGame = Container.Create<GameModel>();
+        var games = new List<GameModel> { existingGame };
+        var nonExistentGameId = Container.Create<string>();
+        
+        _mockJsRuntime.SetupSavedGamesV2(games);
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.LoadGameAsync(nonExistentGameId);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task LoadGameAsync_WithEmptyStorage_ReturnsNull()
+    {
+        // Arrange
+        _mockJsRuntime.SetupSavedGamesV2(new List<GameModel>());
+        var sut = ResolveSut();
+        var gameId = Container.Create<string>();
+
+        // Act
+        var result = await sut.LoadGameAsync(gameId);
+
+        // Assert
+        result.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task LoadGameAsync_LoadsGamesFromStorage()
+    {
+        // Arrange
+        _mockJsRuntime.SetupSavedGamesV2(new List<GameModel>());
+        var sut = ResolveSut();
+        var gameId = Container.Create<string>();
+
+        // Act
+        await sut.LoadGameAsync(gameId);
+
+        // Assert
+        _mockJsRuntime.VerifyLoadsSavedGamesV2(Times.Once);
+    }
+
+    #endregion
+
+    #region LoadGameStatesAsync Tests
+
+    [Fact]
+    public async Task LoadGameStatesAsync_WithValidJson_ReturnsGamesList()
+    {
+        // Arrange
+        var expectedGames = Container.CreateMany<GameModel>(3).ToList();
+        _mockJsRuntime.SetupSavedGamesV2(expectedGames);
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.LoadGameStatesAsync();
+
+        // Assert
+        result.Should().HaveCount(3);
+        result.Should().BeEquivalentTo(expectedGames);
+    }
+
+    [Fact]
+    public async Task LoadGameStatesAsync_WithEmptyStorage_ReturnsEmptyList()
+    {
+        // Arrange
+        _mockJsRuntime.SetupEmptyStorage();
+        var sut = ResolveSut();
+
         // Act
         var result = await sut.LoadGameStatesAsync();
 
@@ -135,66 +239,151 @@ public class LocalStorageServiceTests : BaseTestByAbstraction<LocalStorageServic
     }
 
     [Fact]
-    public async Task LoadGameStatesAsync_ReturnsGames_WhenStorageIsNotEmpty()
+    public async Task LoadGameStatesAsync_WithWhitespaceJson_ReturnsEmptyList()
     {
         // Arrange
-        var expectedGames = Container.CreateMany<GameStateMemory>().ToList();
-        _mockJsRuntime.SetupSavedGames(expectedGames);
+        _mockJsRuntime
+            .Setup(x => x.GetAsync(It.Is<string>(s => s == "savedGames")))
+            .ReturnsAsync("   ");
         var sut = ResolveSut();
 
         // Act
         var result = await sut.LoadGameStatesAsync();
 
         // Assert
-        result.Should().BeEquivalentTo(expectedGames);
+        result.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task RemoveGameAsync_RemovesGameFromStorage()
+    public async Task LoadGameStatesAsync_WithNullJson_ReturnsEmptyList()
     {
         // Arrange
-        var gameState = Container.Create<GameStateMemory>();
-        _mockJsRuntime.SetupSavedGames([gameState]);
+        _mockJsRuntime
+            .Setup(x => x.GetAsync(It.Is<string>(s => s == "savedGames")))
+            .ReturnsAsync((string)null!);
         var sut = ResolveSut();
 
         // Act
-        await sut.DeleteGameAsync(gameState.PuzzleId);
+        var result = await sut.LoadGameStatesAsync();
 
         // Assert
-        _mockJsRuntime.VerifySavesGame(Times.Once);
+        result.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task SaveGameStateAsync_WhenGameDoesNotExists_AddsGameToStorage()
+    public async Task LoadGameStatesAsync_WithInvalidJson_ReturnsEmptyList()
     {
         // Arrange
-        var gameState = Container.Create<GameStateMemory>();
+        _mockJsRuntime
+            .Setup(x => x.GetAsync(It.Is<string>(s => s == "savedGames")))
+            .ReturnsAsync("invalid json");
         var sut = ResolveSut();
 
         // Act
-        await sut.SaveGameStateAsync(gameState);
+        var result = await sut.LoadGameStatesAsync();
 
         // Assert
-        _mockJsRuntime.VerifySavesGame(Times.Once);
+        result.Should().BeEmpty();
     }
 
     [Fact]
-    public async Task SaveGameStateAsync_WhenGameExists_UpdatesGameInStorage()
+    public async Task LoadGameStatesAsync_CallsJsRuntimeWithCorrectKey()
     {
         // Arrange
-        var gameState = Container.Create<GameStateMemory>();
-        _mockJsRuntime.SetupSavedGames([gameState]);
+        _mockJsRuntime.SetupSavedGamesV2(new List<GameModel>());
         var sut = ResolveSut();
 
         // Act
-        await sut.SaveGameStateAsync(gameState);
+        await sut.LoadGameStatesAsync();
 
         // Assert
-        _mockJsRuntime.VerifySavesGame(Times.Once);
+        _mockJsRuntime.VerifyLoadsSavedGamesV2(Times.Once);
+    }
+
+    #endregion
+
+    #region SaveGameStateAsync Tests
+
+    [Fact]
+    public async Task SaveGameStateAsync_WithNewGame_AddsGameToStorage()
+    {
+        // Arrange
+        var existingGames = Container.CreateMany<GameModel>(2).ToList();
+        var newGame = Container.Create<GameModel>();
+        
+        _mockJsRuntime.SetupSavedGamesV2(existingGames);
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SaveGameStateAsync(newGame);
+
+        // Assert
+        var expectedGames = existingGames.Concat(new[] { newGame }).ToList();
+        var expectedJson = JsonSerializer.Serialize(expectedGames);
+        _mockJsRuntime.VerifySavesGameV2(expectedJson, Times.Once);
     }
 
     [Fact]
-    public async Task SetAliasAsync_SavesAliasToStorage()
+    public async Task SaveGameStateAsync_WithExistingGame_UpdatesGameInStorage()
+    {
+        // Arrange
+        var existingGame = Container.Create<GameModel>();
+        var otherGame = Container.Create<GameModel>();
+        var existingGames = new List<GameModel> { existingGame, otherGame };
+        
+        var updatedGame = Container.Create<GameModel>();
+        updatedGame.Id = existingGame.Id; // Same ID to trigger update
+        
+        _mockJsRuntime.SetupSavedGamesV2(existingGames);
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SaveGameStateAsync(updatedGame);
+
+        // Assert
+        var expectedGames = new List<GameModel> { otherGame, updatedGame };
+        var expectedJson = JsonSerializer.Serialize(expectedGames);
+        _mockJsRuntime.VerifySavesGameV2(expectedJson, Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveGameStateAsync_WithEmptyStorage_AddsFirstGame()
+    {
+        // Arrange
+        var newGame = Container.Create<GameModel>();
+        _mockJsRuntime.SetupSavedGamesV2(new List<GameModel>());
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SaveGameStateAsync(newGame);
+
+        // Assert
+        var expectedGames = new List<GameModel> { newGame };
+        var expectedJson = JsonSerializer.Serialize(expectedGames);
+        _mockJsRuntime.VerifySavesGameV2(expectedJson, Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveGameStateAsync_LoadsExistingGamesFirst()
+    {
+        // Arrange
+        var game = Container.Create<GameModel>();
+        _mockJsRuntime.SetupSavedGamesV2(new List<GameModel>());
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SaveGameStateAsync(game);
+
+        // Assert
+        _mockJsRuntime.VerifyLoadsSavedGamesV2(Times.Once);
+    }
+
+    #endregion
+
+    #region SetAliasAsync Tests
+
+    [Fact]
+    public async Task SetAliasAsync_CallsJsRuntimeWithCorrectParameters()
     {
         // Arrange
         var alias = Container.Create<string>();
@@ -204,6 +393,36 @@ public class LocalStorageServiceTests : BaseTestByAbstraction<LocalStorageServic
         await sut.SetAliasAsync(alias);
 
         // Assert
-        _mockJsRuntime.VerifySavesAlias(alias, Times.Once);
+        _mockJsRuntime.VerifySavesAliasV2(alias, Times.Once);
     }
+
+    [Fact]
+    public async Task SetAliasAsync_WithEmptyAlias_StillCallsJsRuntime()
+    {
+        // Arrange
+        var emptyAlias = string.Empty;
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SetAliasAsync(emptyAlias);
+
+        // Assert
+        _mockJsRuntime.VerifySavesAliasV2(emptyAlias, Times.Once);
+    }
+
+    [Fact]
+    public async Task SetAliasAsync_WithNullAlias_StillCallsJsRuntime()
+    {
+        // Arrange
+        string nullAlias = null!;
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SetAliasAsync(nullAlias);
+
+        // Assert
+        _mockJsRuntime.VerifySavesAliasV2(nullAlias, Times.Once);
+    }
+
+    #endregion
 }

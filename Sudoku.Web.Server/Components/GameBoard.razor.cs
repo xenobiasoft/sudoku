@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services.Abstractions.V2;
+using Sudoku.Web.Server.Services.Abstractions;
 
 namespace Sudoku.Web.Server.Components
 {

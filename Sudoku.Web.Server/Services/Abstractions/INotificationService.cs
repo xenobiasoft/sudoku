@@ -1,3 +1,5 @@
+using Sudoku.Web.Server.Models;
+
 namespace Sudoku.Web.Server.Services.Abstractions;
 
 /// <summary>
@@ -12,10 +14,10 @@ public interface INotificationService
     void NotifyGameEnded();
 
     // Cell focus notifications
-    event EventHandler<Cell> SetCellFocus;
-    void NotifyCellFocused(Cell cell);
+    event EventHandler<CellModel> SetCellFocus;
+    void NotifyCellFocused(CellModel cell);
 
     // Invalid cell notifications
-    event EventHandler<IEnumerable<Cell>> InvalidCellsNotified;
-    void NotifyInvalidCells(IEnumerable<Cell> invalidCells);
+    event EventHandler<IEnumerable<CellModel>> InvalidCellsNotified;
+    void NotifyInvalidCells(IEnumerable<CellModel> invalidCells);
 }

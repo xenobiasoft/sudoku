@@ -37,18 +37,12 @@
     <ProjectReference Include="..\Sudoku.Domain\Sudoku.Domain.csproj" />
     <ProjectReference Include="..\Sudoku.Infrastructure\Sudoku.Infrastructure.csproj" />
     <ProjectReference Include="..\Sudoku.Web.Server\Sudoku.Web.Server.csproj" />
-    <ProjectReference Include="..\Sudoku\Sudoku.csproj" />
-    <ProjectReference Include="..\Sudoku.Storage.Azure\Sudoku.Storage.Azure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Sudoku\Helpers\" />
   </ItemGroup>
 
 </Project>

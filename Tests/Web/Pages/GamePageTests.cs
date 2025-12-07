@@ -6,10 +6,9 @@ using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Pages;
 using Sudoku.Web.Server.Services.Abstractions;
-using Sudoku.Web.Server.Services.Abstractions.V2;
 using UnitTests.Helpers.Factories;
-using IGameManager = Sudoku.Web.Server.Services.Abstractions.V2.IGameManager;
-using INotificationService = Sudoku.Web.Server.Services.Abstractions.V2.INotificationService;
+using IGameManager = Sudoku.Web.Server.Services.Abstractions.IGameManager;
+using INotificationService = Sudoku.Web.Server.Services.Abstractions.INotificationService;
 
 namespace UnitTests.Web.Pages;
 

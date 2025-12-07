@@ -1,4 +1,4 @@
-﻿using XenobiaSoft.Sudoku.GameState;
+﻿using Sudoku.Web.Server.Models;
 
 namespace Sudoku.Web.Server.Services.Abstractions;
 
@@ -6,8 +6,8 @@ public interface ILocalStorageService
 {
     Task DeleteGameAsync(string gameId);
     Task<string?> GetAliasAsync();
-    Task<GameStateMemory?> LoadGameAsync(string gameId);
-    Task<List<GameStateMemory>> LoadGameStatesAsync();
-    Task SaveGameStateAsync(GameStateMemory gameState);
+    Task<GameModel?> LoadGameAsync(string gameId);
+    Task<List<GameModel>> LoadGameStatesAsync();
+    Task SaveGameStateAsync(GameModel gameState);
     Task SetAliasAsync(string alias);
 }

@@ -1,7 +1,7 @@
 ﻿using Bunit.TestDoubles;
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Pages;
-using Sudoku.Web.Server.Services.Abstractions.V2;
+using Sudoku.Web.Server.Services.Abstractions;
 
 namespace UnitTests.Web.Pages;
 

@@ -1,3 +1,4 @@
+using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services.Abstractions;
 
 namespace Sudoku.Web.Server.Services;
@@ -22,17 +23,17 @@ public class NotificationService : INotificationService
     }
 
     // Cell focus notifications
-    public event EventHandler<Cell>? SetCellFocus;
+    public event EventHandler<CellModel>? SetCellFocus;
 
-    public void NotifyCellFocused(Cell cell)
+    public void NotifyCellFocused(CellModel cell)
     {
         SetCellFocus?.Invoke(this, cell);
     }
 
     // Invalid cell notifications
-    public event EventHandler<IEnumerable<Cell>>? InvalidCellsNotified;
+    public event EventHandler<IEnumerable<CellModel>>? InvalidCellsNotified;
 
-    public void NotifyInvalidCells(IEnumerable<Cell> invalidCells)
+    public void NotifyInvalidCells(IEnumerable<CellModel> invalidCells)
     {
         InvalidCellsNotified?.Invoke(this, invalidCells);
     }

@@ -1,6 +1,7 @@
-﻿using Sudoku.Web.Server.Services.Abstractions;
+﻿using Sudoku.Web.Server.Models;
+using Sudoku.Web.Server.Services.Abstractions;
 using System.Text.Json;
-using XenobiaSoft.Sudoku.GameState;
+using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.ILocalStorageService;
 
 namespace Sudoku.Web.Server.Services;
 
@@ -12,7 +13,7 @@ public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageSer
     public async Task DeleteGameAsync(string gameId)
     {
         var games = await LoadGameStatesAsync();
-        var gameToRemove = games.FirstOrDefault(g => g.PuzzleId == gameId);
+        var gameToRemove = games.FirstOrDefault(g => g.Id == gameId);
         if (gameToRemove != null)
         {
             games.Remove(gameToRemove);
@@ -28,15 +29,15 @@ public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageSer
         return alias;
     }
 
-    public async Task<GameStateMemory?> LoadGameAsync(string gameId)
+    public async Task<GameModel?> LoadGameAsync(string gameId)
     {
         var games = await LoadGameStatesAsync();
-        var foundGame = games.ToList().Find(x => x.PuzzleId == gameId);
+        var foundGame = games.ToList().Find(x => x.Id == gameId);
 
         return foundGame;
     }
 
-    public async Task<List<GameStateMemory>> LoadGameStatesAsync()
+    public async Task<List<GameModel>> LoadGameStatesAsync()
     {
         var json = await jsRuntime.GetAsync(SavedGamesKey);
 
@@ -45,19 +46,26 @@ public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageSer
             return [];
         }
 
-        return JsonSerializer.Deserialize<List<GameStateMemory>>(json) ?? [];
+        try
+        {
+            return JsonSerializer.Deserialize<List<GameModel>>(json) ?? [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
     }
 
-    public async Task SaveGameStateAsync(GameStateMemory gameState)
+    public async Task SaveGameStateAsync(GameModel gameState)
     {
         var games = await LoadGameStatesAsync();
-        var existingGame = games.FirstOrDefault(g => g.PuzzleId == gameState.PuzzleId);
+        var existingGame = games.FirstOrDefault(g => g.Id == gameState.Id);
 
         if (existingGame != null)
         {
             games.Remove(existingGame);
         }
-        
+
         games.Add(gameState);
 
         await SaveGameStateAsync(games);
@@ -68,7 +76,7 @@ public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageSer
         await jsRuntime.SetAsync(AliasKey, alias);
     }
 
-    private async Task SaveGameStateAsync(IEnumerable<GameStateMemory> gameState)
+    private async Task SaveGameStateAsync(IEnumerable<GameModel> gameState)
     {
         var json = JsonSerializer.Serialize(gameState);
 

@@ -1,7 +1,7 @@
 ﻿using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services.States;
+using Sudoku.Web.Server.Services;
 
 namespace UnitTests.Helpers.Factories;
 
