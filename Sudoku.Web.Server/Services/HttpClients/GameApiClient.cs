@@ -287,6 +287,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
 
             if (response.IsSuccessStatusCode)
             {
+                var gameStr = response.Content.ReadAsStringAsync(CancellationToken.None);
                 var game = await response.Content.ReadFromJsonAsync<GameModel>(_jsonOptions);
                 if (game != null)
                 {
