@@ -1,7 +1,7 @@
 using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services.Abstractions.V2;
+using Sudoku.Web.Server.Services.Abstractions;
 
-namespace Sudoku.Web.Server.Services.V2;
+namespace Sudoku.Web.Server.Services;
 
 /// <summary>
 /// Unified notification service that combines all game-related notifications

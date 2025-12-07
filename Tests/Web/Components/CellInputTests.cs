@@ -3,7 +3,7 @@ using Sudoku.Domain.ValueObjects;
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.EventArgs;
 using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services.Abstractions.V2;
+using Sudoku.Web.Server.Services.Abstractions;
 using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Web.Components;

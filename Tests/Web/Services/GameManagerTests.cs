@@ -1,8 +1,8 @@
 ﻿using DepenMock.XUnit;
 using Sudoku.Domain.ValueObjects;
-using Sudoku.Web.Server.Services.Abstractions.V2;
+using Sudoku.Web.Server.Services;
+using Sudoku.Web.Server.Services.Abstractions;
 using Sudoku.Web.Server.Services.HttpClients;
-using Sudoku.Web.Server.Services.States;
 using Sudoku.Web.Server.Services.V2;
 using UnitTests.Helpers.Factories;
 

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.EventArgs;
-using Sudoku.Web.Server.Services.Abstractions.V2;
+using Sudoku.Web.Server.Services.Abstractions;
 
 namespace UnitTests.Web.Components;
 

@@ -1,8 +1,8 @@
 using Sudoku.Web.Server.Services.HttpClients;
-using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.V2.ILocalStorageService;
-using IPlayerManager = Sudoku.Web.Server.Services.Abstractions.V2.IPlayerManager;
+using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.ILocalStorageService;
+using IPlayerManager = Sudoku.Web.Server.Services.Abstractions.IPlayerManager;
 
-namespace Sudoku.Web.Server.Services.V2;
+namespace Sudoku.Web.Server.Services;
 
 /// <summary>
 /// Manages player operations including creation, loading, and verification of player aliases.

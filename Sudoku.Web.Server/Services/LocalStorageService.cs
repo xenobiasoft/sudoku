@@ -1,9 +1,9 @@
 ﻿using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services.Abstractions;
 using System.Text.Json;
-using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.V2.ILocalStorageService;
+using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.ILocalStorageService;
 
-namespace Sudoku.Web.Server.Services.V2;
+namespace Sudoku.Web.Server.Services;
 
 public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageService
 {

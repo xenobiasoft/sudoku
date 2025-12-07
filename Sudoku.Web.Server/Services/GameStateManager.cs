@@ -1,5 +1,5 @@
 ﻿using Sudoku.Web.Server.Models;
-using IGameStateManager = Sudoku.Web.Server.Services.Abstractions.V2.IGameStateManager;
+using IGameStateManager = Sudoku.Web.Server.Services.Abstractions.IGameStateManager;
 
 namespace Sudoku.Web.Server.Services.V2;
 

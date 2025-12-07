@@ -1,9 +1,8 @@
 ﻿using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services.Abstractions;
 using Sudoku.Web.Server.Services.HttpClients;
-using Sudoku.Web.Server.Services.States;
-using IGameManager = Sudoku.Web.Server.Services.Abstractions.V2.IGameManager;
-using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.V2.ILocalStorageService;
+using IGameManager = Sudoku.Web.Server.Services.Abstractions.IGameManager;
+using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.ILocalStorageService;
 
 namespace Sudoku.Web.Server.Services.V2;
 

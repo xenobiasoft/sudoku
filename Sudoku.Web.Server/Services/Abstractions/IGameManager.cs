@@ -1,4 +1,4 @@
-﻿namespace Sudoku.Web.Server.Services.Abstractions.V2;
+﻿namespace Sudoku.Web.Server.Services.Abstractions;
 
 public interface IGameManager : IGameStatisticsManager, IGameStateManager
 {

@@ -1,6 +1,6 @@
 using Sudoku.Web.Server.Models;
 
-namespace Sudoku.Web.Server.Services.Abstractions.V2;
+namespace Sudoku.Web.Server.Services.Abstractions;
 
 /// <summary>
 /// Interface for API-based game state management

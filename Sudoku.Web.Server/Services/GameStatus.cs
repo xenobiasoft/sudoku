@@ -1,4 +1,4 @@
-﻿namespace Sudoku.Web.Server.Services.States;
+﻿namespace Sudoku.Web.Server.Services;
 
 public class GameStatus
 {

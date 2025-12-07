@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services.Abstractions.V2;
+using Sudoku.Web.Server.Services.Abstractions;
 
 namespace Sudoku.Web.Server.Pages;
 
