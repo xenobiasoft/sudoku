@@ -1,11 +1,10 @@
 using DepenMock.XUnit;
-using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.HttpClients;
 using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.ILocalStorageService;
 using IPlayerManager = Sudoku.Web.Server.Services.Abstractions.IPlayerManager;
 
-namespace UnitTests.Web.Services.V2;
+namespace UnitTests.Web.Services;
 
 public class PlayerManagerTests : BaseTestByAbstraction<PlayerManager, IPlayerManager>
 {

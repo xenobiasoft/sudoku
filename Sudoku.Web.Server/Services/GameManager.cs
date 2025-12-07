@@ -4,7 +4,7 @@ using Sudoku.Web.Server.Services.HttpClients;
 using IGameManager = Sudoku.Web.Server.Services.Abstractions.IGameManager;
 using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.ILocalStorageService;
 
-namespace Sudoku.Web.Server.Services.V2;
+namespace Sudoku.Web.Server.Services;
 
 public partial class GameManager(ILocalStorageService localStorageService, IGameApiClient gameApiClient, IGameTimer gameTimer) : IGameManager
 {

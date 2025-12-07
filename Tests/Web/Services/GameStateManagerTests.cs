@@ -3,9 +3,8 @@ using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
 using Sudoku.Web.Server.Services.HttpClients;
-using Sudoku.Web.Server.Services.V2;
 
-namespace UnitTests.Web.Services.V2;
+namespace UnitTests.Web.Services;
 
 public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameStateManager>
 {
@@ -272,24 +271,6 @@ public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameSta
 
         // Assert
         exception.Message.Should().Be("Failed to delete game from server.");
-    }
-
-    [Fact]
-    public async Task LoadGameAsync_FromLocalStorage_ReturnsGameSuccessfully()
-    {
-        // Arrange
-        var expectedGame = CreateTestGameModel();
-        _mockLocalStorageService
-            .Setup(x => x.LoadGameAsync(TestGameId))
-            .ReturnsAsync(expectedGame);
-        var sut = ResolveSut();
-
-        // Act
-        var result = await sut.LoadGameAsync(TestAlias, TestGameId);
-
-        // Assert
-        result.Should().Be(expectedGame);
-        GetGameProperty(sut).Should().Be(expectedGame);
     }
 
     [Fact]

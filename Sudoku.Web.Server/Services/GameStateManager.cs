@@ -1,7 +1,7 @@
 ﻿using Sudoku.Web.Server.Models;
-using IGameStateManager = Sudoku.Web.Server.Services.Abstractions.IGameStateManager;
+using Sudoku.Web.Server.Services.Abstractions;
 
-namespace Sudoku.Web.Server.Services.V2;
+namespace Sudoku.Web.Server.Services;
 
 /// <summary>
 /// Manages the lifecycle and state of a game, including creation, loading, saving, deletion, and other game-related
@@ -65,12 +65,7 @@ public partial class GameManager : IGameStateManager
         await localStorageService.DeleteGameAsync(gameId);
     }
 
-    public Task<GameModel> LoadGameAsync(string alias, string gameId)
-    {
-        return LoadGameAsync(alias, gameId, forceRefresh: false);
-    }
-
-    private async Task<GameModel> LoadGameAsync(string alias, string gameId, bool forceRefresh)
+    public async Task<GameModel> LoadGameAsync(string alias, string gameId)
     {
         if (string.IsNullOrEmpty(alias))
         {
@@ -79,16 +74,6 @@ public partial class GameManager : IGameStateManager
         if (string.IsNullOrEmpty(gameId))
         {
             throw new ArgumentException("Game ID not set.");
-        }
-
-        if (!forceRefresh)
-        {
-            var game = await localStorageService.LoadGameAsync(gameId);
-            if (game != null)
-            {
-                Game = game;
-                return Game;
-            }
         }
 
         var response = await gameApiClient.GetGameAsync(alias, gameId);
@@ -135,7 +120,7 @@ public partial class GameManager : IGameStateManager
             throw new Exception("Failed to reset game.");
         }
 
-        Game = await LoadGameAsync(Game.PlayerAlias, Game.Id, forceRefresh: true);
+        Game = await LoadGameAsync(Game.PlayerAlias, Game.Id);
 
         return Game;
     }
@@ -153,7 +138,7 @@ public partial class GameManager : IGameStateManager
         {
             throw new Exception("Failed to save move.");
         }
-        Game = await LoadGameAsync(Game.PlayerAlias, Game.Id, forceRefresh: true);
+        Game = await LoadGameAsync(Game.PlayerAlias, Game.Id);
     }
 
     public async Task SaveGameStatusAsync()
@@ -174,7 +159,7 @@ public partial class GameManager : IGameStateManager
             throw new Exception("Failed to undo move.");
         }
 
-        Game = await LoadGameAsync(Game.PlayerAlias, Game.Id, forceRefresh: true);
+        Game = await LoadGameAsync(Game.PlayerAlias, Game.Id);
 
         return Game;
     }
