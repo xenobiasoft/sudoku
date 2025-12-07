@@ -276,7 +276,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ValidationResultDto>> ValidateGameAsync(string alias, string gameId)
     {
-        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+        var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
         if (error != null) return error;
 
         var result = await gameService.ValidateGameAsync(gameId);
