@@ -257,7 +257,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> UpdateGameAsync(string alias, string gameId, [FromBody] MoveRequest move)
     {
-        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+        var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
         if (error != null) return error;
 
         var result = await gameService.MakeMoveAsync(gameId, move.Row, move.Column, move.Value, move.PlayDuration);
