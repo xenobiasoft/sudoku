@@ -10,4 +10,6 @@ public class TwinsInColumnsStrategy : TwinsStrategyBase
 
         return HandleNakedTwins(columnGroups);
     }
+
+    public override int Order { get; } = 4;
 }

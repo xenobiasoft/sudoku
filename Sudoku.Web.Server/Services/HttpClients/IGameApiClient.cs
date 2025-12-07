@@ -67,6 +67,22 @@ public interface IGameApiClient
     Task<ApiResult<GameModel>> GetGameAsync(string alias, string gameId);
 
     /// <summary>
+    /// Attempts to make a move in the specified game for the given player alias asynchronously.
+    /// </summary>
+    /// <remarks>This method validates the move according to the current game state and rules. If the move is
+    /// invalid or the game is not found, the result will indicate failure. Thread safety and concurrent moves are
+    /// managed internally.</remarks>
+    /// <param name="alias">The unique identifier or username representing the player making the move. Cannot be null or empty.</param>
+    /// <param name="gameId">The identifier of the game in which the move is to be made. Cannot be null or empty.</param>
+    /// <param name="row">The zero-based row index where the move will be placed. Must be within the valid range for the game board.</param>
+    /// <param name="column">The zero-based column index where the move will be placed. Must be within the valid range for the game board.</param>
+    /// <param name="value">The value to place at the specified position, if applicable. If null, the default move value will be used.</param>
+    /// <param name="playDuration">The duration of the player's turn.</param>
+    /// <returns>A task that represents the asynchronous operation. The result contains an ApiResult indicating whether the move
+    /// was successful (<see langword="true"/> if the move was made; otherwise, <see langword="false"/>).</returns>
+    Task<ApiResult<bool>> MakeMoveAsync(string alias, string gameId, int row, int column, int? value, TimeSpan playDuration);
+
+    /// <summary>
     /// Removes a possible value from a cell
     /// </summary>
     /// <param name="alias">The player's alias</param>
@@ -92,6 +108,15 @@ public interface IGameApiClient
     /// <returns>A task that represents the asynchronous save operation. The task result contains an  <see cref="ApiResult{T}"/>
     /// indicating whether the save operation was successful.</returns>
     Task<ApiResult<bool>> SaveGameAsync(GameModel game);
+
+    /// <summary>
+    /// Asynchronously saves the current status of a game for the specified user alias and game identifier.
+    /// </summary>
+    /// <param name="alias">The unique alias representing the user whose game status is being saved. Cannot be null or empty.</param>
+    /// <param name="gameId">The identifier of the game for which the status is being saved. Cannot be null or empty.</param>
+    /// <param name="gameStatus">The serialized status data of the game to be saved. Cannot be null or empty.</param>
+    /// <returns>A task that represents the asynchronous save operation.</returns>
+    Task<ApiResult<bool>> SaveGameStatusAsync(string alias, string gameId, string gameStatus);
 
     /// <summary>
     /// Undoes the last move in a game

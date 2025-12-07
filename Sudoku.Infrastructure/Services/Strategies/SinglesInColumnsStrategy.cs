@@ -42,5 +42,7 @@ public class SinglesInColumnsStrategy : SolverStrategy
 		}
 
 		return changesMade;
-	}
+    }
+
+    public override int Order { get; } = 1;
 }

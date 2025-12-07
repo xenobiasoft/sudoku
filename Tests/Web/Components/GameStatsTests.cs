@@ -1,29 +1,26 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Components;
+using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services.Abstractions;
-using UnitTests.Mocks;
-using XenobiaSoft.Sudoku.GameState;
+using Sudoku.Web.Server.Services.Abstractions.V2;
 
 namespace UnitTests.Web.Components;
 
 public class GameStatsTests : TestContext
 {
     private readonly Mock<IGameTimer> _mockTimer;
-    private readonly Mock<IGameSession> _mockSession;
-    private readonly GameStateMemory _gameStateMemory = new GameStateMemory
-    {
-        PlayDuration = TimeSpan.FromMinutes(15),
-        TotalMoves = 2,
-        InvalidMoves = 1
-    };
+    private readonly Mock<IGameStatisticsManager> _mockGameStatsManager;
 
     public GameStatsTests()
     {
-        _mockSession = new Mock<IGameSession>();
+        _mockGameStatsManager = new Mock<IGameStatisticsManager>();
         _mockTimer = new Mock<IGameTimer>();
-        _mockSession.SetupGet(x => x.Timer).Returns(_mockTimer.Object);
-        _mockSession.SetupGet(x => x.IsNull).Returns(false);
-        _mockSession.SetupGet(x => x.GameState).Returns(_gameStateMemory);
+        _mockGameStatsManager.SetupGet(x => x.Timer).Returns(_mockTimer.Object);
+        var stats = new GameStatisticsModel();
+        stats.SetPlayDuration(TimeSpan.FromMinutes(15));
+        stats.RecordMove(true);
+        stats.RecordMove(false);
+        _mockGameStatsManager.SetupGet(x => x.CurrentStatistics).Returns(stats);
         Services.AddSingleton(_mockTimer.Object);
     }
 
@@ -31,7 +28,7 @@ public class GameStatsTests : TestContext
     public void GameStats_WhenCollapsed_RendersCorrectly()
     {
         // Arrange
-        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.Session, _mockSession.Object));
+        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.GameManager, _mockGameStatsManager.Object));
 
         // Act
         _mockTimer.RaiseTick();
@@ -51,7 +48,7 @@ public class GameStatsTests : TestContext
     public async Task GameStats_WhenExpanded_RendersCorrectly()
     {
         // Arrange
-        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.Session, _mockSession.Object));
+        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.GameManager, _mockGameStatsManager.Object));
         var statHeader = gameStats.Find(".stat-header");
         _mockTimer.RaiseTick();
 
@@ -81,7 +78,7 @@ public class GameStatsTests : TestContext
     public async Task GameStats_WhenMovesAreRecorded_ShouldUpdate()
     {
         // Arrange
-        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.Session, _mockSession.Object));
+        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.GameManager, _mockGameStatsManager.Object));
         var statHeader = gameStats.Find(".stat-header");
         await gameStats.InvokeAsync(() => statHeader.Click());
         
@@ -98,7 +95,7 @@ public class GameStatsTests : TestContext
     public async Task GameStats_WhenTimerTicks_ShouldUpdate()
     {
         // Arrange
-        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.Session, _mockSession.Object));
+        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.GameManager, _mockGameStatsManager.Object));
         var playDuration = gameStats.Find(".game-stats .stat-header .value");
         
         // Act

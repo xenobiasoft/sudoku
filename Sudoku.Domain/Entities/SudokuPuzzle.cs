@@ -1,8 +1,9 @@
 using Sudoku.Domain.Helpers;
+using Sudoku.Domain.Interfaces;
 
 namespace Sudoku.Domain.Entities;
 
-public class SudokuPuzzle
+public class SudokuPuzzle : ICloneable
 {
     private readonly List<Cell> _cells;
 
@@ -155,7 +156,21 @@ public class SudokuPuzzle
                 .Select(c => c.Value!.Value)
                 .ToHashSet();
             var usedValues = rowValues.Union(columnValues).Union(miniGridValues);
+            cell.PossibleValues.Clear();
             cell.PossibleValues.AddRange(Enumerable.Range(1, 9).Where(v => !usedValues.Contains(v)).ToList());
         }
+    }
+
+    /// <summary>
+    /// Creates a deep copy of the current SudokuPuzzle.
+    /// </summary>
+    /// <returns>A deep copy of the current SudokuPuzzle with all cells and their states copied.</returns>
+    public object Clone()
+    {
+        // Deep clone all cells
+        var clonedCells = _cells.Select(cell => cell.DeepCopy()).ToList();
+        
+        // Create a new puzzle instance using the private constructor
+        return new SudokuPuzzle(PuzzleId, Difficulty, clonedCells);
     }
 }

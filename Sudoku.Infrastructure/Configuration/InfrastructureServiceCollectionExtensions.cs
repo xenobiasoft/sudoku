@@ -94,7 +94,7 @@ public static class InfrastructureServiceCollectionExtensions
         services.AddScoped<IPuzzleGenerator, PuzzleGenerator>();
         services.AddScoped<IPuzzleSolver, StrategyBasedPuzzleSolver>();
 
-        typeof(SudokuPuzzle).Assembly
+        typeof(SolverStrategy).Assembly
             .GetTypes()
             .Where(x => x.Name.EndsWith("Strategy") && x is { IsAbstract: false, IsInterface: false })
             .ToList()

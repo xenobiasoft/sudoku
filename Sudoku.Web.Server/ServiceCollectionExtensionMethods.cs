@@ -1,5 +1,7 @@
 ﻿using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
+using AbstractionsV2 = Sudoku.Web.Server.Services.Abstractions.V2;
+using ServicesV2 = Sudoku.Web.Server.Services.V2;
 using Sudoku.Web.Server.Services.HttpClients;
 
 namespace Sudoku.Web.Server
@@ -8,14 +10,15 @@ namespace Sudoku.Web.Server
     {
         public static IServiceCollection RegisterBlazorGameServices(this IServiceCollection services, IConfiguration config)
         {
-            services.AddScoped<INotificationService, NotificationService>();
-
             services
-                .AddScoped<ILocalStorageService, LocalStorageService>()
-                .AddScoped<IGameManager, GameManager>()
+                .AddScoped<AbstractionsV2.INotificationService, ServicesV2.NotificationService>()
+                .AddScoped<AbstractionsV2.ILocalStorageService, ServicesV2.LocalStorageService>()
+                .AddScoped<AbstractionsV2.IGameStateManager, ServicesV2.GameManager>()
+                .AddScoped<AbstractionsV2.IGameStatisticsManager, ServicesV2.GameManager>()
+                .AddScoped<AbstractionsV2.IGameManager, ServicesV2.GameManager>()
+                .AddScoped<AbstractionsV2.IPlayerManager, ServicesV2.PlayerManager>()
                 .AddScoped<IJsRuntimeWrapper, JsRuntimeWrapper>()
                 .AddScoped<IGameTimer>(sp => new GameTimer(TimeSpan.FromSeconds(1)))
-                .AddScoped<IAliasService, AliasService>()
                 .AddScoped<IPlayerApiClient, PlayerApiClient>()
                 .AddScoped<IGameApiClient, GameApiClient>();
 

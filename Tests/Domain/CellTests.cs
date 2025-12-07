@@ -520,4 +520,68 @@ public class CellTests : BaseTestByType<Cell>
         cell.PossibleValues.Should().HaveCount(2);
         cell.PossibleValues.Should().Contain(new[] { 3, 7 });
     }
+
+    [Fact]
+    public void DeepCopy_CreatesDeepCopy()
+    {
+        // Arrange
+        var originalCell = Cell.Create(3, 4, 7, true);
+        originalCell.PossibleValues.Add(1);
+        originalCell.PossibleValues.Add(2);
+
+        // Act
+        var clonedCell = originalCell.DeepCopy();
+
+        // Assert
+        clonedCell.Should().NotBeSameAs(originalCell);
+        clonedCell.Row.Should().Be(originalCell.Row);
+        clonedCell.Column.Should().Be(originalCell.Column);
+        clonedCell.Value.Should().Be(originalCell.Value);
+        clonedCell.IsFixed.Should().Be(originalCell.IsFixed);
+        clonedCell.HasValue.Should().Be(originalCell.HasValue);
+        clonedCell.PossibleValues.Should().NotBeSameAs(originalCell.PossibleValues);
+        clonedCell.PossibleValues.Should().BeEquivalentTo(originalCell.PossibleValues);
+    }
+
+    [Fact]
+    public void DeepCopy_EmptyCell_CreatesDeepCopy()
+    {
+        // Arrange
+        var originalCell = Cell.CreateEmpty(2, 6);
+        originalCell.AddPossibleValue(1);
+        originalCell.AddPossibleValue(5);
+        originalCell.AddPossibleValue(9);
+
+        // Act
+        var clonedCell = originalCell.DeepCopy();
+
+        // Assert
+        clonedCell.Should().NotBeSameAs(originalCell);
+        clonedCell.Row.Should().Be(originalCell.Row);
+        clonedCell.Column.Should().Be(originalCell.Column);
+        clonedCell.Value.Should().BeNull();
+        clonedCell.IsFixed.Should().BeFalse();
+        clonedCell.HasValue.Should().BeFalse();
+        clonedCell.PossibleValues.Should().NotBeSameAs(originalCell.PossibleValues);
+        clonedCell.PossibleValues.Should().BeEquivalentTo(originalCell.PossibleValues);
+    }
+
+    [Fact]
+    public void DeepCopy_ModifyingClonedCell_DoesNotAffectOriginal()
+    {
+        // Arrange
+        var originalCell = Cell.CreateEmpty(1, 1);
+        originalCell.AddPossibleValue(3);
+        originalCell.AddPossibleValue(7);
+        var clonedCell = originalCell.DeepCopy();
+
+        // Act
+        clonedCell.SetValue(5);
+
+        // Assert
+        originalCell.Value.Should().BeNull();
+        originalCell.PossibleValues.Should().HaveCount(2);
+        clonedCell.Value.Should().Be(5);
+        clonedCell.PossibleValues.Should().BeEmpty();
+    }
 }

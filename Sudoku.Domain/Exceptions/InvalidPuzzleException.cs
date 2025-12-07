@@ -1,3 +1,3 @@
 namespace Sudoku.Domain.Exceptions;
 
-public class InvalidPuzzleException() : DomainException("Puzzle is not valid");
+public class InvalidPuzzleException() : DomainException("Game is not valid");

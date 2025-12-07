@@ -35,7 +35,7 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
         sut.AbandonGame();
 
         // Assert
-        sut.Status.Should().Be(GameStatus.Abandoned);
+        sut.Status.Should().Be(GameStatusEnum.Abandoned);
         sut.DomainEvents.Should().Contain(e => e is GameAbandonedEvent);
     }
 
@@ -54,7 +54,7 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
         sut.Id.Should().NotBeNull();
         sut.PlayerAlias.Should().Be(playerAlias);
         sut.Difficulty.Should().Be(difficulty);
-        sut.Status.Should().Be(GameStatus.NotStarted);
+        sut.Status.Should().Be(GameStatusEnum.NotStarted);
         sut.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         sut.GetCells().Count.Should().Be(81);
         sut.DomainEvents.Should().ContainSingle(e => e is GameCreatedEvent);
@@ -243,7 +243,7 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
         sut.PauseGame();
 
         // Assert
-        sut.Status.Should().Be(GameStatus.Paused);
+        sut.Status.Should().Be(GameStatusEnum.Paused);
         sut.PausedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         sut.DomainEvents.Should().Contain(e => e is GamePausedEvent);
     }
@@ -285,7 +285,7 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
         sut.ResumeGame();
 
         // Assert
-        sut.Status.Should().Be(GameStatus.InProgress);
+        sut.Status.Should().Be(GameStatusEnum.InProgress);
         sut.PausedAt.Should().BeNull();
         sut.DomainEvents.Should().Contain(e => e is GameResumedEvent);
     }
@@ -313,7 +313,7 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
         sut.StartGame();
 
         // Assert
-        sut.Status.Should().Be(GameStatus.InProgress);
+        sut.Status.Should().Be(GameStatusEnum.InProgress);
         sut.StartedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         sut.DomainEvents.Should().Contain(e => e is GameStartedEvent);
     }

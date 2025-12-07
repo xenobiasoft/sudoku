@@ -1,22 +1,23 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Sudoku.Web.Server.EventArgs;
-using Sudoku.Web.Server.Services.Abstractions;
+using Sudoku.Web.Server.Models;
+using Sudoku.Web.Server.Services.Abstractions.V2;
 
 namespace Sudoku.Web.Server.Components
 {
     public partial class GameBoard
     {
-        private Cell _selectedCell = new(0, 0);
+        private CellModel _selectedCell = new();
 
-        [Parameter] public ISudokuPuzzle? Puzzle { get; set; }
+        [Parameter] public GameModel? Game { get; set; }
         [Parameter] public INotificationService? NotificationService { get; set; }
-        [Parameter] public EventCallback<Cell> OnCellFocus { set; get; }
+        [Parameter] public EventCallback<CellModel> OnCellFocus { set; get; }
         [Parameter] public EventCallback<CellChangedEventArgs> OnCellChanged { get; set; }
         [Parameter] public EventCallback<CellPossibleValueChangedEventArgs> OnPossibleValueChanged { get; set; }
         [Parameter] public bool IsPencilMode { get; set; }
 
-        private async Task HandleCellFocus(Cell cell)
+        private async Task HandleCellFocus(CellModel cell)
         {
             _selectedCell = cell;
             await OnCellFocus.InvokeAsync(cell);
@@ -43,7 +44,7 @@ namespace Sudoku.Web.Server.Components
 
         private void FocusUp()
         {
-            var cell = Puzzle!
+            var cell = Game!
                 .GetColumnCells(_selectedCell.Column)
                 .Where(x => x.Row < _selectedCell.Row)
                 .MaxBy(x => x.Row);
@@ -53,7 +54,7 @@ namespace Sudoku.Web.Server.Components
 
         private void FocusRight()
         {
-            var cell = Puzzle!
+            var cell = Game!
                 .GetRowCells(_selectedCell.Row)
                 .Where(x => x.Column > _selectedCell.Column)
                 .MinBy(x => x.Column);
@@ -63,7 +64,7 @@ namespace Sudoku.Web.Server.Components
 
         private void FocusLeft()
         {
-            var cell = Puzzle!
+            var cell = Game!
                 .GetRowCells(_selectedCell.Row)
                 .Where(x => x.Column < _selectedCell.Column)
                 .MaxBy(x => x.Column);
@@ -73,7 +74,7 @@ namespace Sudoku.Web.Server.Components
 
         private void FocusDown()
         {
-            var cell = Puzzle!
+            var cell = Game!
                 .GetColumnCells(_selectedCell.Column)
                 .Where(x => x.Row > _selectedCell.Row)
                 .MinBy(x => x.Row);

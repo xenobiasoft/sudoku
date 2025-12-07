@@ -24,4 +24,6 @@ public class TripletsInMiniGridsStrategy : TripletsStrategyBase
 
         return changesMade;
     }
+
+    public override int Order { get; } = 9;
 }

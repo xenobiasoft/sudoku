@@ -87,7 +87,7 @@ public class SudokuGamePossibleValuesTests : BaseTestByType<SudokuGame>
 
         // Assert
         act.Should().Throw<GameNotInProgressException>()
-            .WithMessage($"*Cannot add possible value in {GameStatus.NotStarted} state*");
+            .WithMessage($"*Cannot add possible value in {GameStatusEnum.NotStarted} state*");
     }
 
     [Fact]
@@ -146,7 +146,7 @@ public class SudokuGamePossibleValuesTests : BaseTestByType<SudokuGame>
 
         // Assert
         act.Should().Throw<GameNotInProgressException>()
-            .WithMessage($"*Cannot clear possible values in {GameStatus.NotStarted} state*");
+            .WithMessage($"*Cannot clear possible values in {GameStatusEnum.NotStarted} state*");
     }
 
     [Fact]
@@ -223,7 +223,7 @@ public class SudokuGamePossibleValuesTests : BaseTestByType<SudokuGame>
 
         // Assert
         act.Should().Throw<GameNotInProgressException>()
-            .WithMessage($"*Cannot remove possible value in {GameStatus.NotStarted} state*");
+            .WithMessage($"*Cannot remove possible value in {GameStatusEnum.NotStarted} state*");
     }
 
     [Fact]

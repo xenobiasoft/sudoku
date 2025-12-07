@@ -2,8 +2,10 @@
 
 namespace Sudoku.Web.Server.Services.Abstractions.V2;
 
-public interface IGameStatisticsManager
+public interface IGameStatisticsManager : IGameProvider
 {
+    IGameTimer Timer { get; }
+
     /// <summary>
     /// Gets the current game statistics, including metrics such as score, time played, and other relevant data.
     /// </summary>
@@ -30,8 +32,12 @@ public interface IGameStatisticsManager
     Task EndSession();
 
     /// <summary>
-    /// Records a move in the current game session
+    /// Records a move made by the player
     /// </summary>
-    /// <param name="isValid">Whether the move was valid</param>
-    Task RecordMove(bool isValid);
+    /// <param name="row"></param>
+    /// <param name="column"></param>
+    /// <param name="value"></param>
+    /// <param name="isValid"></param>
+    /// <returns></returns>
+    Task RecordMove(int row, int column, int? value, bool isValid);
 }

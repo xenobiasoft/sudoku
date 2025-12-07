@@ -24,7 +24,7 @@ try
     var cosmosDb = builder.AddConnectionString("CosmosDb");
 
     logger.LogDebug("Configuring Sudoku API project...");
-    builder.AddProject<Projects.Sudoku_Api>("sudoku-api")
+    var api = builder.AddProject<Projects.Sudoku_Api>("sudoku-api")
         .WithUrlForEndpoint("https", url =>
         {
             url.DisplayText = "Swagger (HTTPS)";
@@ -45,6 +45,7 @@ try
     builder.AddProject<Projects.Sudoku_Web_Server>("sudoku-blazor")
         .WithReference(cosmosDb)
         .WithReference(appConfig)
+        .WithReference(api)
         .WithExternalHttpEndpoints()
         .WaitFor(cosmosDb);
 

@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Sudoku.Domain.ValueObjects;
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.EventArgs;
-using Sudoku.Web.Server.Services.Abstractions;
-using UnitTests.Helpers;
-using XenobiaSoft.Sudoku;
+using Sudoku.Web.Server.Services.Abstractions.V2;
+using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Web.Components;
 
@@ -23,7 +23,7 @@ public class GameBoardTests : TestContext
 	{
 		// Arrange
         var gameBoard = RenderComponent<GameBoard>(p => p
-            .Add(x => x.Puzzle, PuzzleFactory.GetEmptyPuzzle()));
+            .Add(x => x.Game, GameModelFactory.GetEmptyPuzzle()));
 
 		// Act
         var cellInputs = gameBoard.FindComponents<CellInput>();
@@ -51,9 +51,13 @@ public class GameBoardTests : TestContext
     {
         // Arrange
         CellChangedEventArgs? calledArgs = null;
+        var game = GameModelFactory
+            .Build()
+            .WithDifficulty(GameDifficulty.Easy)
+            .Create();
         var gameBoard = RenderComponent<GameBoard>(x => x
             .Add(c => c.OnCellChanged, args => calledArgs = args)
-            .Add(c => c.Puzzle, PuzzleFactory.GetPuzzle(GameDifficulty.Easy)));
+            .Add(c => c.Game, game));
         var cellInput = gameBoard.FindComponents<CellInput>().First();
 
         // Act
@@ -73,10 +77,10 @@ public class GameBoardTests : TestContext
     public async Task GameBoard_FocusDown_SendsFocusToCorrectCell()
     {
         // Arrange
-        var puzzle = PuzzleFactory.GetEmptyPuzzle();
+        var puzzle = GameModelFactory.GetEmptyPuzzle();
         var gameBoard = RenderComponent<GameBoard>(p =>
         {
-            p.Add(x => x.Puzzle, puzzle);
+            p.Add(x => x.Game, puzzle);
             p.Add(x => x.NotificationService, _mockNotificationService.Object);
         });
         var cellInputs = gameBoard.FindComponents<CellInput>();
@@ -95,10 +99,10 @@ public class GameBoardTests : TestContext
     public async Task GameBoard_FocusLeft_SendsFocusToCorrectCell()
     {
         // Arrange
-        var puzzle = PuzzleFactory.GetEmptyPuzzle();
+        var puzzle = GameModelFactory.GetEmptyPuzzle();
         var gameBoard = RenderComponent<GameBoard>(p =>
         {
-            p.Add(x => x.Puzzle, puzzle);
+            p.Add(x => x.Game, puzzle);
             p.Add(x => x.NotificationService, _mockNotificationService.Object);
         });
         var cellInputs = gameBoard.FindComponents<CellInput>();
@@ -117,10 +121,10 @@ public class GameBoardTests : TestContext
     public async Task GameBoard_FocusRight_SendsFocusToCorrectCell()
     {
         // Arrange
-        var puzzle = PuzzleFactory.GetEmptyPuzzle();
+        var puzzle = GameModelFactory.GetEmptyPuzzle();
         var gameBoard = RenderComponent<GameBoard>(p =>
         {
-            p.Add(x => x.Puzzle, puzzle);
+            p.Add(x => x.Game, puzzle);
             p.Add(x => x.NotificationService, _mockNotificationService.Object);
         });
         var cellInputs = gameBoard.FindComponents<CellInput>();
@@ -139,10 +143,10 @@ public class GameBoardTests : TestContext
     public async Task GameBoard_FocusUp_SendsFocusToCorrectCell()
     {
         // Arrange
-        var puzzle = PuzzleFactory.GetEmptyPuzzle();
+        var puzzle = GameModelFactory.GetEmptyPuzzle();
         var gameBoard = RenderComponent<GameBoard>(p =>
         {
-            p.Add(x => x.Puzzle, puzzle);
+            p.Add(x => x.Game, puzzle);
             p.Add(x => x.NotificationService, _mockNotificationService.Object);
         });
         var cellInputs = gameBoard.FindComponents<CellInput>();

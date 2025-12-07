@@ -1,9 +1,12 @@
 ﻿using DepenMock.XUnit;
+using Sudoku.Domain.ValueObjects;
 using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services.Abstractions;
 using Sudoku.Web.Server.Services.Abstractions.V2;
 using Sudoku.Web.Server.Services.HttpClients;
+using Sudoku.Web.Server.Services.States;
 using Sudoku.Web.Server.Services.V2;
+using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Web.Services.V2;
 
@@ -13,20 +16,26 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     private readonly Mock<IGameTimer> _mockGameTimer;
     private readonly GameModel _testGame;
 
+    private readonly string _testAlias;
+    private readonly string _testGameId;
+
     public GameStatisticsManagerTests()
     {
         _mockGameApiClient = Container.ResolveMock<IGameApiClient>();
         _mockGameTimer = Container.ResolveMock<IGameTimer>();
 
-        _testGame = new GameModel
-        {
-            Id = "test-game-id",
-            Alias = "test-alias",
-            PlayerAlias = "test-player",
-            Difficulty = "Easy",
-            Status = "InProgress",
-            Statistics = new GameStatisticsModel()
-        };
+        _testAlias = Container.Create<string>();
+        _testGameId = Container.Create<string>();
+        _testGame = GameModelFactory
+            .Build()
+            .WithStatus(GameStatus.NotStarted)
+            .WithPlayerAlias(_testAlias)
+            .WithId(_testGameId)
+            .Create();
+
+        _mockGameApiClient
+            .Setup(x => x.GetGameAsync(_testAlias, _testGameId))
+            .ReturnsAsync(ApiResult<GameModel>.Success(_testGame));
     }
 
     [Fact]
@@ -58,7 +67,37 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
-    public async Task EndSession_SavesGame()
+    public async Task EndSession_WhenGameIsSolved_SetsGameStatusToCompleted()
+    {
+        // Arrange
+        var game = GameModelFactory.GetSolvedPuzzle();
+        var sut = ResolveSut();
+        SetGameProperty(sut, game);
+
+        // Act
+        await sut.EndSession();
+
+        // Assert
+        sut.Game.Status.Should().Be(GameStatus.Completed);
+    }
+
+    [Fact]
+    public async Task EndSession_WhenGameCompleted_SavesGameStatus()
+    {
+        // Arrange
+        var game = GameModelFactory.GetSolvedPuzzle();
+        var sut = ResolveSut();
+        SetGameProperty(sut, game);
+
+        // Act
+        await sut.EndSession();
+
+        // Assert
+        _mockGameApiClient.VerifySavesGameStatus(game.PlayerAlias, game.Id, GameStatus.Completed, Times.Once);
+    }
+
+    [Fact]
+    public async Task EndSession_WhenGameNotComplete_SetsGameStatusToAbandoned()
     {
         // Arrange
         var sut = ResolveSut();
@@ -68,7 +107,21 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         await sut.EndSession();
 
         // Assert
-        _mockGameApiClient.Verify(x => x.SaveGameAsync(_testGame), Times.Once);
+        sut.Game.Status.Should().Be(GameStatus.Abandoned);
+    }
+
+    [Fact]
+    public async Task EndSession_WhenGameNotComplete_SavesGameStatus()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        SetGameProperty(sut, _testGame);
+
+        // Act
+        await sut.EndSession();
+
+        // Assert
+        _mockGameApiClient.VerifySavesGameStatus(_testAlias, _testGameId, GameStatus.Abandoned, Times.Once);
     }
 
     [Fact]
@@ -135,6 +188,20 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
+    public async Task PauseSession_SetsGameStatusToPaused()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        SetGameProperty(sut, _testGame);
+
+        // Act
+        await sut.PauseSession();
+
+        // Assert
+        sut.Game.Status.Should().Be(GameStatus.Paused);
+    }
+
+    [Fact]
     public async Task PauseSession_PausesTimer()
     {
         // Arrange
@@ -149,7 +216,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
-    public async Task PauseSession_SavesGame()
+    public async Task PauseSession_SavesGameStatus()
     {
         // Arrange
         var sut = ResolveSut();
@@ -159,24 +226,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         await sut.PauseSession();
 
         // Assert
-        _mockGameApiClient.Verify(x => x.SaveGameAsync(_testGame), Times.Once);
-    }
-
-    [Fact]
-    public async Task RecordMove_ValidMove_RecordsValidMove()
-    {
-        // Arrange
-        var sut = ResolveSut();
-        SetGameProperty(sut, _testGame);
-        var initialTotalMoves = _testGame.Statistics.TotalMoves;
-        var initialInvalidMoves = _testGame.Statistics.InvalidMoves;
-
-        // Act
-        await sut.RecordMove(true);
-
-        // Assert
-        _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 1);
-        _testGame.Statistics.InvalidMoves.Should().Be(initialInvalidMoves);
+        _mockGameApiClient.VerifySavesGameStatus(_testAlias, _testGameId, GameStatus.Paused, Times.Once);
     }
 
     [Fact]
@@ -189,7 +239,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         var initialInvalidMoves = _testGame.Statistics.InvalidMoves;
 
         // Act
-        await sut.RecordMove(false);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
 
         // Assert
         _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 1);
@@ -197,50 +247,40 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
-    public async Task RecordMove_ValidMove_SavesGame()
-    {
-        // Arrange
-        var sut = ResolveSut();
-        SetGameProperty(sut, _testGame);
-
-        // Act
-        await sut.RecordMove(true);
-
-        // Assert
-        _mockGameApiClient.Verify(x => x.SaveGameAsync(_testGame), Times.Once);
-    }
-
-    [Fact]
     public async Task RecordMove_InvalidMove_SavesGame()
     {
         // Arrange
+        var row = Container.Create<int>();
+        var column = Container.Create<int>();
+        var value = Container.Create<int>();
         var sut = ResolveSut();
         SetGameProperty(sut, _testGame);
 
         // Act
-        await sut.RecordMove(false);
+        await sut.RecordMove(row, column, value, false);
 
         // Assert
-        _mockGameApiClient.Verify(x => x.SaveGameAsync(_testGame), Times.Once);
+        _mockGameApiClient.VerifyMakesMove(_testAlias, _testGameId, row, column, value, Times.Once);
     }
 
     [Fact]
-    public async Task RecordMove_MultipleValidMoves_IncrementsCountCorrectly()
+    public async Task RecordMove_MixedValidAndInvalidMoves_CalculatesCorrectly()
     {
         // Arrange
         var sut = ResolveSut();
         SetGameProperty(sut, _testGame);
-        var initialTotalMoves = _testGame.Statistics.TotalMoves;
+        var initialTotalMoves = sut.CurrentStatistics.TotalMoves;
 
         // Act
-        await sut.RecordMove(true);
-        await sut.RecordMove(true);
-        await sut.RecordMove(true);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
 
         // Assert
-        _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 3);
-        _testGame.Statistics.InvalidMoves.Should().Be(0);
-        _testGame.Statistics.ValidMoves.Should().Be(initialTotalMoves + 3);
+        sut.CurrentStatistics.TotalMoves.Should().Be(initialTotalMoves + 4);
+        sut.CurrentStatistics.InvalidMoves.Should().Be(2);
+        sut.CurrentStatistics.ValidMoves.Should().Be(initialTotalMoves + 2);
     }
 
     [Fact]
@@ -252,8 +292,8 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         var initialTotalMoves = _testGame.Statistics.TotalMoves;
 
         // Act
-        await sut.RecordMove(false);
-        await sut.RecordMove(false);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), false);
 
         // Assert
         _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 2);
@@ -262,7 +302,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
-    public async Task RecordMove_MixedValidAndInvalidMoves_CalculatesCorrectly()
+    public async Task RecordMove_MultipleValidMoves_IncrementsCountCorrectly()
     {
         // Arrange
         var sut = ResolveSut();
@@ -270,15 +310,48 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         var initialTotalMoves = _testGame.Statistics.TotalMoves;
 
         // Act
-        await sut.RecordMove(true);
-        await sut.RecordMove(false);
-        await sut.RecordMove(true);
-        await sut.RecordMove(false);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
 
         // Assert
-        _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 4);
-        _testGame.Statistics.InvalidMoves.Should().Be(2);
-        _testGame.Statistics.ValidMoves.Should().Be(initialTotalMoves + 2);
+        _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 3);
+        _testGame.Statistics.InvalidMoves.Should().Be(0);
+        _testGame.Statistics.ValidMoves.Should().Be(initialTotalMoves + 3);
+    }
+
+    [Fact]
+    public async Task RecordMove_ValidMove_RecordsValidMove()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        SetGameProperty(sut, _testGame);
+        var initialTotalMoves = _testGame.Statistics.TotalMoves;
+        var initialInvalidMoves = _testGame.Statistics.InvalidMoves;
+
+        // Act
+        await sut.RecordMove(Container.Create<int>(), Container.Create<int>(), Container.Create<int>(), true);
+
+        // Assert
+        _testGame.Statistics.TotalMoves.Should().Be(initialTotalMoves + 1);
+        _testGame.Statistics.InvalidMoves.Should().Be(initialInvalidMoves);
+    }
+
+    [Fact]
+    public async Task RecordMove_ValidMove_SavesGame()
+    {
+        // Arrange
+        var row = Container.Create<int>();
+        var column = Container.Create<int>();
+        var value = Container.Create<int>();
+        var sut = ResolveSut();
+        SetGameProperty(sut, _testGame);
+
+        // Act
+        await sut.RecordMove(row, column, value, true);
+
+        // Assert
+        _mockGameApiClient.VerifyMakesMove(_testAlias, _testGameId, row, column, value, Times.Once);
     }
 
     [Fact]
@@ -295,6 +368,39 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
 
         // Assert
         _mockGameTimer.Verify(x => x.Resume(expectedDuration), Times.Once);
+    }
+
+    [Fact]
+    public async Task ResumeSession_SavesGameStatus()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        SetGameProperty(sut, _testGame);
+        _testGame.Statistics.SetPlayDuration(TimeSpan.Zero);
+
+        // Act
+        await sut.ResumeSession();
+
+        // Assert
+        _mockGameApiClient.VerifySavesGameStatus(_testAlias, _testGameId, GameStatus.InProgress, Times.Once);
+    }
+
+    [Fact]
+    public async Task ResumeSession_SetsGameStatusToInProgress()
+    {
+        // Arrange
+        var game = GameModelFactory
+            .Build()
+            .WithStatus(GameStatus.Paused)
+            .Create();
+        var sut = ResolveSut();
+        SetGameProperty(sut, game);
+
+        // Act
+        await sut.ResumeSession();
+
+        // Assert
+        sut.Game.Status.Should().Be(GameStatus.InProgress);
     }
 
     [Fact]
@@ -345,6 +451,20 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
+    public async Task StartNewSession_SetsGameStatusToInProgress()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        SetGameProperty(sut, _testGame);
+
+        // Act
+        await sut.StartNewSession();
+
+        // Assert
+        sut.Game.Status.Should().Be(GameStatus.InProgress);
+    }
+
+    [Fact]
     public async Task StartNewSession_StartsTimer()
     {
         // Arrange
@@ -373,7 +493,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
     }
 
     [Fact]
-    public async Task StartNewSession_SavesGame()
+    public async Task StartNewSession_SavesGameStatus()
     {
         // Arrange
         var sut = ResolveSut();
@@ -383,7 +503,7 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
         await sut.StartNewSession();
 
         // Assert
-        _mockGameApiClient.Verify(x => x.SaveGameAsync(_testGame), Times.Once);
+        _mockGameApiClient.VerifySavesGameStatus(_testAlias, _testGameId, GameStatus.InProgress, Times.Once);
     }
 
     private void SetGameProperty(IGameStatisticsManager gameStatisticsManager, GameModel game)

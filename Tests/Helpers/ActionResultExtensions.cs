@@ -34,12 +34,12 @@ public static class ActionResultExtensions
     }
 
     /// <summary>
-    /// Asserts that the action result has the expected HTTP status code.
+    /// Asserts that the action result has the expected HTTP statusEnum code.
     /// </summary>
     /// <param name="actionResult">The action result to verify.</param>
-    /// <param name="expectedStatusCode">The expected HTTP status code.</param>
+    /// <param name="expectedStatusCode">The expected HTTP statusEnum code.</param>
     /// <exception cref="ArgumentNullException">Thrown when actionResult is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the status code doesn't match.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the statusEnum code doesn't match.</exception>
     public static void AssertResponseStatusCode(this ActionResult actionResult, HttpStatusCode expectedStatusCode)
     {
         if (actionResult == null)
@@ -52,18 +52,18 @@ public static class ActionResultExtensions
         
         if (expectedStatusCodeValue != actualStatusCode)
         {
-            throw new InvalidOperationException($"Expected status code {expectedStatusCodeValue} ({expectedStatusCode}), but got {actualStatusCode}");
+            throw new InvalidOperationException($"Expected statusEnum code {expectedStatusCodeValue} ({expectedStatusCode}), but got {actualStatusCode}");
         }
     }
 
     /// <summary>
-    /// Asserts that the generic action result has the expected HTTP status code.
+    /// Asserts that the generic action result has the expected HTTP statusEnum code.
     /// </summary>
     /// <typeparam name="TResponseType">The type of the response.</typeparam>
     /// <param name="actionResult">The action result to verify.</param>
-    /// <param name="expectedStatusCode">The expected HTTP status code.</param>
+    /// <param name="expectedStatusCode">The expected HTTP statusEnum code.</param>
     /// <exception cref="ArgumentNullException">Thrown when actionResult or its Result property is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the status code doesn't match.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the statusEnum code doesn't match.</exception>
     public static void AssertResponseStatusCode<TResponseType>(this ActionResult<TResponseType> actionResult, HttpStatusCode expectedStatusCode)
     {
         if (actionResult == null)
@@ -96,7 +96,7 @@ public static class ActionResultExtensions
     }
 
     /// <summary>
-    /// Gets the HTTP status code from an action result.
+    /// Gets the HTTP statusEnum code from an action result.
     /// </summary>
     private static int GetStatusCodeFromActionResult(ActionResult actionResult)
     {
@@ -114,7 +114,7 @@ public static class ActionResultExtensions
     }
 
     /// <summary>
-    /// Maps specific ActionResult types to their corresponding HTTP status codes.
+    /// Maps specific ActionResult types to their corresponding HTTP statusEnum codes.
     /// </summary>
     private static int DetermineStatusCode(ActionResult actionResult)
     {

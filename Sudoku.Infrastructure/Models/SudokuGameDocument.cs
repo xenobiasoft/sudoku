@@ -1,4 +1,4 @@
-using System.Text.Json.Serialization;
+using Newtonsoft.Json;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
 
@@ -6,93 +6,90 @@ namespace Sudoku.Infrastructure.Models;
 
 public class SudokuGameDocument
 {
-    [JsonPropertyName("id")]
+    [JsonProperty("id")]
     public string Id { get; set; } = string.Empty;
-    
-    [JsonPropertyName("gameId")]
+
+    [JsonProperty("gameId")]
     public string GameId { get; set; } = string.Empty;
-    
-    [JsonPropertyName("playerAlias")]
+
+    [JsonProperty("playerAlias")]
     public string PlayerAlias { get; set; } = string.Empty;
-    
-    [JsonPropertyName("difficulty")]
+
+    [JsonProperty("difficulty")]
     public GameDifficulty Difficulty { get; set; } = GameDifficulty.Easy;
 
-    [JsonPropertyName("status")]
-    public GameStatus Status { get; set; }
+    [JsonProperty("status")]
+    public GameStatusEnum Status { get; set; }
     
-    [JsonPropertyName("cells")]
+    [JsonProperty("cells")]
     public List<CellDocument> Cells { get; set; } = [];
     
-    [JsonPropertyName("statistics")]
+    [JsonProperty("statistics")]
     public GameStatisticsDocument Statistics { get; set; } = new();
     
-    [JsonPropertyName("moveHistory")]
+    [JsonProperty("moveHistory")]
     public List<MoveHistoryDocument> MoveHistory { get; set; } = [];
     
-    [JsonPropertyName("createdAt")]
+    [JsonProperty("createdAt")]
     public DateTime CreatedAt { get; set; }
     
-    [JsonPropertyName("startedAt")]
+    [JsonProperty("startedAt")]
     public DateTime? StartedAt { get; set; }
     
-    [JsonPropertyName("completedAt")]
+    [JsonProperty("completedAt")]
     public DateTime? CompletedAt { get; set; }
     
-    [JsonPropertyName("pausedAt")]
+    [JsonProperty("pausedAt")]
     public DateTime? PausedAt { get; set; }
-    
-    [JsonPropertyName("_partitionKey")]
-    public string PartitionKey => GameId;
 }
 
 public class CellDocument
 {
-    [JsonPropertyName("row")]
+    [JsonProperty("row")]
     public int Row { get; set; }
     
-    [JsonPropertyName("column")]
+    [JsonProperty("column")]
     public int Column { get; set; }
     
-    [JsonPropertyName("value")]
+    [JsonProperty("value")]
     public int? Value { get; set; }
     
-    [JsonPropertyName("isFixed")]
+    [JsonProperty("isFixed")]
     public bool IsFixed { get; set; }
     
-    [JsonPropertyName("possibleValues")]
+    [JsonProperty("possibleValues")]
     public HashSet<int> PossibleValues { get; set; } = [];
 }
 
 public class GameStatisticsDocument
 {
-    [JsonPropertyName("totalMoves")]
+    [JsonProperty("totalMoves")]
     public int TotalMoves { get; set; }
     
-    [JsonPropertyName("validMoves")]
+    [JsonProperty("validMoves")]
     public int ValidMoves { get; set; }
     
-    [JsonPropertyName("invalidMoves")]
+    [JsonProperty("invalidMoves")]
     public int InvalidMoves { get; set; }
     
-    [JsonPropertyName("playDuration")]
+    [JsonProperty("playDuration")]
     public TimeSpan PlayDuration { get; set; }
     
-    [JsonPropertyName("lastMoveAt")]
+    [JsonProperty("lastMoveAt")]
     public DateTime? LastMoveAt { get; set; }
 }
 
 public class MoveHistoryDocument
 {
-    [JsonPropertyName("row")]
+    [JsonProperty("row")]
     public int Row { get; set; }
     
-    [JsonPropertyName("column")]
+    [JsonProperty("column")]
     public int Column { get; set; }
     
-    [JsonPropertyName("previousValue")]
+    [JsonProperty("previousValue")]
     public int? PreviousValue { get; set; }
     
-    [JsonPropertyName("newValue")]
+    [JsonProperty("newValue")]
     public int? NewValue { get; set; }
 }

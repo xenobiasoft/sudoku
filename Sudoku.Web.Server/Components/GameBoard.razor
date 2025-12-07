@@ -5,11 +5,11 @@
             <tr class="gridRow">
                 @for (var col = 0; col < 9; col++)
                 {
-                    var cell = Puzzle!.GetCell(row, col);
+                    var cell = Game!.GetCell(row, col);
                     <CellInput @key="cell" 
                                Cell="cell" 
                                OnCellFocus="HandleCellFocus" 
-                               Puzzle="Puzzle"
+                               CurrentGame="Game"
                                OnCellChanged="OnCellChanged"
                                OnPossibleValueChanged="OnPossibleValueChanged"
                                IsPencilMode="IsPencilMode"/>

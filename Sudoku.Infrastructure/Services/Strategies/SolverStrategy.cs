@@ -12,4 +12,5 @@ public abstract class SolverStrategy
 	}
 
 	public abstract bool Execute(SudokuPuzzle puzzle);
+    public abstract int Order { get; }
 }

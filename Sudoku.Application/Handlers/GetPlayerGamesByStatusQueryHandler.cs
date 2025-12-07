@@ -17,9 +17,9 @@ public class GetPlayerGamesByStatusQueryHandler(IGameRepository gameRepository)
         {
             var playerAlias = PlayerAlias.Create(request.PlayerAlias);
 
-            if (!Enum.TryParse<GameStatus>(request.Status, true, out var gameStatus))
+            if (!Enum.TryParse<GameStatusEnum>(request.Status, true, out var gameStatus))
             {
-                return Result<List<GameDto>>.Failure($"Invalid game status: {request.Status}");
+                return Result<List<GameDto>>.Failure($"Invalid game statusEnum: {request.Status}");
             }
 
             var games = await gameRepository.GetByPlayerAndStatusAsync(playerAlias, gameStatus);

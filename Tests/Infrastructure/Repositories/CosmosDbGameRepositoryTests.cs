@@ -84,7 +84,7 @@ public class CosmosDbGameRepositoryTests : BaseTestByAbstraction<CosmosDbGameRep
             GameId = gameId.Value.ToString(),
             PlayerAlias = playerAlias.Value,
             Difficulty = difficulty,
-            Status = GameStatus.NotStarted,
+            Status = GameStatusEnum.NotStarted,
             Cells = [],
             CreatedAt = DateTime.UtcNow
         };
@@ -115,7 +115,7 @@ public class CosmosDbGameRepositoryTests : BaseTestByAbstraction<CosmosDbGameRep
                 GameId = Guid.NewGuid().ToString(),
                 PlayerAlias = playerAlias.Value,
                 Difficulty = GameDifficulty.Easy,
-                Status = GameStatus.NotStarted,
+                Status = GameStatusEnum.NotStarted,
                 Cells = [],
                 CreatedAt = DateTime.UtcNow.AddMinutes(-10)
             },
@@ -125,7 +125,7 @@ public class CosmosDbGameRepositoryTests : BaseTestByAbstraction<CosmosDbGameRep
                 GameId = Guid.NewGuid().ToString(),
                 PlayerAlias = playerAlias.Value,
                 Difficulty = GameDifficulty.Medium,
-                Status = GameStatus.InProgress,
+                Status = GameStatusEnum.InProgress,
                 Cells = [],
                 CreatedAt = DateTime.UtcNow
             }

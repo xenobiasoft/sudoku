@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components;
-using XenobiaSoft.Sudoku.GameState;
+using Sudoku.Web.Server.Models;
 
 namespace Sudoku.Web.Server.Components;
 
 public partial class GameThumbnail
 {
-    [Parameter] public GameStateMemory? Game { get; set; }
+    [Parameter] public GameModel? Game { get; set; }
     [Parameter] public EventCallback<string> OnDeleteGame { get; set; }
     [Parameter] public EventCallback<string> OnLoadGame { get; set; }
 
@@ -15,7 +15,7 @@ public partial class GameThumbnail
         {
             return;
         }
-        await OnDeleteGame.InvokeAsync(Game.PuzzleId);
+        await OnDeleteGame.InvokeAsync(Game.Id);
     }
 
     private async Task LoadGame()
@@ -24,6 +24,6 @@ public partial class GameThumbnail
         {
             return;
         }
-        await OnLoadGame.InvokeAsync(Game.PuzzleId);
+        await OnLoadGame.InvokeAsync(Game.Id);
     }
 }

@@ -2,4 +2,5 @@
 
 public interface IGameManager : IGameStatisticsManager, IGameStateManager
 {
+    Task StartGameAsync();
 }

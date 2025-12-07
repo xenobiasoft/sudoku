@@ -376,7 +376,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
     {
         // Arrange
         var playerAlias = Container.Create<PlayerAlias>();
-        var status = GameStatus.InProgress;
+        var status = GameStatusEnum.InProgress;
         var game1 = CreateTestGame(playerAlias);
         var game2 = CreateTestGame(playerAlias);
         game2.StartGame(); // Set to InProgress
@@ -496,7 +496,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         var result = await sut.GetCompletedGamesAsync(playerAlias);
 
         // Assert
-        result.Should().AllSatisfy(g => g.Status.Should().Be(GameStatus.Completed));
+        result.Should().AllSatisfy(g => g.Status.Should().Be(GameStatusEnum.Completed));
     }
 
     [Fact]
@@ -534,11 +534,11 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
         var sut = ResolveSut();
 
         // Act
-        var result = await sut.GetGamesByStatusAsync(GameStatus.InProgress);
+        var result = await sut.GetGamesByStatusAsync(GameStatusEnum.InProgress);
 
         // Assert
         result.Should().HaveCount(1);
-        result.First().Status.Should().Be(GameStatus.InProgress);
+        result.First().Status.Should().Be(GameStatusEnum.InProgress);
     }
 
     [Fact]

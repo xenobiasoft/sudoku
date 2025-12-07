@@ -155,9 +155,7 @@ public class CosmosDbService : ICosmosDbService
     {
         try
         {
-            var response = string.IsNullOrWhiteSpace(key)
-                ? await _container.UpsertItemAsync(item)
-                : await _container.UpsertItemAsync(item, new PartitionKey(key));
+            var response = await _container.UpsertItemAsync(item, new PartitionKey(key));
             
             _logger.LogDebug("Upserted item to CosmosDB with RU charge: {RequestCharge}", response.RequestCharge);
             return response.Resource;

@@ -1,5 +1,7 @@
 ﻿using Sudoku.Web.Server.Models;
+using Sudoku.Web.Server.Services.Abstractions;
 using Sudoku.Web.Server.Services.Abstractions.V2;
+using Sudoku.Web.Server.Services.States;
 
 namespace Sudoku.Web.Server.Services.V2;
 
@@ -15,10 +17,12 @@ namespace Sudoku.Web.Server.Services.V2;
 /// state.</remarks>
 public partial class GameManager : IGameStatisticsManager
 {
+    public IGameTimer Timer => gameTimer;
+
     /// <summary>
     /// Gets the current game statistics.
     /// </summary>
-    public GameStatisticsModel CurrentStatistics => Game!.Statistics;
+    public GameStatisticsModel CurrentStatistics => Game?.Statistics!;
 
     /// <summary>
     /// Ends the current session asynchronously.
@@ -29,9 +33,10 @@ public partial class GameManager : IGameStatisticsManager
     /// <returns>A task that represents the asynchronous operation of ending the session.</returns>
     public async Task EndSession()
     {
+        Game.Status = Game.IsSolved() ? GameStatus.Completed : GameStatus.Abandoned;
         gameTimer.OnTick -= OnTimerTick;
         gameTimer.Reset();
-        await SaveGameAsync();
+        await SaveGameStatusAsync();
     }
 
     /// <summary>
@@ -42,8 +47,10 @@ public partial class GameManager : IGameStatisticsManager
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task PauseSession()
     {
+        Game.Status = GameStatus.Paused;
+        gameTimer.OnTick -= OnTimerTick;
         gameTimer.Pause();
-        await SaveGameAsync();
+        await SaveGameStatusAsync();
     }
 
     /// <summary>
@@ -53,11 +60,14 @@ public partial class GameManager : IGameStatisticsManager
     /// their validity assessed. The specific behavior of the method depends on the implementation.</remarks>
     /// <param name="isValid">A boolean value indicating whether the move is valid.  <see langword="true"/> if the move is valid; otherwise,
     /// <see langword="false"/>.</param>
+    /// <param name="row"></param>
+    /// <param name="column"></param>
+    /// <param name="value"></param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public async Task RecordMove(bool isValid)
+    public async Task RecordMove(int row, int column, int? value, bool isValid)
     {
         CurrentStatistics.RecordMove(isValid);
-        await SaveGameAsync();
+        await SaveGameAsync(row, column, value);
     }
 
     /// <summary>
@@ -68,9 +78,11 @@ public partial class GameManager : IGameStatisticsManager
     /// <returns>A task that represents the asynchronous operation. The task completes when the session is successfully resumed.</returns>
     public Task ResumeSession()
     {
+        Game.Status = GameStatus.InProgress;
         var playDuration = CurrentStatistics.PlayDuration;
+        gameTimer.OnTick += OnTimerTick;
         gameTimer.Resume(playDuration);
-        return Task.CompletedTask;
+        return SaveGameStatusAsync();
     }
 
     /// <summary>
@@ -81,11 +93,12 @@ public partial class GameManager : IGameStatisticsManager
     /// <returns>A task that represents the asynchronous operation of starting a new session.</returns>
     public async Task StartNewSession()
     {
+        Game.Status = GameStatus.InProgress;
         CurrentStatistics.Reset();
         gameTimer.Reset();
         gameTimer.Start();
         gameTimer.OnTick += OnTimerTick;
-        await SaveGameAsync();
+        await SaveGameStatusAsync();
     }
 
     private void OnTimerTick(object? sender, TimeSpan elapsedTime)

@@ -8,12 +8,13 @@ public class SudokuGame : AggregateRoot
     public GameId Id { get; private set; }
     public PlayerAlias PlayerAlias { get; private set; }
     public GameDifficulty Difficulty { get; private set; }
-    public GameStatus Status { get; private set; }
+    public GameStatusEnum Status { get; private set; }
     public GameStatistics Statistics { get; private set; }
     public DateTime CreatedAt { get; private set; }
     public DateTime? StartedAt { get; private set; }
     public DateTime? CompletedAt { get; private set; }
     public DateTime? PausedAt { get; private set; }
+    public List<MoveHistory> MoveHistory => _moveHistory;
 
     private SudokuGame()
     {
@@ -28,7 +29,7 @@ public class SudokuGame : AggregateRoot
             Id = GameId.New(),
             PlayerAlias = playerAlias,
             Difficulty = difficulty,
-            Status = GameStatus.NotStarted,
+            Status = GameStatusEnum.NotStarted,
             Statistics = GameStatistics.Create(),
             CreatedAt = DateTime.UtcNow
         };
@@ -39,14 +40,46 @@ public class SudokuGame : AggregateRoot
         return game;
     }
 
+    public static SudokuGame Reconstitute(
+        GameId id,
+        PlayerAlias playerAlias,
+        GameDifficulty difficulty,
+        GameStatusEnum statusEnum,
+        GameStatistics statistics,
+        IEnumerable<Cell> cells,
+        IEnumerable<MoveHistory> moveHistory,
+        DateTime createdAt,
+        DateTime? startedAt,
+        DateTime? completedAt,
+        DateTime? pausedAt)
+    {
+        var game = new SudokuGame
+        {
+            Id = id,
+            PlayerAlias = playerAlias,
+            Difficulty = difficulty,
+            Status = statusEnum,
+            Statistics = statistics,
+            CreatedAt = createdAt,
+            StartedAt = startedAt,
+            CompletedAt = completedAt,
+            PausedAt = pausedAt
+        };
+
+        game._cells.AddRange(cells);
+        game._moveHistory.AddRange(moveHistory);
+
+        return game;
+    }
+
     public void StartGame()
     {
-        if (Status != GameStatus.NotStarted)
+        if (Status != GameStatusEnum.NotStarted)
         {
             throw new GameNotInStartStateException($"Cannot start game in {Status} state");
         }
 
-        Status = GameStatus.InProgress;
+        Status = GameStatusEnum.InProgress;
         StartedAt = DateTime.UtcNow;
 
         AddDomainEvent(new GameStartedEvent(Id));
@@ -54,7 +87,7 @@ public class SudokuGame : AggregateRoot
 
     public void MakeMove(int row, int column, int? value)
     {
-        if (Status != GameStatus.InProgress)
+        if (Status != GameStatusEnum.InProgress)
         {
             throw new GameNotInProgressException($"Cannot make move in {Status} state");
         }
@@ -88,7 +121,7 @@ public class SudokuGame : AggregateRoot
 
     public void AddPossibleValue(int row, int column, int value)
     {
-        if (Status != GameStatus.InProgress)
+        if (Status != GameStatusEnum.InProgress)
         {
             throw new GameNotInProgressException($"Cannot add possible value in {Status} state");
         }
@@ -110,7 +143,7 @@ public class SudokuGame : AggregateRoot
 
     public void RemovePossibleValue(int row, int column, int value)
     {
-        if (Status != GameStatus.InProgress)
+        if (Status != GameStatusEnum.InProgress)
         {
             throw new GameNotInProgressException($"Cannot remove possible value in {Status} state");
         }
@@ -127,7 +160,7 @@ public class SudokuGame : AggregateRoot
 
     public void ClearPossibleValues(int row, int column)
     {
-        if (Status != GameStatus.InProgress)
+        if (Status != GameStatusEnum.InProgress)
         {
             throw new GameNotInProgressException($"Cannot clear possible values in {Status} state");
         }
@@ -144,7 +177,7 @@ public class SudokuGame : AggregateRoot
 
     public void UndoLastMove()
     {
-        if (Status != GameStatus.InProgress)
+        if (Status != GameStatusEnum.InProgress)
         {
             throw new GameNotInProgressException($"Cannot undo move in {Status} state");
         }
@@ -168,7 +201,7 @@ public class SudokuGame : AggregateRoot
 
     public void ResetGame()
     {
-        if (Status == GameStatus.NotStarted)
+        if (Status == GameStatusEnum.NotStarted)
         {
             throw new GameNotInStartStateException("Game is already in its initial state");
         }
@@ -187,9 +220,9 @@ public class SudokuGame : AggregateRoot
         Statistics = GameStatistics.Create();
 
         // Set the game state back to InProgress if it was completed or abandoned
-        if (Status == GameStatus.Completed || Status == GameStatus.Abandoned)
+        if (Status == GameStatusEnum.Completed || Status == GameStatusEnum.Abandoned)
         {
-            Status = GameStatus.InProgress;
+            Status = GameStatusEnum.InProgress;
             CompletedAt = null;
         }
 
@@ -253,12 +286,12 @@ public class SudokuGame : AggregateRoot
 
     public void PauseGame()
     {
-        if (Status != GameStatus.InProgress)
+        if (Status != GameStatusEnum.InProgress)
         {
             throw new GameNotInProgressException($"Cannot pause game in {Status} state");
         }
 
-        Status = GameStatus.Paused;
+        Status = GameStatusEnum.Paused;
         PausedAt = DateTime.UtcNow;
 
         AddDomainEvent(new GamePausedEvent(Id));
@@ -266,12 +299,18 @@ public class SudokuGame : AggregateRoot
 
     public void ResumeGame()
     {
-        if (Status != GameStatus.Paused)
+        if (Status != GameStatusEnum.Paused && Status != GameStatusEnum.NotStarted)
         {
-            throw new GameNotPausedException($"Cannot resume game in {Status} state");
+            throw new GameNotPausedException($"Cannot resume game in {Status} state. Game must be NotStarted or Paused.");
         }
 
-        Status = GameStatus.InProgress;
+        // If starting from NotStarted, set the StartedAt timestamp
+        if (Status == GameStatusEnum.NotStarted)
+        {
+            StartedAt = DateTime.UtcNow;
+        }
+
+        Status = GameStatusEnum.InProgress;
         PausedAt = null;
 
         AddDomainEvent(new GameResumedEvent(Id));
@@ -279,12 +318,12 @@ public class SudokuGame : AggregateRoot
 
     public void AbandonGame()
     {
-        if (Status == GameStatus.Completed)
+        if (Status == GameStatusEnum.Completed)
         {
             throw new GameAlreadyCompletedException("Cannot abandon completed game");
         }
 
-        Status = GameStatus.Abandoned;
+        Status = GameStatusEnum.Abandoned;
 
         AddDomainEvent(new GameAbandonedEvent(Id));
     }
@@ -374,9 +413,9 @@ public class SudokuGame : AggregateRoot
         return true;
     }
 
-    private void CompleteGame()
+    public void CompleteGame()
     {
-        Status = GameStatus.Completed;
+        Status = GameStatusEnum.Completed;
         CompletedAt = DateTime.UtcNow;
 
         AddDomainEvent(new GameCompletedEvent(Id, Statistics));

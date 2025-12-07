@@ -10,4 +10,6 @@ public class TwinsInRowsStrategy : TwinsStrategyBase
 
         return HandleNakedTwins(rowGroups);
     }
+
+    public override int Order { get; } = 5;
 }

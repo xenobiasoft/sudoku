@@ -190,10 +190,8 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         var result = await _sut.CreateGameAsync(playerAlias, difficulty);
 
         // Assert
-        var createdAtActionResult = result.Result.Should().BeOfType<CreatedAtActionResult>().Subject;
-        createdAtActionResult.ActionName.Should().Be(nameof(GamesController.GetGameAsync));
-        createdAtActionResult.RouteValues.Should().ContainKey("alias").WhoseValue.Should().Be(playerAlias);
-        createdAtActionResult.RouteValues.Should().ContainKey("gameId").WhoseValue.Should().Be(gameId);
+        var createdAtActionResult = result.Result.Should().BeOfType<CreatedResult>().Subject;
+        createdAtActionResult.Location.Should().Be($"/api/players/{playerAlias}/games/{gameId}");
         var returnedGame = createdAtActionResult.Value.Should().BeAssignableTo<GameDto>().Subject;
         returnedGame.Should().BeEquivalentTo(game);
     }
@@ -256,7 +254,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var move = new MoveRequest(1, 1, 5);
+        var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
         var game = CreateTestGameDto(playerAlias, "Medium", gameId);
         
         _mockGameService
@@ -264,7 +262,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
             .ReturnsAsync(Result<GameDto>.Success(game));
         
         _mockGameService
-            .Setup(x => x.MakeMoveAsync(gameId, move.Row, move.Column, move.Value))
+            .Setup(x => x.MakeMoveAsync(gameId, move.Row, move.Column, move.Value, move.PlayDuration))
             .ReturnsAsync(Result.Success());
 
         // Act
@@ -280,7 +278,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         // Arrange
         var emptyAlias = string.Empty;
         var gameId = Guid.NewGuid().ToString();
-        var move = new MoveRequest(1, 1, 5);
+        var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
 
         // Act
         var result = await _sut.UpdateGameAsync(emptyAlias, gameId, move);
@@ -295,7 +293,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         // Arrange
         var playerAlias = "TestPlayer";
         var emptyGameId = string.Empty;
-        var move = new MoveRequest(1, 1, 5);
+        var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
 
         // Act
         var result = await _sut.UpdateGameAsync(playerAlias, emptyGameId, move);
@@ -310,7 +308,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var move = new MoveRequest(1, 1, 5);
+        var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
         var errorMessage = "Failed to get game";
         
         _mockGameService
@@ -331,7 +329,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var move = new MoveRequest(1, 1, 5);
+        var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
         var differentPlayerAlias = "OtherPlayer";
         var game = CreateTestGameDto(differentPlayerAlias, "Medium", gameId);
         
@@ -352,7 +350,7 @@ public class GamesControllerTests : BaseTestByType<GamesController>
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var move = new MoveRequest(1, 1, 5);
+        var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
         var game = CreateTestGameDto(playerAlias, "Medium", gameId);
         var errorMessage = "Failed to make move";
         
@@ -361,11 +359,137 @@ public class GamesControllerTests : BaseTestByType<GamesController>
             .ReturnsAsync(Result<GameDto>.Success(game));
         
         _mockGameService
-            .Setup(x => x.MakeMoveAsync(gameId, move.Row, move.Column, move.Value))
+            .Setup(x => x.MakeMoveAsync(gameId, move.Row, move.Column, move.Value, move.PlayDuration))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         // Act
         var result = await _sut.UpdateGameAsync(playerAlias, gameId, move);
+
+        // Assert
+        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+        badRequestResult.Value.Should().Be(errorMessage);
+    }
+
+    #endregion
+
+    #region UpdateGameStatusAsync Tests
+
+    [Fact]
+    public async Task UpdateGameStatusAsync_WithValidParameters_ReturnsNoContent()
+    {
+        // Arrange
+        var playerAlias = "TestPlayer";
+        var gameId = Guid.NewGuid().ToString();
+        var gameStatus = "InProgress";
+        var game = CreateTestGameDto(playerAlias, "Medium", gameId);
+
+        _mockGameService
+            .Setup(x => x.GetGameAsync(gameId))
+            .ReturnsAsync(Result<GameDto>.Success(game));
+
+        _mockGameService
+            .Setup(x => x.UpdateGameStatusAsync(gameId, gameStatus))
+            .ReturnsAsync(Result.Success());
+
+        // Act
+        var result = await _sut.UpdateGameStatusAsync(playerAlias, gameId, gameStatus);
+
+        // Assert
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task UpdateGameStatusAsync_WithEmptyAlias_ReturnsBadRequest()
+    {
+        // Arrange
+        var emptyAlias = string.Empty;
+        var gameId = Guid.NewGuid().ToString();
+        var gameStatus = "Completed";
+
+        // Act
+        var result = await _sut.UpdateGameStatusAsync(emptyAlias, gameId, gameStatus);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [Fact]
+    public async Task UpdateGameStatusAsync_WithEmptyGameId_ReturnsBadRequest()
+    {
+        // Arrange
+        var playerAlias = "TestPlayer";
+        var emptyGameId = string.Empty;
+        var gameStatus = "Completed";
+
+        // Act
+        var result = await _sut.UpdateGameStatusAsync(playerAlias, emptyGameId, gameStatus);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [Fact]
+    public async Task UpdateGameStatusAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
+    {
+        // Arrange
+        var playerAlias = "TestPlayer";
+        var gameId = Guid.NewGuid().ToString();
+        var gameStatus = "Completed";
+        var errorMessage = "Failed to get game";
+
+        _mockGameService
+            .Setup(x => x.GetGameAsync(gameId))
+            .ReturnsAsync(Result<GameDto>.Failure(errorMessage));
+
+        // Act
+        var result = await _sut.UpdateGameStatusAsync(playerAlias, gameId, gameStatus);
+
+        // Assert
+        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+        badRequestResult.Value.Should().Be(errorMessage);
+    }
+
+    [Fact]
+    public async Task UpdateGameStatusAsync_WhenGameBelongsToAnotherPlayer_ReturnsNotFound()
+    {
+        // Arrange
+        var playerAlias = "TestPlayer";
+        var gameId = Guid.NewGuid().ToString();
+        var differentPlayerAlias = "OtherPlayer";
+        var game = CreateTestGameDto(differentPlayerAlias, "Medium", gameId);
+        var gameStatus = "Completed";
+
+        _mockGameService
+            .Setup(x => x.GetGameAsync(gameId))
+            .ReturnsAsync(Result<GameDto>.Success(game));
+
+        // Act
+        var result = await _sut.UpdateGameStatusAsync(playerAlias, gameId, gameStatus);
+
+        // Assert
+        result.Should().BeOfType<NotFoundResult>();
+    }
+
+    [Fact]
+    public async Task UpdateGameStatusAsync_WhenUpdateGameStatusReturnsFailed_ReturnsBadRequest()
+    {
+        // Arrange
+        var playerAlias = "TestPlayer";
+        var gameId = Guid.NewGuid().ToString();
+        var game = CreateTestGameDto(playerAlias, "Medium", gameId);
+        var gameStatus = "Completed";
+        var errorMessage = "Failed to update game status";
+
+        _mockGameService
+            .Setup(x => x.GetGameAsync(gameId))
+            .ReturnsAsync(Result<GameDto>.Success(game));
+
+        _mockGameService
+            .Setup(x => x.UpdateGameStatusAsync(gameId, gameStatus))
+            .ReturnsAsync(Result.Failure(errorMessage));
+
+        // Act
+        var result = await _sut.UpdateGameStatusAsync(playerAlias, gameId, gameStatus);
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;

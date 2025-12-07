@@ -15,18 +15,18 @@ public class GameByPlayerSpecification : BaseSpecification<SudokuGame>
 
 public class GameByPlayerAndStatusSpecification : BaseSpecification<SudokuGame>
 {
-    public GameByPlayerAndStatusSpecification(PlayerAlias playerAlias, GameStatus status)
+    public GameByPlayerAndStatusSpecification(PlayerAlias playerAlias, GameStatusEnum statusEnum)
     {
-        AddCriteria(game => game.PlayerAlias == playerAlias && game.Status == status);
+        AddCriteria(game => game.PlayerAlias == playerAlias && game.Status == statusEnum);
         AddOrderByDescending(game => game.CreatedAt);
     }
 }
 
 public class GameByStatusSpecification : BaseSpecification<SudokuGame>
 {
-    public GameByStatusSpecification(GameStatus status)
+    public GameByStatusSpecification(GameStatusEnum statusEnum)
     {
-        AddCriteria(game => game.Status == status);
+        AddCriteria(game => game.Status == statusEnum);
         AddOrderByDescending(game => game.CreatedAt);
     }
 }
@@ -64,11 +64,11 @@ public class CompletedGamesSpecification : BaseSpecification<SudokuGame>
     {
         if (playerAlias != null)
         {
-            AddCriteria(game => game.Status == GameStatus.Completed && game.PlayerAlias == playerAlias);
+            AddCriteria(game => game.Status == GameStatusEnum.Completed && game.PlayerAlias == playerAlias);
         }
         else
         {
-            AddCriteria(game => game.Status == GameStatus.Completed);
+            AddCriteria(game => game.Status == GameStatusEnum.Completed);
         }
         AddOrderByDescending(game => game.CompletedAt);
     }
