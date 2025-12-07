@@ -20,9 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sudoku.ServiceDefaults\Sudoku.ServiceDefaults.csproj" />
-    <ProjectReference Include="..\Sudoku.Storage.Azure\Sudoku.Storage.Azure.csproj" />
     <!-- Keep the old Sudoku project for legacy compatibility during migration -->
-    <ProjectReference Include="..\Sudoku\Sudoku.csproj" />
   </ItemGroup>
 
   <ItemGroup>
