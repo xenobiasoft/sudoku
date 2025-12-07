@@ -21,7 +21,6 @@
     <ProjectReference Include="..\Sudoku.Application\Sudoku.Application.csproj" />
     <ProjectReference Include="..\Sudoku.ServiceDefaults\Sudoku.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Sudoku.Infrastructure\Sudoku.Infrastructure.csproj" />
-    <ProjectReference Include="..\Sudoku.Domain\Sudoku.Domain.csproj" />
   </ItemGroup>
 
 </Project>
