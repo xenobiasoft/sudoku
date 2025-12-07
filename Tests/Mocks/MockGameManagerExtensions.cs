@@ -3,7 +3,7 @@ using Sudoku.Web.Server.Services.Abstractions;
 
 namespace UnitTests.Mocks;
 
-public static class MockGameManagerV2Extensions
+public static class MockGameManagerExtensions
 {
     public static void SetupCreateGameAsync(this Mock<IGameManager> mock, string alias, string difficulty)
     {

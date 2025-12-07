@@ -1,7 +1,6 @@
 ﻿using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
 using Sudoku.Web.Server.Services.HttpClients;
-using Sudoku.Web.Server.Services.V2;
 
 namespace Sudoku.Web.Server
 {

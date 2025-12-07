@@ -1,7 +1,7 @@
 ﻿using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services.Abstractions;
 
-namespace Sudoku.Web.Server.Services.V2;
+namespace Sudoku.Web.Server.Services;
 
 /// <summary>
 /// Manages the lifecycle and state of a game session, including starting, pausing, resuming, and ending sessions, as

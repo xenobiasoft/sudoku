@@ -1,13 +1,11 @@
 ﻿using DepenMock.XUnit;
-using Sudoku.Domain.ValueObjects;
 using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
 using Sudoku.Web.Server.Services.HttpClients;
-using Sudoku.Web.Server.Services.V2;
 using UnitTests.Helpers.Factories;
 
-namespace UnitTests.Web.Services.V2;
+namespace UnitTests.Web.Services;
 
 public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGameStatisticsManager>
 {

@@ -3,10 +3,9 @@ using Sudoku.Domain.ValueObjects;
 using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
 using Sudoku.Web.Server.Services.HttpClients;
-using Sudoku.Web.Server.Services.V2;
 using UnitTests.Helpers.Factories;
 
-namespace UnitTests.Web.Services.V2;
+namespace UnitTests.Web.Services;
 
 public class GameManagerTests : BaseTestByAbstraction<GameManager, IGameManager>
 {
@@ -36,7 +35,7 @@ public class GameManagerTests : BaseTestByAbstraction<GameManager, IGameManager>
             .WithDifficulty(GameDifficulty.Easy)
             .WithStatus(currentGameStatus)
             .Create();
-        _mockLocalStorageService.SetupLoadGameAsync(game);
+        _mockGameApiClient.SetupGetGame(game);
         var sut = ResolveSut();
         await sut.LoadGameAsync(Alias, GameId);
 

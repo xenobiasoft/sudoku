@@ -1,11 +1,11 @@
-﻿using DepenMock.XUnit;
+﻿using System.Text.Json;
+using DepenMock.XUnit;
 using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services;
 using Sudoku.Web.Server.Services.Abstractions;
-using System.Text.Json;
 using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.ILocalStorageService;
 
-namespace UnitTests.Web.Services.V2;
+namespace UnitTests.Web.Services;
 
 public class LocalStorageServiceTests : BaseTestByAbstraction<LocalStorageService, ILocalStorageService>
 {
