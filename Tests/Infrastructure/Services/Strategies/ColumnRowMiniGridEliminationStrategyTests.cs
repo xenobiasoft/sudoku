@@ -1,7 +1,7 @@
 ﻿using DepenMock.XUnit;
-using UnitTests.Helpers;
-using XenobiaSoft.Sudoku;
-using XenobiaSoft.Sudoku.Strategies;
+using Sudoku.Domain.ValueObjects;
+using Sudoku.Infrastructure.Services.Strategies;
+using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Services.Strategies;
 
@@ -39,7 +39,7 @@ public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<C
 	public void SolvePuzzle_WhenACellValueIsNotSet_ReturnsScoreOfZero()
 	{
 		// Arrange
-		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.ExtremelyHard);
+		var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Expert);
 		var sut = ResolveSut();
 
 		// Act

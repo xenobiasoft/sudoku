@@ -1,7 +1,7 @@
 ﻿using DepenMock.XUnit;
-using UnitTests.Helpers;
-using XenobiaSoft.Sudoku;
-using XenobiaSoft.Sudoku.Strategies;
+using Sudoku.Domain.ValueObjects;
+using Sudoku.Infrastructure.Services.Strategies;
+using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Services.Strategies;
 
