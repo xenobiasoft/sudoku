@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Sudoku.Web.Server.Models;
 
 /// <summary>
@@ -5,13 +7,25 @@ namespace Sudoku.Web.Server.Models;
 /// </summary>
 public class GameStatisticsModel
 {
-    public int TotalMoves { get; set; }
+    public int TotalMoves { get; private set; }
 
     public int ValidMoves => TotalMoves - InvalidMoves;
 
-    public int InvalidMoves { get; set; }
+    public int InvalidMoves { get; private set; }
 
-    public TimeSpan PlayDuration { get; set; }
+    public TimeSpan PlayDuration { get; private set; }
+
+    [JsonConstructor]
+    public GameStatisticsModel(int totalMoves, int invalidMoves, TimeSpan playDuration)
+    {
+        TotalMoves = totalMoves;
+        InvalidMoves = invalidMoves;
+        PlayDuration = playDuration;
+    }
+
+    public GameStatisticsModel()
+    {
+    }
 
     public void RecordMove(bool isValid)
     {
