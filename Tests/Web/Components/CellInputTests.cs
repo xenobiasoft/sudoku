@@ -249,10 +249,10 @@ public class CellInputTests : TestContext
         };
 
 		// Act
-        var Render = Render<CellInput>(x => x.Add(p => p.Cell, cell));
+        var render = Render<CellInput>(x => x.Add(p => p.Cell, cell));
 
 		// Assert
-        Render.MarkupMatches("<td class=\"cell\"><label tabindex=\"0\" class=\"\">4</label></td>");
+        render.MarkupMatches("<td class=\"cell\"><label tabindex=\"0\" class=\"\">4</label></td>");
     }
 
     [Fact]
