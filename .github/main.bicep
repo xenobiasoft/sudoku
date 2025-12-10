@@ -3,7 +3,7 @@ param location string = resourceGroup().location
 param appServicePlanSku string = 'B1'
 
 // App Service Plan
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
+resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: 'XenobiaSoftServicePlan'
   location: location
   properties: {
@@ -20,7 +20,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
 }
 
 // Web App
-resource sudokuApp 'Microsoft.Web/sites@2022-09-01' = {
+resource sudokuApp 'Microsoft.Web/sites@2023-12-01' = {
   name: siteName
   location: location
   kind: 'app,linux'
@@ -44,6 +44,8 @@ resource sudokuApp 'Microsoft.Web/sites@2022-09-01' = {
       }
     ]
     serverFarmId: appServicePlan.id
+    httpsOnly: true
+    clientAffinityEnabled: false
   }
   tags: {
     environment: 'production'
@@ -52,7 +54,7 @@ resource sudokuApp 'Microsoft.Web/sites@2022-09-01' = {
 }
 
 // App Service Configuration
-resource appServiceConfig 'Microsoft.Web/sites/config@2022-09-01' = {
+resource appServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
   parent: sudokuApp
   name: 'web'
   properties: {
@@ -60,7 +62,7 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2022-09-01' = {
       'Default.html'
       'index.html'
     ]
-    linuxFxVersion: 'DOTNETCORE|9.0'
+    linuxFxVersion: 'DOTNETCORE|10.0'
     managedPipelineMode: 'Integrated'
     virtualApplications: [
       {
@@ -73,24 +75,24 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2022-09-01' = {
     minTlsVersion: '1.2'
     healthCheckPath: '/health-check'
     minimumElasticInstanceCount: 1
+    ftpsState: 'FtpsOnly'
+    alwaysOn: true
   }
 }
 
 // Reference existing Azure Managed Certificate
-resource managedCert 'Microsoft.Web/certificates@2022-09-01' existing = {
+resource managedCert 'Microsoft.Web/certificates@2023-12-01' existing = {
   name: 'sudoku.xenobiasoft.com'
 }
 
 // Custom Domain Binding with Managed Certificate
-resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2024-04-01' = {
+resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2023-12-01' = {
   parent: sudokuApp
   name: 'sudoku.xenobiasoft.com'
   properties: {
     siteName: siteName
     hostNameType: 'Verified'
     sslState: 'SniEnabled'
-    certificate: {
-      id: managedCert.id
-    }
+    thumbprint: managedCert.properties.thumbprint
   }
 }

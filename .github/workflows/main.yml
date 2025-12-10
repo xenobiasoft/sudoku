@@ -9,7 +9,7 @@ on:
 env:
   AZURE_WEBAPP_NAME: XenobiaSoftSudoku
   AZURE_WEBAPP_PACKAGE_PATH: "${{ github.workspace }}/publish"
-  DOTNET_VERSION: "8.x"
+  DOTNET_VERSION: "10.x"
 
 permissions:
   contents: read
@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Azure Login
         uses: azure/login@v2
@@ -32,18 +34,34 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-quality: "ga"
+
+      - name: Cache .NET packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
       - name: Restore dependencies
         run: dotnet restore
 
       - name: Build
-        run: dotnet build --configuration Release --no-restore
+        run: dotnet build --configuration Release --no-restore --verbosity normal
 
       - name: Test
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: dotnet test --configuration Release --no-build --verbosity normal --logger trx --results-directory TestResults
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults/*.trx
 
       - name: Publish
-        run: dotnet publish Sudoku.Web.Server/Sudoku.Web.Server.csproj --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        run: dotnet publish Sudoku.Web.Server/Sudoku.Web.Server.csproj --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} --no-restore
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
