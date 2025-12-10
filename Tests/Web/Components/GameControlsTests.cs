@@ -118,7 +118,7 @@ public class GameControlsTests : TestContext
     [InlineData(7)]
     [InlineData(8)]
     [InlineData(9)]
-    public void Render_RendersNumbersCorrectly(int number)
+    public void NumberButton_RendersNumbersCorrectly(int number)
     {
         // Arrange
         var gameControls = Render<GameControls>();
