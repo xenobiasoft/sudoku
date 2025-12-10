@@ -28,7 +28,7 @@ public class IndexPageTests : TestContext
     public void DeleteGame_RemovesGameFromList()
     {
         // Arrange
-        var component = RenderComponent<IndexPage>();
+        var component = Render<IndexPage>();
         var delGameElement = component.Find(".del-game-icon");
 
         // Act
@@ -42,7 +42,7 @@ public class IndexPageTests : TestContext
     public void DeleteGame_WhenClicked_RemovesGameFromGameStateManager()
     {
         // Arrange
-        var component = RenderComponent<IndexPage>();
+        var component = Render<IndexPage>();
         var delGameElement = component.Find(".del-game-icon");
 
         // Act
@@ -56,7 +56,7 @@ public class IndexPageTests : TestContext
     public void Render_WhenSavedGamesPresent_DisplaysEachSavedGame()
     {
         // Arrange
-        var component = RenderComponent<IndexPage>();
+        var component = Render<IndexPage>();
 
         // Act
         var delGameElements = component.FindAll(".del-game-icon");
@@ -69,7 +69,7 @@ public class IndexPageTests : TestContext
     public void RendersCorrectly()
     {
         // Arrange
-        var component = RenderComponent<IndexPage>();
+        var component = Render<IndexPage>();
 
         // Act
         var startNewGameButton = component.Find("button:contains('Start New Game')");
@@ -84,7 +84,7 @@ public class IndexPageTests : TestContext
     public void ShowsDifficultyOptions_WhenStartNewGameClicked()
     {
         // Arrange
-        var component = RenderComponent<IndexPage>();
+        var component = Render<IndexPage>();
 
         // Act
         component.Find("button:contains('Start New Game')").Click();
@@ -102,7 +102,7 @@ public class IndexPageTests : TestContext
         {
         };
         _mockGameManager.SetupLoadGamesAsync(savedGames);
-        var component = RenderComponent<IndexPage>();
+        var component = Render<IndexPage>();
 
         // Act
         component.Find("button:contains('Load Game')").Click();

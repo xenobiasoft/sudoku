@@ -44,7 +44,7 @@ public class GamePageTests : TestContext
     public async Task Game_GameBoard_OnCellFocus_UpdatesSelectedCell()
     {
         // Arrange
-        var sut = RenderComponent<Game>();
+        var sut = Render<Game>();
         var gameBoard = sut.FindComponent<GameBoard>();
 
         // Act
@@ -58,7 +58,7 @@ public class GamePageTests : TestContext
     public async Task Game_OnLocationChanging_PausesSession()
     {
         // Arrange
-        var sut = RenderComponent<Game>();
+        var sut = Render<Game>();
         var navigationManager = Services.GetRequiredService<NavigationManager>();
 
         // Act
@@ -79,7 +79,7 @@ public class GamePageTests : TestContext
             Id = PuzzleId
         };
         _mockGameManager.Setup(x => x.Game).Returns(gameState);
-        var sut = RenderComponent<Game>();
+        var sut = Render<Game>();
 
         // Act
         var victoryDisplay = sut.FindComponent<VictoryDisplay>();
@@ -92,7 +92,7 @@ public class GamePageTests : TestContext
     public async Task Game_WhenButtonGroupClicked_SetsCellValue()
     {
         // Arrange
-        var sut = RenderComponent<Game>();
+        var sut = Render<Game>();
         var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
@@ -108,7 +108,7 @@ public class GamePageTests : TestContext
     public async Task Game_WhenCellChanged_RecordsMove()
     {
         // Arrange
-        var sut = RenderComponent<Game>();
+        var sut = Render<Game>();
         var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
@@ -124,7 +124,7 @@ public class GamePageTests : TestContext
     public async Task Game_WhenInvalidNumberIsEntered_NotifiesInvalidCell()
     {
         // Arrange
-        var sut = RenderComponent<Game>();
+        var sut = Render<Game>();
         var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
@@ -142,7 +142,7 @@ public class GamePageTests : TestContext
         // Arrange
 
         // Act
-        RenderComponent<Game>();
+        Render<Game>();
 
         // Assert
         _mockNotificationService.Verify(x => x.NotifyGameStarted(), Times.Once);
@@ -159,7 +159,7 @@ public class GamePageTests : TestContext
             Id = PuzzleId
         };
         _mockGameManager.Setup(x => x.Game).Returns(gameState);
-        var sut = RenderComponent<Game>(x => x.Add(p => p.PuzzleId, PuzzleId));
+        var sut = Render<Game>(x => x.Add(p => p.PuzzleId, PuzzleId));
         var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
@@ -182,7 +182,7 @@ public class GamePageTests : TestContext
             Id = PuzzleId
         };
         _mockGameManager.Setup(x => x.Game).Returns(gameState);
-        var sut = RenderComponent<Game>(x => x.Add(p => p.PuzzleId, PuzzleId));
+        var sut = Render<Game>(x => x.Add(p => p.PuzzleId, PuzzleId));
         var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
@@ -206,7 +206,7 @@ public class GamePageTests : TestContext
             Id = PuzzleId
         };
         _mockGameManager.Setup(x => x.Game).Returns(gameState);
-        var sut = RenderComponent<Game>(x => x.Add(p => p.PuzzleId, PuzzleId));
+        var sut = Render<Game>(x => x.Add(p => p.PuzzleId, PuzzleId));
         var buttonGroup = sut.FindComponent<GameControls>().Instance;
         var cellInput = sut.FindComponent<CellInput>().Instance;
 
@@ -224,7 +224,7 @@ public class GamePageTests : TestContext
         // Arrange
         CellChangedEventArgs? actualArgs = null;
         var expectedArgs = new CellChangedEventArgs(1, 2, 5);
-        var game = RenderComponent<Game>();
+        var game = Render<Game>();
         var gameBoard = game.FindComponent<GameBoard>();
         void OnCellChangedHandler(CellChangedEventArgs args) => actualArgs = args;
         gameBoard.Instance.OnCellChanged = EventCallback.Factory.Create<CellChangedEventArgs>(this, OnCellChangedHandler);
@@ -245,7 +245,7 @@ public class GamePageTests : TestContext
         // Arrange
         var gameState = new GameModel();
         _mockGameManager.Setup(x => x.ResetGameAsync()).ReturnsAsync(gameState);
-        var game = RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
+        var game = Render<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
 
         // Act
         await game.InvokeAsync(() => game.Instance.HandleReset());
@@ -264,7 +264,7 @@ public class GamePageTests : TestContext
             Id = PuzzleId,
         };
         _mockGameManager.Setup(x => x.UndoGameAsync()).ReturnsAsync(gameState);
-        var game = RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
+        var game = Render<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
 
         // Act
         await game.InvokeAsync(() => game.Instance.HandleUndo());
@@ -279,7 +279,7 @@ public class GamePageTests : TestContext
         // Arrange
 
         // Act
-        RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
+        Render<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
 
         // Assert
         _mockGameManager.VerifyLoadsAsyncCalled(Alias, PuzzleId, Times.Once);
@@ -291,7 +291,7 @@ public class GamePageTests : TestContext
         // Arrange
 
         // Act
-        RenderComponent<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
+        Render<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
 
         // Assert
         _mockGameManager.VerifyStartsGameAsync(Times.Once);

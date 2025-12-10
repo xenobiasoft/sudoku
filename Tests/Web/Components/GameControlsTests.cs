@@ -28,7 +28,7 @@ public class GameControlsTests : TestContext
 	{
 		// Arrange
         CellPossibleValueChangedEventArgs? calledEventArgs = null;
-		var gameControls = RenderComponent<GameControls>(p =>
+		var gameControls = Render<GameControls>(p =>
         {
             p.Add(x => x.IsPencilMode, true);
             p.Add(x => x.OnPossibleValueChanged, (i) => calledEventArgs = i);
@@ -56,7 +56,7 @@ public class GameControlsTests : TestContext
     {
         // Arrange
         CellValueChangedEventArgs? calledEventArgs = null;
-        var gameControls = RenderComponent<GameControls>(p =>
+        var gameControls = Render<GameControls>(p =>
         {
             p.Add(x => x.IsPencilMode, false);
             p.Add(x => x.OnValueChanged, (i) => calledEventArgs = i);
@@ -76,7 +76,7 @@ public class GameControlsTests : TestContext
     public void PencilModeButton_RendersCorrectMode(bool isPencilMode, string cssClass)
     {
         // Arrange
-        var gameControls = RenderComponent<GameControls>(p =>
+        var gameControls = Render<GameControls>(p =>
         {
             p.Add(x => x.IsPencilMode, isPencilMode);
         });
@@ -93,7 +93,7 @@ public class GameControlsTests : TestContext
     {
         // Arrange
         var isPencilMode = false;
-        var gameControls = RenderComponent<GameControls>(p =>
+        var gameControls = Render<GameControls>(p =>
         {
             p.Add(x => x.OnPencilMode, (i) => isPencilMode = i);
         });
@@ -118,10 +118,10 @@ public class GameControlsTests : TestContext
     [InlineData(7)]
     [InlineData(8)]
     [InlineData(9)]
-    public void RenderComponent_RendersNumbersCorrectly(int number)
+    public void NumberButton_RendersNumbersCorrectly(int number)
     {
         // Arrange
-        var gameControls = RenderComponent<GameControls>();
+        var gameControls = Render<GameControls>();
 
         // Act
         var numberButton = gameControls.Find($"#btn{number}");
@@ -135,7 +135,7 @@ public class GameControlsTests : TestContext
     {
         // Arrange
         var resetCalled = false;
-        var gameControls = RenderComponent<GameControls>(p =>
+        var gameControls = Render<GameControls>(p =>
         {
             p.Add(x => x.OnReset, () => resetCalled = true);
         });
@@ -153,7 +153,7 @@ public class GameControlsTests : TestContext
     {
         // Arrange
         var undoCalled = false;
-        var gameControls = RenderComponent<GameControls>(p =>
+        var gameControls = Render<GameControls>(p =>
         {
             p.Add(x => x.OnUndo, () => undoCalled = true);
         });
@@ -173,7 +173,7 @@ public class GameControlsTests : TestContext
     public void UndoAsync_WhenOnInitialGameState_IsDisabled(int totalMoves, bool disabled)
     {
         // Arrange
-        var gameControls = RenderComponent<GameControls>(p =>
+        var gameControls = Render<GameControls>(p =>
         {
             p.Add(x => x.PuzzleId, "puzzleId");
             p.Add(x => x.OnUndo, () => { });

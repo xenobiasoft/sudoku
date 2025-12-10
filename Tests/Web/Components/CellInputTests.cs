@@ -28,7 +28,7 @@ public class CellInputTests : TestContext
             IsFixed = false,
             Value = 7
         };
-        var renderedCell = RenderComponent<CellInput>(x => x
+        var renderedCell = Render<CellInput>(x => x
             .Add(p => p.Cell, cell));
         _mockNotificationService
             .Setup(x => x.NotifyCellFocused(cell))
@@ -69,7 +69,7 @@ public class CellInputTests : TestContext
         };
 
         // Act
-        var renderedComponent = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
+        var renderedComponent = Render<CellInput>(x => x.Add(p => p.Cell, cell));
 
         // Assert
         renderedComponent.MarkupMatches(@"
@@ -98,7 +98,7 @@ public class CellInputTests : TestContext
             .Build()
             .WithDifficulty(GameDifficulty.Easy)
             .Create();
-        var cellInput = RenderComponent<CellInput>(x => x
+        var cellInput = Render<CellInput>(x => x
             .Add(c => c.Cell, new CellModel{ Row = 1, Column = 2 })
             .Add(c => c.CurrentGame, game)
             .Add(c => c.OnPossibleValueChanged, args => calledArgs = args)
@@ -126,7 +126,7 @@ public class CellInputTests : TestContext
             .Build()
             .WithDifficulty(GameDifficulty.Easy)
             .Create();
-        var cellInput = RenderComponent<CellInput>(x => x
+        var cellInput = Render<CellInput>(x => x
             .Add(c => c.Cell, new CellModel { Row = 1, Column = 2 })
             .Add(c => c.CurrentGame, game)
             .Add(c => c.OnCellChanged, args => calledArgs = args)
@@ -186,7 +186,7 @@ public class CellInputTests : TestContext
             IsFixed = false,
             PossibleValues = [1, 2, 7]
         };
-        var cellInput = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
+        var cellInput = Render<CellInput>(x => x.Add(p => p.Cell, cell));
         cellInput.MarkupMatches(expectedBefore);
 
         // Act
@@ -208,7 +208,7 @@ public class CellInputTests : TestContext
             Value = 7
         };
         var invalidCells = new List<CellModel> { cell };
-        var renderedCell = RenderComponent<CellInput>(x => x
+        var renderedCell = Render<CellInput>(x => x
             .Add(p => p.Cell, cell));
         _mockNotificationService
             .Setup(x => x.NotifyInvalidCells(invalidCells))
@@ -249,10 +249,10 @@ public class CellInputTests : TestContext
         };
 
 		// Act
-        var renderComponent = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
+        var render = Render<CellInput>(x => x.Add(p => p.Cell, cell));
 
 		// Assert
-        renderComponent.MarkupMatches("<td class=\"cell\"><label tabindex=\"0\" class=\"\">4</label></td>");
+        render.MarkupMatches("<td class=\"cell\"><label tabindex=\"0\" class=\"\">4</label></td>");
     }
 
     [Fact]
@@ -268,7 +268,7 @@ public class CellInputTests : TestContext
         };
 
         // Act
-        var renderedComponent = RenderComponent<CellInput>(x => x.Add(p => p.Cell, cell));
+        var renderedComponent = Render<CellInput>(x => x.Add(p => p.Cell, cell));
 
         // Assert
         renderedComponent.MarkupMatches(@"
