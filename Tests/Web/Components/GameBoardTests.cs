@@ -22,7 +22,7 @@ public class GameBoardTests : TestContext
 	public void GameBoard_RendersCellsCorrectly()
 	{
 		// Arrange
-        var gameBoard = RenderComponent<GameBoard>(p => p
+        var gameBoard = Render<GameBoard>(p => p
             .Add(x => x.Game, GameModelFactory.GetEmptyPuzzle()));
 
 		// Act
@@ -55,7 +55,7 @@ public class GameBoardTests : TestContext
             .Build()
             .WithDifficulty(GameDifficulty.Easy)
             .Create();
-        var gameBoard = RenderComponent<GameBoard>(x => x
+        var gameBoard = Render<GameBoard>(x => x
             .Add(c => c.OnCellChanged, args => calledArgs = args)
             .Add(c => c.Game, game));
         var cellInput = gameBoard.FindComponents<CellInput>().First();
@@ -78,7 +78,7 @@ public class GameBoardTests : TestContext
     {
         // Arrange
         var puzzle = GameModelFactory.GetEmptyPuzzle();
-        var gameBoard = RenderComponent<GameBoard>(p =>
+        var gameBoard = Render<GameBoard>(p =>
         {
             p.Add(x => x.Game, puzzle);
             p.Add(x => x.NotificationService, _mockNotificationService.Object);
@@ -100,7 +100,7 @@ public class GameBoardTests : TestContext
     {
         // Arrange
         var puzzle = GameModelFactory.GetEmptyPuzzle();
-        var gameBoard = RenderComponent<GameBoard>(p =>
+        var gameBoard = Render<GameBoard>(p =>
         {
             p.Add(x => x.Game, puzzle);
             p.Add(x => x.NotificationService, _mockNotificationService.Object);
@@ -122,7 +122,7 @@ public class GameBoardTests : TestContext
     {
         // Arrange
         var puzzle = GameModelFactory.GetEmptyPuzzle();
-        var gameBoard = RenderComponent<GameBoard>(p =>
+        var gameBoard = Render<GameBoard>(p =>
         {
             p.Add(x => x.Game, puzzle);
             p.Add(x => x.NotificationService, _mockNotificationService.Object);
@@ -144,7 +144,7 @@ public class GameBoardTests : TestContext
     {
         // Arrange
         var puzzle = GameModelFactory.GetEmptyPuzzle();
-        var gameBoard = RenderComponent<GameBoard>(p =>
+        var gameBoard = Render<GameBoard>(p =>
         {
             p.Add(x => x.Game, puzzle);
             p.Add(x => x.NotificationService, _mockNotificationService.Object);

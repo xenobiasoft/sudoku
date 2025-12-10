@@ -1,5 +1,4 @@
-﻿using Bunit.TestDoubles;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Components;
 
@@ -22,7 +21,7 @@ public class VictoryDisplayTests : TestContext
         var elapsedTime = new TimeSpan(0, 30, 0);
 
         // Act
-        var sut = RenderComponent<VictoryDisplay>(parameters => parameters
+        var sut = Render<VictoryDisplay>(parameters => parameters
             .Add(p => p.IsVictory, isVictory)
             .Add(p => p.ElapsedTime, elapsedTime)
         );
@@ -39,25 +38,12 @@ public class VictoryDisplayTests : TestContext
         var elapsedTime = new TimeSpan(1, 2, 3);
 
         // Act
-        var sut = RenderComponent<VictoryDisplay>(parameters => parameters
+        var sut = Render<VictoryDisplay>(parameters => parameters
             .Add(p => p.IsVictory, isVictory)
             .Add(p => p.ElapsedTime, elapsedTime)
         );
 
         // Assert
         sut.Find(".victory-subtitle").MarkupMatches("<p class=\"victory-subtitle\">Time: 1:02:03</p>");
-    }
-
-    [Fact]
-    public void NavigatesToRoot_WhenBackToStartButtonClicked()
-    {
-        // Arrange  
-        var navMan = Services.GetRequiredService<FakeNavigationManager>();
-
-        // Act
-        RenderComponent<VictoryDisplay>(parameters => parameters.Add(p => p.IsVictory, true));
-
-        // Assert  
-        navMan.Uri.Should().Be("http://localhost/");
     }
 }

@@ -27,7 +27,7 @@ public class GameStatsTests : TestContext
     public void GameStats_WhenCollapsed_RendersCorrectly()
     {
         // Arrange
-        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.GameManager, _mockGameStatsManager.Object));
+        var gameStats = Render<GameStats>(x => x.Add(c => c.GameManager, _mockGameStatsManager.Object));
 
         // Act
         _mockTimer.RaiseTick();
@@ -47,7 +47,7 @@ public class GameStatsTests : TestContext
     public async Task GameStats_WhenExpanded_RendersCorrectly()
     {
         // Arrange
-        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.GameManager, _mockGameStatsManager.Object));
+        var gameStats = Render<GameStats>(x => x.Add(c => c.GameManager, _mockGameStatsManager.Object));
         var statHeader = gameStats.Find(".stat-header");
         _mockTimer.RaiseTick();
 
@@ -77,7 +77,7 @@ public class GameStatsTests : TestContext
     public async Task GameStats_WhenMovesAreRecorded_ShouldUpdate()
     {
         // Arrange
-        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.GameManager, _mockGameStatsManager.Object));
+        var gameStats = Render<GameStats>(x => x.Add(c => c.GameManager, _mockGameStatsManager.Object));
         var statHeader = gameStats.Find(".stat-header");
         await gameStats.InvokeAsync(() => statHeader.Click());
         
@@ -94,7 +94,7 @@ public class GameStatsTests : TestContext
     public async Task GameStats_WhenTimerTicks_ShouldUpdate()
     {
         // Arrange
-        var gameStats = RenderComponent<GameStats>(x => x.Add(c => c.GameManager, _mockGameStatsManager.Object));
+        var gameStats = Render<GameStats>(x => x.Add(c => c.GameManager, _mockGameStatsManager.Object));
         var playDuration = gameStats.Find(".game-stats .stat-header .value");
         
         // Act

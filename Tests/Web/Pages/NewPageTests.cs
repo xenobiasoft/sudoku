@@ -1,4 +1,5 @@
 ﻿using Bunit.TestDoubles;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Web.Server.Pages;
 using Sudoku.Web.Server.Services.Abstractions;
@@ -28,7 +29,7 @@ public class NewPageTests : TestContext
         // Arrange
 
         // Act
-        RenderComponent<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
+        Render<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
 
         // Assert
         _mockGameManager!.VerifyCreateGameAsyncCalled("game-alias", "Medium", Times.Once);
@@ -38,10 +39,10 @@ public class NewPageTests : TestContext
     public void OnInitializedAsync_NavigatesToGamePageWithPuzzleId()
     {
         // Arrange
-        var navMan = Services.GetRequiredService<FakeNavigationManager>();
+        var navMan = Services.GetRequiredService<NavigationManager>();
 
         // Act
-        RenderComponent<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
+        Render<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
 
         // Assert
         navMan.Uri.Should().StartWith("http://localhost/game/");
@@ -53,7 +54,7 @@ public class NewPageTests : TestContext
         // Arrange
 
         // Act
-        var sut = RenderComponent<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
+        var sut = Render<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
 
         // Assert
         var loader = sut.Find("div.sudoku-loader");
