@@ -71,13 +71,13 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
 // }
 
 // Custom Domain Binding with Managed Certificate (only if SSL is enabled)
-resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2023-12-01' = if (enableCustomDomainSsl) {
-  parent: sudokuApp
-  name: customDomain
-  properties: {
-    siteName: siteName
-    hostNameType: 'Verified'
-    sslState: 'SniEnabled'
-    thumbprint: managedCert.properties.thumbprint
-  }
-}
+// resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2023-12-01' = if (enableCustomDomainSsl) {
+//   parent: sudokuApp
+//   name: customDomain
+//   properties: {
+//     siteName: siteName
+//     hostNameType: 'Verified'
+//     sslState: 'SniEnabled'
+//     thumbprint: managedCert.properties.thumbprint
+//   }
+// }
