@@ -85,5 +85,6 @@ jobs:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           resourceGroupName: rg-xenobiasoft
           template: ./.github/main.bicep
+          parameters: 'enableCustomDomainSsl=true'
           scope: resourcegroup
           failOnStdErr: false

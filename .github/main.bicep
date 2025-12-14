@@ -1,6 +1,8 @@
 param siteName string = 'XenobiaSoftSudoku'
 param location string = resourceGroup().location
 param appServicePlanSku string = 'B1'
+param customDomain string = 'sudoku.xenobiasoft.com'
+param enableCustomDomainSsl bool = true
 
 // App Service Plan
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
@@ -26,23 +28,6 @@ resource sudokuApp 'Microsoft.Web/sites@2023-12-01' = {
   kind: 'app,linux'
   properties: {
     enabled: true
-    hostNameSslStates: [
-      {
-        name: 'sudoku.xenobiasoft.com'
-        sslState: 'SniEnabled'
-        hostType: 'Standard'
-      }
-      {
-        name: 'xenobiasoftsudoku.azurewebsites.net'
-        sslState: 'Disabled'
-        hostType: 'Standard'
-      }
-      {
-        name: 'xenobiasoftsudoku.scm.azurewebsites.net'
-        sslState: 'Disabled'
-        hostType: 'Repository'
-      }
-    ]
     serverFarmId: appServicePlan.id
     httpsOnly: true
     clientAffinityEnabled: false
@@ -80,15 +65,15 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
   }
 }
 
-// Reference existing Azure Managed Certificate
-resource managedCert 'Microsoft.Web/certificates@2023-12-01' existing = {
-  name: 'sudoku.xenobiasoft.com'
+// Reference existing Azure Managed Certificate (only if SSL is enabled)
+resource managedCert 'Microsoft.Web/certificates@2023-12-01' existing = if (enableCustomDomainSsl) {
+  name: customDomain
 }
 
-// Custom Domain Binding with Managed Certificate
-resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2023-12-01' = {
+// Custom Domain Binding with Managed Certificate (only if SSL is enabled)
+resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2023-12-01' = if (enableCustomDomainSsl) {
   parent: sudokuApp
-  name: 'sudoku.xenobiasoft.com'
+  name: customDomain
   properties: {
     siteName: siteName
     hostNameType: 'Verified'
