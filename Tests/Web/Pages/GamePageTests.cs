@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Web.Server.Components;
 using Sudoku.Web.Server.EventArgs;
@@ -7,8 +9,6 @@ using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Pages;
 using Sudoku.Web.Server.Services.Abstractions;
 using UnitTests.Helpers.Factories;
-using IGameManager = Sudoku.Web.Server.Services.Abstractions.IGameManager;
-using INotificationService = Sudoku.Web.Server.Services.Abstractions.INotificationService;
 
 namespace UnitTests.Web.Pages;
 
@@ -38,6 +38,15 @@ public class GamePageTests : TestContext
         Services.AddSingleton(_mockNotificationService.Object);
         Services.AddSingleton(_mockGameManager.Object);
         Services.AddSingleton(_mockPlayerManager.Object);
+        
+        // Add IWebHostEnvironment mock for error boundary
+        var mockWebHostEnvironment = new Mock<IWebHostEnvironment>();
+        mockWebHostEnvironment.Setup(x => x.EnvironmentName).Returns("Test");
+        Services.AddSingleton(mockWebHostEnvironment.Object);
+        
+        // Add logger mocks
+        Services.AddSingleton(new Mock<ILogger<Game>>().Object);
+        Services.AddSingleton(new Mock<ILogger<GameErrorBoundary>>().Object);
     }
 
     [Fact]

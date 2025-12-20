@@ -1,0 +1,48 @@
+@inherits ErrorBoundary
+
+@if (CurrentException is not null)
+{
+    <div class="blazor-error-boundary">
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">Unable to Load Game Menu</h4>
+            <p>We encountered an error while loading your saved games. This might be a temporary issue.</p>
+            
+            @if (ShowExceptionDetails)
+            {
+                <hr>
+                <details>
+                    <summary>Error Details (Development Mode)</summary>
+                    <pre class="mt-2">@CurrentException.ToString()</pre>
+                </details>
+            }
+            
+            <div class="mt-3">
+                <button class="btn btn-primary" @onclick="Recover">Try Again</button>
+                <a href="/" class="btn btn-secondary" @onclick="ReloadPage">Reload Page</a>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    [Inject] private IWebHostEnvironment Environment { get; set; } = default!;
+    [Inject] private ILogger<IndexErrorBoundary> Logger { get; set; } = default!;
+    [Inject] private NavigationManager NavigationManager { get; set; } = default!;
+
+    private bool ShowExceptionDetails => Environment.IsDevelopment();
+
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        Logger.LogError(exception, "Error boundary caught exception in Index page");
+        return base.OnErrorAsync(exception);
+    }
+
+    private void ReloadPage()
+    {
+        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+    }
+}

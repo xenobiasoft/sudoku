@@ -1,6 +1,7 @@
-﻿using Bunit.TestDoubles;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Sudoku.Web.Server.Pages;
 using Sudoku.Web.Server.Services.Abstractions;
 
@@ -21,6 +22,15 @@ public class NewPageTests : TestContext
 
         Services.AddSingleton(_mockGameManager.Object);
         Services.AddSingleton(playerManager.Object);
+        
+        // Add IWebHostEnvironment mock for error boundary
+        var mockWebHostEnvironment = new Mock<IWebHostEnvironment>();
+        mockWebHostEnvironment.Setup(x => x.EnvironmentName).Returns("Test");
+        Services.AddSingleton(mockWebHostEnvironment.Object);
+        
+        // Add logger mocks
+        Services.AddSingleton(new Mock<ILogger<New>>().Object);
+        Services.AddSingleton(new Mock<ILogger<Sudoku.Web.Server.Components.NewGameErrorBoundary>>().Object);
     }
 
     [Fact]

@@ -3,36 +3,38 @@
 
 <PageTitle>Home</PageTitle>
 
-<div class="mat-layout-grid">
-    <div class="mat-layout-grid-inner">
-        <div class="landing-page">
-            <SudokuImage/>
-            <ul class="menu">
-                <li>
-                    <button @onclick="ToggleDifficultyOptions"><i class="fa-solid fa-play-circle"></i> Start New Game</button>
-                </li>
-                <ul class="sub-menu @(_showDifficulty ? "open" : "")">
-                    <li><button @onclick="@(() => StartNewGame("Easy"))">Easy</button></li>
-                    <li><button @onclick="@(() => StartNewGame("Medium"))">Medium</button></li>
-                    <li><button @onclick="@(() => StartNewGame("Hard"))">Hard</button></li>
-                </ul>
-                <li>
-                    <button @onclick="ToggleDisplaySavedGames" disabled="@(_savedGames == null || !_savedGames.Any())">
-                        <i class="fa-solid fa-folder-open"></i> Load Game
-                    </button>
-                </li>
-                <ul class="sub-menu @(_showSavedGames ? "open" : "")">
-                    @if (_savedGames != null)
-                    {
-                        foreach (var game in _savedGames.OrderBy(g => g.CreatedAt))
+<IndexErrorBoundary>
+    <div class="mat-layout-grid">
+        <div class="mat-layout-grid-inner">
+            <div class="landing-page">
+                <SudokuImage/>
+                <ul class="menu">
+                    <li>
+                        <button @onclick="ToggleDifficultyOptions"><i class="fa-solid fa-play-circle"></i> Start New Game</button>
+                    </li>
+                    <ul class="sub-menu @(_showDifficulty ? "open" : "")">
+                        <li><button @onclick="@(() => StartNewGame("Easy"))">Easy</button></li>
+                        <li><button @onclick="@(() => StartNewGame("Medium"))">Medium</button></li>
+                        <li><button @onclick="@(() => StartNewGame("Hard"))">Hard</button></li>
+                    </ul>
+                    <li>
+                        <button @onclick="ToggleDisplaySavedGames" disabled="@(_savedGames == null || !_savedGames.Any())">
+                            <i class="fa-solid fa-folder-open"></i> Load Game
+                        </button>
+                    </li>
+                    <ul class="sub-menu @(_showSavedGames ? "open" : "")">
+                        @if (_savedGames != null)
                         {
-                            <li>
-                                <GameThumbnail Game="@game" OnDeleteGame="@DeleteGameAsync" OnLoadGame="@LoadGame" />
-                            </li>
+                            foreach (var game in _savedGames.OrderBy(g => g.CreatedAt))
+                            {
+                                <li>
+                                    <GameThumbnail Game="@game" OnDeleteGame="@DeleteGameAsync" OnLoadGame="@LoadGame" />
+                                </li>
+                            }
                         }
-                    }
+                    </ul>
                 </ul>
-            </ul>
+            </div>
         </div>
     </div>
-</div>
+</IndexErrorBoundary>
