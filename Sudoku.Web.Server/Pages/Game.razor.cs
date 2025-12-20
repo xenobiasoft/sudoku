@@ -15,6 +15,7 @@ public partial class Game
     [Inject] public required IGameManager GameManager { get; set; }
     [Inject] public required IPlayerManager PlayerManager { get; set; }
     [Inject] public required NavigationManager NavigationManager { get; set; }
+    [Inject] public required ILogger<Game> Logger { get; set; }
 
     private GameModel CurrentGame => GameManager.Game;
     public CellModel SelectedCell { get; private set; } = new();
@@ -25,55 +26,84 @@ public partial class Game
     {
         if (!firstRender) return;
 
+        Logger.LogInformation("Game page first render completed for puzzle {PuzzleId}", PuzzleId);
         await InitializeGameAsync();
     }
 
     private async Task InitializeGameAsync()
     {
-        RegisterNavigationHandler();
-        await LoadGameStateAsync();
-        NotifyGameStart();
+        try
+        {
+            Logger.LogInformation("Initializing game for puzzle {PuzzleId}", PuzzleId);
+            RegisterNavigationHandler();
+            await LoadGameStateAsync();
+            NotifyGameStart();
+            Logger.LogInformation("Game initialized successfully for puzzle {PuzzleId}", PuzzleId);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to initialize game for puzzle {PuzzleId}", PuzzleId);
+            NavigationManager.NavigateTo("/error/500");
+        }
     }
 
     private void RegisterNavigationHandler()
     {
+        Logger.LogDebug("Registering navigation handler for game {PuzzleId}", PuzzleId);
         _locationChangingRegistration = NavigationManager.RegisterLocationChangingHandler(OnLocationChanging);
     }
 
     private async Task LoadGameStateAsync()
     {
         Alias = await PlayerManager.GetCurrentPlayerAsync();
+        Logger.LogInformation("Loading game {PuzzleId} for player {Alias}", PuzzleId, Alias);
+        
         await GameManager.LoadGameAsync(Alias!, PuzzleId!);
-
         await GameManager.StartGameAsync();
+        
+        Logger.LogInformation("Game state loaded and started for puzzle {PuzzleId}", PuzzleId);
     }
 
     private void NotifyGameStart()
     {
+        Logger.LogDebug("Notifying game started for puzzle {PuzzleId}", PuzzleId);
         NotificationService.NotifyGameStarted();
         StateHasChanged();
     }
 
     private async ValueTask OnLocationChanging(LocationChangingContext context)
     {
-        await GameManager.PauseSession();
-        _locationChangingRegistration?.Dispose();
+        try
+        {
+            Logger.LogInformation("Location changing from game {PuzzleId}, pausing session", PuzzleId);
+            await GameManager.PauseSession();
+            _locationChangingRegistration?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error while pausing game session on navigation from puzzle {PuzzleId}", PuzzleId);
+        }
     }
 
     private void HandleSetSelectedCell(CellModel cell)
     {
+        Logger.LogDebug("Selected cell changed to row {Row}, column {Column} in puzzle {PuzzleId}", cell.Row, cell.Column, PuzzleId);
         SelectedCell = cell;
         StateHasChanged();
     }
 
     public async Task HandleReset()
     {
+        Logger.LogInformation("Resetting game {PuzzleId}", PuzzleId);
         await UpdateGameStateAsync(() => GameManager.ResetGameAsync());
+        Logger.LogInformation("Game {PuzzleId} reset successfully", PuzzleId);
     }
 
     public async Task HandleUndo()
     {
+        Logger.LogInformation("Undoing last move in game {PuzzleId}", PuzzleId);
         await UpdateGameStateAsync(() => GameManager.UndoGameAsync());
+        Logger.LogInformation("Undo completed for game {PuzzleId}", PuzzleId);
     }
 
     private async Task UpdateGameStateAsync(Func<Task<GameModel>> action)
@@ -90,6 +120,7 @@ public partial class Game
 
     private async Task HandleCellUpdate(int row, int column, int? value)
     {
+        Logger.LogDebug("Cell update at row {Row}, column {Column} with value {Value} in puzzle {PuzzleId}", row, column, value, PuzzleId);
         UpdateGameCell(row, column, value);
         await ValidateAndUpdateGameState(row, column, value);
     }
@@ -104,16 +135,19 @@ public partial class Game
         }
 
         var invalidCells = CurrentGame.Validate();
+        Logger.LogDebug("Cell validation completed for puzzle {PuzzleId}, invalid cells count: {InvalidCellsCount}", PuzzleId, invalidCells.Count());
         NotificationService.NotifyInvalidCells(invalidCells);
     }
 
     private async Task ValidateAndUpdateGameState(int row, int column, int? value)
     {
         var isValid = CurrentGame.IsValid();
+        Logger.LogDebug("Recording move at row {Row}, column {Column}, valid: {IsValid} for puzzle {PuzzleId}", row, column, isValid, PuzzleId);
         await GameManager.RecordMove(row, column, value, isValid);
 
         if (CurrentGame.IsSolved())
         {
+            Logger.LogInformation("Game {PuzzleId} has been solved by player {Alias}", PuzzleId, Alias);
             await HandleGameCompletion();
         }
 
@@ -122,90 +156,59 @@ public partial class Game
 
     private async Task HandleGameCompletion()
     {
+        Logger.LogInformation("Handling game completion for puzzle {PuzzleId}, player {Alias}", PuzzleId, Alias);
         await GameManager.EndSession();
         await GameManager.DeleteGameAsync(Alias, PuzzleId!);
         NotificationService.NotifyGameEnded();
+        Logger.LogInformation("Game completion handled successfully for puzzle {PuzzleId}", PuzzleId);
     }
 
     private void HandlePencilModeToggle(bool isPencilMode)
     {
+        Logger.LogDebug("Pencil mode toggled to {IsPencilMode} for puzzle {PuzzleId}", isPencilMode, PuzzleId);
         IsPencilMode = isPencilMode;
         StateHasChanged();
     }
 
-    // Now async: persist possible value changes through GameManager
     private async Task HandlePossibleValueChanged(CellPossibleValueChangedEventArgs arg)
     {
-        // Ensure we have a selected cell
         if (SelectedCell == null) return;
 
         var row = SelectedCell.Row;
         var column = SelectedCell.Column;
 
-        if (!arg.Value.HasValue)
+        try
         {
-            // Clear all possible values
-            SelectedCell.PossibleValues.Clear();
-            try
+            if (!arg.Value.HasValue)
             {
+                Logger.LogDebug("Clearing all possible values for cell at row {Row}, column {Column} in puzzle {PuzzleId}", row, column, PuzzleId);
+                SelectedCell.PossibleValues.Clear();
                 await GameManager.ClearPossibleValuesAsync(row, column);
-            }
-            catch
-            {
-                // ignore persistence failures for now
-            }
-        }
-        else
-        {
-            var val = arg.Value.Value;
-            var containsBefore = SelectedCell.PossibleValues.Contains(val);
-
-            if (containsBefore)
-            {
-                // remove
-                SelectedCell.PossibleValues.Remove(val);
-                try
-                {
-                    await GameManager.RemovePossibleValueAsync(row, column, val);
-                }
-                catch
-                {
-                    // ignore persistence failures for now
-                }
             }
             else
             {
-                // add
-                SelectedCell.PossibleValues.Add(val);
-                try
+                var val = arg.Value.Value;
+                var containsBefore = SelectedCell.PossibleValues.Contains(val);
+
+                if (containsBefore)
                 {
+                    Logger.LogDebug("Removing possible value {Value} from cell at row {Row}, column {Column} in puzzle {PuzzleId}", val, row, column, PuzzleId);
+                    SelectedCell.PossibleValues.Remove(val);
+                    await GameManager.RemovePossibleValueAsync(row, column, val);
+                }
+                else
+                {
+                    Logger.LogDebug("Adding possible value {Value} to cell at row {Row}, column {Column} in puzzle {PuzzleId}", val, row, column, PuzzleId);
+                    SelectedCell.PossibleValues.Add(val);
                     await GameManager.AddPossibleValueAsync(row, column, val);
                 }
-                catch
-                {
-                    // ignore persistence failures for now
-                }
             }
-        }
 
-        StateHasChanged();
-    }
-
-    private void UpdatePossibleValues(int? value)
-    {
-        var possibleValues = SelectedCell.PossibleValues;
-        if (!value.HasValue)
-        {
-            possibleValues.Clear();
+            StateHasChanged();
         }
-        else if (possibleValues.Contains(value.Value))
+        catch (Exception ex)
         {
-            possibleValues.Remove(value.Value);
+            Logger.LogWarning(ex, "Failed to persist possible value change for cell at row {Row}, column {Column} in puzzle {PuzzleId}", row, column, PuzzleId);
         }
-        else
-        {
-            possibleValues.Add(value.Value);
-        }
-        SelectedCell.PossibleValues = possibleValues;
     }
 }

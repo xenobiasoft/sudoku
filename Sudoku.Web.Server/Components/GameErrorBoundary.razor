@@ -1,0 +1,47 @@
+@inherits ErrorBoundary
+
+@if (CurrentException is not null)
+{
+    <div class="blazor-error-boundary">
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">An error occurred</h4>
+            <p>An error occurred while processing your game action. Please try again or return to the home page.</p>
+            
+            @if (ShowExceptionDetails)
+            {
+                <hr>
+                <details>
+                    <summary>Error Details (Development Mode)</summary>
+                    <pre class="mt-2">@CurrentException.ToString()</pre>
+                </details>
+            }
+            
+            <div class="mt-3">
+                <button class="btn btn-primary" @onclick="Recover">Try Again</button>
+                <a href="/" class="btn btn-secondary">Go to Home</a>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    [Inject] private IWebHostEnvironment Environment { get; set; } = default!;
+    [Inject] private ILogger<GameErrorBoundary> Logger { get; set; } = default!;
+
+    private bool ShowExceptionDetails => Environment.IsDevelopment();
+
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        Logger.LogError(exception, "Error boundary caught exception in game component");
+        return base.OnErrorAsync(exception);
+    }
+
+    private void Recover()
+    {
+        Recover();
+    }
+}
