@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Sudoku.Web.Server.Models;
 using Sudoku.Web.Server.Services.Abstractions;
 using IndexPage = Sudoku.Web.Server.Pages.Index;
@@ -22,6 +24,15 @@ public class IndexPageTests : TestContext
         _mockPlayerManager.SetupGetCurrentPlayerAsync(Alias);
         Services.AddSingleton(_mockGameManager.Object);
         Services.AddSingleton(_mockPlayerManager.Object);
+        
+        // Add IWebHostEnvironment mock for error boundary
+        var mockWebHostEnvironment = new Mock<IWebHostEnvironment>();
+        mockWebHostEnvironment.Setup(x => x.EnvironmentName).Returns("Test");
+        Services.AddSingleton(mockWebHostEnvironment.Object);
+        
+        // Add logger mocks
+        Services.AddSingleton(new Mock<ILogger<IndexPage>>().Object);
+        Services.AddSingleton(new Mock<ILogger<Sudoku.Web.Server.Components.IndexErrorBoundary>>().Object);
     }
 
     [Fact]
