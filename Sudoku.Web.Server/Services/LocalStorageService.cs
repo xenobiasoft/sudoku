@@ -48,7 +48,8 @@ public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageSer
 
         try
         {
-            return JsonSerializer.Deserialize<List<GameModel>>(json) ?? [];
+            var games = JsonSerializer.Deserialize<List<GameModel>>(json) ?? [];
+            return games.Where(x => !string.IsNullOrWhiteSpace(x.Id)).ToList();
         }
         catch (JsonException)
         {
