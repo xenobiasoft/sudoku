@@ -16,15 +16,61 @@ namespace Sudoku.Web.Server
                 .AddScoped<IGameManager, GameManager>()
                 .AddScoped<IPlayerManager, PlayerManager>()
                 .AddScoped<IJsRuntimeWrapper, JsRuntimeWrapper>()
-                .AddScoped<IGameTimer>(sp => new GameTimer(TimeSpan.FromSeconds(1)))
-                .AddScoped<IPlayerApiClient, PlayerApiClient>()
-                .AddScoped<IGameApiClient, GameApiClient>();
+                .AddScoped<IGameTimer>(sp => new GameTimer(TimeSpan.FromSeconds(1)));
 
+            // Configure HttpClient for GameApiClient
+            // In development with Aspire, use service discovery (http://sudoku-api)
+            // In production, use the ApiBaseUrl from configuration or environment variable
+            var apiBaseUrl = config["ApiBaseUrl"];
+            
             services.AddHttpClient<IGameApiClient, GameApiClient>(client =>
             {
-                // This will be resolved by Aspire service discovery to sudoku-api service  
-                client.BaseAddress = new Uri("http://sudoku-api");
+                if (!string.IsNullOrEmpty(apiBaseUrl))
+                {
+                    // Production: Use explicit URL from configuration
+                    client.BaseAddress = new Uri(apiBaseUrl);
+                }
+                else
+                {
+                    // Development: Use Aspire service discovery
+                    client.BaseAddress = new Uri("http://sudoku-api");
+                }
+            })
+            .AddStandardResilienceHandler(options =>
+            {
+                // Configure retry policy to only retry idempotent methods (GET, HEAD, OPTIONS, etc.)
+                options.Retry.ShouldHandle = args =>
+                {
+                    // Only retry for GET requests
+                    if (args.Outcome.Result?.RequestMessage?.Method == HttpMethod.Get)
+                    {
+                        return ValueTask.FromResult(args.Outcome.Result.StatusCode >= System.Net.HttpStatusCode.InternalServerError);
+                    }
+
+                    // Don't retry POST, PUT, DELETE, PATCH
+                    return ValueTask.FromResult(false);
+                };
+
+                // Reduce max retry attempts
+                options.Retry.MaxRetryAttempts = 2;
+                options.Retry.Delay = TimeSpan.FromMilliseconds(500);
             });
+
+            // Configure HttpClient for PlayerApiClient with the same logic
+            services.AddHttpClient<IPlayerApiClient, PlayerApiClient>(client =>
+            {
+                if (!string.IsNullOrEmpty(apiBaseUrl))
+                {
+                    // Production: Use explicit URL from configuration
+                    client.BaseAddress = new Uri(apiBaseUrl);
+                }
+                else
+                {
+                    // Development: Use Aspire service discovery
+                    client.BaseAddress = new Uri("http://sudoku-api");
+                }
+            })
+            .AddStandardResilienceHandler();
             
             return services;
         }
