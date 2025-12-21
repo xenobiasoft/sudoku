@@ -21,7 +21,6 @@ public class Program
         {
             builder
                 .Logging
-                .ClearProviders()
                 .AddConsole()
                 .AddDebug()
                 .AddAzureWebAppDiagnostics();
@@ -68,23 +67,37 @@ public class Program
                     options.Retry.Delay = TimeSpan.FromMilliseconds(500);
                 });
 
+            // Get Application Insights connection string
+            var appInsightsConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"] 
+                ?? builder.Configuration["AppInsightsConnectionString"];
+
             builder.Services
-                .RegisterBlazorGameServices(builder.Configuration)
-                .AddBlazorApplicationInsights(x =>
-                {
-                    x.InstrumentationKey = builder.Configuration["AppInsightsKey"];
-                })
-                .AddApplicationInsightsTelemetry(new ApplicationInsightsServiceOptions
-                {
-                    ConnectionString = builder.Configuration["AppInsightsConnectionString"]
-                })
-                .AddLogging(logging =>
-                {
-                    logging
-                        .AddApplicationInsights()
-                        .AddFilter<ApplicationInsightsLoggerProvider>("", LogLevel.Information)
-                        .AddFilter<ApplicationInsightsLoggerProvider>("Microsoft", LogLevel.Warning);
-                });
+                .RegisterBlazorGameServices(builder.Configuration);
+
+            // Only configure Application Insights if connection string is provided
+            if (!string.IsNullOrEmpty(appInsightsConnectionString))
+            {
+                builder.Services
+                    .AddBlazorApplicationInsights(x =>
+                    {
+                        x.ConnectionString = appInsightsConnectionString;
+                    })
+                    .AddApplicationInsightsTelemetry(new ApplicationInsightsServiceOptions
+                    {
+                        ConnectionString = appInsightsConnectionString,
+                        EnableAdaptiveSampling = false,
+                        EnableQuickPulseMetricStream = true
+                    });
+
+                // Configure Application Insights logging
+                builder.Logging
+                    .AddApplicationInsights(
+                        configureTelemetryConfiguration: (config) => config.ConnectionString = appInsightsConnectionString,
+                        configureApplicationInsightsLoggerOptions: (options) => { })
+                    .AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>("", LogLevel.Information)
+                    .AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>("Microsoft.AspNetCore", LogLevel.Warning)
+                    .AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>("System", LogLevel.Warning);
+            }
 
             var app = builder.Build();
 
