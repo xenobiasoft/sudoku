@@ -13,6 +13,9 @@
             </button>
         </div>
         <div class="btn-panel" role="group">
+            <button type="button" id="btnHome" class="btn btn-primary" @onclick="Home">
+                Main Menu <i class="fa-solid fa-home"></i>
+            </button>
             <button type="button" id="btnUndo" class="btn btn-primary" @onclick="Undo" disabled="@(TotalMoves == 0)">
                 Undo <i class="fa-solid fa-undo"></i>
             </button>

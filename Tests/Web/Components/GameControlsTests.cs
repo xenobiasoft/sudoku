@@ -186,4 +186,37 @@ public class GameControlsTests : TestContext
         // Assert
         undoButton.HasAttribute("disabled").Should().Be(disabled);
     }
+
+    [Fact]
+    public void HomeButton_WhenClicked_InvokesOnHomeCallback()
+    {
+        // Arrange
+        var homeCalled = false;
+        var gameControls = Render<GameControls>(p =>
+        {
+            p.Add(x => x.OnHome, () => homeCalled = true);
+        });
+        var homeButton = gameControls.Find("#btnHome");
+
+        // Act
+        homeButton.Click();
+
+        // Assert
+        homeCalled.Should().BeTrue();
+    }
+
+    [Fact]
+    public void HomeButton_RendersCorrectly()
+    {
+        // Arrange
+        var gameControls = Render<GameControls>();
+
+        // Act
+        var homeButton = gameControls.Find("#btnHome");
+
+        // Assert
+        homeButton.Should().NotBeNull();
+        homeButton.TextContent.Should().Contain("Main Menu");
+        homeButton.QuerySelector("i.fa-home").Should().NotBeNull();
+    }
 }

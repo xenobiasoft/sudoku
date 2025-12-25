@@ -305,4 +305,45 @@ public class GamePageTests : TestContext
         // Assert
         _mockGameManager.VerifyStartsGameAsync(Times.Once);
     }
+
+    [Fact]
+    public async Task HomeButton_WhenClicked_PausesGameSession()
+    {
+        // Arrange
+        var sut = Render<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
+        var homeButton = sut.Find("#btnHome");
+
+        // Act
+        await sut.InvokeAsync(() => homeButton.Click());
+
+        // Assert
+        _mockGameManager.Verify(x => x.PauseSession(), Times.Once);
+    }
+
+    [Fact]
+    public async Task HomeButton_WhenClicked_NavigatesToHomePage()
+    {
+        // Arrange
+        var sut = Render<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
+        var navigationManager = Services.GetRequiredService<NavigationManager>();
+        var homeButton = sut.Find("#btnHome");
+
+        // Act
+        await sut.InvokeAsync(() => homeButton.Click());
+
+        // Assert
+        navigationManager.Uri.Should().EndWith("/");
+    }
+
+    [Fact]
+    public void HomeButton_RendersInGameControls()
+    {
+        // Arrange & Act
+        var sut = Render<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
+        
+        // Assert
+        var homeButton = sut.Find("#btnHome");
+        homeButton.Should().NotBeNull();
+        homeButton.TextContent.Should().Contain("Main Menu");
+    }
 }

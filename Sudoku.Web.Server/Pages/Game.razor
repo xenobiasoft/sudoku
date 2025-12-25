@@ -20,6 +20,7 @@
                                   OnReset="HandleReset"
                                   OnUndo="HandleUndo"
                                   OnPencilMode="HandlePencilModeToggle"
+                                  OnHome="HandleNavigateToHome"
                                   OnPossibleValueChanged="HandlePossibleValueChanged"
                                   TotalMoves="@GameManager.CurrentStatistics.TotalMoves" />
                     <VictoryDisplay IsVictory="@GameManager.Game.IsSolved()"
