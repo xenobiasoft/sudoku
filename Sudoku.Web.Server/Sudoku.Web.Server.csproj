@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Microsoft.Azure.Cosmos" Version="13.0.2" />
+    <PackageReference Include="Aspire.Microsoft.Azure.Cosmos" Version="13.1.0" />
     <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.4.0" />
     <PackageReference Include="BlazorApplicationInsights" Version="3.3.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
