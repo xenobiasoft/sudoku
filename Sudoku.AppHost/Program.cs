@@ -39,7 +39,8 @@ try
         })
         .WithReference(cosmosDb)
         .WithReference(appConfig)
-        .WaitFor(cosmosDb);
+        .WaitFor(cosmosDb)
+        .WithExternalHttpEndpoints();
 
     logger.LogDebug("Configuring Sudoku Blazor Server project...");
     builder.AddProject<Projects.Sudoku_Web_Server>("sudoku-blazor")
