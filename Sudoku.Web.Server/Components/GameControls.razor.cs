@@ -11,6 +11,7 @@ namespace Sudoku.Web.Server.Components
         [Parameter] public EventCallback OnReset { get; set; }
         [Parameter] public EventCallback OnUndo { get; set; }
         [Parameter] public EventCallback<bool> OnPencilMode { get; set; }
+        [Parameter] public EventCallback OnHome { get; set; }
         [Parameter] public int TotalMoves { get; set; }
         [Parameter] public bool IsPencilMode { get; set; }
 
@@ -40,6 +41,11 @@ namespace Sudoku.Web.Server.Components
         private async Task Undo()
         {
             await OnUndo.InvokeAsync();
+        }
+
+        private async Task Home()
+        {
+            await OnHome.InvokeAsync();
         }
     }
 }

@@ -211,4 +211,18 @@ public partial class Game
             Logger.LogWarning(ex, "Failed to persist possible value change for cell at row {Row}, column {Column} in puzzle {PuzzleId}", row, column, PuzzleId);
         }
     }
+
+    private async Task HandleNavigateToHome()
+    {
+        Logger.LogInformation("Navigating to home from game {PuzzleId}, pausing and saving game", PuzzleId);
+        try
+        {
+            await GameManager.PauseSession();
+            NavigationManager.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error while navigating to home from game {PuzzleId}", PuzzleId);
+        }
+    }
 }
