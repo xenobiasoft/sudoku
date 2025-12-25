@@ -212,12 +212,11 @@ public partial class Game
         }
     }
 
-    private async Task HandleNavigateToHome()
+    private void HandleNavigateToHome()
     {
         Logger.LogInformation("Navigating to home from game {PuzzleId}, pausing and saving game", PuzzleId);
         try
         {
-            await GameManager.PauseSession();
             NavigationManager.NavigateTo("/");
         }
         catch (Exception ex)
