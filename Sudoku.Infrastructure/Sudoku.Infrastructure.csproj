@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Microsoft.Azure.Cosmos" Version="13.0.2" />
+    <PackageReference Include="Aspire.Microsoft.Azure.Cosmos" Version="13.1.0" />
     <PackageReference Include="Azure.Identity" Version="1.17.1" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.26.0" />
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.56.0" />
