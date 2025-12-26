@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
 using Sudoku.Application.Interfaces;
@@ -7,7 +8,7 @@ using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Application.Handlers;
 
-public class CreateGameCommandHandler(IGameRepository gameRepository, IPuzzleGenerator puzzleGenerator) : ICommandHandler<CreateGameCommand>
+public class CreateGameCommandHandler(IGameRepository gameRepository, IPuzzleGenerator puzzleGenerator, ILogger<CreateGameCommandHandler> logger) : ICommandHandler<CreateGameCommand>
 {
     public async Task<Result> Handle(CreateGameCommand request, CancellationToken cancellationToken)
     {
@@ -26,14 +27,18 @@ public class CreateGameCommandHandler(IGameRepository gameRepository, IPuzzleGen
 
             await gameRepository.SaveAsync(game);
 
+            logger.LogInformation("Created game {GameId} for player {PlayerAlias} with difficulty {Difficulty}", 
+                game.Id.Value, playerAlias.Value, difficulty.Name);
             return Result.Success();
         }
         catch (DomainException ex)
         {
+            logger.LogWarning("Failed to create game for player {PlayerAlias}: {Error}", request.PlayerAlias, ex.Message);
             return Result.Failure(ex.Message);
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "An unexpected error occurred creating game for player {PlayerAlias}", request.PlayerAlias);
             return Result.Failure($"An unexpected error occurred: {ex.Message}");
         }
     }

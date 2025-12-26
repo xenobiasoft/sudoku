@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Sudoku.Application.Common;
 using Sudoku.Application.DTOs;
 using Sudoku.Application.Interfaces;
@@ -7,7 +8,7 @@ using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Application.Handlers;
 
-public class GetGameQueryHandler(IGameRepository gameRepository) : IQueryHandler<GetGameQuery, GameDto>
+public class GetGameQueryHandler(IGameRepository gameRepository, ILogger<GetGameQueryHandler> logger) : IQueryHandler<GetGameQuery, GameDto>
 {
     public async Task<Result<GameDto>> Handle(GetGameQuery request, CancellationToken cancellationToken)
     {
@@ -23,14 +24,17 @@ public class GetGameQueryHandler(IGameRepository gameRepository) : IQueryHandler
 
             var gameDto = GameDto.FromGame(game);
 
+            logger.LogInformation("Retrieved game {GameId}", gameId.Value);
             return Result<GameDto>.Success(gameDto);
         }
         catch (DomainException ex)
         {
+            logger.LogWarning("Failed to get game {GameId}: {Error}", request.GameId, ex.Message);
             return Result<GameDto>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "An unexpected error occurred getting game {GameId}", request.GameId);
             return Result<GameDto>.Failure($"An unexpected error occurred: {ex.Message}");
         }
     }

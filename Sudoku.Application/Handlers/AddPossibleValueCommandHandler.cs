@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
 using Sudoku.Application.Interfaces;
@@ -6,7 +7,7 @@ using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Application.Handlers;
 
-public class AddPossibleValueCommandHandler(IGameRepository gameRepository) : ICommandHandler<AddPossibleValueCommand>
+public class AddPossibleValueCommandHandler(IGameRepository gameRepository, ILogger<AddPossibleValueCommandHandler> logger) : ICommandHandler<AddPossibleValueCommand>
 {
     public async Task<Result> Handle(AddPossibleValueCommand request, CancellationToken cancellationToken)
     {
@@ -24,14 +25,18 @@ public class AddPossibleValueCommandHandler(IGameRepository gameRepository) : IC
 
             await gameRepository.SaveAsync(game);
 
+            logger.LogInformation("Added possible value {Value} to game {GameId} at [{Row},{Column}]", 
+                request.Value, gameId.Value, request.Row, request.Column);
             return Result.Success();
         }
         catch (DomainException ex)
         {
+            logger.LogWarning("Failed to add possible value to game {GameId}: {Error}", request.GameId, ex.Message);
             return Result.Failure(ex.Message);
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "An unexpected error occurred adding possible value to game {GameId}", request.GameId);
             return Result.Failure($"An unexpected error occurred: {ex.Message}");
         }
     }
