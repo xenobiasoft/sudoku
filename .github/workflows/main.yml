@@ -8,7 +8,9 @@ on:
 
 env:
   AZURE_WEBAPP_NAME: XenobiaSoftSudoku
-  AZURE_WEBAPP_PACKAGE_PATH: "${{ github.workspace }}/publish"
+  AZURE_API_NAME: XenobiasoftSudokuApi
+  AZURE_WEBAPP_PACKAGE_PATH: "${{ github.workspace }}/publish-web"
+  AZURE_API_PACKAGE_PATH: "${{ github.workspace }}/publish-api"
   DOTNET_VERSION: "10.x"
 
 permissions:
@@ -60,8 +62,11 @@ jobs:
           name: test-results
           path: TestResults/*.trx
 
-      - name: Publish
+      - name: Publish Web Server
         run: dotnet publish Sudoku.Web.Server/Sudoku.Web.Server.csproj --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} --no-restore
+
+      - name: Publish API
+        run: dotnet publish Sudoku.Api/Sudoku.Api.csproj --configuration Release --output ${{ env.AZURE_API_PACKAGE_PATH }} --no-restore
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -69,6 +74,13 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+      - name: Deploy to Azure API App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_API_NAME }}
+          publish-profile: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
+          package: ${{ env.AZURE_API_PACKAGE_PATH }}
 
       - name: Configure GA Measurement Id in App Settings
         uses: azure/appservice-settings@v1
