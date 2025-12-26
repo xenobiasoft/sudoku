@@ -1,5 +1,5 @@
 param siteName string = 'XenobiaSoftSudoku'
-param apiSiteName string = 'XenobiaSoftSudokuApi'
+param apiSiteName string = 'XenobiasoftSudokuApi'
 param location string = resourceGroup().location
 param appServicePlanSku string = 'B1'
 
@@ -81,7 +81,7 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
       'Default.html'
       'index.html'
     ]
-    linuxFxVersion: 'DOTNETCORE|10.0'
+    linuxFxVersion: 'DOTNET|10.0'
     managedPipelineMode: 'Integrated'
     virtualApplications: [
       {
@@ -93,7 +93,6 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
     http20Enabled: true
     minTlsVersion: '1.2'
     healthCheckPath: '/health-check'
-    minimumElasticInstanceCount: 1
     ftpsState: 'FtpsOnly'
     alwaysOn: true
   }
@@ -104,7 +103,7 @@ resource apiServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
   parent: sudokuApiApp
   name: 'web'
   properties: {
-    linuxFxVersion: 'DOTNETCORE|10.0'
+    linuxFxVersion: 'DOTNET|10.0'
     managedPipelineMode: 'Integrated'
     virtualApplications: [
       {
@@ -116,7 +115,6 @@ resource apiServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
     http20Enabled: true
     minTlsVersion: '1.2'
     healthCheckPath: '/health'
-    minimumElasticInstanceCount: 1
     ftpsState: 'FtpsOnly'
     alwaysOn: true
     cors: {
