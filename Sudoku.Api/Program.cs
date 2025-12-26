@@ -1,4 +1,5 @@
 using Azure.Identity;
+using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.OpenApi;
 using Sudoku.Api;
 
@@ -13,6 +14,11 @@ if (!string.IsNullOrEmpty(keyVaultUri))
 }
 
 builder.Services.AddApiDefaults(builder.Configuration, builder.Environment);
+
+builder.Services.AddHttpLogging(logging =>
+{
+    logging.LoggingFields = HttpLoggingFields.All;
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
