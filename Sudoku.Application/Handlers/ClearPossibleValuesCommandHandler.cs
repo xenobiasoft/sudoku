@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
 using Sudoku.Application.Interfaces;
@@ -6,7 +7,7 @@ using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Application.Handlers;
 
-public class ClearPossibleValuesCommandHandler(IGameRepository gameRepository) : ICommandHandler<ClearPossibleValuesCommand>
+public class ClearPossibleValuesCommandHandler(IGameRepository gameRepository, ILogger<ClearPossibleValuesCommandHandler> logger) : ICommandHandler<ClearPossibleValuesCommand>
 {
     public async Task<Result> Handle(ClearPossibleValuesCommand request, CancellationToken cancellationToken)
     {
@@ -24,14 +25,18 @@ public class ClearPossibleValuesCommandHandler(IGameRepository gameRepository) :
 
             await gameRepository.SaveAsync(game);
 
+            logger.LogInformation("Cleared possible values for game {GameId} at [{Row},{Column}]",
+                gameId.Value, request.Row, request.Column);
             return Result.Success();
         }
         catch (DomainException ex)
         {
+            logger.LogWarning("Failed to clear possible values for game {GameId}: {Error}", request.GameId, ex.Message);
             return Result.Failure(ex.Message);
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "An unexpected error occurred clearing possible values for game {GameId}", request.GameId);
             return Result.Failure($"An unexpected error occurred: {ex.Message}");
         }
     }

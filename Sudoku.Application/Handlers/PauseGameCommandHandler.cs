@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
 using Sudoku.Application.Interfaces;
@@ -6,7 +7,7 @@ using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Application.Handlers;
 
-public class PauseGameCommandHandler(IGameRepository gameRepository) : ICommandHandler<PauseGameCommand>
+public class PauseGameCommandHandler(IGameRepository gameRepository, ILogger<PauseGameCommandHandler> logger) : ICommandHandler<PauseGameCommand>
 {
     public async Task<Result> Handle(PauseGameCommand request, CancellationToken cancellationToken)
     {
@@ -24,14 +25,17 @@ public class PauseGameCommandHandler(IGameRepository gameRepository) : ICommandH
 
             await gameRepository.SaveAsync(game);
 
+            logger.LogInformation("Paused game with ID: {GameId}", gameId.Value);
             return Result.Success();
         }
         catch (DomainException ex)
         {
+            logger.LogWarning("Failed to pause game {GameId}: {Error}", request.GameId, ex.Message);
             return Result.Failure(ex.Message);
         }
         catch (Exception ex)
         {
+            logger.LogError(ex, "An unexpected error occurred pausing game {GameId}", request.GameId);
             return Result.Failure($"An unexpected error occurred: {ex.Message}");
         }
     }
