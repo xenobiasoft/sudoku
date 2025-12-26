@@ -12,7 +12,7 @@ if (!string.IsNullOrEmpty(keyVaultUri))
     builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
 }
 
-builder.Services.AddApiDefaults(builder.Configuration);
+builder.Services.AddApiDefaults(builder.Configuration, builder.Environment);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
