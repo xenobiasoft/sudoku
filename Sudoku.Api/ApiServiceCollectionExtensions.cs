@@ -5,7 +5,7 @@ namespace Sudoku.Api;
 
 public static class ApiServiceCollectionExtensions
 {
-    public static IServiceCollection AddApiDefaults(this IServiceCollection services, IConfiguration config)
+    public static IServiceCollection AddApiDefaults(this IServiceCollection services, IConfiguration config, IWebHostEnvironment env)
     {
         services.AddApplicationServices();
         services.AddInfrastructureServices(config);
@@ -15,9 +15,20 @@ public static class ApiServiceCollectionExtensions
         {
             options.AddPolicy("AllowAll", builder =>
             {
-                builder.AllowAnyOrigin()
-                       .AllowAnyMethod()
-                       .AllowAnyHeader();
+                if (env.IsDevelopment())
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                }
+                else
+                {
+                    // In production, configure specific allowed origins
+                    var allowedOrigins = config.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+                    builder.WithOrigins(allowedOrigins)
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                }
             });
         });
 

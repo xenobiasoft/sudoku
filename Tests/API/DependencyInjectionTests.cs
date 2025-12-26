@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Api;
@@ -175,13 +176,13 @@ public class DependencyInjectionTests
                 ["AzureStorage:ConnectionString"] = "invalid-connection-string"
             })
             .Build();
-
+        var mockEnvironment = new Mock<IWebHostEnvironment>();
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddControllers();
         
         // This should work fine
-        services.AddApiDefaults(invalidConfiguration);
+        services.AddApiDefaults(invalidConfiguration, mockEnvironment.Object);
         
         var serviceProvider = services.BuildServiceProvider();
 
@@ -243,7 +244,7 @@ public class DependencyInjectionTests
                 ["AzureStorage:UseManagedIdentity"] = "false"
             })
             .Build();
-
+        var mockEnvironment = new Mock<IWebHostEnvironment>();
         var services = new ServiceCollection();
         
         // Add required framework services
@@ -251,7 +252,7 @@ public class DependencyInjectionTests
         services.AddControllers();
         
         // Add API services using the extension method
-        services.AddApiDefaults(configuration);
+        services.AddApiDefaults(configuration, mockEnvironment.Object);
         
         // Register controllers manually for testing
         services.AddTransient<GamesController>();

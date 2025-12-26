@@ -1,4 +1,5 @@
 param siteName string = 'XenobiaSoftSudoku'
+param apiSiteName string = 'XenobiasoftSudokuApi'
 param location string = resourceGroup().location
 param appServicePlanSku string = 'B1'
 
@@ -53,6 +54,24 @@ resource sudokuApp 'Microsoft.Web/sites@2023-12-01' = {
   }
 }
 
+// API App Service
+resource sudokuApiApp 'Microsoft.Web/sites@2023-12-01' = {
+  name: apiSiteName
+  location: location
+  kind: 'app,linux'
+  properties: {
+    enabled: true
+    serverFarmId: appServicePlan.id
+    httpsOnly: true
+    clientAffinityEnabled: false
+  }
+  tags: {
+    environment: 'production'
+    project: 'XenobiaSoftSudoku'
+    component: 'api'
+  }
+}
+
 // App Service Configuration
 resource appServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
   parent: sudokuApp
@@ -62,7 +81,7 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
       'Default.html'
       'index.html'
     ]
-    linuxFxVersion: 'DOTNETCORE|10.0'
+    linuxFxVersion: 'DOTNET|10.0'
     managedPipelineMode: 'Integrated'
     virtualApplications: [
       {
@@ -74,9 +93,37 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
     http20Enabled: true
     minTlsVersion: '1.2'
     healthCheckPath: '/health-check'
-    minimumElasticInstanceCount: 1
     ftpsState: 'FtpsOnly'
     alwaysOn: true
+  }
+}
+
+// API App Service Configuration
+resource apiServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
+  parent: sudokuApiApp
+  name: 'web'
+  properties: {
+    linuxFxVersion: 'DOTNET|10.0'
+    managedPipelineMode: 'Integrated'
+    virtualApplications: [
+      {
+        virtualPath: '/'
+        physicalPath: 'site\\wwwroot'
+        preloadEnabled: false
+      }
+    ]
+    http20Enabled: true
+    minTlsVersion: '1.2'
+    healthCheckPath: '/health'
+    ftpsState: 'FtpsOnly'
+    alwaysOn: true
+    cors: {
+      allowedOrigins: [
+        'https://sudoku.xenobiasoft.com'
+        'https://${siteName}.azurewebsites.net'
+      ]
+      supportCredentials: false
+    }
   }
 }
 
@@ -96,3 +143,6 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
 //     thumbprint: managedCert.properties.thumbprint
 //   }
 // }
+
+output webAppUrl string = sudokuApp.properties.defaultHostName
+output apiAppUrl string = sudokuApiApp.properties.defaultHostName
