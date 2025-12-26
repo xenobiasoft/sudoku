@@ -81,7 +81,7 @@ resource appServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
       'Default.html'
       'index.html'
     ]
-    linuxFxVersion: 'DOTNET|10.0'
+    linuxFxVersion: 'DOTNETCORE|10.0'
     managedPipelineMode: 'Integrated'
     virtualApplications: [
       {
@@ -103,7 +103,7 @@ resource apiServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
   parent: sudokuApiApp
   name: 'web'
   properties: {
-    linuxFxVersion: 'DOTNET|10.0'
+    linuxFxVersion: 'DOTNETCORE|10.0'
     managedPipelineMode: 'Integrated'
     virtualApplications: [
       {
