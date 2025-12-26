@@ -114,6 +114,7 @@ resource apiServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
     ]
     http20Enabled: true
     minTlsVersion: '1.2'
+    healthCheckPath: '/health-check'
     ftpsState: 'FtpsOnly'
     alwaysOn: true
     cors: {
