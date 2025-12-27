@@ -40,20 +40,28 @@ public static class AzureAppConfigurationExtensions
                 return builder;
             }
 
-            logger.LogInformation("Configuring Azure App Configuration with {Method}", 
-                !string.IsNullOrEmpty(connectionString) ? "connection string" : "endpoint + managed identity");
+            // Determine which authentication method to use
+            var useManagedIdentity = managedIdentityEnabled && !string.IsNullOrEmpty(endpoint);
+            
+            logger.LogInformation("Configuring Azure App Configuration with {Method}", useManagedIdentity ? "endpoint + managed identity" : "connection string");
 
             builder.Configuration.AddAzureAppConfiguration(options =>
             {
-                // Configure connection - prefer connection string over endpoint + managed identity
-                if (!string.IsNullOrEmpty(connectionString))
+                // Configure connection - prefer managed identity when explicitly enabled
+                if (useManagedIdentity)
+                {
+                    logger.LogDebug("Using endpoint '{Endpoint}' with managed identity for Azure App Configuration", endpoint);
+                    var endpointUri = new Uri(endpoint);
+                    options.Connect(endpointUri, new DefaultAzureCredential());
+                }
+                else if (!string.IsNullOrEmpty(connectionString))
                 {
                     logger.LogDebug("Using connection string for Azure App Configuration");
                     options.Connect(connectionString);
                 }
                 else if (!string.IsNullOrEmpty(endpoint))
                 {
-                    logger.LogDebug("Using endpoint '{Endpoint}' with managed identity for Azure App Configuration", endpoint);
+                    logger.LogDebug("Using endpoint '{Endpoint}' with managed identity for Azure App Configuration (fallback)", endpoint);
                     var endpointUri = new Uri(endpoint);
                     options.Connect(endpointUri, new DefaultAzureCredential());
                 }
