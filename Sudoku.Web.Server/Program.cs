@@ -1,6 +1,7 @@
 using Azure.Identity;
 using BlazorApplicationInsights;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.AspNetCore.StaticFiles;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Sudoku.Web.Server;
@@ -88,7 +89,15 @@ public class Program
 
             logger.LogInformation("Configuring middleware pipeline.");
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            
+            // Configure static files with correct MIME types for PWA
+            var provider = new FileExtensionContentTypeProvider();
+            provider.Mappings[".webmanifest"] = "application/manifest+json";
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                ContentTypeProvider = provider
+            });
+            
             app.UseRouting();
 
             logger.LogInformation("Mapping endpoints.");
