@@ -49,15 +49,21 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
-  // Skip cross-origin requests and browser extensions
-  if (!event.request.url.startsWith(self.location.origin) && 
-      !event.request.url.startsWith('https://cdnjs.cloudflare.com') &&
-      !event.request.url.startsWith('https://unpkg.com')) {
+  const requestUrl = new URL(event.request.url);
+  
+  // Only handle requests from our origin and allowed CDNs
+  const allowedHosts = [
+    self.location.hostname,
+    'cdnjs.cloudflare.com',
+    'unpkg.com'
+  ];
+  
+  if (!allowedHosts.includes(requestUrl.hostname)) {
     return;
   }
 
   // Skip Blazor SignalR connections
-  if (event.request.url.includes('/_blazor')) {
+  if (requestUrl.pathname.includes('/_blazor')) {
     return;
   }
 
