@@ -2,6 +2,10 @@
 const CACHE_NAME = 'sudoku-cache-v1';
 const RUNTIME_CACHE = 'sudoku-runtime-v1';
 
+// CDN URLs
+const FONT_AWESOME_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css';
+const MATERIAL_COMPONENTS_CDN = 'https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css';
+
 // Assets to cache on install
 const PRECACHE_URLS = [
   '/',
@@ -9,8 +13,8 @@ const PRECACHE_URLS = [
   '/css/site.css',
   '/favicon.ico',
   '/images/logo.png',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css',
-  'https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css'
+  FONT_AWESOME_CDN,
+  MATERIAL_COMPONENTS_CDN
 ];
 
 // Install event - cache core assets
@@ -18,7 +22,7 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        return cache.addAll(PRECACHE_URLS.map(url => new Request(url, { cache: 'no-cache' })));
+        return cache.addAll(PRECACHE_URLS);
       })
       .then(() => self.skipWaiting())
       .catch((error) => {
