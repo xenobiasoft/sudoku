@@ -184,7 +184,7 @@ public class CosmosDbService(
 
     private async Task InitializeCosmosDbAsync()
     {
-        logger.LogInformation("Ensuring CosmosDB database and container exist: {Endpoint}", cosmosClient.Endpoint);
+        logger.LogInformation("Ensuring CosmosDB database and container exist at endpoint URI: {Endpoint}", cosmosClient.Endpoint);
 
         var database = await cosmosClient.CreateDatabaseIfNotExistsAsync(
             _options.DatabaseName,
