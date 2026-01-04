@@ -50,29 +50,6 @@ Replace `<image-id>` with the ID of the expired image.
 
 ---
 
-### 3. Update the Emulator Tag in Your Aspire AppHost (If Applicable)
-
-If your Aspire AppHost project pins a specific version, update it.
-
-Example configuration:
-
-```csharp
-builder.AddAzureCosmosEmulator(
-    "cosmos",
-    "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest"
-);
-```
-
-If you see a pinned version like:
-
-```
-:0.15.0
-```
-
-Update it to the latest available tag or switch to `:latest`.
-
----
-
 ## Verifying the Fix
 
 After updating:
