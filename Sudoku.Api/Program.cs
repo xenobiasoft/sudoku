@@ -40,7 +40,7 @@ var app = builder.Build();
 
 app.MapDefaultEndpoints();
 
-if (true)//app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
