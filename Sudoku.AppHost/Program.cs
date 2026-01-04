@@ -19,34 +19,36 @@ var logger = loggerFactory.CreateLogger<Program>();
 try
 {
     logger.LogInformation("Starting Sudoku Distributed Application...");
+    
+    // Use Azure Cosmos DB Emulator for local development
+    // For production, the projects will use connection strings from user secrets or Azure configuration
+    var cosmosDb = builder.AddAzureCosmosDB("CosmosDb")
+        .RunAsEmulator();
 
-    var appConfig = builder.AddConnectionString("appconfig");
-    var cosmosDb = builder.AddConnectionString("CosmosDb");
-
-    logger.LogDebug("Configuring Sudoku API project...");
+    logger.LogInformation("Configuring Sudoku API project...");
     var api = builder.AddProject<Projects.Sudoku_Api>("sudoku-api")
         .WithUrlForEndpoint("https", url =>
         {
             url.DisplayText = "Swagger (HTTPS)";
             url.Url = "/swagger";
-            logger.LogDebug("Configured HTTPS Swagger endpoint for Sudoku API");
+            logger.LogInformation("Configured HTTPS Swagger endpoint for Sudoku API");
         })
         .WithUrlForEndpoint("http", url =>
         {
             url.DisplayText = "Swagger (HTTP)";
             url.Url = "/swagger";
-            logger.LogDebug("Configured HTTP Swagger endpoint for Sudoku API");
+            logger.LogInformation("Configured HTTP Swagger endpoint for Sudoku API");
         })
         .WithReference(cosmosDb)
-        .WithReference(appConfig)
+        .WithEnvironment("UseCosmosDb", "true")
         .WaitFor(cosmosDb)
         .WithExternalHttpEndpoints();
 
-    logger.LogDebug("Configuring Sudoku Blazor Server project...");
+    logger.LogInformation("Configuring Sudoku Blazor Server project...");
     builder.AddProject<Projects.Sudoku_Web_Server>("sudoku-blazor")
         .WithReference(cosmosDb)
-        .WithReference(appConfig)
         .WithReference(api)
+        .WithEnvironment("UseCosmosDb", "true")
         .WithExternalHttpEndpoints()
         .WaitFor(cosmosDb);
 
