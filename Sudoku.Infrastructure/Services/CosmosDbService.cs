@@ -15,6 +15,7 @@ public class CosmosDbService : ICosmosDbService
     public CosmosDbService(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options, ILogger<CosmosDbService> logger)
     {
         _logger = logger;
+        _cosmosClient = cosmosClient;
         _options = options.Value;
 
         InitializeCosmosDbAsync().GetAwaiter().GetResult();
