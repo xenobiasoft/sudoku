@@ -1,6 +1,6 @@
 // Service Worker for XenobiaSoft Sudoku PWA
-const CACHE_NAME = 'sudoku-cache-v1';
-const RUNTIME_CACHE = 'sudoku-runtime-v1';
+const CACHE_NAME = 'sudoku-cache-v2';
+const RUNTIME_CACHE = 'sudoku-runtime-v2';
 
 // CDN URLs
 const FONT_AWESOME_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css';
@@ -51,7 +51,7 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const requestUrl = new URL(event.request.url);
   
-  // Only handle requests from our origin and allowed CDNs
+  // Skip requests that are not from allowed hosts
   const allowedHosts = [
     self.location.hostname,
     'cdnjs.cloudflare.com',
@@ -62,8 +62,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip Blazor SignalR connections
-  if (requestUrl.pathname.includes('/_blazor')) {
+  // Skip Blazor SignalR connections and framework files - they must always go to network
+  if (requestUrl.pathname.includes('/_blazor') || 
+      requestUrl.pathname.includes('/_framework') ||
+      requestUrl.pathname.includes('/health-check')) {
     return;
   }
 
@@ -75,8 +77,11 @@ self.addEventListener('fetch', (event) => {
 
       return caches.open(RUNTIME_CACHE).then((cache) => {
         return fetch(event.request).then((response) => {
-          // Cache successful GET requests
-          if (event.request.method === 'GET' && response.status === 200) {
+          // Cache successful GET requests for static assets only
+          if (event.request.method === 'GET' && 
+              response.status === 200 &&
+              !requestUrl.pathname.includes('/_blazor') &&
+              !requestUrl.pathname.includes('/_framework')) {
             cache.put(event.request, response.clone());
           }
           return response;
