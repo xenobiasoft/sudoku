@@ -120,9 +120,10 @@ public class GameDtoTests : BaseTestByType<GameDto>
         var completedAt = (DateTime?)null;
         var pausedAt = (DateTime?)null;
         var cells = new List<CellDto>();
+        var moveHistory = new List<MoveHistoryDto>();
 
         // Act
-        var dto = new GameDto(id, playerAlias, difficulty, status, statistics, createdAt, startedAt, completedAt, pausedAt, cells);
+        var dto = new GameDto(id, playerAlias, difficulty, status, statistics, createdAt, startedAt, completedAt, pausedAt, cells, moveHistory);
 
         // Assert
         dto.Id.Should().Be(id);

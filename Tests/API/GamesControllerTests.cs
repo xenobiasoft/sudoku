@@ -1048,7 +1048,8 @@ public class GamesControllerTests : BaseTestByType<GamesController>
             null,
             null,
             null,
-            new List<CellDto>()
+            new List<CellDto>(),
+            new List<MoveHistoryDto>()
         );
     }
 

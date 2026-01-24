@@ -15,6 +15,7 @@ public class GameModel
     public DateTime? CompletedAt { get; set; }
     public DateTime? PausedAt { get; set; }
     public List<CellModel> Cells { get; set; } = new();
+    public List<MoveHistoryModel> MoveHistory { get; set; } = new();
 
     public CellModel GetCell(int row, int col)
     {

@@ -35,7 +35,8 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
             null,
             null,
             null,
-            new List<CellDto>()
+            new List<CellDto>(),
+            new List<MoveHistoryDto>()
         );
 
         _mockMediator.Setup(m => m.Send(It.IsAny<CreateGameCommand>(), CancellationToken.None))
@@ -140,7 +141,8 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
             DateTime.UtcNow,
             null,
             null,
-            new List<CellDto>()
+            new List<CellDto>(),
+            new List<MoveHistoryDto>()
         );
 
         _mockMediator.Setup(m => m.Send(It.IsAny<GetGameQuery>(), CancellationToken.None))
@@ -194,7 +196,8 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
                 DateTime.UtcNow,
                 DateTime.UtcNow,
                 null,
-                new List<CellDto>()
+                new List<CellDto>(),
+                new List<MoveHistoryDto>()
             )
         };
 
@@ -231,7 +234,8 @@ public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplication
                 DateTime.UtcNow,
                 null,
                 null,
-                new List<CellDto>()
+                new List<CellDto>(),
+                new List<MoveHistoryDto>()
             )
         };
 
