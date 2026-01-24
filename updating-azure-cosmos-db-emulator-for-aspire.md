@@ -25,44 +25,40 @@ Microsoft ships the Linux emulator as a **time-limited evaluation build**, and o
 
 ## How to Fix the Issue
 
-### 1. Pull the Latest Emulator Image
+### 1. Remove the emulator container
+
+```bash
+docker ps -a --filter "name=cosmosdb" --format "table {{.ID}}\t{{.Image}}\t{{.Names}}"
+docker rm -f <container_id>
+```
+
+Replace `<container_id>` with the ID of the expired image.
+
+---
+
+### 2. Remove the cached emulator image
+
+(you may have one of these, remove whichever matches your setup)
+
+```bash
+docker images | grep -i cosmos
+
+docker rmi -f mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
+# or (if you see it)
+docker rmi -f mcr.microsoft.com/cosmosdb/emulator:latest
+```
+
+---
+
+### 3. Pull the Latest Emulator Image
 
 Update your local Docker cache:
 
 ```bash
-docker pull mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator
+docker pull mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:latest
 ```
 
 This ensures you have the newest, non-expired version.
-
----
-
-### 2. Remove the Expired Local Image
-
-Docker may continue using the old image unless you remove it:
-
-```bash
-docker images | grep cosmos
-docker rmi <image-id>
-```
-
-Replace `<image-id>` with the ID of the expired image.
-
----
-
-## Verifying the Fix
-
-After updating:
-
-1. Stop your Aspire app
-2. Run:
-
-```bash
-docker ps -a
-```
-
-3. Ensure no old emulator containers are still running
-4. Restart your Aspire application — the emulator should now start normally
 
 ---
 

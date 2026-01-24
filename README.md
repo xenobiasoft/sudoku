@@ -6,21 +6,21 @@ A modern, full-featured Sudoku game built with Blazor Server and C#, following C
 
 This solution is organized into several projects:
 
+
 ```
 Sudoku.sln
-├── Sudoku.Domain/           # Core domain logic and business rules
+├── Sudoku.Api/              # REST API
+├── Sudoku.AppHost/          # Application orchestration/hosting
 ├── Sudoku.Application/      # Application use cases and orchestration
+├── Sudoku.Domain/           # Core domain logic and business rules
 ├── Sudoku.Infrastructure/   # Infrastructure (storage, external APIs)
 ├── Sudoku.Web.Server/       # Blazor Server web UI
-├── Sudoku.Api/              # REST API (optional)
-├── Sudoku.Storage.Azure/    # Azure storage implementation
-├── Sudoku.AppHost/          # Application orchestration/hosting
 └── Tests/                   # Unit and integration tests
 ```
 
 ### Key Technologies & Patterns
 
-- **.NET 9.0** throughout
+- **.NET 10.0** throughout
 - **Blazor Server** for real-time, interactive UI
 - **Domain-Driven Design (DDD)**: Rich domain models, value objects, domain events
 - **Clean Architecture**: Clear separation of concerns between domain, application, infrastructure, and UI
@@ -48,7 +48,7 @@ Sudoku.sln
 
 **Prerequisites:**
 
-- [.NET 9.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 - (Optional) Azure account for cloud storage features
 
 To build the solution:
