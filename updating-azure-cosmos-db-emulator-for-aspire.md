@@ -32,11 +32,11 @@ docker ps -a --filter "name=cosmosdb" --format "table {{.ID}}\t{{.Image}}\t{{.Na
 docker rm -f <container_id>
 ```
 
-Replace `<container-id>` with the ID of the expired image.
+Replace `<container_id>` with the ID of the expired image.
 
 ---
 
-## 2. Remove the cached emulator image
+### 2. Remove the cached emulator image
 
 (you may have one of these, remove whichever matches your setup)
 

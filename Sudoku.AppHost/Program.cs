@@ -23,7 +23,7 @@ try
     // Use Azure Cosmos DB Emulator for local development
     // For production, the projects will use connection strings from user secrets or Azure configuration
     var cosmosDb = builder.AddAzureCosmosDB("CosmosDb")
-        .RunAsEmulator(builder => builder.WithImagePullPolicy(ImagePullPolicy.Always));
+        .RunAsEmulator(emulator => emulator.WithImagePullPolicy(ImagePullPolicy.Always));
 
     logger.LogInformation("Configuring Sudoku API project...");
     var api = builder.AddProject<Projects.Sudoku_Api>("sudoku-api")
