@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using Microsoft.Extensions.Logging;
 
 namespace Sudoku.Infrastructure.Services;
@@ -110,7 +111,7 @@ public class AzureStorageService(BlobServiceClient blobServiceClient, ILogger<Az
     {
         var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
-        await foreach (var blobItem in containerClient.GetBlobsAsync(prefix: prefix))
+        await foreach (var blobItem in containerClient.GetBlobsAsync(new GetBlobsOptions { Prefix = prefix }))
         {
             yield return blobItem.Name;
         }
