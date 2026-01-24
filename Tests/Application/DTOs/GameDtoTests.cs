@@ -28,6 +28,7 @@ public class GameDtoTests : BaseTestByType<GameDto>
         dto.Statistics.Should().NotBeNull();
         dto.Cells.Should().NotBeNull();
         dto.Cells.Count.Should().Be(game.GetCells().Count);
+        dto.MoveHistory.Should().BeEquivalentTo(game.MoveHistory);
     }
 
     [Fact]
@@ -89,6 +90,23 @@ public class GameDtoTests : BaseTestByType<GameDto>
     }
 
     [Fact]
+    public void FromGame_MapsMoveHistoryCorrectly()
+    {
+        // Arrange
+        var game = CreateTestGame();
+        game.StartGame();
+
+        // Act
+        var dto = GameDto.FromGame(game);
+
+        // Assert
+        foreach (var moveHistory in game.MoveHistory)
+        {
+            moveHistory.Should().BeEquivalentTo(dto.MoveHistory);
+        }
+    }
+
+    [Fact]
     public void FromGame_MapsStatisticsCorrectly()
     {
         // Arrange
@@ -136,6 +154,7 @@ public class GameDtoTests : BaseTestByType<GameDto>
         dto.CompletedAt.Should().Be(completedAt);
         dto.PausedAt.Should().Be(pausedAt);
         dto.Cells.Should().BeEquivalentTo(cells);
+        dto.MoveHistory.Should().BeEquivalentTo(moveHistory);
     }
 
     private static SudokuGame CreateTestGame()
