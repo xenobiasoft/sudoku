@@ -13,7 +13,8 @@ public record GameDto(
     DateTime? StartedAt,
     DateTime? CompletedAt,
     DateTime? PausedAt,
-    List<CellDto> Cells)
+    List<CellDto> Cells,
+    List<MoveHistoryDto> MoveHistory)
 {
     public static GameDto FromGame(SudokuGame game)
     {
@@ -27,7 +28,8 @@ public record GameDto(
             game.StartedAt,
             game.CompletedAt,
             game.PausedAt,
-            game.GetCells().Select(CellDto.FromCell).ToList()
+            game.GetCells().Select(CellDto.FromCell).ToList(),
+            game.MoveHistory.Select(MoveHistoryDto.FromMoveHistory).ToList()
         );
     }
 }
@@ -68,6 +70,23 @@ public record CellDto(
             cell.IsFixed,
             cell.HasValue,
             cell.PossibleValues.ToList()
+        );
+    }
+}
+
+public record MoveHistoryDto(
+    int Row,
+    int Column,
+    int? PreviousValue,
+    int? NewValue)
+{
+    public static MoveHistoryDto FromMoveHistory(MoveHistory moveHistory)
+    {
+        return new MoveHistoryDto(
+            moveHistory.Row,
+            moveHistory.Column,
+            moveHistory.PreviousValue,
+            moveHistory.NewValue
         );
     }
 }
