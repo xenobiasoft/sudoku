@@ -108,9 +108,7 @@ public partial class Game
 
     private async Task UpdateGameStateAsync(Func<Task<GameModel>> action)
     {
-        await GameManager.PauseSession();
         _ = await action();
-        await GameManager.ResumeSession();
         StateHasChanged();
     }
 
