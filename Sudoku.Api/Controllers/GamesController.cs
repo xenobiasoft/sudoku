@@ -7,48 +7,8 @@ namespace Sudoku.Api.Controllers;
 
 [Route("api/players/{alias}/games")]
 [ApiController]
-public class GamesController(IGameApplicationService gameService) : ControllerBase
+public class GamesController(IGameApplicationService gameService) : BaseGameController(gameService)
 {
-    /// <summary>
-    /// Adds a possible value to a cell
-    /// </summary>
-    /// <param name="alias">The player's alias</param>
-    /// <param name="gameId">The game id</param>
-    /// <param name="request">The possible value request</param>
-    /// <returns>Success or failure result</returns>
-    [HttpPost("{gameId}/possible-values")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> AddPossibleValueAsync(string alias, string gameId, [FromBody] PossibleValueRequest request)
-    {
-        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
-        if (error != null) return error;
-
-        var result = await gameService.AddPossibleValueAsync(gameId, request.Row, request.Column, request.Value);
-        return HandleUnitResult(result);
-    }
-
-    /// <summary>
-    /// Clears all possible values from a cell
-    /// </summary>
-    /// <param name="alias">The player's alias</param>
-    /// <param name="gameId">The game id</param>
-    /// <param name="request">The cell request</param>
-    /// <returns>Success or failure result</returns>
-    [HttpDelete("{gameId}/possible-values/clear")]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> ClearPossibleValuesAsync(string alias, string gameId, [FromBody] CellRequest request)
-    {
-        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
-        if (error != null) return error;
-
-        var result = await gameService.ClearPossibleValuesAsync(gameId, request.Row, request.Column);
-        return HandleUnitResult(result);
-    }
-
     /// <summary>
     /// Creates a new game for the specified player with the given difficulty.
     /// </summary>
@@ -65,7 +25,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
             return BadRequest("Player alias and difficulty cannot be null or empty.");
         }
 
-        var result = await gameService.CreateGameAsync(alias, difficulty);
+        var result = await GameService.CreateGameAsync(alias, difficulty);
 
         if (!result.IsSuccess)
         {
@@ -90,7 +50,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
             return BadRequest("Player alias cannot be null or empty.");
         }
 
-        var result = await gameService.DeletePlayerGamesAsync(alias);
+        var result = await GameService.DeletePlayerGamesAsync(alias);
 
         if (!result.IsSuccess)
         {
@@ -115,7 +75,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
         var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
         if (error != null) return error;
 
-        var result = await gameService.DeleteGameAsync(gameId);
+        var result = await GameService.DeleteGameAsync(gameId);
         return HandleUnitResult(result);
     }
 
@@ -135,7 +95,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
             return BadRequest("Player alias cannot be null or empty.");
         }
 
-        var result = await gameService.GetPlayerGamesAsync(alias);
+        var result = await GameService.GetPlayerGamesAsync(alias);
 
         if (!result.IsSuccess)
         {
@@ -180,7 +140,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
         var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
         if (error != null) return error;
 
-        var result = await gameService.RemovePossibleValueAsync(gameId, request.Row, request.Column, request.Value);
+        var result = await GameService.RemovePossibleValueAsync(gameId, request.Row, request.Column, request.Value);
         return HandleUnitResult(result);
     }
 
@@ -199,7 +159,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
         var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
         if (error != null) return error;
 
-        var result = await gameService.ResetGameAsync(gameId);
+        var result = await GameService.ResetGameAsync(gameId);
         return HandleUnitResult(result);
     }
 
@@ -218,7 +178,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
         var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
         if (error != null) return error;
 
-        var result = await gameService.UndoLastMoveAsync(gameId);
+        var result = await GameService.UndoLastMoveAsync(gameId);
         return HandleUnitResult(result);
     }
 
@@ -240,7 +200,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
         var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
         if (error != null) return error;
 
-        var result = await gameService.UpdateGameStatusAsync(gameId, gameStatus);
+        var result = await GameService.UpdateGameStatusAsync(gameId, gameStatus);
         return HandleUnitResult(result);
     }
 
@@ -260,7 +220,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
         var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
         if (error != null) return error;
 
-        var result = await gameService.MakeMoveAsync(gameId, move.Row, move.Column, move.Value, move.PlayDuration);
+        var result = await GameService.MakeMoveAsync(gameId, move.Row, move.Column, move.Value, move.PlayDuration);
         return HandleUnitResult(result);
     }
 
@@ -279,7 +239,7 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
         var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
         if (error != null) return error;
 
-        var result = await gameService.ValidateGameAsync(gameId);
+        var result = await GameService.ValidateGameAsync(gameId);
 
         if (!result.IsSuccess)
         {
@@ -287,37 +247,5 @@ public class GamesController(IGameApplicationService gameService) : ControllerBa
         }
 
         return Ok(result.Value);
-    }
-    
-    private async Task<(GameDto? game, ActionResult? error)> GetAuthorizedGameAsync(string alias, string gameId)
-    {
-        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
-        {
-            return (null, BadRequest("Player alias and game id cannot be null or empty."));
-        }
-
-        var gameResult = await gameService.GetGameAsync(gameId);
-        if (!gameResult.IsSuccess)
-        {
-            return (null, BadRequest(gameResult.Error));
-        }
-
-        if (gameResult.Value.PlayerAlias != alias)
-        {
-            return (null, NotFound());
-        }
-
-        return (gameResult.Value, null);
-    }
-
-    private ActionResult HandleUnitResult(dynamic result)
-    {
-        // result is expected to have IsSuccess and Error members.
-        if (!result.IsSuccess)
-        {
-            return BadRequest(result.Error);
-        }
-
-        return NoContent();
     }
 }
