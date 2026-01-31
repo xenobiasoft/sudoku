@@ -4,67 +4,65 @@ using Sudoku.Application.Interfaces;
 
 namespace Sudoku.Api.Controllers
 {
-    [Route("api/players/{alias}/games/{gameId}/possible-values")]
+    [Route("api/players/{alias}/games/{gameId}")]
     [ApiController]
-    public class PossibleValuesController(IGameApplicationService gameService) : BaseGameController(gameService)
+    public class GameActionsController(IGameApplicationService gameService) : BaseGameController(gameService)
     {
         /// <summary>
-        /// Adds a possible value to a cell
+        /// Updates a game (makes a move)
         /// </summary>
         /// <param name="alias">The player's alias</param>
         /// <param name="gameId">The game id</param>
-        /// <param name="request">The possible value request</param>
+        /// <param name="move">The move to make</param>
         /// <returns>Success or failure result</returns>
-        [HttpPost("")]
+        [HttpPut("")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> AddPossibleValueAsync(string alias, string gameId, [FromBody] PossibleValueRequest request)
+        public async Task<ActionResult> MakeMoveAsync(string alias, string gameId, [FromBody] MoveRequest move)
         {
-            var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
             if (error != null) return error;
 
-            var result = await GameService.AddPossibleValueAsync(gameId, request.Row, request.Column, request.Value);
+            var result = await GameService.MakeMoveAsync(gameId, move.Row, move.Column, move.Value, move.PlayDuration);
             return HandleUnitResult(result);
         }
 
         /// <summary>
-        /// Clears all possible values from a cell
+        /// Resets a game to its initial state
         /// </summary>
         /// <param name="alias">The player's alias</param>
         /// <param name="gameId">The game id</param>
-        /// <param name="request">The cell request</param>
-        /// <returns>Success or failure result</returns>
-        [HttpDelete("clear")]
+        /// <returns>No content if successful</returns>
+        [HttpPost("reset")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> ClearPossibleValuesAsync(string alias, string gameId, [FromBody] CellRequest request)
+        public async Task<ActionResult> ResetGameAsync(string alias, string gameId)
         {
             var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
             if (error != null) return error;
 
-            var result = await GameService.ClearPossibleValuesAsync(gameId, request.Row, request.Column);
+            var result = await GameService.ResetGameAsync(gameId);
             return HandleUnitResult(result);
         }
 
         /// <summary>
-        /// Removes a possible value from a cell
+        /// Undoes the last move in a game
         /// </summary>
         /// <param name="alias">The player's alias</param>
         /// <param name="gameId">The game id</param>
-        /// <param name="request">The possible value request</param>
-        /// <returns>Success or failure result</returns>
-        [HttpDelete("")]
+        /// <returns>No content if successful</returns>
+        [HttpPost("undo")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> RemovePossibleValueAsync(string alias, string gameId, [FromBody] PossibleValueRequest request)
+        public async Task<ActionResult> UndoMoveAsync(string alias, string gameId)
         {
             var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
             if (error != null) return error;
 
-            var result = await GameService.RemovePossibleValueAsync(gameId, request.Row, request.Column, request.Value);
+            var result = await GameService.UndoLastMoveAsync(gameId);
             return HandleUnitResult(result);
         }
     }
