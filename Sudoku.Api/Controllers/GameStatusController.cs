@@ -4,7 +4,7 @@ using Sudoku.Application.Interfaces;
 
 namespace Sudoku.Api.Controllers
 {
-    [Route("api/players/{alias}/games/{gameId}")]
+    [Route("api/players/{alias}/games/{gameId}/status")]
     [ApiController]
     public class GameStatusController(IGameApplicationService gameService) : BaseGameController(gameService)
     {
@@ -17,7 +17,7 @@ namespace Sudoku.Api.Controllers
         /// <returns>An <see cref="ActionResult"/> indicating the result of the operation. Returns 204 No Content if the update is
         /// successful, 400 Bad Request if the input is invalid or the update fails, or 404 Not Found if the game does not
         /// exist or does not belong to the specified player.</returns>
-        [HttpPatch("status/{gameStatus}")]
+        [HttpPatch("{gameStatus}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

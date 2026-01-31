@@ -4,7 +4,7 @@ using Sudoku.Application.Interfaces;
 
 namespace Sudoku.Api.Controllers
 {
-    [Route("api/players/{alias}/games/{gameId}")]
+    [Route("api/players/{alias}/games/{gameId}/actions")]
     [ApiController]
     public class GameActionsController(IGameApplicationService gameService) : BaseGameController(gameService)
     {

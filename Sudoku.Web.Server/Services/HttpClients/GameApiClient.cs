@@ -335,7 +335,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
                 gameId, alias, row, column, value);
             
             var request = new MoveRequest(row, column, value, playDuration);
-            var response = await _httpClient.PutAsJsonAsync($"api/players/{Uri.EscapeDataString(alias)}/games/{Uri.EscapeDataString(gameId)}", request, _jsonOptions);
+            var response = await _httpClient.PutAsJsonAsync($"api/players/{Uri.EscapeDataString(alias)}/games/{Uri.EscapeDataString(gameId)}/actions", request, _jsonOptions);
 
             if (response.IsSuccessStatusCode)
             {
@@ -418,7 +418,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
         {
             _logger.LogInformation("Resetting game {GameId} for player: {Alias}", gameId, alias);
             
-            var response = await _httpClient.PostAsync($"api/players/{Uri.EscapeDataString(alias)}/games/{Uri.EscapeDataString(gameId)}/reset", null);
+            var response = await _httpClient.PostAsync($"api/players/{Uri.EscapeDataString(alias)}/games/{Uri.EscapeDataString(gameId)}/actions/reset", null);
 
             if (response.IsSuccessStatusCode)
             {
@@ -524,7 +524,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
         {
             _logger.LogInformation("Undoing move for game {GameId}, player: {Alias}", gameId, alias);
             
-            var response = await _httpClient.PostAsync($"api/players/{Uri.EscapeDataString(alias)}/games/{Uri.EscapeDataString(gameId)}/undo", null);
+            var response = await _httpClient.PostAsync($"api/players/{Uri.EscapeDataString(alias)}/games/{Uri.EscapeDataString(gameId)}/actions/undo", null);
 
             if (response.IsSuccessStatusCode)
             {
@@ -562,7 +562,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
         {
             _logger.LogInformation("Validating game {GameId} for player: {Alias}", gameId, alias);
             
-            var response = await _httpClient.PostAsync($"api/players/{Uri.EscapeDataString(alias)}/games/{Uri.EscapeDataString(gameId)}/validate", null);
+            var response = await _httpClient.PostAsync($"api/players/{Uri.EscapeDataString(alias)}/games/{Uri.EscapeDataString(gameId)}/status/validate", null);
 
             if (response.IsSuccessStatusCode)
             {
