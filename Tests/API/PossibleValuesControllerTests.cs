@@ -1,24 +1,13 @@
-﻿using DepenMock.XUnit;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Controllers;
 using Sudoku.Api.Models;
 using Sudoku.Application.Common;
 using Sudoku.Application.DTOs;
-using Sudoku.Application.Interfaces;
 
 namespace UnitTests.API;
 
-public class PossibleValuesControllerTests : BaseTestByType<PossibleValuesController>
+public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleValuesController>
 {
-    private readonly Mock<IGameApplicationService> _mockGameService;
-    private readonly PossibleValuesController _sut;
-
-    public PossibleValuesControllerTests()
-    {
-        _mockGameService = Container.ResolveMock<IGameApplicationService>();
-        _sut = ResolveSut();
-    }
-
     #region AddPossibleValueAsync Tests
 
     [Fact]
@@ -30,16 +19,16 @@ public class PossibleValuesControllerTests : BaseTestByType<PossibleValuesContro
         var request = new PossibleValueRequest(1, 1, 5);
         var game = CreateTestGameDto(playerAlias, gameId);
 
-        _mockGameService
+        MockGameService
             .Setup(x => x.GetGameAsync(gameId))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        _mockGameService
+        MockGameService
             .Setup(x => x.AddPossibleValueAsync(gameId, request.Row, request.Column, request.Value))
             .ReturnsAsync(Result.Success());
 
         // Act
-        var result = await _sut.AddPossibleValueAsync(playerAlias, gameId, request);
+        var result = await Sut.AddPossibleValueAsync(playerAlias, gameId, request);
 
         // Assert
         result.Should().BeOfType<NoContentResult>();
@@ -54,7 +43,7 @@ public class PossibleValuesControllerTests : BaseTestByType<PossibleValuesContro
         var request = new PossibleValueRequest(1, 1, 5);
 
         // Act
-        var result = await _sut.AddPossibleValueAsync(emptyAlias, gameId, request);
+        var result = await Sut.AddPossibleValueAsync(emptyAlias, gameId, request);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -69,7 +58,7 @@ public class PossibleValuesControllerTests : BaseTestByType<PossibleValuesContro
         var request = new PossibleValueRequest(1, 1, 5);
 
         // Act
-        var result = await _sut.AddPossibleValueAsync(playerAlias, emptyGameId, request);
+        var result = await Sut.AddPossibleValueAsync(playerAlias, emptyGameId, request);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -84,12 +73,12 @@ public class PossibleValuesControllerTests : BaseTestByType<PossibleValuesContro
         var request = new PossibleValueRequest(1, 1, 5);
         var errorMessage = "Failed to get game";
 
-        _mockGameService
+        MockGameService
             .Setup(x => x.GetGameAsync(gameId))
             .ReturnsAsync(Result<GameDto>.Failure(errorMessage));
 
         // Act
-        var result = await _sut.AddPossibleValueAsync(playerAlias, gameId, request);
+        var result = await Sut.AddPossibleValueAsync(playerAlias, gameId, request);
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -106,12 +95,12 @@ public class PossibleValuesControllerTests : BaseTestByType<PossibleValuesContro
         var request = new PossibleValueRequest(1, 1, 5);
         var game = CreateTestGameDto(differentPlayerAlias, gameId);
 
-        _mockGameService
+        MockGameService
             .Setup(x => x.GetGameAsync(gameId))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
         // Act
-        var result = await _sut.AddPossibleValueAsync(playerAlias, gameId, request);
+        var result = await Sut.AddPossibleValueAsync(playerAlias, gameId, request);
 
         // Assert
         result.Should().BeOfType<NotFoundResult>();
@@ -127,16 +116,16 @@ public class PossibleValuesControllerTests : BaseTestByType<PossibleValuesContro
         var game = CreateTestGameDto(playerAlias, gameId);
         var errorMessage = "Failed to add possible value";
 
-        _mockGameService
+        MockGameService
             .Setup(x => x.GetGameAsync(gameId))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        _mockGameService
+        MockGameService
             .Setup(x => x.AddPossibleValueAsync(gameId, request.Row, request.Column, request.Value))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         // Act
-        var result = await _sut.AddPossibleValueAsync(playerAlias, gameId, request);
+        var result = await Sut.AddPossibleValueAsync(playerAlias, gameId, request);
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -156,16 +145,16 @@ public class PossibleValuesControllerTests : BaseTestByType<PossibleValuesContro
         var request = new CellRequest(1, 1);
         var game = CreateTestGameDto(playerAlias, gameId);
 
-        _mockGameService
+        MockGameService
             .Setup(x => x.GetGameAsync(gameId))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        _mockGameService
+        MockGameService
             .Setup(x => x.ClearPossibleValuesAsync(gameId, request.Row, request.Column))
             .ReturnsAsync(Result.Success());
 
         // Act
-        var result = await _sut.ClearPossibleValuesAsync(playerAlias, gameId, request);
+        var result = await Sut.ClearPossibleValuesAsync(playerAlias, gameId, request);
 
         // Assert
         result.Should().BeOfType<NoContentResult>();
@@ -180,7 +169,7 @@ public class PossibleValuesControllerTests : BaseTestByType<PossibleValuesContro
         var request = new CellRequest(1, 1);
 
         // Act
-        var result = await _sut.ClearPossibleValuesAsync(emptyAlias, gameId, request);
+        var result = await Sut.ClearPossibleValuesAsync(emptyAlias, gameId, request);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -195,7 +184,7 @@ public class PossibleValuesControllerTests : BaseTestByType<PossibleValuesContro
         var request = new CellRequest(1, 1);
 
         // Act
-        var result = await _sut.ClearPossibleValuesAsync(playerAlias, emptyGameId, request);
+        var result = await Sut.ClearPossibleValuesAsync(playerAlias, emptyGameId, request);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -210,12 +199,12 @@ public class PossibleValuesControllerTests : BaseTestByType<PossibleValuesContro
         var request = new CellRequest(1, 1);
         var errorMessage = "Failed to get game";
 
-        _mockGameService
+        MockGameService
             .Setup(x => x.GetGameAsync(gameId))
             .ReturnsAsync(Result<GameDto>.Failure(errorMessage));
 
         // Act
-        var result = await _sut.ClearPossibleValuesAsync(playerAlias, gameId, request);
+        var result = await Sut.ClearPossibleValuesAsync(playerAlias, gameId, request);
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -232,12 +221,12 @@ public class PossibleValuesControllerTests : BaseTestByType<PossibleValuesContro
         var request = new CellRequest(1, 1);
         var game = CreateTestGameDto(differentPlayerAlias, gameId);
 
-        _mockGameService
+        MockGameService
             .Setup(x => x.GetGameAsync(gameId))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
         // Act
-        var result = await _sut.ClearPossibleValuesAsync(playerAlias, gameId, request);
+        var result = await Sut.ClearPossibleValuesAsync(playerAlias, gameId, request);
 
         // Assert
         result.Should().BeOfType<NotFoundResult>();
@@ -253,16 +242,16 @@ public class PossibleValuesControllerTests : BaseTestByType<PossibleValuesContro
         var game = CreateTestGameDto(playerAlias, gameId);
         var errorMessage = "Failed to clear possible values";
 
-        _mockGameService
+        MockGameService
             .Setup(x => x.GetGameAsync(gameId))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        _mockGameService
+        MockGameService
             .Setup(x => x.ClearPossibleValuesAsync(gameId, request.Row, request.Column))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         // Act
-        var result = await _sut.ClearPossibleValuesAsync(playerAlias, gameId, request);
+        var result = await Sut.ClearPossibleValuesAsync(playerAlias, gameId, request);
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -271,25 +260,128 @@ public class PossibleValuesControllerTests : BaseTestByType<PossibleValuesContro
 
     #endregion
 
-    #region Helper Methods
+    #region RemovePossibleValueAsync Tests
 
-    private static GameDto CreateTestGameDto(string playerAlias, string gameId)
+    [Fact]
+    public async Task RemovePossibleValueAsync_WithValidParameters_ReturnsNoContent()
     {
-        var statistics = new GameStatisticsDto(0, 0, 0, TimeSpan.Zero, 0.0);
-        
-        return new GameDto(
-            gameId,
-            playerAlias,
-            "Medium",
-            "InProgress",
-            statistics,
-            DateTime.UtcNow,
-            null,
-            null,
-            null,
-            new List<CellDto>(),
-            new List<MoveHistoryDto>()
-        );
+        // Arrange
+        var playerAlias = "TestPlayer";
+        var gameId = Guid.NewGuid().ToString();
+        var request = new PossibleValueRequest(1, 1, 5);
+        var game = CreateTestGameDto(playerAlias, gameId);
+
+        MockGameService
+            .Setup(x => x.GetGameAsync(gameId))
+            .ReturnsAsync(Result<GameDto>.Success(game));
+
+        MockGameService
+            .Setup(x => x.RemovePossibleValueAsync(gameId, request.Row, request.Column, request.Value))
+            .ReturnsAsync(Result.Success());
+
+        // Act
+        var result = await Sut.RemovePossibleValueAsync(playerAlias, gameId, request);
+
+        // Assert
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task RemovePossibleValueAsync_WithEmptyAlias_ReturnsBadRequest()
+    {
+        // Arrange
+        var emptyAlias = string.Empty;
+        var gameId = Guid.NewGuid().ToString();
+        var request = new PossibleValueRequest(1, 1, 5);
+
+        // Act
+        var result = await Sut.RemovePossibleValueAsync(emptyAlias, gameId, request);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [Fact]
+    public async Task RemovePossibleValueAsync_WithEmptyGameId_ReturnsBadRequest()
+    {
+        // Arrange
+        var playerAlias = "TestPlayer";
+        var emptyGameId = string.Empty;
+        var request = new PossibleValueRequest(1, 1, 5);
+
+        // Act
+        var result = await Sut.RemovePossibleValueAsync(playerAlias, emptyGameId, request);
+
+        // Assert
+        result.Should().BeOfType<BadRequestObjectResult>();
+    }
+
+    [Fact]
+    public async Task RemovePossibleValueAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
+    {
+        // Arrange
+        var playerAlias = "TestPlayer";
+        var gameId = Guid.NewGuid().ToString();
+        var request = new PossibleValueRequest(1, 1, 5);
+        var errorMessage = "Failed to get game";
+
+        MockGameService
+            .Setup(x => x.GetGameAsync(gameId))
+            .ReturnsAsync(Result<GameDto>.Failure(errorMessage));
+
+        // Act
+        var result = await Sut.RemovePossibleValueAsync(playerAlias, gameId, request);
+
+        // Assert
+        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+        badRequestResult.Value.Should().Be(errorMessage);
+    }
+
+    [Fact]
+    public async Task RemovePossibleValueAsync_WhenGameBelongsToAnotherPlayer_ReturnsNotFound()
+    {
+        // Arrange
+        var playerAlias = "TestPlayer";
+        var gameId = Guid.NewGuid().ToString();
+        var differentPlayerAlias = "OtherPlayer";
+        var request = new PossibleValueRequest(1, 1, 5);
+        var game = CreateTestGameDto(differentPlayerAlias, gameId);
+
+        MockGameService
+            .Setup(x => x.GetGameAsync(gameId))
+            .ReturnsAsync(Result<GameDto>.Success(game));
+
+        // Act
+        var result = await Sut.RemovePossibleValueAsync(playerAlias, gameId, request);
+
+        // Assert
+        result.Should().BeOfType<NotFoundResult>();
+    }
+
+    [Fact]
+    public async Task RemovePossibleValueAsync_WhenRemovePossibleValueFails_ReturnsBadRequest()
+    {
+        // Arrange
+        var playerAlias = "TestPlayer";
+        var gameId = Guid.NewGuid().ToString();
+        var request = new PossibleValueRequest(1, 1, 5);
+        var game = CreateTestGameDto(playerAlias, gameId);
+        var errorMessage = "Failed to remove possible value";
+
+        MockGameService
+            .Setup(x => x.GetGameAsync(gameId))
+            .ReturnsAsync(Result<GameDto>.Success(game));
+
+        MockGameService
+            .Setup(x => x.RemovePossibleValueAsync(gameId, request.Row, request.Column, request.Value))
+            .ReturnsAsync(Result.Failure(errorMessage));
+
+        // Act
+        var result = await Sut.RemovePossibleValueAsync(playerAlias, gameId, request);
+
+        // Assert
+        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+        badRequestResult.Value.Should().Be(errorMessage);
     }
 
     #endregion
