@@ -82,7 +82,6 @@ public class Program
             if (!app.Environment.IsDevelopment())
             {
                 logger.LogInformation("Configuring exception handler and HSTS for production environment.");
-                app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
 
