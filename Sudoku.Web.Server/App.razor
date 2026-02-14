@@ -1,14 +1,49 @@
-﻿@using Sudoku.Web.Server.Shared
-<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <ApplicationInsightsInit />
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
-        <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
-    </Found>
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+﻿@inject IConfiguration Config
+@using Sudoku.Web.Server.Shared
+@using Sudoku.Web.Server.Components
+@using Microsoft.AspNetCore.Components.Web
+
+@{
+    var gaId = Config["GA_MEASUREMENT_ID"];
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XenobiaSoft Sudoku</title>
+    <meta name="description" content="A modern, full-featured Sudoku game with multiple difficulty levels" />
+    <base href="/" />
+
+    <!-- Standard Stylesheets -->
+    <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="css/site.css" rel="stylesheet" />
+    <link href="Sudoku.Web.Server.styles.css" rel="stylesheet" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+
+    @if (!string.IsNullOrWhiteSpace(gaId))
+    {
+        <script async src="https://www.googletagmanager.com/gtag/js?id=@gaId"></script>
+        <script>
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '@gaId');
+        </script>
+    }
+    <HeadOutlet @rendermode="@RenderModeForPage" />
+</head>
+<body>
+    <Routes @rendermode="@RenderModeForPage" />
+
+    <script src="_framework/blazor.web.js"></script>
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+</body>
+</html>
+
+@code {
+    private IComponentRenderMode RenderModeForPage => RenderMode.InteractiveServer;
+}
