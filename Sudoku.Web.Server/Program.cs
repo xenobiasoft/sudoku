@@ -36,8 +36,8 @@ public class Program
                 builder.Configuration.AddAzureKeyVault(new Uri(vaultUri), new DefaultAzureCredential());
             }
 
-            builder.Services.AddRazorPages();
-            builder.Services.AddServerSideBlazor();
+            builder.Services.AddRazorComponents()
+                .AddInteractiveServerComponents();
             builder.Services.AddHealthChecks();
 
             // Get Application Insights connection string
@@ -90,10 +90,11 @@ public class Program
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseAntiforgery();
 
             logger.LogInformation("Mapping endpoints.");
-            app.MapBlazorHub();
-            app.MapFallbackToPage("/_Host");
+            app.MapRazorComponents<App>()
+                .AddInteractiveServerRenderMode();
             app.MapHealthChecks("/health-check");
 
             logger.LogInformation("Starting the application.");
