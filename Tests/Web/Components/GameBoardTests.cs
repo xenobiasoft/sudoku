@@ -8,7 +8,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Web.Components;
 
-public class GameBoardTests : TestContext
+public class GameBoardTests : BunitContext
 {
     private readonly Mock<INotificationService> _mockNotificationService = new();
 

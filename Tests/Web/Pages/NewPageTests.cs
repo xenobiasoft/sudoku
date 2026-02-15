@@ -7,7 +7,7 @@ using Sudoku.Web.Server.Services.Abstractions;
 
 namespace UnitTests.Web.Pages;
 
-public class NewPageTests : TestContext
+public class NewPageTests : BunitContext
 {
     private readonly Mock<IGameManager>? _mockGameManager;
 

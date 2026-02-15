@@ -5,7 +5,7 @@ using Sudoku.Web.Server.Services.Abstractions;
 
 namespace UnitTests.Web.Components;
 
-public class GameControlsTests : TestContext
+public class GameControlsTests : BunitContext
 {
     private readonly Mock<IGameManager> _mockGameStateManager = new();
 

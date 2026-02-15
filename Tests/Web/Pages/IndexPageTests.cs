@@ -7,7 +7,7 @@ using IndexPage = Sudoku.Web.Server.Pages.Index;
 
 namespace UnitTests.Web.Pages;
 
-public class IndexPageTests : TestContext
+public class IndexPageTests : BunitContext
 {
     private const string Alias = "test-alias";
     private readonly Mock<IGameManager> _mockGameManager = new();

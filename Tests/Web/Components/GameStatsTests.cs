@@ -5,7 +5,7 @@ using Sudoku.Web.Server.Services.Abstractions;
 
 namespace UnitTests.Web.Components;
 
-public class GameStatsTests : TestContext
+public class GameStatsTests : BunitContext
 {
     private readonly Mock<IGameTimer> _mockTimer;
     private readonly Mock<IGameStatisticsManager> _mockGameStatsManager;

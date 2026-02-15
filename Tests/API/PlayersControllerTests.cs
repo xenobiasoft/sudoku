@@ -1,5 +1,4 @@
-﻿using DepenMock.XUnit;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Controllers;
 using Sudoku.Api.Models;
 using Sudoku.Application.Common;

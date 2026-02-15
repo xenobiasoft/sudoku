@@ -12,7 +12,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Web.Pages;
 
-public class GamePageTests : TestContext
+public class GamePageTests : BunitContext
 {
     private const string Alias = "test-alias";
     private const string PuzzleId = "test-puzzleId";
