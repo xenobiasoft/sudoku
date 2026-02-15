@@ -8,7 +8,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Web.Components;
 
-public class CellInputTests : TestContext
+public class CellInputTests : BunitContext
 {
     private readonly Mock<INotificationService> _mockNotificationService = new();
 

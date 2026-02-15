@@ -4,7 +4,7 @@ using Sudoku.Web.Server.Components;
 
 namespace UnitTests.Web.Components;
 
-public class VictoryDisplayTests : TestContext
+public class VictoryDisplayTests : BunitContext
 {
     private readonly Mock<NavigationManager> _mockNavigationManager = new();
 

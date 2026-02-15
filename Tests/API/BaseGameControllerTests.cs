@@ -1,4 +1,4 @@
-﻿using DepenMock.XUnit;
+﻿using DepenMock.XUnit.V3;
 using Sudoku.Application.DTOs;
 using Sudoku.Application.Interfaces;
 
