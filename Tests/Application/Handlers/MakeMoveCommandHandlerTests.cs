@@ -1,4 +1,5 @@
-using DepenMock.XUnit;
+using DepenMock.Attributes;
+using DepenMock.XUnit.V3.Attributes;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
 using Sudoku.Application.Handlers;
@@ -8,6 +9,9 @@ using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 namespace UnitTests.Application.Handlers;
 
+using LogOutput = DepenMock.XUnit.V3.Attributes.LogOutputAttribute;
+
+[LogOutput(LogOutputTiming.Always)]
 public class MakeMoveCommandHandlerTests : BaseTestByAbstraction<MakeMoveCommandHandler, ICommandHandler<MakeMoveCommand>>
 {
     private readonly Mock<IGameRepository> _mockGameRepository;

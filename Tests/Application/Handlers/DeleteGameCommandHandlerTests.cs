@@ -1,4 +1,5 @@
-using DepenMock.XUnit;
+using DepenMock.Attributes;
+using DepenMock.XUnit.V3.Attributes;
 using Microsoft.Extensions.Logging;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
@@ -6,9 +7,11 @@ using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
 using Handler = Sudoku.Application.Handlers.DeleteGameCommandHandler;
+using LogOutput = DepenMock.XUnit.V3.Attributes.LogOutputAttribute;
 
 namespace UnitTests.Application.Handlers;
 
+[LogOutput(LogOutputTiming.Always)]
 public class DeleteGameCommandHandlerTests : BaseTestByAbstraction<Handler, ICommandHandler<DeleteGameCommand>>
 {
     private readonly Mock<IGameRepository> _mockGameRepository;

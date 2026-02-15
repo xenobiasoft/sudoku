@@ -1,4 +1,3 @@
-using DepenMock.XUnit;
 using MediatR;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;

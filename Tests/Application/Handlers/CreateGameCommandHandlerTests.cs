@@ -1,4 +1,5 @@
-using DepenMock.XUnit;
+using DepenMock.Attributes;
+using DepenMock.XUnit.V3.Attributes;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
 using Sudoku.Application.Handlers;
@@ -6,9 +7,11 @@ using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
+using LogOutput = DepenMock.XUnit.V3.Attributes.LogOutputAttribute;
 
 namespace UnitTests.Application.Handlers;
 
+[LogOutput(LogOutputTiming.Always)]
 public class CreateGameCommandHandlerTests : BaseTestByAbstraction<CreateGameCommandHandler, ICommandHandler<CreateGameCommand>>
 {
     private readonly Mock<IGameRepository> _mockGameRepository;
