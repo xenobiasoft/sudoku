@@ -1,7 +1,5 @@
 ﻿@inject IConfiguration Config
-@using Sudoku.Web.Server.Shared
 @using Sudoku.Web.Server.Components
-@using Microsoft.AspNetCore.Components.Web
 
 @{
     var gaId = Config["GA_MEASUREMENT_ID"];
@@ -34,7 +32,7 @@
               gtag('config', '@gaId');
         </script>
     }
-    <HeadOutlet @rendermode="@RenderModeForPage" />
+    <HeadOutlet />
 </head>
 <body>
     <Routes @rendermode="@RenderModeForPage" />

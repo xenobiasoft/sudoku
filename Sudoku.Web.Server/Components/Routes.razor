@@ -1,18 +1,11 @@
-@using Microsoft.AspNetCore.Components.Routing
 @using Sudoku.Web.Server.Shared
+@using Sudoku.Web.Server.Pages
 
-<Router AppAssembly="@typeof(Routes).Assembly">
+<Router AppAssembly="@typeof(Routes).Assembly" NotFoundPage="@typeof(Error)">
     <Found Context="routeData">
-        <ApplicationInsightsInit />
         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
         <FocusOnNavigate RouteData="@routeData" Selector="h1"/>
     </Found>
-    <NotFound>
-        <PageTitle>Not found</PageTitle>
-        <LayoutView Layout="@typeof(MainLayout)">
-            <p role="alert">Sorry, there's nothing at this address.</p>
-        </LayoutView>
-    </NotFound>
 </Router>
 
 <div id="blazor-error-ui">
