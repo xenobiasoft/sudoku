@@ -5,11 +5,7 @@ using Sudoku.Infrastructure.Configuration;
 
 namespace Sudoku.Infrastructure.Services;
 
-public class CosmosDbService(
-    CosmosClient cosmosClient,
-    IOptions<CosmosDbOptions> options,
-    ILogger<CosmosDbService> logger)
-    : ICosmosDbService
+public class CosmosDbService(CosmosClient cosmosClient, IOptions<CosmosDbOptions> options, ILogger<CosmosDbService> logger) : ICosmosDbService
 {
     private readonly CosmosDbOptions _options = options.Value;
 
@@ -186,16 +182,11 @@ public class CosmosDbService(
     {
         logger.LogInformation("Ensuring CosmosDB database and container exist at endpoint URI: {Endpoint}", cosmosClient.Endpoint);
 
-        var database = await cosmosClient.CreateDatabaseIfNotExistsAsync(
-            _options.DatabaseName,
-            throughput: 400);
+        var database = await cosmosClient.CreateDatabaseIfNotExistsAsync(_options.DatabaseName, throughput: 400);
 
         logger.LogInformation("Database {DatabaseName} ensured", _options.DatabaseName);
 
-        var containerProperties = new ContainerProperties(
-            id: _options.ContainerName,
-            partitionKeyPath: "/gameId"
-        );
+        var containerProperties = new ContainerProperties(id: _options.ContainerName, partitionKeyPath: "/gameId");
 
         await database.Database.CreateContainerIfNotExistsAsync(containerProperties);
 
