@@ -59,7 +59,6 @@ public class Program
                     .AddApplicationInsightsTelemetry(new ApplicationInsightsServiceOptions
                     {
                         ConnectionString = appInsightsConnectionString,
-                        EnableAdaptiveSampling = false,
                         EnableQuickPulseMetricStream = true
                     });
 
@@ -94,6 +93,7 @@ public class Program
             logger.LogInformation("Mapping endpoints.");
             app.MapRazorComponents<App>()
                 .AddInteractiveServerRenderMode();
+
             app.MapHealthChecks("/health-check");
 
             logger.LogInformation("Starting the application.");

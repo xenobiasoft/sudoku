@@ -1,0 +1,47 @@
+@page "/error"
+
+<PageTitle>Error</PageTitle>
+
+<div class="main">
+    <div class="content px-4">
+        <h1 class="text-danger">Error</h1>
+        <h2 class="text-danger">An error occurred while processing your request.</h2>
+
+        <p>We're sorry, but something went wrong. Please try again later.</p>
+
+        @if (ShowRequestId)
+        {
+            <p>
+                <strong>Request ID:</strong> <code>@RequestId</code>
+            </p>
+        }
+
+        @if (ShowExceptionDetails && !string.IsNullOrEmpty(ErrorMessage))
+        {
+            <div class="alert alert-warning mt-4">
+                <h3>Development Mode - Error Details</h3>
+                <p><strong>Error Message:</strong></p>
+                <p class="text-break">@ErrorMessage</p>
+                
+                @if (!string.IsNullOrEmpty(ExceptionDetails))
+                {
+                    <details class="mt-3">
+                        <summary><strong>Exception Stack Trace</strong></summary>
+                        <pre class="mt-2">@ExceptionDetails</pre>
+                    </details>
+                }
+            </div>
+            
+            <div class="alert alert-info mt-3">
+                <p>
+                    <strong>Note:</strong> This detailed error information is only visible in Development mode.
+                    The Development environment shouldn't be enabled for deployed applications as it can result in displaying sensitive information to end users.
+                </p>
+            </div>
+        }
+
+        <div class="mt-4">
+            <a href="/" class="btn btn-primary">Go to Home</a>
+        </div>
+    </div>
+</div>
