@@ -66,10 +66,7 @@ public class Program
                 builder.Logging
                     .AddApplicationInsights(
                         configureTelemetryConfiguration: (config) => config.ConnectionString = appInsightsConnectionString,
-                        configureApplicationInsightsLoggerOptions: (options) => { })
-                    .AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>("", LogLevel.Information)
-                    .AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>("Microsoft.AspNetCore", LogLevel.Warning)
-                    .AddFilter<Microsoft.Extensions.Logging.ApplicationInsights.ApplicationInsightsLoggerProvider>("System", LogLevel.Warning);
+                        configureApplicationInsightsLoggerOptions: (options) => { });
             }
 
             var app = builder.Build();
