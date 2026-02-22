@@ -42,18 +42,14 @@ public class PlayerApiClient(HttpClient httpClient, ILogger<PlayerApiClient> log
             if (response.IsSuccessStatusCode)
             {
                 var createdAlias = await response.Content.ReadAsStringAsync();
-                // Remove quotes if the response is a JSON string
-                createdAlias = JsonSerializer.Deserialize<string>(createdAlias) ?? createdAlias.Trim('"');
                 
                 _logger.LogInformation("Player created successfully with alias: {Alias}", createdAlias);
                 return ApiResult<string>.Success(createdAlias);
             }
-            else
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                _logger.LogWarning("Failed to create player. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
-                return ApiResult<string>.Failure($"Failed to create player: {error}");
-            }
+
+            var error = await response.Content.ReadAsStringAsync();
+            _logger.LogWarning("Failed to create player. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
+            return ApiResult<string>.Failure($"Failed to create player: {error}");
         }
         catch (Exception ex)
         {

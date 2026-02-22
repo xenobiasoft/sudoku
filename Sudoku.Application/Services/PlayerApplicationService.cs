@@ -8,6 +8,9 @@ namespace Sudoku.Application.Services;
 
 public class PlayerApplicationService(IGameRepository gameRepository, ILogger<PlayerApplicationService> logger) : IPlayerApplicationService
 {
+    private static readonly string[] Adjectives = ["Swift", "Clever", "Brave", "Witty", "Silent", "Happy"];
+    private static readonly string[] Animals = ["Tiger", "Elephant", "Giraffe", "Otter", "Falcon", "Panther"];
+
     public async Task<Result<string>> CreatePlayerAsync(string? alias = null)
     {
         try
@@ -97,10 +100,11 @@ public class PlayerApplicationService(IGameRepository gameRepository, ILogger<Pl
     
     private string GenerateRandomAlias()
     {
-        // Generate a random player alias with a prefix and a random number
-        var random = new Random();
-        var prefix = "Player";
-        var randomNumber = random.Next(1000, 10000);
-        return $"{prefix}{randomNumber}";
+        var rnd = Random.Shared;
+        var adjective = Adjectives[rnd.Next(Adjectives.Length)];
+        var animal = Animals[rnd.Next(Animals.Length)];
+        var number = rnd.Next(10, 100);
+
+        return $"{adjective}{animal}{number}";
     }
 }
