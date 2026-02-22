@@ -1,0 +1,68 @@
+﻿.loading-container {
+    text-align: center;
+    margin-top: 4rem;
+}
+
+.sudoku-loader {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+    .sudoku-loader span {
+        font-size: 2rem;
+        font-weight: bold;
+        animation: bounceFade 1.4s infinite;
+        opacity: 0.3;
+        transform: translateY(0);
+    }
+
+        /* Delay each digit slightly */
+        .sudoku-loader span:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .sudoku-loader span:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .sudoku-loader span:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .sudoku-loader span:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .sudoku-loader span:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        .sudoku-loader span:nth-child(6) {
+            animation-delay: 0.5s;
+        }
+
+        .sudoku-loader span:nth-child(7) {
+            animation-delay: 0.6s;
+        }
+
+        .sudoku-loader span:nth-child(8) {
+            animation-delay: 0.7s;
+        }
+
+        .sudoku-loader span:nth-child(9) {
+            animation-delay: 0.8s;
+        }
+
+@keyframes bounceFade {
+    0%, 100% {
+        transform: translateY(0);
+        opacity: 0.3;
+    }
+
+    50% {
+        transform: translateY(-10px);
+        opacity: 1;
+    }
+}

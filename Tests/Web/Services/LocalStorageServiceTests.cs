@@ -1,9 +1,7 @@
-﻿using System.Text.Json;
-using DepenMock.XUnit;
-using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services;
-using Sudoku.Web.Server.Services.Abstractions;
-using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.ILocalStorageService;
+﻿using Sudoku.Blazor.Models;
+using Sudoku.Blazor.Services;
+using Sudoku.Blazor.Services.Abstractions;
+using System.Text.Json;
 
 namespace UnitTests.Web.Services;
 

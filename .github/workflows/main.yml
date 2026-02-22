@@ -63,7 +63,7 @@ jobs:
           path: TestResults/*.trx
 
       - name: Publish Web Server
-        run: dotnet publish Sudoku.Web.Server/Sudoku.Web.Server.csproj --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} --no-restore
+        run: dotnet publish Sudoku.Blazor/Sudoku.Blazor.csproj --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} --no-restore
 
       - name: Publish API
         run: dotnet publish Sudoku.Api/Sudoku.Api.csproj --configuration Release --output ${{ env.AZURE_API_PACKAGE_PATH }} --no-restore
@@ -81,15 +81,6 @@ jobs:
           app-name: ${{ env.AZURE_API_NAME }}
           publish-profile: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
           package: ${{ env.AZURE_API_PACKAGE_PATH }}
-
-      - name: Configure GA Measurement Id in App Settings
-        uses: azure/appservice-settings@v1
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          app-settings-json: |
-            [
-              { "name": "GA_MEASUREMENT_ID", "value": "${{ secrets.GA_MEASUREMENT_ID }}", "slotSetting": false }
-            ]
 
       - name: Deploy Bicep template
         uses: azure/arm-deploy@v2

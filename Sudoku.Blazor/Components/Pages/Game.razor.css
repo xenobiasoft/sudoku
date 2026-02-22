@@ -1,0 +1,18 @@
+﻿.game-view {
+    margin: 0 auto;
+    max-width: 430px;
+}
+
+.success-message {
+    left: 25%;
+    position: absolute;
+    top: 55%;
+}
+
+    .success-message span {
+        color: #007AC3;
+        font-family: cursive;
+        font-size: 3em;
+        font-style: italic;
+        font-weight: bold;
+    }

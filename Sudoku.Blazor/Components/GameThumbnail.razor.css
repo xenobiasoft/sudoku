@@ -1,0 +1,60 @@
+﻿.saved-game-card {
+    align-items: center;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: row;
+}
+
+.sudoku-thumbnail {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: grid;
+    font-size: 0.5rem;
+    grid-template-columns: repeat(9, 1fr);
+    grid-template-rows: repeat(9, 1fr);
+    height: 120px;
+    min-height: 120px;
+    min-width: 120px;
+    width: 120px;
+}
+
+    .sudoku-thumbnail:hover {
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+.cell {
+    align-items: center;
+    aspect-ratio: 1 / 1;
+    border: 1px solid #ddd;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .sudoku-thumbnail {
+        font-size: 0.7rem;
+        height: 150px;
+        min-height: 150px;
+        min-width: 150px;
+        width: 150px;
+    }
+}
+
+button {
+    background-color: transparent;
+    border: none;
+}
+
+.del-game-icon {
+    color: #e63946;
+    cursor: pointer;
+    font-size: 1.2rem;
+    margin-left: 0.5rem;
+}
+
+    .del-game-icon:hover {
+        color: #d62839;
+    }

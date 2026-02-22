@@ -1,0 +1,42 @@
+@inherits ErrorBoundary
+
+@if (CurrentException is not null)
+{
+    <div class="blazor-error-boundary">
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">Failed to Generate Puzzle</h4>
+            <p>We encountered an error while creating your new game. Please try again or select a different difficulty level.</p>
+            
+            @if (ShowExceptionDetails)
+            {
+                <hr>
+                <details>
+                    <summary>Error Details (Development Mode)</summary>
+                    <pre class="mt-2">@CurrentException.ToString()</pre>
+                </details>
+            }
+            
+            <div class="mt-3">
+                <button class="btn btn-primary" @onclick="Recover">Try Again</button>
+                <a href="/" class="btn btn-secondary">Back to Menu</a>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @ChildContent
+}
+
+@code {
+    [Inject] private IWebHostEnvironment Environment { get; set; } = default!;
+    [Inject] private ILogger<NewGameErrorBoundary> Logger { get; set; } = default!;
+
+    private bool ShowExceptionDetails => Environment.IsDevelopment();
+
+    protected override Task OnErrorAsync(Exception exception)
+    {
+        Logger.LogError(exception, "Error boundary caught exception while generating new game");
+        return base.OnErrorAsync(exception);
+    }
+}

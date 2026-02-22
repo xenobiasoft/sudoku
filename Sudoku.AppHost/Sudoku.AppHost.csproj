@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sudoku.Api\Sudoku.Api.csproj" />
-    <ProjectReference Include="..\Sudoku.Web.Server\Sudoku.Web.Server.csproj" />
+    <ProjectReference Include="..\Sudoku.Blazor\Sudoku.Blazor.csproj" />
   </ItemGroup>
 
 </Project>

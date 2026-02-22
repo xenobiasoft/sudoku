@@ -1,7 +1,6 @@
-﻿using Sudoku.Domain.Enums;
+﻿using Sudoku.Blazor.Models;
+using Sudoku.Blazor.Services;
 using Sudoku.Domain.ValueObjects;
-using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services;
 
 namespace UnitTests.Helpers.Factories;
 

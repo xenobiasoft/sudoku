@@ -1,8 +1,6 @@
-using DepenMock.XUnit;
-using Sudoku.Web.Server.Services;
-using Sudoku.Web.Server.Services.HttpClients;
-using ILocalStorageService = Sudoku.Web.Server.Services.Abstractions.ILocalStorageService;
-using IPlayerManager = Sudoku.Web.Server.Services.Abstractions.IPlayerManager;
+using Sudoku.Blazor.Services;
+using Sudoku.Blazor.Services.Abstractions;
+using Sudoku.Blazor.Services.HttpClients;
 
 namespace UnitTests.Web.Services;
 

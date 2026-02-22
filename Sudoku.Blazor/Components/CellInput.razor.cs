@@ -1,0 +1,86 @@
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
+using Sudoku.Blazor.EventArgs;
+using Sudoku.Blazor.Helpers;
+using Sudoku.Blazor.Models;
+using Sudoku.Blazor.Services.Abstractions;
+
+namespace Sudoku.Blazor.Components;
+
+public partial class CellInput : IDisposable
+{
+    [Inject] private INotificationService? NotificationService { get; set; }
+
+    [Parameter] public bool IsPencilMode { get; set; }
+    [Parameter] public CellModel Cell { get; set; } = new();
+    [Parameter] public EventCallback<CellModel> OnCellFocus { get; set; }
+    [Parameter] public EventCallback<CellChangedEventArgs> OnCellChanged { get; set; }
+    [Parameter] public EventCallback<CellPossibleValueChangedEventArgs> OnPossibleValueChanged { get; set; }
+    [Parameter] public GameModel? CurrentGame { get; set; }
+
+    private string CssClass { get; set; } = string.Empty;
+
+    private ElementReference _element;
+
+    protected override void OnInitialized()
+    {
+        NotificationService!.SetCellFocus += HandleCellSetFocus;
+        NotificationService!.InvalidCellsNotified += HandleInvalidCells;
+    }
+
+    private void HandleInvalidCells(object? sender, IEnumerable<CellModel> e)
+    {
+        CssClass = e.Contains(Cell) ? "invalid" : string.Empty;
+    }
+
+    private void HandleCellSetFocus(object? sender, CellModel e)
+    {
+        if (Cell == e)
+        {
+            _element.FocusAsync();
+        }
+
+        CssClass = ShouldHighlight(e) ? "highlight" : string.Empty;
+    }
+
+    private void OnFocus()
+    {
+        OnCellFocus.InvokeAsync(Cell);
+        NotificationService!.NotifyCellFocused(Cell);
+    }
+
+    public void Dispose()
+    {
+        NotificationService!.SetCellFocus -= HandleCellSetFocus;
+        NotificationService!.InvalidCellsNotified -= HandleInvalidCells;
+    }
+
+    private bool ShouldHighlight(CellModel? cell)
+    {
+        return cell != null &&
+               (Cell.Row == cell.Row ||
+               Cell.Column == cell.Column ||
+               Cell.IsInSameMiniGrid(cell));
+    }
+
+    private async Task KeyPressAsync(KeyboardEventArgs e)
+    {
+        int.TryParse(e.Key, out var cellValue);
+
+        if (cellValue != Cell.Value)
+        {
+
+            if (IsPencilMode)
+            {
+                await OnPossibleValueChanged.InvokeAsync(
+                    new CellPossibleValueChangedEventArgs(Cell.Row, Cell.Column, cellValue));
+            }
+            else
+            {
+                Cell.Value = cellValue;
+                Cell.PossibleValues = [];
+                await OnCellChanged.InvokeAsync(new CellChangedEventArgs(Cell));
+            }
+        }
+    }
+}

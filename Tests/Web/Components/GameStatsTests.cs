@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using Sudoku.Web.Server.Components;
-using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services.Abstractions;
+using Sudoku.Blazor.Components;
+using Sudoku.Blazor.Models;
+using Sudoku.Blazor.Services.Abstractions;
 
 namespace UnitTests.Web.Components;
 

@@ -1,0 +1,40 @@
+using Sudoku.Blazor.Models;
+using Sudoku.Blazor.Services.Abstractions;
+
+namespace Sudoku.Blazor.Services;
+
+/// <summary>
+/// Unified notification service that combines all game-related notifications
+/// </summary>
+public class NotificationService : INotificationService
+{
+    // Game notifications
+    public event Action? GameStarted;
+    public event Action? GameEnded;
+
+    public void NotifyGameStarted()
+    {
+        GameStarted?.Invoke();
+    }
+
+    public void NotifyGameEnded()
+    {
+        GameEnded?.Invoke();
+    }
+
+    // Cell focus notifications
+    public event EventHandler<CellModel>? SetCellFocus;
+
+    public void NotifyCellFocused(CellModel cell)
+    {
+        SetCellFocus?.Invoke(this, cell);
+    }
+
+    // Invalid cell notifications
+    public event EventHandler<IEnumerable<CellModel>>? InvalidCellsNotified;
+
+    public void NotifyInvalidCells(IEnumerable<CellModel> invalidCells)
+    {
+        InvalidCellsNotified?.Invoke(this, invalidCells);
+    }
+}

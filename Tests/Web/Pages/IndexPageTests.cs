@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services.Abstractions;
-using IndexPage = Sudoku.Web.Server.Pages.Index;
+using Sudoku.Blazor.Models;
+using Sudoku.Blazor.Services.Abstractions;
+using IndexPage = Sudoku.Blazor.Components.Pages.Index;
 
 namespace UnitTests.Web.Pages;
 
@@ -32,7 +32,7 @@ public class IndexPageTests : BunitContext
         
         // Add logger mocks
         Services.AddSingleton(new Mock<ILogger<IndexPage>>().Object);
-        Services.AddSingleton(new Mock<ILogger<Sudoku.Web.Server.Components.IndexErrorBoundary>>().Object);
+        Services.AddSingleton(new Mock<ILogger<Sudoku.Blazor.Components.IndexErrorBoundary>>().Object);
     }
 
     [Fact]

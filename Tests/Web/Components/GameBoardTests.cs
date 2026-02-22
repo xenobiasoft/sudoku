@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Sudoku.Blazor;
+using Sudoku.Blazor.Components;
+using Sudoku.Blazor.EventArgs;
+using Sudoku.Blazor.Services.Abstractions;
 using Sudoku.Domain.ValueObjects;
-using Sudoku.Web.Server.Components;
-using Sudoku.Web.Server.EventArgs;
-using Sudoku.Web.Server.Services.Abstractions;
 using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Web.Components;

@@ -1,0 +1,30 @@
+﻿<div class="mat-layout-grid-cell">
+    <div class="btn-toolbar" role="toobar">
+        <div class="number-panel" role="group">
+            @for (var i = 1; i <= 9; i++)
+            {
+                var num = i;
+                <button type="button" id="@($"btn{num}")" class="btn btn-primary btn-num" @onclick="() => SetValue(num)">
+                    <i class="fa-solid fa-@i"></i>
+                </button>
+            }
+            <button type="button" id="btnErase" class="btn btn-primary btn-num" @onclick="() => SetValue(null)">
+                <i class="fa-solid fa-eraser"></i>
+            </button>
+        </div>
+        <div class="btn-panel" role="group">
+            <button type="button" id="btnHome" class="btn btn-primary" @onclick="Home">
+                Main Menu <i class="fa-solid fa-home"></i>
+            </button>
+            <button type="button" id="btnUndo" class="btn btn-primary" @onclick="Undo" disabled="@(TotalMoves == 0)">
+                Undo <i class="fa-solid fa-undo"></i>
+            </button>
+            <button type="button" id="btnReset" class="btn btn-primary" @onclick="Reset" disabled="@(TotalMoves == 0)">
+                Reset <i class="fa-solid fa-refresh"></i>
+            </button>
+            <button type="button" id="btnPencilMode" class="btn @(IsPencilMode ? "btn-primary" : "btn-outline-primary")" @onclick="TogglePencilMode">
+                Possible Values <i class="fa-solid fa-pencil"></i>
+            </button>
+        </div>
+    </div>
+</div>

@@ -18,7 +18,7 @@ public class PlayersControllerTests : BaseTestByType<PlayersController>
     }
 
     [Fact]
-    public async Task CreatePlayerAsync_WhenServiceReturnsSuccess_ReturnsCreatedAtAction()
+    public async Task CreatePlayerAsync_WhenServiceReturnsSuccess_ReturnsCreatedAlias()
     {
         // Arrange
         var generatedAlias = "HappyTiger42";
@@ -30,10 +30,8 @@ public class PlayersControllerTests : BaseTestByType<PlayersController>
         var result = await _sut.CreatePlayerAsync();
 
         // Assert
-        var createdAtActionResult = result.Result.Should().BeOfType<CreatedAtActionResult>().Subject;
-        createdAtActionResult.ActionName.Should().Be(nameof(PlayersController.PlayerExistsAsync));
-        createdAtActionResult.RouteValues.Should().ContainKey("alias").WhoseValue.Should().Be(generatedAlias);
-        createdAtActionResult.Value.Should().Be(generatedAlias);
+        var actionResults = result.Result.Should().BeOfType<ObjectResult>().Subject;
+        actionResults.Value.Should().Be(generatedAlias);
     }
 
     [Fact]
