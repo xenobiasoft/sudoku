@@ -12,9 +12,9 @@ Sudoku.sln
 ├── Sudoku.Api/              # REST API
 ├── Sudoku.AppHost/          # Application orchestration/hosting
 ├── Sudoku.Application/      # Application use cases and orchestration
+├── Sudoku.Blazor/			 # Blazor Server web UI
 ├── Sudoku.Domain/           # Core domain logic and business rules
 ├── Sudoku.Infrastructure/   # Infrastructure (storage, external APIs)
-├── Sudoku.Web.Server/       # Blazor Server web UI
 └── Tests/                   # Unit and integration tests
 ```
 
