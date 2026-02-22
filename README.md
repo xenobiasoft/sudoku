@@ -62,7 +62,7 @@ dotnet build
 To run the Blazor Server app locally:
 
 ```bash
-dotnet run --project Sudoku.Web.Server
+dotnet run --project Sudoku.Blazor
 ```
 
 The app will be available at `https://localhost:5001` (or as indicated in the console output).
