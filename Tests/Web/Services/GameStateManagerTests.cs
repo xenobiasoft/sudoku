@@ -1,8 +1,7 @@
-﻿using DepenMock.XUnit;
-using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services;
-using Sudoku.Web.Server.Services.Abstractions;
-using Sudoku.Web.Server.Services.HttpClients;
+﻿using Sudoku.Blazor.Models;
+using Sudoku.Blazor.Services;
+using Sudoku.Blazor.Services.Abstractions;
+using Sudoku.Blazor.Services.HttpClients;
 
 namespace UnitTests.Web.Services;
 

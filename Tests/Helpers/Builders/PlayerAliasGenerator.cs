@@ -1,6 +1,6 @@
 ﻿using AutoFixture.Kernel;
+using Sudoku.Blazor.Services;
 using Sudoku.Domain.ValueObjects;
-using Sudoku.Web.Server.Services;
 
 namespace UnitTests.Helpers.Builders;
 

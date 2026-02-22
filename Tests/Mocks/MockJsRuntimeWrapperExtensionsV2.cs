@@ -1,5 +1,5 @@
-using Sudoku.Web.Server.Models;
-using Sudoku.Web.Server.Services.Abstractions;
+using Sudoku.Blazor.Models;
+using Sudoku.Blazor.Services.Abstractions;
 using System.Text.Json;
 
 namespace UnitTests.Mocks;

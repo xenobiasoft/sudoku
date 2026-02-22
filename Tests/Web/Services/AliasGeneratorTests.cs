@@ -1,4 +1,4 @@
-using Sudoku.Web.Server.Services;
+using Sudoku.Blazor.Services;
 
 namespace UnitTests.Web.Services;
 

@@ -42,14 +42,7 @@ try
         .WithExternalHttpEndpoints();
 
     logger.LogInformation("Configuring Sudoku Blazor Server project...");
-    builder.AddProject<Projects.Sudoku_Blazor>("sudoku-blazor2")
-        .WithReference(cosmosDb)
-        .WithReference(api)
-        .WithEnvironment("UseCosmosDb", "true")
-        .WithExternalHttpEndpoints()
-        .WaitFor(cosmosDb);
-
-    builder.AddProject<Projects.Sudoku_Web_Server>("sudoku-blazor")
+    builder.AddProject<Projects.Sudoku_Blazor>("sudoku-blazor")
         .WithReference(cosmosDb)
         .WithReference(api)
         .WithEnvironment("UseCosmosDb", "true")

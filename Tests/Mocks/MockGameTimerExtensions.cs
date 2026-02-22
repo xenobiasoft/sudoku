@@ -1,4 +1,4 @@
-﻿using Sudoku.Web.Server.Services.Abstractions;
+﻿using Sudoku.Blazor.Services.Abstractions;
 
 namespace UnitTests.Mocks;
 
