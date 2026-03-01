@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Sudoku.Blazor.Components.Controls;
 using IndexPage = Sudoku.Blazor.Components.Pages.Index;
 
 namespace UnitTests.Web.Pages;
@@ -17,7 +18,7 @@ public class IndexPageTests : BunitContext
 
         // Add logger mocks
         Services.AddSingleton(new Mock<ILogger<IndexPage>>().Object);
-        Services.AddSingleton(new Mock<ILogger<Sudoku.Blazor.Components.IndexErrorBoundary>>().Object);
+        Services.AddSingleton(new Mock<ILogger<IndexErrorBoundary>>().Object);
     }
 
     [Fact]

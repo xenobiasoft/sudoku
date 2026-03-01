@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Blazor;
-using Sudoku.Blazor.Components;
+using Sudoku.Blazor.Components.Controls;
 using Sudoku.Blazor.EventArgs;
 using Sudoku.Blazor.Services.Abstractions;
 using Sudoku.Domain.ValueObjects;

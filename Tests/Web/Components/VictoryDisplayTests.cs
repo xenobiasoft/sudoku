@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
-using Sudoku.Blazor.Components;
+using Sudoku.Blazor.Components.Controls;
 
 namespace UnitTests.Web.Components;
 

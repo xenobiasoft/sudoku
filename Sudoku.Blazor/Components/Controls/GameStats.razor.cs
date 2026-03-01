@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Sudoku.Blazor.Services.Abstractions;
 
-namespace Sudoku.Blazor.Components;
+namespace Sudoku.Blazor.Components.Controls;
 
 public partial class GameStats : ComponentBase, IDisposable
 {

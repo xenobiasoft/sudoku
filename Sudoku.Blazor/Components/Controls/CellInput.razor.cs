@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Sudoku.Blazor.EventArgs;
-using Sudoku.Blazor.Helpers;
 using Sudoku.Blazor.Models;
 using Sudoku.Blazor.Services.Abstractions;
 
-namespace Sudoku.Blazor.Components;
+namespace Sudoku.Blazor.Components.Controls;
 
 public partial class CellInput : IDisposable
 {

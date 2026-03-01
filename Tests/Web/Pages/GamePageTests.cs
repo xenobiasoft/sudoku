@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sudoku.Blazor.Components;
+using Sudoku.Blazor.Components.Controls;
 using Sudoku.Blazor.Components.Pages;
 using Sudoku.Blazor.EventArgs;
 using Sudoku.Blazor.Models;

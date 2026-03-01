@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Sudoku.Blazor.Components.Controls;
 using Sudoku.Blazor.Components.Pages;
 using Sudoku.Blazor.Services.Abstractions;
 
@@ -30,7 +31,7 @@ public class NewPageTests : BunitContext
         
         // Add logger mocks
         Services.AddSingleton(new Mock<ILogger<New>>().Object);
-        Services.AddSingleton(new Mock<ILogger<Sudoku.Blazor.Components.NewGameErrorBoundary>>().Object);
+        Services.AddSingleton(new Mock<ILogger<NewGameErrorBoundary>>().Object);
     }
 
     [Fact]

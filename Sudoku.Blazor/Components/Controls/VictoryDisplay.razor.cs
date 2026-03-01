@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 
-namespace Sudoku.Blazor.Components;
+namespace Sudoku.Blazor.Components.Controls;
 
 public partial class VictoryDisplay
 {

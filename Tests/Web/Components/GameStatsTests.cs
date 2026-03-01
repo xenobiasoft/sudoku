@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using Sudoku.Blazor.Components;
+using Sudoku.Blazor.Components.Controls;
 using Sudoku.Blazor.Models;
 using Sudoku.Blazor.Services.Abstractions;
 

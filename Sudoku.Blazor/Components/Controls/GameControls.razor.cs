@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Sudoku.Blazor.EventArgs;
 
-namespace Sudoku.Blazor.Components
+namespace Sudoku.Blazor.Components.Controls
 {
     public partial class GameControls
     {
