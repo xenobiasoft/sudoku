@@ -49,6 +49,14 @@ try
         .WithExternalHttpEndpoints()
         .WaitFor(cosmosDb);
 
+    logger.LogInformation("Configuring Sudoku React project...");
+    builder.AddNpmApp("sudoku-react", "../Sudoku.React", "dev")
+        .WithReference(api)
+        .WithEnvironment("VITE_API_BASE_URL", api.GetEndpoint("https"))
+        .WithHttpEndpoint(env: "VITE_PORT")
+        .WithExternalHttpEndpoints()
+        .PublishAsDockerFile();
+
     logger.LogInformation("Building and starting application...");
     var app = builder.Build();
 

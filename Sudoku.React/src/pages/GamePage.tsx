@@ -86,7 +86,7 @@ export default function GamePage() {
     };
     load();
     return () => stopTimer();
-  }, [puzzleId]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [puzzleId, alias, startTimer, stopTimer, navigate]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
