@@ -3,48 +3,11 @@
     padding: 2rem;
 }
 
-ul {
-    align-items: flex-start;
+.btn-panel {
     display: flex;
     flex-direction: column;
-    list-style-type: none;
-    padding-left: 0;
+    gap: .5rem;
+    margin: auto;
+    margin-top: 2rem;
+    width: 9rem;
 }
-
-ul.menu {
-    margin: 2rem auto;
-    max-width: 330px;
-}
-
-    .menu li {
-        margin: 0.25rem 0;
-    }
-
-.sub-menu {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease-in-out;
-}
-
-    .sub-menu.open {
-        max-height: 500px;
-    }
-
-.sub-menu li {
-    margin: 0.25rem 1.5rem;
-}
-
-.menu button {
-    background-color: transparent;
-    border: none;
-    color: #0070f3;
-    font-size: 1.2rem;
-}
-
-    .menu button:hover {
-        color: #0366d6;
-    }
-
-    .menu button:disabled {
-        color: #ccc;
-    }

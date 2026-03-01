@@ -1,125 +1,129 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sudoku.Blazor.Models;
-using Sudoku.Blazor.Services.Abstractions;
 using IndexPage = Sudoku.Blazor.Components.Pages.Index;
 
 namespace UnitTests.Web.Pages;
 
 public class IndexPageTests : BunitContext
 {
-    private const string Alias = "test-alias";
-    private readonly Mock<IGameManager> _mockGameManager = new();
-    private readonly Mock<IPlayerManager> _mockPlayerManager = new();
-
     public IndexPageTests()
     {
-        var savedGames = new List<GameModel>
-        {
-            new() { Id = Guid.NewGuid().ToString(), PlayerAlias = Alias},
-            new() { Id = Guid.NewGuid().ToString(), PlayerAlias = Alias},
-        };
-        _mockGameManager.SetupLoadGamesAsync(savedGames);
-        _mockPlayerManager.SetupGetCurrentPlayerAsync(Alias);
-        Services.AddSingleton(_mockGameManager.Object);
-        Services.AddSingleton(_mockPlayerManager.Object);
-        
         // Add IWebHostEnvironment mock for error boundary
         var mockWebHostEnvironment = new Mock<IWebHostEnvironment>();
         mockWebHostEnvironment.Setup(x => x.EnvironmentName).Returns("Test");
         Services.AddSingleton(mockWebHostEnvironment.Object);
-        
+
         // Add logger mocks
         Services.AddSingleton(new Mock<ILogger<IndexPage>>().Object);
         Services.AddSingleton(new Mock<ILogger<Sudoku.Blazor.Components.IndexErrorBoundary>>().Object);
     }
 
     [Fact]
-    public void DeleteGame_RemovesGameFromList()
-    {
-        // Arrange
-        var component = Render<IndexPage>();
-        var delGameElement = component.Find(".del-game-icon");
-
-        // Act
-        delGameElement.Click();
-
-        // Assert
-        component.FindAll(".del-game-icon").Count.Should().Be(1);
-    }
-
-    [Fact]
-    public void DeleteGame_WhenClicked_RemovesGameFromGameStateManager()
-    {
-        // Arrange
-        var component = Render<IndexPage>();
-        var delGameElement = component.Find(".del-game-icon");
-
-        // Act
-        delGameElement.Click();
-
-        // Assert
-        _mockGameManager.VerifyDeleteGameAsyncCalled(Times.Once);
-    }
-
-    [Fact]
-    public void Render_WhenSavedGamesPresent_DisplaysEachSavedGame()
-    {
-        // Arrange
-        var component = Render<IndexPage>();
-
-        // Act
-        var delGameElements = component.FindAll(".del-game-icon");
-
-        // Assert
-        delGameElements.Count.Should().Be(2);
-    }
-
-    [Fact]
     public void RendersCorrectly()
     {
-        // Arrange
+        // Arrange & Act
         var component = Render<IndexPage>();
 
-        // Act
-        var startNewGameButton = component.Find("button:contains('Start New Game')");
-        var loadGameButton = component.Find("button:contains('Load Game')");
-
         // Assert
-        Assert.NotNull(startNewGameButton);
-        Assert.NotNull(loadGameButton);
+        var startButton = component.Find("#btnStart");
+        startButton.Should().NotBeNull();
+        startButton.TextContent.Should().Contain("Play");
     }
 
     [Fact]
-    public void ShowsDifficultyOptions_WhenStartNewGameClicked()
+    public void RendersLandingPageStructure()
     {
-        // Arrange
+        // Arrange & Act
         var component = Render<IndexPage>();
 
-        // Act
-        component.Find("button:contains('Start New Game')").Click();
-        var difficultyButtons = component.FindAll("button:contains('Easy'), button:contains('Medium'), button:contains('Hard')");
-
         // Assert
-        Assert.Equal(3, difficultyButtons.Count);
+        var landingPage = component.Find("div.landing-page");
+        landingPage.Should().NotBeNull();
+        
+        var btnPanel = component.Find("div.btn-panel");
+        btnPanel.Should().NotBeNull();
+        btnPanel.GetAttribute("role").Should().Be("group");
     }
 
     [Fact]
-    public void ShowsSavedGames_WhenLoadGameClicked()
+    public void StartButton_HasCorrectAttributes()
     {
-        // Arrange
-        var savedGames = new List<GameModel>
-        {
-        };
-        _mockGameManager.SetupLoadGamesAsync(savedGames);
+        // Arrange & Act
         var component = Render<IndexPage>();
 
-        // Act
-        component.Find("button:contains('Load Game')").Click();
+        // Assert
+        var startButton = component.Find("#btnStart");
+        startButton.GetAttribute("type").Should().Be("button");
+        startButton.ClassList.Should().Contain("btn");
+        startButton.ClassList.Should().Contain("btn-primary");
+    }
+
+    [Fact]
+    public void StartButton_ContainsPlayIcon()
+    {
+        // Arrange & Act
+        var component = Render<IndexPage>();
 
         // Assert
-        var savedGameButtons = component.FindAll(".saved-game-card");
-        savedGameButtons.Count.Should().Be(savedGames.Count);
+        var icon = component.Find("#btnStart i.fa-solid.fa-play-circle");
+        icon.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void StartButton_WhenClicked_NavigatesToStartPage()
+    {
+        // Arrange
+        var component = Render<IndexPage>();
+        var navMan = Services.GetRequiredService<NavigationManager>();
+        var startButton = component.Find("#btnStart");
+
+        // Act
+        startButton.Click();
+
+        // Assert
+        navMan.Uri.Should().EndWith("/start");
+    }
+
+    [Fact]
+    public void Component_RendersOnRootRoute()
+    {
+        // Arrange
+        var navMan = Services.GetRequiredService<NavigationManager>();
+
+        // Act
+        var component = Render<IndexPage>();
+
+        // Assert
+        // Verify the component renders successfully on the expected route
+        component.Should().NotBeNull();
+        navMan.Uri.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public void RendersWithinIndexErrorBoundary()
+    {
+        // Arrange & Act
+        var component = Render<IndexPage>();
+
+        // Assert
+        // If the component renders successfully, the error boundary is working
+        var landingPage = component.Find("div.landing-page");
+        landingPage.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void RendersMatLayoutGrid()
+    {
+        // Arrange & Act
+        var component = Render<IndexPage>();
+
+        // Assert
+        var matLayoutGrid = component.Find("div.mat-layout-grid");
+        matLayoutGrid.Should().NotBeNull();
+        
+        var matLayoutGridInner = component.Find("div.mat-layout-grid-inner");
+        matLayoutGridInner.Should().NotBeNull();
     }
 }

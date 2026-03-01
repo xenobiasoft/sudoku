@@ -7,32 +7,11 @@
         <div class="mat-layout-grid-inner">
             <div class="landing-page">
                 <SudokuImage/>
-                <ul class="menu">
-                    <li>
-                        <button @onclick="ToggleDifficultyOptions"><i class="fa-solid fa-play-circle"></i> Start New Game</button>
-                    </li>
-                    <ul class="sub-menu @(_showDifficulty ? "open" : "")">
-                        <li><button @onclick="@(() => StartNewGame("Easy"))">Easy</button></li>
-                        <li><button @onclick="@(() => StartNewGame("Medium"))">Medium</button></li>
-                        <li><button @onclick="@(() => StartNewGame("Hard"))">Hard</button></li>
-                    </ul>
-                    <li>
-                        <button @onclick="ToggleDisplaySavedGames" disabled="@(_savedGames == null || !_savedGames.Any())">
-                            <i class="fa-solid fa-folder-open"></i> Load Game
-                        </button>
-                    </li>
-                    <ul class="sub-menu @(_showSavedGames ? "open" : "")">
-                        @if (_savedGames != null)
-                        {
-                            foreach (var game in _savedGames.OrderBy(g => g.CreatedAt))
-                            {
-                                <li>
-                                    <GameThumbnail Game="@game" OnDeleteGame="@DeleteGameAsync" OnLoadGame="@LoadGame" />
-                                </li>
-                            }
-                        }
-                    </ul>
-                </ul>
+                <div class="btn-panel" role="group">
+                    <button type="button" id="btnStart" class="btn btn-primary" @onclick="Start">
+                        Play <i class="fa-solid fa-play-circle"></i>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
