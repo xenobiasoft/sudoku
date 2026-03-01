@@ -65,24 +65,6 @@ jobs:
       - name: Publish Web Server
         run: dotnet publish Sudoku.Blazor/Sudoku.Blazor.csproj --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} --no-restore
 
-      - name: Inject service worker build version
-        run: |
-          SW_FILE="${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/wwwroot/service-worker.js"
-
-          if [ ! -f "$SW_FILE" ]; then
-            echo "ERROR: service-worker.js not found at $SW_FILE"
-            ls -la "${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/wwwroot" || true
-            exit 1
-          fi
-
-          VERSION="${GITHUB_SHA::8}-${GITHUB_RUN_NUMBER}"
-          echo "Injecting build version: $VERSION into $SW_FILE"
-
-          sed -i "s/__BUILD_VERSION__/$VERSION/g" "$SW_FILE"
-
-          echo "Verifying token replacement:"
-          grep -n "CACHE_VERSION" "$SW_FILE" || true
-
       - name: Publish API
         run: dotnet publish Sudoku.Api/Sudoku.Api.csproj --configuration Release --output ${{ env.AZURE_API_PACKAGE_PATH }} --no-restore
 
