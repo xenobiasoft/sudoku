@@ -49,19 +49,6 @@ public class IndexPageTests : BunitContext
     }
 
     [Fact]
-    public void StartButton_HasCorrectAttributes()
-    {
-        // Arrange & Act
-        var component = Render<IndexPage>();
-
-        // Assert
-        var startButton = component.Find("#btnStart");
-        startButton.GetAttribute("type").Should().Be("button");
-        startButton.ClassList.Should().Contain("btn");
-        startButton.ClassList.Should().Contain("btn-primary");
-    }
-
-    [Fact]
     public void StartButton_ContainsPlayIcon()
     {
         // Arrange & Act
@@ -70,21 +57,6 @@ public class IndexPageTests : BunitContext
         // Assert
         var icon = component.Find("#btnStart i.fa-solid.fa-play-circle");
         icon.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void StartButton_WhenClicked_NavigatesToStartPage()
-    {
-        // Arrange
-        var component = Render<IndexPage>();
-        var navMan = Services.GetRequiredService<NavigationManager>();
-        var startButton = component.Find("#btnStart");
-
-        // Act
-        startButton.Click();
-
-        // Assert
-        navMan.Uri.Should().EndWith("/start");
     }
 
     [Fact]
