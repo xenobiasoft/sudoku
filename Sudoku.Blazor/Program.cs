@@ -74,6 +74,41 @@ if (!app.Environment.IsDevelopment())
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
 
+// Make sure the browser always re-checks the service worker + manifest.
+// Critical for reliable updates and avoiding stale SW behavior on Linux App Service.
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path;
+
+    if (path.Equals("/service-worker.js") ||
+        path.Equals("/manifest.webmanifest") ||
+        path.Equals("/manifest.json") ||
+        path.Equals("/offline.html"))
+    {
+        context.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+        context.Response.Headers.Pragma = "no-cache";
+        context.Response.Headers.Expires = "0";
+    }
+
+    await next();
+});
+
+// For navigations (HTML), discourage caching. Helps prevent stale host pages.
+app.Use(async (context, next) =>
+{
+    await next();
+
+    // Only touch successful HTML navigations
+    if (context.Response.StatusCode == 200 &&
+        context.Request.Method == "GET" &&
+        context.Request.Headers.Accept.ToString().Contains("text/html", StringComparison.OrdinalIgnoreCase))
+    {
+        context.Response.Headers.CacheControl = "no-cache, no-store, must-revalidate";
+        context.Response.Headers.Pragma = "no-cache";
+        context.Response.Headers.Expires = "0";
+    }
+});
+
 app.UseAntiforgery();
 
 app.MapStaticAssets();
