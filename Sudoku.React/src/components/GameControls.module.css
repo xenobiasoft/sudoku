@@ -1,0 +1,61 @@
+.btnToolbar {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.numberPanel {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+}
+
+.btnPanel {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+
+.btnNum {
+  height: 4rem;
+  width: 4rem;
+  color: #fff;
+  background-color: #1b6ec2;
+  border: 1px solid #1861ac;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.btnNum:hover {
+  background-color: #155a9c;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  color: #fff;
+  background-color: #1b6ec2;
+  border: 1px solid #1861ac;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.btn:hover {
+  background-color: #155a9c;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnOutline {
+  background-color: transparent;
+  color: #1b6ec2;
+  border: 1px solid #1b6ec2;
+}
+
+.btnOutline:hover {
+  background-color: #e8f0fe;
+}

@@ -1,0 +1,80 @@
+.cell:nth-child(3n+1) {
+  border-left: 3px solid #000000;
+}
+
+.cell {
+  position: relative;
+}
+
+.cell input,
+.cell label {
+  align-items: center;
+  background-color: #FAEBD7;
+  border: 1px solid black;
+  display: flex;
+  font-size: 1.5rem;
+  font-weight: bold;
+  height: 36px;
+  justify-content: center;
+  line-height: 1.3em;
+  max-width: 36px;
+  padding: .25rem;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.cell label {
+  color: #505050;
+}
+
+.cell input {
+  color: royalblue;
+  outline: none;
+}
+
+.cell input:focus,
+.cell label:focus {
+  background-color: #F0F8FF !important;
+}
+
+.highlight {
+  background-color: #F0F8F0 !important;
+}
+
+.invalid {
+  background-color: #ffdddd !important;
+  outline: 1px solid red;
+}
+
+.pencilValues {
+  display: grid;
+  font-size: 0.6rem;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  height: 100%;
+  line-height: 1rem;
+  pointer-events: none;
+  position: absolute;
+  text-align: center;
+  width: 100%;
+  top: 0;
+  left: 0;
+}
+
+.pencilEntry {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: .6rem;
+  pointer-events: none;
+}
+
+@media (min-width: 641px) {
+  .cell input,
+  .cell label {
+    height: 40px;
+    width: 40px;
+  }
+}
