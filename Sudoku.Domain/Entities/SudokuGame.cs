@@ -98,18 +98,15 @@ public class SudokuGame : AggregateRoot
             throw new CellIsFixedException($"Cannot modify fixed cell at position ({row}, {column})");
         }
 
-        // Only validate move if we're setting a value (not clearing)
-        if (value.HasValue && !IsValidMove(row, column, value.Value))
-        {
-            throw new InvalidMoveException($"Invalid move: {value} at position ({row}, {column})");
-        }
+        // Check if this is a valid move (only when setting a value, not clearing)
+        var isValid = !value.HasValue || IsValidMove(row, column, value.Value);
 
         // Record move history before making the change
         var previousValue = cell.Value;
         _moveHistory.Add(new MoveHistory(row, column, previousValue, value));
 
         cell.SetValue(value);
-        Statistics.RecordMove(true);
+        Statistics.RecordMove(isValid);
 
         AddDomainEvent(new MoveMadeEvent(Id, row, column, value, Statistics));
 
