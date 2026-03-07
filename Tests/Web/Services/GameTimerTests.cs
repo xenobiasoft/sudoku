@@ -2,7 +2,7 @@ using Sudoku.Blazor.Services;
 
 namespace UnitTests.Web.Services;
 
-public class GameTimerTests
+public class GameTimerTests : IDisposable
 {
     private readonly TimeSpan _interval = TimeSpan.FromMilliseconds(10);
     private readonly GameTimer _timer;
@@ -10,6 +10,11 @@ public class GameTimerTests
     public GameTimerTests()
     {
         _timer = new GameTimer(_interval);
+    }
+
+    public void Dispose()
+    {
+        _timer.Dispose();
     }
 
     [Fact]
@@ -48,11 +53,12 @@ public class GameTimerTests
 
         // Act
         _timer.Pause();
+        var pausedTime = _timer.ElapsedTime;
+        await Task.Delay(_interval * 3);
 
         // Assert
-        var pausedTime = _timer.ElapsedTime;
-        await Task.Delay(_interval);
         _timer.IsRunning.Should().BeFalse();
+        _timer.ElapsedTime.Should().Be(pausedTime);
     }
 
     [Fact]
@@ -152,23 +158,23 @@ public class GameTimerTests
     }
 
     [Fact]
-    public void Resume_WithInitialDuration_ShouldRaiseTickEventWithCorrectDuration()
+    public async Task Resume_WithInitialDuration_ShouldRaiseTickEventWithCorrectDuration()
     {
         // Arrange
         var initialDuration = TimeSpan.FromMinutes(5);
-        TimeSpan? tickedDuration = null;
-        _timer.OnTick += (_, duration) => tickedDuration = duration;
+        var maxTimingVariance = TimeSpan.FromSeconds(2);
+        var tcs = new TaskCompletionSource<TimeSpan>();
+        _timer.OnTick += (_, duration) => tcs.TrySetResult(duration);
         _timer.Start();
         _timer.Pause();
         _timer.Resume(initialDuration);
 
         // Act
-        Thread.Sleep(1100); // Wait for first tick
+        var tickedDuration = await tcs.Task.WaitAsync(maxTimingVariance);
 
         // Assert
-        Assert.NotNull(tickedDuration);
         Assert.True(tickedDuration > initialDuration);
-        Assert.True(tickedDuration <= initialDuration.Add(TimeSpan.FromSeconds(2))); // Allow for some timing variance
+        Assert.True(tickedDuration <= initialDuration.Add(maxTimingVariance));
     }
 
     [Fact]
