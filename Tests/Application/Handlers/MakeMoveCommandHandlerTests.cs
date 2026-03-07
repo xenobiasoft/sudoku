@@ -94,7 +94,7 @@ public class MakeMoveCommandHandlerTests : BaseTestByAbstraction<MakeMoveCommand
     }
 
     [Fact]
-    public async Task Handle_WhenGameThrowsInvalidMoveException_ReturnsFailureResult()
+    public async Task Handle_WithInvalidMove_ReturnsSuccessAndSavesGame()
     {
         // Arrange
         var gameId = Guid.NewGuid().ToString();
@@ -103,11 +103,14 @@ public class MakeMoveCommandHandlerTests : BaseTestByAbstraction<MakeMoveCommand
         var value = 5;
         var command = new MakeMoveCommand(gameId, row, column, value, TimeSpan.FromSeconds(30));
 
-        // Create a game with a cell that already has value 5, so attempting to place 5 in the same row will fail
+        // Create a game with a cell that already has value 5, so placing 5 in the same row is an invalid move
         var game = CreateTestGameWithDuplicateValue();
 
         _mockGameRepository.Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
             .ReturnsAsync(game);
+
+        _mockGameRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>()))
+            .Returns(Task.CompletedTask);
 
         var sut = ResolveSut();
 
@@ -115,9 +118,9 @@ public class MakeMoveCommandHandlerTests : BaseTestByAbstraction<MakeMoveCommand
         var result = await sut.Handle(command, CancellationToken.None);
 
         // Assert
-        result.IsSuccess.Should().BeFalse();
-        result.Error.Should().NotBeNullOrEmpty();
-        _mockGameRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Never);
+        result.IsSuccess.Should().BeTrue();
+        game.Statistics.InvalidMoves.Should().Be(1);
+        _mockGameRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Once);
     }
 
     [Fact]
