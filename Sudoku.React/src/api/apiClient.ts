@@ -9,7 +9,16 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
   const text = await res.text();
-  return text ? JSON.parse(text) : (undefined as T);
+  
+  if (!text) return undefined as T;
+  
+  // Try to parse as JSON first
+  try {
+    return JSON.parse(text);
+  } catch {
+    // If parsing fails, return the text as-is (for plain string responses)
+    return text as T;
+  }
 }
 
 export const apiClient = {
