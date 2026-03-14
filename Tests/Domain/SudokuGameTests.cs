@@ -5,7 +5,6 @@ using Sudoku.Domain.Events;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 using UnitTests.Helpers.Factories;
-using InvalidMoveException = Sudoku.Domain.Exceptions.InvalidMoveException;
 
 namespace UnitTests.Domain;
 
@@ -148,7 +147,7 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
     }
 
     [Fact]
-    public void MakeMove_WithInvalidMove_ThrowsInvalidMoveException()
+    public void MakeMove_WithInvalidMove_AllowsMoveAndIncrementsInvalidMoveCount()
     {
         // Arrange
         var sut = CreateGameWithCells(new[]
@@ -159,10 +158,12 @@ public class SudokuGameTests : BaseTestByType<SudokuGame>
         sut.StartGame();
 
         // Act
-        Action act = () => sut.MakeMove(0, 1, 5);
+        sut.MakeMove(0, 1, 5);
 
         // Assert
-        act.Should().Throw<InvalidMoveException>();
+        sut.GetCell(0, 1).Value.Should().Be(5);
+        sut.Statistics.InvalidMoves.Should().Be(1);
+        sut.Statistics.ValidMoves.Should().Be(0);
     }
 
     [Fact]

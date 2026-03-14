@@ -8,7 +8,7 @@ public class GameTimer(TimeSpan tickInterval) : IGameTimer, IDisposable
     private CancellationTokenSource? _cts;
     private DateTime? _startTime;
     private TimeSpan _accumulatedTime = TimeSpan.Zero;
-    private bool _isRunning = false;
+    private volatile bool _isRunning = false;
     private readonly Lock _lock = new();
 
     public TimeSpan ElapsedTime => _accumulatedTime + GetCurrentSessionTime();
@@ -33,6 +33,12 @@ public class GameTimer(TimeSpan tickInterval) : IGameTimer, IDisposable
         {
             if (!_isRunning) return;
             _accumulatedTime += GetCurrentSessionTime();
+            _startTime = null;
+            _cts?.Cancel();
+            _cts?.Dispose();
+            _cts = null;
+            _timer?.Dispose();
+            _timer = null;
             _isRunning = false;
         }
     }
@@ -73,9 +79,9 @@ public class GameTimer(TimeSpan tickInterval) : IGameTimer, IDisposable
 
     private void ResumeTimer()
     {
-        _cts = new CancellationTokenSource();
-        _timer = new PeriodicTimer(tickInterval);
-        Task.Run(() => StartTimerLoop(_cts.Token, _timer));
+        var cts = _cts = new CancellationTokenSource();
+        var timer = _timer = new PeriodicTimer(tickInterval);
+        Task.Run(() => StartTimerLoop(cts.Token, timer));
     }
 
     private async Task StartTimerLoop(CancellationToken token, PeriodicTimer? timer)
@@ -104,6 +110,9 @@ public class GameTimer(TimeSpan tickInterval) : IGameTimer, IDisposable
 
     public void Dispose()
     {
-        DisposeTimer();
+        lock (_lock)
+        {
+            DisposeTimer();
+        }
     }
 }
