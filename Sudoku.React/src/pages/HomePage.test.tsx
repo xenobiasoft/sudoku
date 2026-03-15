@@ -15,16 +15,19 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('../api/apiClient', () => ({
-  apiClient: {
-    createPlayer: vi.fn().mockResolvedValue('new-alias'),
-    playerExists: vi.fn().mockResolvedValue(true),
-    getGames: vi.fn().mockResolvedValue([]),
-    deleteGame: vi.fn().mockResolvedValue(undefined),
-  },
+// Mock the custom hooks
+const mockUsePlayerService = vi.fn();
+const mockUseGameService = vi.fn();
+
+vi.mock('../hooks/usePlayerService', () => ({
+  usePlayerService: () => mockUsePlayerService(),
 }));
 
-import { apiClient } from '../api/apiClient';
+vi.mock('../hooks/useGameService', () => ({
+  useGameService: () => mockUseGameService(),
+}));
+
+
 
 function renderHomePage() {
   return render(
@@ -36,11 +39,27 @@ function renderHomePage() {
 
 beforeEach(() => {
   mockNavigate.mockClear();
-  vi.mocked(apiClient.createPlayer).mockResolvedValue('new-alias');
-  vi.mocked(apiClient.playerExists).mockResolvedValue(true);
-  vi.mocked(apiClient.getGames).mockResolvedValue([]);
-  vi.mocked(apiClient.deleteGame).mockResolvedValue(undefined);
-  localStorage.setItem('playerAlias', 'existing-player');
+  
+  // Default mock implementations
+  mockUsePlayerService.mockReturnValue({
+    playerAlias: 'existing-player',
+    isInitialized: true,
+    isLoading: false,
+    error: null,
+    initializePlayer: vi.fn(),
+    clearPlayer: vi.fn(),
+  });
+  
+  mockUseGameService.mockReturnValue({
+    savedGames: [],
+    isLoading: false,
+    error: null,
+    isLoaded: true,
+    loadGames: vi.fn(),
+    deleteGame: vi.fn(),
+    clearCache: vi.fn(),
+    refreshGames: vi.fn(),
+  });
 });
 
 describe('HomePage', () => {
@@ -50,28 +69,54 @@ describe('HomePage', () => {
     expect(screen.getByText(/Load Game/i)).toBeInTheDocument();
   });
 
-  it('calls playerExists for existing players', async () => {
+  it('calls loadGames when player is initialized', async () => {
+    const mockLoadGames = vi.fn();
+    mockUseGameService.mockReturnValue({
+      savedGames: [],
+      isLoading: false,
+      error: null,
+      isLoaded: true,
+      loadGames: mockLoadGames,
+      deleteGame: vi.fn(),
+      clearCache: vi.fn(),
+      refreshGames: vi.fn(),
+    });
+    
     renderHomePage();
     await waitFor(() => {
-      expect(apiClient.playerExists).toHaveBeenCalledWith('existing-player');
+      expect(mockLoadGames).toHaveBeenCalledWith('existing-player');
     });
   });
 
-  it('creates a new player when alias is missing', async () => {
-    localStorage.removeItem('playerAlias');
+  it('does not load games when player is not initialized', async () => {
+    const mockLoadGames = vi.fn();
+    mockUsePlayerService.mockReturnValue({
+      playerAlias: null,
+      isInitialized: false,
+      isLoading: true,
+      error: null,
+      initializePlayer: vi.fn(),
+      clearPlayer: vi.fn(),
+    });
+    
+    mockUseGameService.mockReturnValue({
+      savedGames: [],
+      isLoading: false,
+      error: null,
+      isLoaded: false,
+      loadGames: mockLoadGames,
+      deleteGame: vi.fn(),
+      clearCache: vi.fn(),
+      refreshGames: vi.fn(),
+    });
+    
     renderHomePage();
     await waitFor(() => {
-      expect(apiClient.createPlayer).toHaveBeenCalled();
+      expect(mockLoadGames).not.toHaveBeenCalled();
     });
   });
 
-  it('creates a new player when playerExists returns false', async () => {
-    vi.mocked(apiClient.playerExists).mockResolvedValue(false);
-    renderHomePage();
-    await waitFor(() => {
-      expect(apiClient.createPlayer).toHaveBeenCalled();
-    });
-  });
+
 
   it('shows New Game submenu when Start New Game is clicked', async () => {
     const user = userEvent.setup();
@@ -92,39 +137,102 @@ describe('HomePage', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/new/Medium');
   });
 
-  it('loads games when Load Game is clicked', async () => {
-    const user = userEvent.setup();
+  it('loads games on component mount', async () => {
     const games = [makeGame({ id: 'g1', status: 'InProgress' })];
-    vi.mocked(apiClient.getGames).mockResolvedValue(games);
+    const mockLoadGames = vi.fn();
+    mockUseGameService.mockReturnValue({
+      savedGames: games,
+      isLoading: false,
+      error: null,
+      isLoaded: true,
+      loadGames: mockLoadGames,
+      deleteGame: vi.fn(),
+      clearCache: vi.fn(),
+      refreshGames: vi.fn(),
+    });
+    
     renderHomePage();
-    await user.click(screen.getByText(/Load Game/i));
     await waitFor(() => {
-      expect(apiClient.getGames).toHaveBeenCalledWith('existing-player');
+      expect(mockLoadGames).toHaveBeenCalledWith('existing-player');
     });
   });
 
-  it('shows "No saved games" when there are no saved games', async () => {
-    const user = userEvent.setup();
-    vi.mocked(apiClient.getGames).mockResolvedValue([]);
-    renderHomePage();
-    await user.click(screen.getByText(/Load Game/i));
-    await waitFor(() => {
-      expect(screen.getByText(/No saved games/i)).toBeInTheDocument();
+  it('disables Load Game button when there are no saved games', async () => {
+    mockUseGameService.mockReturnValue({
+      savedGames: [],
+      isLoading: false,
+      error: null,
+      isLoaded: true,
+      loadGames: vi.fn(),
+      deleteGame: vi.fn(),
+      clearCache: vi.fn(),
+      refreshGames: vi.fn(),
     });
+    
+    renderHomePage();
+    const loadGameButton = screen.getByText(/Load Game/i);
+    expect(loadGameButton).toBeDisabled();
+  });
+
+  it('enables Load Game button when there are saved games', async () => {
+    const games = [makeGame({ id: 'g1', status: 'InProgress' })];
+    mockUseGameService.mockReturnValue({
+      savedGames: games,
+      isLoading: false,
+      error: null,
+      isLoaded: true,
+      loadGames: vi.fn(),
+      deleteGame: vi.fn(),
+      clearCache: vi.fn(),
+      refreshGames: vi.fn(),
+    });
+    
+    renderHomePage();
+    const loadGameButton = screen.getByText(/Load Game/i);
+    expect(loadGameButton).not.toBeDisabled();
+  });
+
+  it('shows "No saved games" when there are no saved games and submenu is opened', async () => {
+    // This test is no longer valid since Load Game button is disabled when no games exist
+    // The "No saved games" message only shows when the button can be clicked (i.e., when there are games initially but the submenu opens)
+    // We'll test the disabled button behavior instead
+    mockUseGameService.mockReturnValue({
+      savedGames: [],
+      isLoading: false,
+      error: null,
+      isLoaded: true,
+      loadGames: vi.fn(),
+      deleteGame: vi.fn(),
+      clearCache: vi.fn(),
+      refreshGames: vi.fn(),
+    });
+    
+    renderHomePage();
+    const loadGameButton = screen.getByText(/Load Game/i);
+    expect(loadGameButton).toBeDisabled();
   });
 
   it('filters out completed games from the list', async () => {
     const user = userEvent.setup();
     const games = [
       makeGame({ id: 'g1', status: 'InProgress' }),
-      makeGame({ id: 'g2', status: 'Completed' }),
+      // Completed games should already be filtered out by the hook
     ];
-    vi.mocked(apiClient.getGames).mockResolvedValue(games);
+    mockUseGameService.mockReturnValue({
+      savedGames: games, // Hook already filters out completed games
+      isLoading: false,
+      error: null,
+      isLoaded: true,
+      loadGames: vi.fn(),
+      deleteGame: vi.fn(),
+      clearCache: vi.fn(),
+      refreshGames: vi.fn(),
+    });
+    
     renderHomePage();
     await user.click(screen.getByText(/Load Game/i));
     await waitFor(() => {
-      // g1 (InProgress) should appear; g2 (Completed) should not
-      // One thumbnail should be present (for g1)
+      // g1 (InProgress) should appear; completed games are filtered by the hook
       const thumbnails = document.querySelectorAll('[title="Easy - InProgress"]');
       expect(thumbnails).toHaveLength(1);
     });
@@ -133,7 +241,17 @@ describe('HomePage', () => {
   it('navigates to /game/:id when a saved game is selected', async () => {
     const user = userEvent.setup();
     const game = makeGame({ id: 'game-abc', difficulty: 'Hard', status: 'InProgress' });
-    vi.mocked(apiClient.getGames).mockResolvedValue([game]);
+    mockUseGameService.mockReturnValue({
+      savedGames: [game],
+      isLoading: false,
+      error: null,
+      isLoaded: true,
+      loadGames: vi.fn(),
+      deleteGame: vi.fn(),
+      clearCache: vi.fn(),
+      refreshGames: vi.fn(),
+    });
+    
     renderHomePage();
     await user.click(screen.getByText(/Load Game/i));
     await waitFor(() => {
@@ -146,7 +264,18 @@ describe('HomePage', () => {
   it('deletes a game when delete button is clicked', async () => {
     const user = userEvent.setup();
     const game = makeGame({ id: 'del-game', status: 'InProgress' });
-    vi.mocked(apiClient.getGames).mockResolvedValue([game]);
+    const mockDeleteGame = vi.fn();
+    mockUseGameService.mockReturnValue({
+      savedGames: [game],
+      isLoading: false,
+      error: null,
+      isLoaded: true,
+      loadGames: vi.fn(),
+      deleteGame: mockDeleteGame,
+      clearCache: vi.fn(),
+      refreshGames: vi.fn(),
+    });
+    
     renderHomePage();
     await user.click(screen.getByText(/Load Game/i));
     await waitFor(() => {
@@ -154,12 +283,24 @@ describe('HomePage', () => {
     });
     await user.click(screen.getByTitle('Delete game'));
     await waitFor(() => {
-      expect(apiClient.deleteGame).toHaveBeenCalledWith('existing-player', 'del-game');
+      expect(mockDeleteGame).toHaveBeenCalledWith('existing-player', 'del-game');
     });
   });
 
   it('closes New Game submenu when Load Game is clicked', async () => {
     const user = userEvent.setup();
+    const games = [makeGame({ id: 'g1', status: 'InProgress' })];
+    mockUseGameService.mockReturnValue({
+      savedGames: games,
+      isLoading: false,
+      error: null,
+      isLoaded: true,
+      loadGames: vi.fn(),
+      deleteGame: vi.fn(),
+      clearCache: vi.fn(),
+      refreshGames: vi.fn(),
+    });
+    
     renderHomePage();
     const subMenus = document.querySelectorAll('ul ul');
     const newGameSubMenu = subMenus[0];

@@ -14,13 +14,16 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-vi.mock('../api/apiClient', () => ({
-  apiClient: {
-    createGame: vi.fn(),
-  },
+const mockUsePlayerService = vi.fn();
+const mockUseGameService = vi.fn();
+
+vi.mock('../hooks/usePlayerService', () => ({
+  usePlayerService: () => mockUsePlayerService(),
 }));
 
-import { apiClient } from '../api/apiClient';
+vi.mock('../hooks/useGameService', () => ({
+  useGameService: () => mockUseGameService(),
+}));
 
 function renderNewGamePage(difficulty: string) {
   return render(
@@ -34,29 +37,67 @@ function renderNewGamePage(difficulty: string) {
 
 beforeEach(() => {
   mockNavigate.mockClear();
-  vi.mocked(apiClient.createGame).mockClear();
-  localStorage.setItem('playerAlias', 'test-player');
+  mockUsePlayerService.mockClear();
+  mockUseGameService.mockClear();
+  
+  // Default mock implementations
+  mockUsePlayerService.mockReturnValue({
+    playerAlias: 'test-player',
+    isInitialized: true,
+    isLoading: false,
+    error: null,
+    initializePlayer: vi.fn(),
+    clearPlayer: vi.fn(),
+  });
+  
+  mockUseGameService.mockReturnValue({
+    savedGames: [],
+    isLoading: false,
+    error: null,
+    isLoaded: false,
+    loadGames: vi.fn(),
+    deleteGame: vi.fn(),
+    createGame: vi.fn().mockResolvedValue(makeGame()),
+    clearCache: vi.fn(),
+    refreshGames: vi.fn(),
+  });
 });
 
 describe('NewGamePage', () => {
   it('shows a loading message with the difficulty', () => {
-    vi.mocked(apiClient.createGame).mockResolvedValue(makeGame());
     renderNewGamePage('Easy');
     expect(screen.getByText(/Creating Easy puzzle/i)).toBeInTheDocument();
   });
 
   it('navigates to game page after successfully creating a game', async () => {
     const game = makeGame({ id: 'new-game-id' });
-    vi.mocked(apiClient.createGame).mockResolvedValue(game);
+    const mockCreateGame = vi.fn().mockResolvedValue(game);
+    mockUseGameService.mockReturnValue({
+      savedGames: [],
+      isLoading: false,
+      error: null,
+      isLoaded: false,
+      loadGames: vi.fn(),
+      deleteGame: vi.fn(),
+      createGame: mockCreateGame,
+      clearCache: vi.fn(),
+      refreshGames: vi.fn(),
+    });
     renderNewGamePage('Medium');
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/game/new-game-id', { replace: true });
     });
   });
 
-  it('navigates home when alias is missing', async () => {
-    localStorage.removeItem('playerAlias');
-    vi.mocked(apiClient.createGame).mockResolvedValue(makeGame());
+  it('navigates home when player is not initialized', async () => {
+    mockUsePlayerService.mockReturnValue({
+      playerAlias: null,
+      isInitialized: false,
+      isLoading: false,
+      error: null,
+      initializePlayer: vi.fn(),
+      clearPlayer: vi.fn(),
+    });
     renderNewGamePage('Hard');
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/');
@@ -64,7 +105,18 @@ describe('NewGamePage', () => {
   });
 
   it('navigates home when createGame fails', async () => {
-    vi.mocked(apiClient.createGame).mockRejectedValue(new Error('Network error'));
+    const mockCreateGame = vi.fn().mockRejectedValue(new Error('Network error'));
+    mockUseGameService.mockReturnValue({
+      savedGames: [],
+      isLoading: false,
+      error: null,
+      isLoaded: false,
+      loadGames: vi.fn(),
+      deleteGame: vi.fn(),
+      createGame: mockCreateGame,
+      clearCache: vi.fn(),
+      refreshGames: vi.fn(),
+    });
     renderNewGamePage('Easy');
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/');
@@ -72,7 +124,6 @@ describe('NewGamePage', () => {
   });
 
   it('shows the numeric loader with digits 1-9', () => {
-    vi.mocked(apiClient.createGame).mockResolvedValue(makeGame());
     renderNewGamePage('Hard');
     for (let n = 1; n <= 9; n++) {
       expect(screen.getByText(n.toString())).toBeInTheDocument();
