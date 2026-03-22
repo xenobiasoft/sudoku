@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Sudoku.Blazor.Components.Pages;
 using Sudoku.Blazor.Services.Abstractions;
 
-namespace UnitTests.Web.Pages;
+namespace UnitTests.Blazor.Pages;
 
 public class NewPageTests : BunitContext
 {

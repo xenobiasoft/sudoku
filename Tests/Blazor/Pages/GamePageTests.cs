@@ -10,7 +10,7 @@ using Sudoku.Blazor.Services.Abstractions;
 using Sudoku.Domain.ValueObjects;
 using UnitTests.Helpers.Factories;
 
-namespace UnitTests.Web.Pages;
+namespace UnitTests.Blazor.Pages;
 
 public class GamePageTests : BunitContext
 {

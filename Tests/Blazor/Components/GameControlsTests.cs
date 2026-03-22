@@ -3,7 +3,7 @@ using Sudoku.Blazor.Components;
 using Sudoku.Blazor.EventArgs;
 using Sudoku.Blazor.Services.Abstractions;
 
-namespace UnitTests.Web.Components;
+namespace UnitTests.Blazor.Components;
 
 public class GameControlsTests : BunitContext
 {

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { GameModel } from '../types';
-import { apiClient } from '../api/apiClient';
+import { usePlayerService } from '../hooks/usePlayerService';
+import { useGameService } from '../hooks/useGameService';
 import Layout from '../components/Layout';
 import SudokuImage from '../components/SudokuImage';
 import GameThumbnail from '../components/GameThumbnail';
@@ -9,49 +10,18 @@ import styles from './HomePage.module.css';
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const { playerAlias, isInitialized } = usePlayerService();
+  const { savedGames, isLoaded: gamesLoaded, loadGames, deleteGame: deleteGameService } = useGameService();
   const [newGameOpen, setNewGameOpen] = useState(false);
   const [loadGameOpen, setLoadGameOpen] = useState(false);
-  const [savedGames, setSavedGames] = useState<GameModel[]>([]);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    initPlayer();
-  }, []);
-
-  const initPlayer = async () => {
-    let alias = localStorage.getItem('playerAlias');
-    if (!alias) {
-      alias = await apiClient.createPlayer();
-      localStorage.setItem('playerAlias', alias);
-    } else {
-      try {
-        const exists = await apiClient.playerExists(alias);
-        if (!exists) {
-          alias = await apiClient.createPlayer();
-          localStorage.setItem('playerAlias', alias);
-        }
-      } catch {
-        alias = await apiClient.createPlayer();
-        localStorage.setItem('playerAlias', alias);
-      }
+    if (isInitialized && playerAlias) {
+      loadGames(playerAlias);
     }
-  };
+  }, [isInitialized, playerAlias, loadGames]);
 
   const handleLoadGameToggle = async () => {
-    if (!loadGameOpen) {
-      setLoading(true);
-      try {
-        const alias = localStorage.getItem('playerAlias');
-        if (alias) {
-          const games = await apiClient.getGames(alias);
-          setSavedGames(games.filter(g => g.status !== 'Completed'));
-        }
-      } catch (e) {
-        console.error('Failed to load games', e);
-      } finally {
-        setLoading(false);
-      }
-    }
     setLoadGameOpen(o => !o);
     setNewGameOpen(false);
   };
@@ -70,11 +40,9 @@ export default function HomePage() {
   };
 
   const handleDeleteGame = async (game: GameModel) => {
-    const alias = localStorage.getItem('playerAlias');
-    if (!alias) return;
+    if (!playerAlias) return;
     try {
-      await apiClient.deleteGame(alias, game.id);
-      setSavedGames(games => games.filter(g => g.id !== game.id));
+      await deleteGameService(playerAlias, game.id);
     } catch (e) {
       console.error('Failed to delete game', e);
     }
@@ -98,11 +66,11 @@ export default function HomePage() {
             </ul>
           </li>
           <li>
-            <button onClick={handleLoadGameToggle} disabled={loading}>
+            <button onClick={handleLoadGameToggle} disabled={!gamesLoaded || savedGames.length === 0}>
               <i className="fa fa-folder-open" /> Load Game
             </button>
             <ul className={`${styles.subMenu} ${loadGameOpen ? styles.subMenuOpen : ''}`}>
-              {savedGames.length === 0 && loadGameOpen && !loading && (
+              {savedGames.length === 0 && loadGameOpen && gamesLoaded && (
                 <li><span style={{ color: '#666', fontSize: '1rem' }}>No saved games</span></li>
               )}
               {savedGames.map(game => (

@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Blazor.Components;
 
-namespace UnitTests.Web.Components;
+namespace UnitTests.Blazor.Components;
 
 public class VictoryDisplayTests : BunitContext
 {

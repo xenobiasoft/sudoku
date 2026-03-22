@@ -1,22 +1,23 @@
 import { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { apiClient } from '../api/apiClient';
+import { usePlayerService } from '../hooks/usePlayerService';
+import { useGameService } from '../hooks/useGameService';
 import Layout from '../components/Layout';
 import styles from './NewGamePage.module.css';
 
 export default function NewGamePage() {
   const { difficulty } = useParams<{ difficulty: string }>();
   const navigate = useNavigate();
+  const { playerAlias, isInitialized } = usePlayerService();
+  const { createGame } = useGameService();
 
   useEffect(() => {
     const create = async () => {
-      const alias = localStorage.getItem('playerAlias');
-      if (!alias || !difficulty) {
-        navigate('/');
+      if (!isInitialized || !playerAlias || !difficulty) {
         return;
       }
       try {
-        const game = await apiClient.createGame(alias, difficulty);
+        const game = await createGame(playerAlias, difficulty);
         navigate(`/game/${game.id}`, { replace: true });
       } catch (e) {
         console.error('Failed to create game', e);
@@ -24,7 +25,7 @@ export default function NewGamePage() {
       }
     };
     create();
-  }, [difficulty, navigate]);
+  }, [difficulty, navigate, playerAlias, isInitialized, createGame]);
 
   return (
     <Layout>

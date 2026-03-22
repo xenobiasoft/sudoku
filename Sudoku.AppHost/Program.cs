@@ -53,7 +53,7 @@ try
     builder.AddNpmApp("sudoku-react", "../Sudoku.React", "dev")
         .WithReference(api)
         .WithEnvironment("VITE_API_BASE_URL", api.GetEndpoint("https"))
-        .WithHttpEndpoint(env: "VITE_PORT")
+        .WithHttpEndpoint(port: 5173, env: "VITE_PORT")
         .WithExternalHttpEndpoints()
         .PublishAsDockerFile();
 

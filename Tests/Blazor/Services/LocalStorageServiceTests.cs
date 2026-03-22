@@ -1,9 +1,9 @@
-﻿using Sudoku.Blazor.Models;
+﻿using System.Text.Json;
+using Sudoku.Blazor.Models;
 using Sudoku.Blazor.Services;
 using Sudoku.Blazor.Services.Abstractions;
-using System.Text.Json;
 
-namespace UnitTests.Web.Services;
+namespace UnitTests.Blazor.Services;
 
 public class LocalStorageServiceTests : BaseTestByAbstraction<LocalStorageService, ILocalStorageService>
 {

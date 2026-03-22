@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useRef, type KeyboardEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type { GameModel } from '../types';
-import { apiClient } from '../api/apiClient';
 import { validateCells, isSolved } from '../utils/gameUtils';
+import { usePlayerService } from '../hooks/usePlayerService';
+import { useGameService } from '../hooks/useGameService';
 import Layout from '../components/Layout';
 import GameBoard from '../components/GameBoard';
 import GameControls from '../components/GameControls';
@@ -13,8 +14,23 @@ import styles from './GamePage.module.css';
 export default function GamePage() {
   const { puzzleId } = useParams<{ puzzleId: string }>();
   const navigate = useNavigate();
+  const { playerAlias, isInitialized, isLoading: playerLoading, error: playerError } = usePlayerService();
+  const {
+    currentGame,
+    isGameLoading,
+    gameError,
+    getGame,
+    updateStatus,
+    makeMove,
+    undoMove,
+    resetGame,
+    addPossibleValue,
+    removePossibleValue,
+    clearPossibleValues,
+    deleteGame,
+    clearCurrentGame,
+  } = useGameService();
 
-  const [game, setGame] = useState<GameModel | null>(null);
   const [selectedCell, setSelectedCell] = useState<{ row: number; column: number } | null>(null);
   const [pencilMode, setPencilMode] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -23,10 +39,10 @@ export default function GamePage() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(Date.now());
   const elapsedRef = useRef(0);
-  const gameRef = useRef<GameModel | null>(null);
   const solvedRef = useRef(false);
 
-  const alias = localStorage.getItem('playerAlias') ?? '';
+  // Use currentGame from useGameService instead of local state
+  const game = currentGame;
 
   const startTimer = useCallback((baseDuration: string) => {
     const [h, m, s] = baseDuration.split(':').map(Number);
@@ -59,34 +75,34 @@ export default function GamePage() {
   };
 
   const pauseGame = useCallback(async () => {
-    const g = gameRef.current;
-    if (!g || solvedRef.current) return;
+    if (!game || solvedRef.current || !playerAlias) return;
     stopTimer();
     try {
-      await apiClient.updateStatus(alias, g.id, 'Paused');
+      await updateStatus(playerAlias, game.id, 'Paused');
     } catch {
       // ignore
     }
-  }, [alias, stopTimer]);
+  }, [game, playerAlias, stopTimer, updateStatus]);
 
   useEffect(() => {
-    if (!puzzleId) return;
+    if (!puzzleId || !playerAlias || !isInitialized) return;
     const load = async () => {
       try {
-        const g = await apiClient.getGame(alias, puzzleId);
-        gameRef.current = g;
-        setGame(g);
+        const g = await getGame(playerAlias, puzzleId);
         const duration = g.statistics?.playDuration ?? '00:00:00';
         startTimer(duration);
-        await apiClient.updateStatus(alias, g.id, 'InProgress');
+        await updateStatus(playerAlias, g.id, 'InProgress');
       } catch (e) {
         console.error('Failed to load game', e);
         navigate('/');
       }
     };
     load();
-    return () => stopTimer();
-  }, [puzzleId, alias, startTimer, stopTimer, navigate]);
+    return () => {
+      stopTimer();
+      clearCurrentGame();
+    };
+  }, [puzzleId, playerAlias, isInitialized, getGame, updateStatus, startTimer, stopTimer, navigate, clearCurrentGame]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -106,16 +122,16 @@ export default function GamePage() {
     if (!game) return;
     try {
       const updated = await action();
-      gameRef.current = updated;
-      setGame(updated);
       if (isSolved(updated.cells)) {
         solvedRef.current = true;
         stopTimer();
         setSolved(true);
-        try {
-          await apiClient.deleteGame(alias, game.id);
-        } catch {
-          // ignore
+        if (playerAlias) {
+          try {
+            await deleteGame(playerAlias, game.id);
+          } catch {
+            // ignore
+          }
         }
       }
     } catch (e) {
@@ -124,49 +140,49 @@ export default function GamePage() {
   };
 
   const handleNumberInput = async (value: number) => {
-    if (!game || !selectedCell) return;
+    if (!game || !selectedCell || !playerAlias) return;
     const cell = game.cells.find(c => c.row === selectedCell.row && c.column === selectedCell.column);
     if (!cell || cell.isFixed) return;
 
     if (pencilMode) {
       await handleCellAction(game.cells, async () => {
         if (cell.possibleValues.includes(value)) {
-          return apiClient.removePossibleValue(alias, game.id, selectedCell.row, selectedCell.column, value);
+          return removePossibleValue(playerAlias, game.id, selectedCell.row, selectedCell.column, value);
         } else {
-          return apiClient.addPossibleValue(alias, game.id, selectedCell.row, selectedCell.column, value);
+          return addPossibleValue(playerAlias, game.id, selectedCell.row, selectedCell.column, value);
         }
       });
     } else {
       await handleCellAction(game.cells, () =>
-        apiClient.makeMove(alias, game.id, selectedCell.row, selectedCell.column, value, formatDuration(elapsedRef.current))
+        makeMove(playerAlias, game.id, selectedCell.row, selectedCell.column, value, formatDuration(elapsedRef.current))
       );
     }
   };
 
   const handleErase = async () => {
-    if (!game || !selectedCell) return;
+    if (!game || !selectedCell || !playerAlias) return;
     const cell = game.cells.find(c => c.row === selectedCell.row && c.column === selectedCell.column);
     if (!cell || cell.isFixed) return;
 
     if (pencilMode && cell.possibleValues.length > 0) {
       await handleCellAction(game.cells, () =>
-        apiClient.clearPossibleValues(alias, game.id, selectedCell.row, selectedCell.column)
+        clearPossibleValues(playerAlias, game.id, selectedCell.row, selectedCell.column)
       );
     } else if (!pencilMode && cell.hasValue) {
       await handleCellAction(game.cells, () =>
-        apiClient.makeMove(alias, game.id, selectedCell.row, selectedCell.column, null, formatDuration(elapsedRef.current))
+        makeMove(playerAlias, game.id, selectedCell.row, selectedCell.column, null, formatDuration(elapsedRef.current))
       );
     }
   };
 
   const handleUndo = async () => {
-    if (!game) return;
-    await handleCellAction(game.cells, () => apiClient.undoMove(alias, game.id));
+    if (!game || !playerAlias) return;
+    await handleCellAction(game.cells, () => undoMove(playerAlias, game.id));
   };
 
   const handleReset = async () => {
-    if (!game) return;
-    await handleCellAction(game.cells, () => apiClient.resetGame(alias, game.id));
+    if (!game || !playerAlias) return;
+    await handleCellAction(game.cells, () => resetGame(playerAlias, game.id));
   };
 
   const handleHome = async () => {
@@ -206,10 +222,44 @@ export default function GamePage() {
     navigate('/');
   };
 
-  if (!game) {
+  if (playerLoading || !isInitialized) {
     return (
       <Layout>
-        <div style={{ textAlign: 'center', marginTop: '4rem' }}>Loading puzzle...</div>
+        <div style={{ textAlign: 'center', marginTop: '4rem' }}>
+          {playerLoading ? 'Initializing player...' : 'Loading...'}
+        </div>
+      </Layout>
+    );
+  }
+
+  if (playerError) {
+    return (
+      <Layout>
+        <div style={{ textAlign: 'center', marginTop: '4rem' }}>
+          <div>Error: {playerError}</div>
+          <button onClick={() => navigate('/')}>Go Home</button>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (gameError) {
+    return (
+      <Layout>
+        <div style={{ textAlign: 'center', marginTop: '4rem' }}>
+          <div>Error loading game: {gameError}</div>
+          <button onClick={() => navigate('/')}>Go Home</button>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (isGameLoading || !game) {
+    return (
+      <Layout>
+        <div style={{ textAlign: 'center', marginTop: '4rem' }}>
+          {isGameLoading ? 'Loading puzzle...' : 'Loading puzzle...'}
+        </div>
       </Layout>
     );
   }

@@ -8,8 +8,6 @@ namespace Sudoku.Api.Controllers
     [ApiController]
     public class PlayersController(IPlayerApplicationService playerService) : ControllerBase
     {
-        private readonly IPlayerApplicationService _playerService = playerService;
-
         /// <summary>
         /// Creates a new player alias
         /// </summary>
@@ -20,7 +18,7 @@ namespace Sudoku.Api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<string>> CreatePlayerAsync([FromBody] CreatePlayerRequest? request = null)
         {
-            var result = await _playerService.CreatePlayerAsync(request?.Alias);
+            var result = await playerService.CreatePlayerAsync(request?.Alias);
             
             if (!result.IsSuccess)
             {
@@ -45,7 +43,7 @@ namespace Sudoku.Api.Controllers
                 return BadRequest("Player alias cannot be null or empty.");
             }
             
-            var result = await _playerService.PlayerExistsAsync(alias);
+            var result = await playerService.PlayerExistsAsync(alias);
             
             if (!result.IsSuccess)
             {
