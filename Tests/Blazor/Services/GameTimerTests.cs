@@ -1,6 +1,6 @@
 using Sudoku.Blazor.Services;
 
-namespace UnitTests.Web.Services;
+namespace UnitTests.Blazor.Services;
 
 public class GameTimerTests : IDisposable
 {

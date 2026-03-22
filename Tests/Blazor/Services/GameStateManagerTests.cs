@@ -3,7 +3,7 @@ using Sudoku.Blazor.Services;
 using Sudoku.Blazor.Services.Abstractions;
 using Sudoku.Blazor.Services.HttpClients;
 
-namespace UnitTests.Web.Services;
+namespace UnitTests.Blazor.Services;
 
 public class GameStateManagerTests : BaseTestByAbstraction<GameManager, IGameStateManager>
 {

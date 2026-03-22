@@ -14,8 +14,6 @@ export default function NewGamePage() {
   useEffect(() => {
     const create = async () => {
       if (!isInitialized || !playerAlias || !difficulty) {
-        debugger
-        navigate('/');
         return;
       }
       try {

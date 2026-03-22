@@ -146,7 +146,6 @@ export function useGameService(): UseGameServiceReturn {
     setError(null);
 
     try {
-      debugger
       // Create the game via API
       const newGame = await apiClient.createGame(playerAlias, difficulty);
 

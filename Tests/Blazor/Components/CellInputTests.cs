@@ -6,7 +6,7 @@ using Sudoku.Blazor.Services.Abstractions;
 using Sudoku.Domain.ValueObjects;
 using UnitTests.Helpers.Factories;
 
-namespace UnitTests.Web.Components;
+namespace UnitTests.Blazor.Components;
 
 public class CellInputTests : BunitContext
 {

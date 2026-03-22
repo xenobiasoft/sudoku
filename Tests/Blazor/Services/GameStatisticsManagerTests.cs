@@ -4,7 +4,7 @@ using Sudoku.Blazor.Services.Abstractions;
 using Sudoku.Blazor.Services.HttpClients;
 using UnitTests.Helpers.Factories;
 
-namespace UnitTests.Web.Services;
+namespace UnitTests.Blazor.Services;
 
 public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGameStatisticsManager>
 {

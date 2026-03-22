@@ -5,7 +5,7 @@ using Sudoku.Blazor.Models;
 using Sudoku.Blazor.Services.Abstractions;
 using IndexPage = Sudoku.Blazor.Components.Pages.Index;
 
-namespace UnitTests.Web.Pages;
+namespace UnitTests.Blazor.Pages;
 
 public class IndexPageTests : BunitContext
 {

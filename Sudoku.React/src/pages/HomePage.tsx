@@ -32,7 +32,6 @@ export default function HomePage() {
   };
 
   const handleSelectDifficulty = (difficulty: string) => {
-    debugger;
     navigate(`/new/${difficulty}`);
   };
 
