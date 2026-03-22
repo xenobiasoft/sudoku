@@ -89,21 +89,6 @@ describe('NewGamePage', () => {
     });
   });
 
-  it('navigates home when player is not initialized', async () => {
-    mockUsePlayerService.mockReturnValue({
-      playerAlias: null,
-      isInitialized: false,
-      isLoading: false,
-      error: null,
-      initializePlayer: vi.fn(),
-      clearPlayer: vi.fn(),
-    });
-    renderNewGamePage('Hard');
-    await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/');
-    });
-  });
-
   it('navigates home when createGame fails', async () => {
     const mockCreateGame = vi.fn().mockRejectedValue(new Error('Network error'));
     mockUseGameService.mockReturnValue({

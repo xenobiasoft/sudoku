@@ -66,14 +66,14 @@ export function useGameService(): UseGameServiceReturn {
         if (cachedGames) {
           try {
             const parsedGames: GameModel[] = JSON.parse(cachedGames);
-            // Filter out completed games
-            const availableGames = parsedGames.filter(g => g.status !== 'Completed');
-            setSavedGames(availableGames);
-            setIsLoaded(true);
-            setIsLoading(false);
-            return;
+            if (parsedGames && parsedGames.length > 0) {
+              const availableGames = parsedGames.filter(g => g.status !== 'Completed');
+              setSavedGames(availableGames);
+              setIsLoaded(true);
+              setIsLoading(false);
+              return;
+            }
           } catch {
-            // Invalid cached data, remove it and continue with API call
             localStorage.removeItem('savedGames');
           }
         }
