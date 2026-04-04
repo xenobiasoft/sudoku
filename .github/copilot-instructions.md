@@ -420,3 +420,163 @@ public class GameByPlayerSpecification : ISpecification<Game>
 7. **Deep Nesting**: Avoid deeply nested if statements and loops
 
 Remember: This is a learning project focused on TDD, clean architecture, and modern .NET development practices. Prioritize code quality, testability, and maintainability over quick solutions.
+
+---
+
+## Agent Index
+
+The following agents are active in this repository. When Copilot receives a task, it should self-identify which agent role applies based on the files open and the work requested, then follow only that agent's scope rules.
+
+**Code Modernization Agent** — Active when working in `Sudoku.Api`, `Sudoku.Blazor`, or `architecture-diagram.md` for migration purposes. Drives the removal of legacy `Sudoku`, `Sudoku.Web.Server`, and `Sudoku.Storage.Azure` usages from new projects. Routes API controllers and Blazor pages through the Application layer. Never modifies legacy projects directly.
+
+**Blazor UI Agent** — Active when working in `Sudoku.Blazor/**`. Scaffolds `.razor` pages and components following the `@page / @inject / @code` pattern. Replaces SignalR / `WebServices` calls with injected `IGameApplicationService`. Ensures ARIA labels and keyboard navigation on interactive components. Never creates `.tsx` or `.module.css` files.
+
+**React/Vite UI Agent** — Active when working in `Sudoku.React/**`. Follows `Sudoku.React/.github/copilot-instructions.md` exclusively. Generates typed React functional components with `interface XxxProps` and paired `.module.css` files. Routes all backend calls through `src/api/apiClient.ts`. Never modifies C# projects.
+
+**Domain Modeling Agent** — Active when working in `Sudoku.Domain/**` or `Tests/Domain/**`. Adds `AggregateRoot` subclasses with factory methods and private constructors, `record`-based value objects, domain events as `record ... : DomainEvent`, and `ISpecification<T>` implementations. Never adds infrastructure NuGet packages to `Sudoku.Domain.csproj`.
+
+**CQRS Command/Query Generator** — Active when working in `Sudoku.Application/**` or `Tests/Application/**`. Produces `record XxxCommand`, `record XxxQuery`, and paired `ICommandHandler` / `IQueryHandler` implementations. Registers handlers in the DI configuration. Uses `Result<T>` for all return values. Query handlers must be strictly read-only.
+
+**Test Generation Agent** — Active when adding or modifying tests in `Tests/**`. Inherits from `BaseTestByAbstraction` or `BaseTestByType` per the DepenMock conventions below. Mirrors the production project structure inside `Tests/`. Generates at minimum a happy-path test, an invalid-input test, and a domain-event-raised test for every new command handler.
+
+**Azure/Aspire Deployment Agent** — Active when working in `.github/workflows/main.yml`, `.github/main.bicep`, `Sudoku.AppHost/**`, or `Sudoku.ServiceDefaults/**`. Wires new resources into Bicep and AppHost. Keeps the CI pipeline in sync with any new publishable projects. Never hard-codes secrets; always uses Azure Key Vault references.
+
+**API Design Agent** — Active when working in `Sudoku.Api/**` or `Tests/API/**`. Uses `[ApiController] / [Route("api/[controller]")] / ControllerBase`. Injects only Application-layer interfaces. Returns `ActionResult<T>` via `Ok` / `BadRequest` based on `Result<T>.IsSuccess`. Adds Swagger XML doc comments on every public endpoint. Validates route contracts against `Sudoku.React/src/api/apiClient.ts`.
+
+---
+
+## Anti-Pattern Triggers
+
+The following conditions must be detected and flagged as blocking issues on any PR:
+
+### Architectural Drift
+- **Layer violation**: A project reference flows in the wrong direction (e.g., `Sudoku.Domain` references `Sudoku.Infrastructure`, or `Sudoku.Application` references `Sudoku.Api`). The only valid dependency direction is: Domain ← Application ← Infrastructure ← API/UI.
+- **Domain entity leakage**: A domain entity type (anything from `Sudoku.Domain/Entities/`) is used directly in a controller action parameter or return type instead of a DTO.
+- **Infrastructure in Domain**: Any `BlobServiceClient`, `DbContext`, `HttpClient`, or Azure SDK type appearing in `Sudoku.Domain` or `Sudoku.Application` is a hard blocker.
+
+### Domain Model Quality
+- **Anemic domain model**: A new class under `Sudoku.Domain/Entities/` that contains only auto-properties with no business methods must be flagged. Domain entities must encapsulate behavior, not just data.
+- **Primitive obsession**: Method signatures in the domain or application layer that accept raw `string` or `Guid` for a concept that has a value object (e.g., `GameId`, `PlayerAlias`) must be replaced with the correct value object type.
+- **Missing domain event**: An `AggregateRoot` method that mutates state without raising at least one domain event via `AddDomainEvent` (or equivalent) must be flagged.
+
+### Code Size
+- **God object**: Any new class exceeding 300 lines of code triggers a review comment requesting decomposition.
+- **Long method**: Any new method exceeding 20 lines triggers a review comment requesting extraction.
+- **Magic number**: Numeric literals in domain or application code that are not assigned to a named constant or enum trigger a warning.
+
+---
+
+## DepenMock Quick-Reference
+
+All unit tests in this solution use the [DepenMock](https://github.com/xenobiasoft/depenmock) library with **NUnit** (`[Test]` attribute). The following rules are mandatory.
+
+### Base Class Selection
+
+| Condition | Base class to use |
+|---|---|
+| SUT implements an interface **or** inherits a base class | `BaseTestByAbstraction<TSut, TAbstraction>` |
+| SUT is a concrete class with no interface/base | `BaseTestByType<TSut>` |
+
+### Mock Resolution (Constructor Pattern)
+
+All mocks must be resolved in the **test class constructor** and stored as `private readonly` fields. Never resolve mocks inside individual test methods.
+
+```csharp
+public class CreateGameCommandHandlerTests
+    : BaseTestByAbstraction<CreateGameCommandHandler, ICommandHandler<CreateGameCommand>>
+{
+    private readonly Mock<IGameRepository> _gameRepository;
+    private readonly Mock<IDomainEventDispatcher> _eventDispatcher;
+
+    public CreateGameCommandHandlerTests()
+    {
+        _gameRepository = Container.ResolveMock<IGameRepository>();
+        _eventDispatcher = Container.ResolveMock<IDomainEventDispatcher>();
+    }
+
+    [Test]
+    public async Task HandleAsync_ValidCommand_ReturnsSuccess()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        var command = new CreateGameCommand("player1", GameDifficulty.Easy);
+
+        // Act
+        var result = await sut.HandleAsync(command);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+    }
+}
+```
+
+### SUT Resolution
+
+Always use `ResolveSut()` to obtain the system under test. Never instantiate the SUT directly with `new`.
+
+### Logging Assertions
+
+Never create `Mock<ILogger<T>>`. Use the built-in `Logger` property from the base class:
+
+| Method | Purpose |
+|---|---|
+| `Logger.InformationLogs()` | Assert information-level log entries |
+| `Logger.WarningLogs()` | Assert warning-level log entries |
+| `Logger.ErrorLogs()` | Assert error-level log entries |
+| `Logger.DebugLogs()` | Assert debug-level log entries |
+| `Logger.CriticalLogs()` | Assert critical-level log entries |
+
+Use `.ContainsMessage("expected text")` to assert on a specific or partial log message:
+
+```csharp
+Logger.InformationLogs().ContainsMessage("Game created successfully");
+```
+
+### Test Naming
+
+Follow `[MethodName]_[Scenario]_[ExpectedResult]` strictly. One assertion per test method.
+
+### Minimum Test Coverage for Command Handlers
+
+For every new command handler, generate at least three tests:
+1. **Happy path** — valid input, `Result.IsSuccess` is `true`, repository was called
+2. **Invalid input** — null or invalid input, `Result.IsSuccess` is `false` or exception thrown
+3. **Domain event raised** — after handler execution, the relevant domain event was dispatched
+
+---
+
+## Contract-Change Protocol
+
+Follow this checklist whenever modifying an API response model, request DTO, or route:
+
+- [ ] Update the C# DTO class in `Sudoku.Api` or `Sudoku.Application/DTOs/`
+- [ ] Update the corresponding TypeScript interface in `Sudoku.React/src/types/index.ts`
+- [ ] Verify `src/api/apiClient.ts` call sites are still type-safe after the interface change
+- [ ] Add or update integration tests in `Tests/API/` to assert the new response shape
+- [ ] Tag the PR with the `contract-change` label
+- [ ] Request sign-off from both the API Design Agent and the React/Vite UI Agent before merging
+
+Route changes additionally require:
+- [ ] Update the Vite proxy in `Sudoku.React/vite.config.ts` if the `/api/*` path prefix changed
+- [ ] Update the relevant `apiClient.ts` endpoint constant
+- [ ] Update Swagger XML doc comment on the controller action to reflect the new route
+
+---
+
+## Migration Status Table
+
+The table below is the authoritative source of truth for what has and has not been migrated. Agents must consult this table before deciding whether a legacy component is safe to remove or bypass. Only the Code Modernization Agent (with human approval) may change a ⏳ or 🔄 to ✅.
+
+| Component | Status | Notes |
+|---|---|---|
+| `Sudoku.Domain` | ✅ Complete | Ready for use; canonical domain layer |
+| `Sudoku.Application` | ✅ Complete | CQRS handlers and application services in place |
+| `Sudoku.Infrastructure` | ✅ Complete | Repository implementations available |
+| `Sudoku.Api` | ✅ Complete | REST endpoints in place; partial legacy usage remains |
+| `Sudoku.AppHost` | ✅ Complete | Aspire orchestration configured |
+| Legacy API integration | 🔄 In Progress | `Sudoku.Api` still references legacy services in some controllers |
+| `Sudoku.Blazor` migration | ⏳ Pending | Legacy `Sudoku.Web.Server` still in use; migrate to `IGameApplicationService` |
+| Storage migration | ⏳ Pending | Legacy `Sudoku.Storage.Azure` still in use; migrate to `IGameRepository` |
+| Legacy project removal (`Sudoku/`) | ⏳ Pending | Blocked until API + Blazor migrations are complete |
+| Legacy project removal (`Sudoku.Web.Server/`) | ⏳ Pending | Blocked until Blazor migration is complete |
+| Legacy project removal (`Sudoku.Storage.Azure/`) | ⏳ Pending | Blocked until storage migration is complete |
