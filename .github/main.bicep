@@ -121,6 +121,7 @@ resource apiServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
       allowedOrigins: [
         'https://sudoku.xenobiasoft.com'
         'https://${siteName}.azurewebsites.net'
+        'https://${sudokuReactSwa.properties.defaultHostname}'
       ]
       supportCredentials: false
     }
@@ -144,5 +145,21 @@ resource apiServiceConfig 'Microsoft.Web/sites/config@2023-12-01' = {
 //   }
 // }
 
+// Static Web App (React)
+resource sudokuReactSwa 'Microsoft.Web/staticSites@2023-12-01' = {
+  name: 'XenobiaSoftSudokuReact'
+  location: location
+  sku: {
+    name: 'Standard'
+    tier: 'Standard'
+  }
+  properties: {}
+  tags: {
+    environment: 'production'
+    project: 'XenobiaSoftSudokuReact'
+  }
+}
+
 output webAppUrl string = sudokuApp.properties.defaultHostName
 output apiAppUrl string = sudokuApiApp.properties.defaultHostName
+output staticWebAppUrl string = sudokuReactSwa.properties.defaultHostname
