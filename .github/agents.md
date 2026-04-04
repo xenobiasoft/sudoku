@@ -455,7 +455,7 @@ The following conditions must be detected and flagged as blocking issues on any 
 - **Infrastructure in Domain**: Any `BlobServiceClient`, `DbContext`, `HttpClient`, or Azure SDK type appearing in `Sudoku.Domain` or `Sudoku.Application` is a hard blocker.
 
 ### Domain Model Quality
-- **Anemic domain model**: A new class under `Sudoku.Domain/Entities/` that contains only auto-properties with no business methods must be flagged. Domain entities must encapsulate behaviour, not just data.
+- **Anemic domain model**: A new class under `Sudoku.Domain/Entities/` that contains only auto-properties with no business methods must be flagged. Domain entities must encapsulate behavior, not just data.
 - **Primitive obsession**: Method signatures in the domain or application layer that accept raw `string` or `Guid` for a concept that has a value object (e.g., `GameId`, `PlayerAlias`) must be replaced with the correct value object type.
 - **Missing domain event**: An `AggregateRoot` method that mutates state without raising at least one domain event via `AddDomainEvent` (or equivalent) must be flagged.
 
@@ -468,7 +468,7 @@ The following conditions must be detected and flagged as blocking issues on any 
 
 ## DepenMock Quick-Reference
 
-All unit tests in this solution use the [DepenMock](https://github.com/xenobiasoft/depenmock) library. The following rules are mandatory.
+All unit tests in this solution use the [DepenMock](https://github.com/xenobiasoft/depenmock) library with **NUnit** (`[Test]` attribute). The following rules are mandatory.
 
 ### Base Class Selection
 
