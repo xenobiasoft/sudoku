@@ -32,6 +32,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Blazor", "Sudoku.Blazor\Sudoku.Blazor.csproj", "{CAE5610D-341A-3FFE-0753-4FA851715908}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infra", "infra", "{9A29756C-E327-47DF-B5A2-BF6956C21A74}"
+	ProjectSection(SolutionItems) = preProject
+		infra\exported.bicep = infra\exported.bicep
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
