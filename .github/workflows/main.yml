@@ -147,10 +147,15 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Debug Azure context
+        run: |
+          az account show --output table
+          az account list --output table
+          az group show -n rg-xenobiasoft-sudoku-prod-westus2 --output table
+
       - name: Deploy Bicep template
         uses: azure/arm-deploy@v2
         with:
-          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           resourceGroupName: rg-xenobiasoft-sudoku-prod-westus2
           template: ./infra/main.bicep
           parameters: ./infra/params/prod.bicepparam
