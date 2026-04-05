@@ -134,6 +134,29 @@ module compute 'modules/compute.bicep' = {
   }
 }
 
+// Step 1: Bind the custom hostname to the web app (no SSL yet).
+// The managed certificate cannot be created until the hostname is bound.
+module hostname 'modules/hostname.bicep' = if (enableCustomDomain) {
+  name: 'hostname'
+  dependsOn: [compute]
+  params: {
+    webAppName: webAppName
+    customDomainName: customDomainName
+  }
+}
+
+// Step 2: Create the managed certificate and enable SNI SSL on the binding.
+module ssl 'modules/ssl.bicep' = if (enableCustomDomain) {
+  name: 'ssl'
+  dependsOn: [hostname]
+  params: {
+    location: location
+    webAppName: webAppName
+    appServicePlanName: appServicePlanName
+    customDomainName: customDomainName
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Outputs
 // ---------------------------------------------------------------------------
