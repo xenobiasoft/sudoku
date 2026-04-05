@@ -1,4 +1,4 @@
-targetScope = 'subscription'
+targetScope = 'resourceGroup'
 
 // ---------------------------------------------------------------------------
 // Global parameters
@@ -67,21 +67,11 @@ param logAnalyticsWorkspaceName string
 param appInsightsName string
 
 // ---------------------------------------------------------------------------
-// Resource Group
-// ---------------------------------------------------------------------------
-
-resource rg 'Microsoft.Resources/resourceGroups@2023-07-01' = {
-  name: 'rg-xenobiasoft'
-  location: location
-}
-
-// ---------------------------------------------------------------------------
 // Modules
 // ---------------------------------------------------------------------------
 
 module monitoring 'modules/monitoring.bicep' = {
   name: 'monitoring'
-  scope: rg
   params: {
     location: location
     environment: environment
@@ -92,7 +82,6 @@ module monitoring 'modules/monitoring.bicep' = {
 
 module storage 'modules/storage.bicep' = {
   name: 'storage'
-  scope: rg
   params: {
     location: location
     environment: environment
@@ -104,7 +93,6 @@ module storage 'modules/storage.bicep' = {
 
 module keyvault 'modules/keyvault.bicep' = {
   name: 'keyvault'
-  scope: rg
   params: {
     location: location
     environment: environment
@@ -114,7 +102,6 @@ module keyvault 'modules/keyvault.bicep' = {
 
 module appconfig 'modules/appconfig.bicep' = {
   name: 'appconfig'
-  scope: rg
   params: {
     location: location
     environment: environment
@@ -124,7 +111,6 @@ module appconfig 'modules/appconfig.bicep' = {
 
 module compute 'modules/compute.bicep' = {
   name: 'compute'
-  scope: rg
   params: {
     location: location
     environment: environment
@@ -140,7 +126,7 @@ module compute 'modules/compute.bicep' = {
 // Outputs
 // ---------------------------------------------------------------------------
 
-output resourceGroupName string = rg.name
+output resourceGroupName string = resourceGroup().name
 output webAppUrl string = compute.outputs.webAppUrl
 output apiAppUrl string = compute.outputs.apiAppUrl
 output appInsightsConnectionString string = monitoring.outputs.appInsightsConnectionString
