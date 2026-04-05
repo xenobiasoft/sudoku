@@ -163,39 +163,6 @@ resource apiAppConfig 'Microsoft.Web/sites/config@2023-12-01' = {
   }
 }
 
-// ---------------------------------------------------------------------------
-// SSL Certificate (App Service Managed Certificate)
-// Note: The custom domain DNS must point to the web app before this resource
-// can be successfully provisioned.
-// ---------------------------------------------------------------------------
-
-resource certificate 'Microsoft.Web/certificates@2023-12-01' = if (enableCustomDomain) {
-  name: '${customDomainName}-${webAppName}'
-  location: location
-  properties: {
-    canonicalName: customDomainName
-    hostNames: [
-      customDomainName
-    ]
-    serverFarmId: appServicePlan.id
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Custom Domain Binding
-// ---------------------------------------------------------------------------
-
-resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2023-12-01' = if (enableCustomDomain) {
-  parent: webApp
-  name: customDomainName
-  properties: {
-    siteName: webAppName
-    hostNameType: 'Verified'
-    sslState: 'SniEnabled'
-    thumbprint: certificate.properties.thumbprint
-  }
-}
-
 output webAppUrl string = webApp.properties.defaultHostName
 output apiAppUrl string = apiApp.properties.defaultHostName
 output webAppPrincipalId string = webApp.identity.principalId
