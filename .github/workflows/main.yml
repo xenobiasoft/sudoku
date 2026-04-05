@@ -167,7 +167,7 @@ jobs:
         if: failure()
         run: |
           echo "Showing deployment operations for 'main'..."
-          az deployment group operation list \
+          az deployment operation group list \
             --resource-group rg-xenobiasoft-sudoku-prod-westus2 \
             --name main \
             --output jsonc
