@@ -2,8 +2,8 @@ param location string
 param environment string
 param logAnalyticsWorkspaceName string
 param appInsightsName string
-param actionGroupName string = 'Application Insights Smart Detection'
-param alertRuleName string = 'failure-anomalies-sudoku'
+param actionGroupName string
+param alertRuleName string
 
 var tags = {
   environment: environment

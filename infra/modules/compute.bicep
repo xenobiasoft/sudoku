@@ -5,6 +5,14 @@ param webAppName string
 param apiAppName string
 param appServicePlanSku string = 'B1'
 param customDomainName string = 'sudoku.xenobiasoft.com'
+param enableCustomDomain bool = false
+
+var corsAllowedOrigins = enableCustomDomain ? [
+  'https://${customDomainName}'
+  'https://${webAppName}.azurewebsites.net'
+] : [
+  'https://${webAppName}.azurewebsites.net'
+]
 
 var tags = {
   environment: environment
@@ -146,48 +154,12 @@ resource apiAppConfig 'Microsoft.Web/sites/config@2023-12-01' = {
       }
     ]
     cors: {
-      allowedOrigins: [
-        'https://${customDomainName}'
-        'https://${webAppName}.azurewebsites.net'
-      ]
+      allowedOrigins: corsAllowedOrigins
       supportCredentials: false
     }
     remoteDebuggingEnabled: false
     webSocketsEnabled: false
     use32BitWorkerProcess: true
-  }
-}
-
-// ---------------------------------------------------------------------------
-// SSL Certificate (App Service Managed Certificate)
-// Note: The custom domain DNS must point to the web app before this resource
-// can be successfully provisioned.
-// ---------------------------------------------------------------------------
-
-resource certificate 'Microsoft.Web/certificates@2023-12-01' = {
-  name: '${customDomainName}-${webAppName}'
-  location: location
-  properties: {
-    canonicalName: customDomainName
-    hostNames: [
-      customDomainName
-    ]
-    serverFarmId: appServicePlan.id
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Custom Domain Binding
-// ---------------------------------------------------------------------------
-
-resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2023-12-01' = {
-  parent: webApp
-  name: customDomainName
-  properties: {
-    siteName: webAppName
-    hostNameType: 'Verified'
-    sslState: 'SniEnabled'
-    thumbprint: certificate.properties.thumbprint
   }
 }
 
