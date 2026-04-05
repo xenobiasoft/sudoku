@@ -5,9 +5,9 @@ param location = 'WestUS2'
 param environment = 'production'
 
 // Compute
-param appServicePlanName = 'XenobiaSoftServicePlan'
-param webAppName = 'XenobiaSoftSudoku'
-param apiAppName = 'XenobiaSoftSudokuApi'
+param appServicePlanName = 'XenobiasoftServicePlan'
+param webAppName = 'XenobiasoftSudoku'
+param apiAppName = 'XenobiasoftSudokuApi'
 param appServicePlanSku = 'B1'
 param customDomainName = 'sudoku.xenobiasoft.com'
 
