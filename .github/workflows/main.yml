@@ -154,13 +154,29 @@ jobs:
           az group show -n rg-xenobiasoft-sudoku-prod-westus2 --output table
 
       - name: Deploy Bicep template
+        id: deploy
         uses: azure/arm-deploy@v2
         with:
           resourceGroupName: rg-xenobiasoft-sudoku-prod-westus2
           template: ./infra/main.bicep
           parameters: ./infra/params/prod.bicepparam
           scope: resourcegroup
-          failOnStdErr: false
+          failOnStdErr: true
+
+      - name: Dump deployment error details (if failed)
+        if: failure()
+        run: |
+          echo "Showing deployment operations for 'main'..."
+          az deployment group operation list \
+            --resource-group rg-xenobiasoft-sudoku-prod-westus2 \
+            --name main \
+            --output jsonc
+
+          echo "Showing deployment details for 'main'..."
+          az deployment group show \
+            --resource-group rg-xenobiasoft-sudoku-prod-westus2 \
+            --name main \
+            --output jsonc
 
   deploy-apps:
     needs: deploy-infra
