@@ -10,7 +10,7 @@ var tags = {
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
   name: keyVaultName
-  location: 'CentralUS'
+  location: location
   tags: tags
   properties: {
     tenantId: tenantId

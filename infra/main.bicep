@@ -5,10 +5,10 @@ targetScope = 'resourceGroup'
 // ---------------------------------------------------------------------------
 
 @description('Azure region for all resources.')
-param location string = 'eastus'
+param location string = 'westus2'
 
 @description('Deployment environment name used for tagging.')
-param environment string = 'prod'
+param environment string = 'production'
 
 // ---------------------------------------------------------------------------
 // Compute parameters

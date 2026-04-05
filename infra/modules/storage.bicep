@@ -120,7 +120,7 @@ resource tableService 'Microsoft.Storage/storageAccounts/tableServices@2023-01-0
 
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
   name: cosmosDbAccountName
-  location: 'CentralUS'
+  location: location
   kind: 'GlobalDocumentDB'
   tags: union(tags, {
     defaultExperience: 'Core (SQL)'
@@ -136,7 +136,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
     }
     locations: [
       {
-        locationName: 'centralus'
+        locationName: location
         failoverPriority: 0
         isZoneRedundant: true
       }
@@ -166,116 +166,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
     networkAclBypass: 'None'
     publicNetworkAccess: 'Enabled'
     virtualNetworkRules: []
-    ipRules: [
-      {
-        ipAddressOrRange: '76.154.207.26'
-      }
-      {
-        ipAddressOrRange: '20.75.146.211'
-      }
-      {
-        ipAddressOrRange: '20.75.146.221'
-      }
-      {
-        ipAddressOrRange: '20.75.146.228'
-      }
-      {
-        ipAddressOrRange: '20.75.146.229'
-      }
-      {
-        ipAddressOrRange: '20.75.146.254'
-      }
-      {
-        ipAddressOrRange: '20.75.146.255'
-      }
-      {
-        ipAddressOrRange: '40.88.199.185'
-      }
-      {
-        ipAddressOrRange: '20.75.146.16'
-      }
-      {
-        ipAddressOrRange: '20.75.146.17'
-      }
-      {
-        ipAddressOrRange: '20.75.146.24'
-      }
-      {
-        ipAddressOrRange: '20.75.146.25'
-      }
-      {
-        ipAddressOrRange: '20.75.146.30'
-      }
-      {
-        ipAddressOrRange: '20.75.146.31'
-      }
-      {
-        ipAddressOrRange: '20.75.146.32'
-      }
-      {
-        ipAddressOrRange: '20.75.146.33'
-      }
-      {
-        ipAddressOrRange: '20.75.146.40'
-      }
-      {
-        ipAddressOrRange: '20.75.146.64'
-      }
-      {
-        ipAddressOrRange: '20.75.146.65'
-      }
-      {
-        ipAddressOrRange: '20.75.149.122'
-      }
-      {
-        ipAddressOrRange: '20.75.146.74'
-      }
-      {
-        ipAddressOrRange: '40.88.194.183'
-      }
-      {
-        ipAddressOrRange: '20.75.146.166'
-      }
-      {
-        ipAddressOrRange: '20.75.146.194'
-      }
-      {
-        ipAddressOrRange: '20.75.146.195'
-      }
-      {
-        ipAddressOrRange: '20.75.147.4'
-      }
-      {
-        ipAddressOrRange: '20.75.147.5'
-      }
-      {
-        ipAddressOrRange: '20.75.147.18'
-      }
-      {
-        ipAddressOrRange: '20.75.147.19'
-      }
-      {
-        ipAddressOrRange: '20.75.147.37'
-      }
-      {
-        ipAddressOrRange: '20.75.147.65'
-      }
-      {
-        ipAddressOrRange: '20.119.8.46'
-      }
-      {
-        ipAddressOrRange: '4.210.172.107'
-      }
-      {
-        ipAddressOrRange: '13.88.56.148'
-      }
-      {
-        ipAddressOrRange: '13.91.105.215'
-      }
-      {
-        ipAddressOrRange: '40.91.218.243'
-      }
-    ]
+    ipRules: []
     cors: []
   }
 }

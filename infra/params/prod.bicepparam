@@ -1,8 +1,8 @@
 using '../main.bicep'
 
 // Global
-param location = 'eastus'
-param environment = 'prod'
+param location = 'WestUS2'
+param environment = 'production'
 
 // Compute
 param appServicePlanName = 'XenobiaSoftServicePlan'
