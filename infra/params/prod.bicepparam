@@ -14,6 +14,7 @@ param customDomainName = 'sudoku.xenobiasoft.com'
 // Storage
 param storageAccountName = 'stxenobiasoft'
 param cosmosDbAccountName = 'cosmos-sudoku-prod'
+param cosmosDbEnableFreeTier = true
 
 // Key Vault
 param keyVaultName = 'kv-xenobiasoft'

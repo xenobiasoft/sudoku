@@ -3,6 +3,9 @@ param environment string
 param storageAccountName string
 param cosmosDbAccountName string
 
+@description('Enable the Cosmos DB free tier. Only one account per subscription may use this. Set to false if another account in the subscription already uses it.')
+param cosmosDbEnableFreeTier bool = true
+
 var tags = {
   environment: environment
   project: 'XenobiaSoftSudoku'
@@ -156,7 +159,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
     capacity: {
       totalThroughputLimit: 1000
     }
-    enableFreeTier: true
+    enableFreeTier: cosmosDbEnableFreeTier
     enableAutomaticFailover: true
     enableMultipleWriteLocations: false
     enableAnalyticalStorage: false

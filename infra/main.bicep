@@ -39,6 +39,9 @@ param storageAccountName string
 @description('Name of the Cosmos DB account.')
 param cosmosDbAccountName string
 
+@description('Enable the Cosmos DB free tier. Only one account per subscription may use this.')
+param cosmosDbEnableFreeTier bool = true
+
 // ---------------------------------------------------------------------------
 // Key Vault parameters
 // ---------------------------------------------------------------------------
@@ -95,6 +98,7 @@ module storage 'modules/storage.bicep' = {
     environment: environment
     storageAccountName: storageAccountName
     cosmosDbAccountName: cosmosDbAccountName
+    cosmosDbEnableFreeTier: cosmosDbEnableFreeTier
   }
 }
 
