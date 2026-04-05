@@ -7,6 +7,13 @@ param appServicePlanSku string = 'B1'
 param customDomainName string = 'sudoku.xenobiasoft.com'
 param enableCustomDomain bool = false
 
+var corsAllowedOrigins = enableCustomDomain ? [
+  'https://${customDomainName}'
+  'https://${webAppName}.azurewebsites.net'
+] : [
+  'https://${webAppName}.azurewebsites.net'
+]
+
 var tags = {
   environment: environment
   project: 'XenobiaSoftSudoku'
@@ -147,12 +154,7 @@ resource apiAppConfig 'Microsoft.Web/sites/config@2023-12-01' = {
       }
     ]
     cors: {
-      allowedOrigins: enableCustomDomain ? [
-        'https://${customDomainName}'
-        'https://${webAppName}.azurewebsites.net'
-      ] : [
-        'https://${webAppName}.azurewebsites.net'
-      ]
+      allowedOrigins: corsAllowedOrigins
       supportCredentials: false
     }
     remoteDebuggingEnabled: false
