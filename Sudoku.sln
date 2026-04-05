@@ -8,7 +8,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub", "GitHub", "{7DBF7794-0F31-412A-997F-71760CE39417}"
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\main.yml = .github\workflows\main.yml
-		.github\main.bicep.old = .github\main.bicep.old
 		.github\variables.yml = .github\variables.yml
 	EndProjectSection
 EndProject
