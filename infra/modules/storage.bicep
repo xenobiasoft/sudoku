@@ -101,15 +101,6 @@ resource queueService 'Microsoft.Storage/storageAccounts/queueServices@2023-01-0
     cors: {
       corsRules: []
     }
-    logging: {
-        delete: false
-        read: false
-        retentionPolicy: {
-            enabled: false
-        }
-        version: '1.0'
-        write: false
-    }
   }
 }
 
@@ -139,9 +130,6 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
     databaseAccountOfferType: 'Standard'
     analyticalStorageConfiguration: {
         schemaType: 'WellDefined'
-    }
-    configurationOverrides: {
-        enablePerRegionPerPartitionAutoscaleOptIn: true
     }
     consistencyPolicy: {
       defaultConsistencyLevel: 'Session'
@@ -177,7 +165,6 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
     minimalTlsVersion: 'Tls12'
     networkAclBypass: 'None'
     publicNetworkAccess: 'Enabled'
-    sqlEndpoint: 'https://cosmos-sudoku-prod.documents.azure.com:443/'
     virtualNetworkRules: []
     ipRules: [
       {
@@ -315,13 +302,6 @@ resource gamesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/cont
                 ]
                 kind: 'Hash'
                 version: 2
-            }
-            fullTextPolicy: {
-                defaultLanguage: 'en-US'
-                defaultSpec: {
-                    language: 'en-US'
-                    stopWordListKind: 'extended'
-                }
             }
             indexingPolicy: {
                 indexingMode: 'consistent'
