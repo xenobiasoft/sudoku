@@ -7,8 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "Tests\UnitTest
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub", "GitHub", "{7DBF7794-0F31-412A-997F-71760CE39417}"
 	ProjectSection(SolutionItems) = preProject
-		.github\main.bicep = .github\main.bicep
 		.github\workflows\main.yml = .github\workflows\main.yml
+		.github\main.bicep.old = .github\main.bicep.old
 		.github\variables.yml = .github\variables.yml
 	EndProjectSection
 EndProject
@@ -34,7 +34,21 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Blazor", "Sudoku.Bla
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infra", "infra", "{9A29756C-E327-47DF-B5A2-BF6956C21A74}"
 	ProjectSection(SolutionItems) = preProject
-		infra\exported.bicep = infra\exported.bicep
+		infra\main.bicep = infra\main.bicep
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{F2DFCC82-9530-4EB9-9237-377038CC4FCA}"
+	ProjectSection(SolutionItems) = preProject
+		infra\modules\appconfig.bicep = infra\modules\appconfig.bicep
+		infra\modules\compute.bicep = infra\modules\compute.bicep
+		infra\modules\keyvault.bicep = infra\modules\keyvault.bicep
+		infra\modules\monitoring.bicep = infra\modules\monitoring.bicep
+		infra\modules\storage.bicep = infra\modules\storage.bicep
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "params", "params", "{0B69982A-788E-4277-A168-A9EA56E58EA9}"
+	ProjectSection(SolutionItems) = preProject
+		infra\params\prod.bicepparam = infra\params\prod.bicepparam
 	EndProjectSection
 EndProject
 Global
@@ -146,6 +160,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{F2DFCC82-9530-4EB9-9237-377038CC4FCA} = {9A29756C-E327-47DF-B5A2-BF6956C21A74}
+		{0B69982A-788E-4277-A168-A9EA56E58EA9} = {9A29756C-E327-47DF-B5A2-BF6956C21A74}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B3A3B7C7-B547-499D-8BB0-DFBB021089C3}

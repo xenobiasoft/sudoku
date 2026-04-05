@@ -57,7 +57,6 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' = {
     httpsOnly: true
     clientAffinityEnabled: false
     reserved: true
-    publicNetworkAccess: 'Enabled'
     keyVaultReferenceIdentity: 'SystemAssigned'
     siteConfig: {
       linuxFxVersion: 'DOTNETCORE|10.0'
@@ -116,7 +115,6 @@ resource apiApp 'Microsoft.Web/sites@2023-12-01' = {
     httpsOnly: true
     clientAffinityEnabled: false
     reserved: true
-    publicNetworkAccess: 'Enabled'
     keyVaultReferenceIdentity: 'SystemAssigned'
     siteConfig: {
       linuxFxVersion: 'DOTNETCORE|10.0'

@@ -33,16 +33,6 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
     encryption: {
       keySource: 'Microsoft.Storage'
       requireInfrastructureEncryption: false
-      services: {
-        blob: {
-          enabled: true
-          keyType: 'Account'
-        }
-        file: {
-          enabled: true
-          keyType: 'Account'
-        }
-      }
     }
     networkAcls: {
       bypass: 'AzureServices'
@@ -56,6 +46,7 @@ resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01'
   name: 'default'
   properties: {
     deleteRetentionPolicy: {
+      allowPermanentDelete: false
       enabled: true
       days: 7
     }
@@ -73,6 +64,8 @@ resource sudokuPuzzlesContainer 'Microsoft.Storage/storageAccounts/blobServices/
   parent: blobService
   name: 'sudoku-puzzles'
   properties: {
+    defaultEncryptionScope: '$account-encryption-key'
+    denyEncryptionScopeOverride: false
     publicAccess: 'None'
   }
 }
@@ -108,6 +101,15 @@ resource queueService 'Microsoft.Storage/storageAccounts/queueServices@2023-01-0
     cors: {
       corsRules: []
     }
+    logging: {
+        delete: false
+        read: false
+        retentionPolicy: {
+            enabled: false
+        }
+        version: '1.0'
+        write: false
+    }
   }
 }
 
@@ -127,7 +129,7 @@ resource tableService 'Microsoft.Storage/storageAccounts/tableServices@2023-01-0
 
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
   name: cosmosDbAccountName
-  location: location
+  location: 'CentralUS'
   kind: 'GlobalDocumentDB'
   tags: union(tags, {
     defaultExperience: 'Core (SQL)'
@@ -135,16 +137,20 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
   })
   properties: {
     databaseAccountOfferType: 'Standard'
+    analyticalStorageConfiguration: {
+        schemaType: 'WellDefined'
+    }
+    configurationOverrides: {
+        enablePerRegionPerPartitionAutoscaleOptIn: true
+    }
     consistencyPolicy: {
       defaultConsistencyLevel: 'Session'
-      maxIntervalInSeconds: 5
-      maxStalenessPrefix: 100
     }
     locations: [
       {
-        locationName: location
+        locationName: 'centralus'
         failoverPriority: 0
-        isZoneRedundant: false
+        isZoneRedundant: true
       }
     ]
     backupPolicy: {
@@ -159,6 +165,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
     capacity: {
       totalThroughputLimit: 1000
     }
+    defaultIdentity: 'FirstPartyIdentity'
     enableFreeTier: cosmosDbEnableFreeTier
     enableAutomaticFailover: true
     enableMultipleWriteLocations: false
@@ -170,8 +177,118 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
     minimalTlsVersion: 'Tls12'
     networkAclBypass: 'None'
     publicNetworkAccess: 'Enabled'
-    ipRules: []
+    sqlEndpoint: 'https://cosmos-sudoku-prod.documents.azure.com:443/'
     virtualNetworkRules: []
+    ipRules: [
+      {
+        ipAddressOrRange: '76.154.207.26'
+      }
+      {
+        ipAddressOrRange: '20.75.146.211'
+      }
+      {
+        ipAddressOrRange: '20.75.146.221'
+      }
+      {
+        ipAddressOrRange: '20.75.146.228'
+      }
+      {
+        ipAddressOrRange: '20.75.146.229'
+      }
+      {
+        ipAddressOrRange: '20.75.146.254'
+      }
+      {
+        ipAddressOrRange: '20.75.146.255'
+      }
+      {
+        ipAddressOrRange: '40.88.199.185'
+      }
+      {
+        ipAddressOrRange: '20.75.146.16'
+      }
+      {
+        ipAddressOrRange: '20.75.146.17'
+      }
+      {
+        ipAddressOrRange: '20.75.146.24'
+      }
+      {
+        ipAddressOrRange: '20.75.146.25'
+      }
+      {
+        ipAddressOrRange: '20.75.146.30'
+      }
+      {
+        ipAddressOrRange: '20.75.146.31'
+      }
+      {
+        ipAddressOrRange: '20.75.146.32'
+      }
+      {
+        ipAddressOrRange: '20.75.146.33'
+      }
+      {
+        ipAddressOrRange: '20.75.146.40'
+      }
+      {
+        ipAddressOrRange: '20.75.146.64'
+      }
+      {
+        ipAddressOrRange: '20.75.146.65'
+      }
+      {
+        ipAddressOrRange: '20.75.149.122'
+      }
+      {
+        ipAddressOrRange: '20.75.146.74'
+      }
+      {
+        ipAddressOrRange: '40.88.194.183'
+      }
+      {
+        ipAddressOrRange: '20.75.146.166'
+      }
+      {
+        ipAddressOrRange: '20.75.146.194'
+      }
+      {
+        ipAddressOrRange: '20.75.146.195'
+      }
+      {
+        ipAddressOrRange: '20.75.147.4'
+      }
+      {
+        ipAddressOrRange: '20.75.147.5'
+      }
+      {
+        ipAddressOrRange: '20.75.147.18'
+      }
+      {
+        ipAddressOrRange: '20.75.147.19'
+      }
+      {
+        ipAddressOrRange: '20.75.147.37'
+      }
+      {
+        ipAddressOrRange: '20.75.147.65'
+      }
+      {
+        ipAddressOrRange: '20.119.8.46'
+      }
+      {
+        ipAddressOrRange: '4.210.172.107'
+      }
+      {
+        ipAddressOrRange: '13.88.56.148'
+      }
+      {
+        ipAddressOrRange: '13.91.105.215'
+      }
+      {
+        ipAddressOrRange: '40.91.218.243'
+      }
+    ]
     cors: []
   }
 }
@@ -187,41 +304,48 @@ resource sudokuDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024
 }
 
 resource gamesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
-  parent: sudokuDatabase
-  name: 'games'
-  properties: {
-    resource: {
-      id: 'games'
-      partitionKey: {
-        paths: [
-          '/gameId'
-        ]
-        kind: 'Hash'
-        version: 2
-      }
-      indexingPolicy: {
-        indexingMode: 'consistent'
-        automatic: true
-        includedPaths: [
-          {
-            path: '/*'
-          }
-        ]
-        excludedPaths: [
-          {
-            path: '/"_etag"/?'
-          }
-        ]
-      }
-      conflictResolutionPolicy: {
-        mode: 'LastWriterWins'
-        conflictResolutionPath: '/_ts'
-      }
-      uniqueKeyPolicy: {
-        uniqueKeys: []
-      }
+    parent: sudokuDatabase
+    name: 'games'
+    properties: {
+        resource: {
+            id: 'games'
+            partitionKey: {
+                paths: [
+                    '/gameId'
+                ]
+                kind: 'Hash'
+                version: 2
+            }
+            fullTextPolicy: {
+                defaultLanguage: 'en-US'
+                defaultSpec: {
+                    language: 'en-US'
+                    stopWordListKind: 'extended'
+                }
+            }
+            indexingPolicy: {
+                indexingMode: 'consistent'
+                automatic: true
+                includedPaths: [
+                    {
+                        path: '/*'
+                    }
+                ]
+                excludedPaths: [
+                    {
+                        path: '/"_etag"/?'
+                    }
+                ]
+            }
+            conflictResolutionPolicy: {
+                mode: 'LastWriterWins'
+                conflictResolutionPath: '/_ts'
+            }
+            uniqueKeyPolicy: {
+                uniqueKeys: []
+            }
+        }
     }
-  }
 }
 
 resource gamesThroughput 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/throughputSettings@2024-05-15' = {
