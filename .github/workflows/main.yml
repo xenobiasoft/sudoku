@@ -10,16 +10,16 @@ on:
 env:
   AZURE_WEBAPP_NAME: XenobiaSoftSudoku
   AZURE_API_NAME: XenobiasoftSudokuApi
-  AZURE_WEBAPP_PACKAGE_PATH: "${{ github.workspace }}/publish-web"
-  AZURE_API_PACKAGE_PATH: "${{ github.workspace }}/publish-api"
   DOTNET_VERSION: "10.x"
 
 permissions:
   contents: read
   id-token: write
+  checks: write
+  pull-requests: write
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,11 +27,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -53,35 +48,105 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore --verbosity normal
 
-      - name: Test
-        run: dotnet test --configuration Release --no-build --verbosity normal --logger trx --results-directory TestResults
+      - name: Publish Web Server
+        run: dotnet publish Sudoku.Blazor/Sudoku.Blazor.csproj --configuration Release --output ${{ github.workspace }}/publish-web --no-restore --no-build
 
-      - name: Upload test results
+      - name: Publish API
+        run: dotnet publish Sudoku.Api/Sudoku.Api.csproj --configuration Release --output ${{ github.workspace }}/publish-api --no-restore --no-build
+
+      - name: Upload publish-web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-web
+          path: ${{ github.workspace }}/publish-web
+
+      - name: Upload publish-api artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-api
+          path: ${{ github.workspace }}/publish-api
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-quality: "ga"
+
+      - name: Cache .NET packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Run tests with coverage
+        run: dotnet test --configuration Release --no-restore --verbosity normal --logger trx --results-directory TestResults --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+
+      - name: Generate coverage report
+        uses: danielpalme/ReportGenerator-GitHub-Action@5
+        with:
+          reports: TestResults/**/coverage.cobertura.xml
+          targetdir: CoverageReport
+          reporttypes: HtmlInline;Cobertura;MarkdownSummaryGithub
+          verbosity: Warning
+
+      - name: Enforce 80% line coverage threshold
+        run: |
+          PERCENT=$(awk 'NR==2 && /line-rate/ { match($0, /line-rate="([0-9.]+)"/, a); printf "%.2f", a[1] * 100 }' CoverageReport/Cobertura.xml)
+          echo "Line coverage: ${PERCENT}%"
+          echo "### Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "Line coverage: **${PERCENT}%**" >> $GITHUB_STEP_SUMMARY
+          if awk "BEGIN { exit !($PERCENT < 80) }"; then
+            echo "❌ Coverage ${PERCENT}% is below the required 80% threshold." | tee -a $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "✅ Coverage ${PERCENT}% meets the required 80% threshold." | tee -a $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Publish test results as PR annotations
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: .NET Tests
+          path: TestResults/*.trx
+          reporter: dotnet-trx
+          fail-on-error: false
+
+      - name: Upload test-results artifact
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: test-results
-          path: TestResults/*.trx
+          path: TestResults
 
-      - name: Publish Web Server
-        run: dotnet publish Sudoku.Blazor/Sudoku.Blazor.csproj --configuration Release --output ${{ env.AZURE_WEBAPP_PACKAGE_PATH }} --no-restore
+  deploy-infra:
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
 
-      - name: Publish API
-        run: dotnet publish Sudoku.Api/Sudoku.Api.csproj --configuration Release --output ${{ env.AZURE_API_PACKAGE_PATH }} --no-restore
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
+      - name: Azure Login
+        uses: azure/login@v2
         with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-
-      - name: Deploy to Azure API App
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.AZURE_API_NAME }}
-          publish-profile: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
-          package: ${{ env.AZURE_API_PACKAGE_PATH }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Bicep template
         uses: azure/arm-deploy@v2
@@ -92,53 +157,38 @@ jobs:
           scope: resourcegroup
           failOnStdErr: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+  deploy-apps:
+    needs: deploy-infra
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
         with:
-          node-version: '20.x'
-          cache: 'npm'
-          cache-dependency-path: Sudoku.React/package-lock.json
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Install React dependencies
-        working-directory: Sudoku.React
-        run: npm ci
-
-      - name: Lint React app
-        working-directory: Sudoku.React
-        run: npm run lint
-
-      - name: Test React app
-        working-directory: Sudoku.React
-        run: npm test
-
-      - name: Build React app (production)
-        if: github.event_name == 'push'
-        working-directory: Sudoku.React
-        env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL_PRODUCTION }}
-        run: npm run build
-
-      - name: Build React app (PR preview)
-        if: github.event_name == 'pull_request' && github.event.action != 'closed'
-        working-directory: Sudoku.React
-        env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL_PREVIEW }}
-        run: npm run build
-
-      - name: Deploy to Azure Static Web App
-        if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
-        uses: Azure/static-web-apps-deploy@v1
+      - name: Download publish-web artifact
+        uses: actions/download-artifact@v4
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APP_API_TOKEN }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          action: upload
-          app_location: Sudoku.React
-          output_location: dist
-          skip_app_build: true
+          name: publish-web
+          path: ${{ github.workspace }}/publish-web
 
-      - name: Close PR staging environment
-        if: github.event_name == 'pull_request' && github.event.action == 'closed'
-        uses: Azure/static-web-apps-deploy@v1
+      - name: Download publish-api artifact
+        uses: actions/download-artifact@v4
         with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APP_API_TOKEN }}
-          action: close
+          name: publish-api
+          path: ${{ github.workspace }}/publish-api
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: ${{ github.workspace }}/publish-web
+
+      - name: Deploy to Azure API App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_API_NAME }}
+          publish-profile: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
+          package: ${{ github.workspace }}/publish-api
