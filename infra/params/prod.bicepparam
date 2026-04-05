@@ -1,27 +1,30 @@
 using '../main.bicep'
 
 // Global
-param location = 'WestUS2'
-param environment = 'production'
+param location = 'westus2'
+param environment = 'prod'
 
 // Compute
-param appServicePlanName = 'XenobiasoftServicePlan'
-param webAppName = 'XenobiasoftSudoku'
-param apiAppName = 'XenobiasoftSudokuApi'
+param appServicePlanName = 'XenobiasoftServicePlan-prod'
+param webAppName = 'XenobiasoftSudoku-prod'
+param apiAppName = 'XenobiasoftSudokuApi-prod'
 param appServicePlanSku = 'B1'
 param customDomainName = 'sudoku.xenobiasoft.com'
+param enableCustomDomain = true
 
 // Storage
-param storageAccountName = 'stxenobiasoft'
+param storageAccountName = 'stxenobiasoftprod'
 param cosmosDbAccountName = 'cosmos-sudoku-prod'
 param cosmosDbEnableFreeTier = true
 
 // Key Vault
-param keyVaultName = 'kv-xenobiasoft'
+param keyVaultName = 'kv-xenobiasoft-prod'
 
 // App Configuration
-param appConfigName = 'appcs-xenobiasoft-com'
+param appConfigName = 'appcs-xenobiasoft-prod'
 
 // Monitoring
-param logAnalyticsWorkspaceName = 'log-sudoku-xenobiasoft'
-param appInsightsName = 'appi-sudoku-xenobiasoft'
+param logAnalyticsWorkspaceName = 'log-sudoku-xenobiasoft-prod'
+param appInsightsName = 'appi-sudoku-xenobiasoft-prod'
+param actionGroupName = 'Application Insights Smart Detection-prod'
+param alertRuleName = 'failure-anomalies-sudoku-prod'

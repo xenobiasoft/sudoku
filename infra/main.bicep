@@ -7,8 +7,8 @@ targetScope = 'resourceGroup'
 @description('Azure region for all resources.')
 param location string = 'westus2'
 
-@description('Deployment environment name used for tagging.')
-param environment string = 'production'
+@description('Deployment environment name used for tagging and naming (e.g. prod, staging).')
+param environment string = 'prod'
 
 // ---------------------------------------------------------------------------
 // Compute parameters
@@ -28,6 +28,9 @@ param appServicePlanSku string = 'B1'
 
 @description('Custom domain name bound to the web app.')
 param customDomainName string = 'sudoku.xenobiasoft.com'
+
+@description('Whether to bind a custom domain and SSL certificate to the web app. Set to false for non-prod environments.')
+param enableCustomDomain bool = false
 
 // ---------------------------------------------------------------------------
 // Storage parameters
@@ -66,6 +69,12 @@ param logAnalyticsWorkspaceName string
 @description('Name of the Application Insights component.')
 param appInsightsName string
 
+@description('Name of the Application Insights Smart Detection action group.')
+param actionGroupName string
+
+@description('Name of the failure anomalies smart detector alert rule.')
+param alertRuleName string
+
 // ---------------------------------------------------------------------------
 // Modules
 // ---------------------------------------------------------------------------
@@ -77,6 +86,8 @@ module monitoring 'modules/monitoring.bicep' = {
     environment: environment
     logAnalyticsWorkspaceName: logAnalyticsWorkspaceName
     appInsightsName: appInsightsName
+    actionGroupName: actionGroupName
+    alertRuleName: alertRuleName
   }
 }
 
@@ -119,6 +130,7 @@ module compute 'modules/compute.bicep' = {
     apiAppName: apiAppName
     appServicePlanSku: appServicePlanSku
     customDomainName: customDomainName
+    enableCustomDomain: enableCustomDomain
   }
 }
 
