@@ -1,7 +1,7 @@
 using '../main.bicep'
 
 // Global
-param location = 'westus'
+param location = 'eastus'
 param environment = 'prod'
 
 // Compute

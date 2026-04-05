@@ -5,7 +5,7 @@ targetScope = 'subscription'
 // ---------------------------------------------------------------------------
 
 @description('Azure region for all resources.')
-param location string = 'westus'
+param location string = 'eastus'
 
 @description('Deployment environment name used for tagging.')
 param environment string = 'prod'
@@ -71,7 +71,7 @@ param appInsightsName string
 // ---------------------------------------------------------------------------
 
 resource rg 'Microsoft.Resources/resourceGroups@2023-07-01' = {
-  name: 'rg-sudoku-xenobiasoft'
+  name: 'rg-xenobiasoft'
   location: location
 }
 
