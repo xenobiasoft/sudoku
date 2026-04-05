@@ -5,6 +5,7 @@ param webAppName string
 param apiAppName string
 param appServicePlanSku string = 'B1'
 param customDomainName string = 'sudoku.xenobiasoft.com'
+param enableCustomDomain bool = false
 
 var tags = {
   environment: environment
@@ -146,8 +147,10 @@ resource apiAppConfig 'Microsoft.Web/sites/config@2023-12-01' = {
       }
     ]
     cors: {
-      allowedOrigins: [
+      allowedOrigins: enableCustomDomain ? [
         'https://${customDomainName}'
+        'https://${webAppName}.azurewebsites.net'
+      ] : [
         'https://${webAppName}.azurewebsites.net'
       ]
       supportCredentials: false
@@ -164,7 +167,7 @@ resource apiAppConfig 'Microsoft.Web/sites/config@2023-12-01' = {
 // can be successfully provisioned.
 // ---------------------------------------------------------------------------
 
-resource certificate 'Microsoft.Web/certificates@2023-12-01' = {
+resource certificate 'Microsoft.Web/certificates@2023-12-01' = if (enableCustomDomain) {
   name: '${customDomainName}-${webAppName}'
   location: location
   properties: {
@@ -180,7 +183,7 @@ resource certificate 'Microsoft.Web/certificates@2023-12-01' = {
 // Custom Domain Binding
 // ---------------------------------------------------------------------------
 
-resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2023-12-01' = {
+resource customDomainBinding 'Microsoft.Web/sites/hostNameBindings@2023-12-01' = if (enableCustomDomain) {
   parent: webApp
   name: customDomainName
   properties: {
