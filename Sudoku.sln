@@ -40,14 +40,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{F2DF
 	ProjectSection(SolutionItems) = preProject
 		infra\modules\appconfig.bicep = infra\modules\appconfig.bicep
 		infra\modules\compute.bicep = infra\modules\compute.bicep
+		infra\modules\hostname.bicep = infra\modules\hostname.bicep
 		infra\modules\keyvault.bicep = infra\modules\keyvault.bicep
 		infra\modules\monitoring.bicep = infra\modules\monitoring.bicep
+		infra\modules\ssl.bicep = infra\modules\ssl.bicep
 		infra\modules\storage.bicep = infra\modules\storage.bicep
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "params", "params", "{0B69982A-788E-4277-A168-A9EA56E58EA9}"
 	ProjectSection(SolutionItems) = preProject
 		infra\params\prod.bicepparam = infra\params\prod.bicepparam
+		infra\params\staging.bicepparam = infra\params\staging.bicepparam
 	EndProjectSection
 EndProject
 Global
