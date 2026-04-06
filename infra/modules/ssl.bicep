@@ -21,6 +21,7 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' existing = {
 resource certificate 'Microsoft.Web/certificates@2023-12-01' = {
   name: '${customDomainName}-${webAppName}'
   location: location
+  kind: 'Managed'
   properties: {
     canonicalName: customDomainName
     hostNames: [
@@ -36,6 +37,9 @@ resource certificate 'Microsoft.Web/certificates@2023-12-01' = {
 resource sslBinding 'Microsoft.Web/sites/hostNameBindings@2023-12-01' = {
   parent: webApp
   name: customDomainName
+  dependsOn: [
+    certificate
+  ]
   properties: {
     siteName: webAppName
     hostNameType: 'Verified'
