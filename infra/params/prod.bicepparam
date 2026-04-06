@@ -18,7 +18,7 @@ param cosmosDbAccountName = 'cosmos-sudoku-prod'
 param cosmosDbEnableFreeTier = true
 
 // Key Vault
-param keyVaultName = 'kv-xenobiasoft-sudoku-prod'
+param keyVaultName = 'kv-xenobiasoft-prod'
 
 // App Configuration
 param appConfigName = 'appcs-xenobiasoft-prod'
