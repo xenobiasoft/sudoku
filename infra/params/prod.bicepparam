@@ -10,7 +10,7 @@ param webAppName = 'XenobiasoftSudoku-prod'
 param apiAppName = 'XenobiasoftSudokuApi-prod'
 param appServicePlanSku = 'B1'
 param customDomainName = 'sudoku.xenobiasoft.com'
-param enableCustomDomain = false
+param enableCustomDomain = true
 
 // Storage
 param storageAccountName = 'stxenobiasoftprod'
