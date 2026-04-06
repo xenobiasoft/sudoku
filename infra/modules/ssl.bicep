@@ -18,17 +18,19 @@ resource webApp 'Microsoft.Web/sites@2023-12-01' existing = {
   name: webAppName
 }
 
+// Reference the hostname binding created in hostname.bicep
 resource hostnameBinding 'Microsoft.Web/sites/hostNameBindings@2023-12-01' existing = {
   parent: webApp
   name: customDomainName
 }
 
+// Create the Azure Managed Certificate
 resource certificate 'Microsoft.Web/certificates@2023-12-01' = {
   name: '${customDomainName}-${webAppName}'
   location: location
   kind: 'Managed'
   dependsOn: [
-      hostNameBindings
+    hostnameBinding
   ]
   properties: {
     canonicalName: customDomainName
@@ -39,9 +41,7 @@ resource certificate 'Microsoft.Web/certificates@2023-12-01' = {
   }
 }
 
-// Updates the existing hostname binding (created without SSL in hostname.bicep)
-// to enable SNI SSL using the managed certificate. ARM is idempotent: deploying
-// a hostNameBindings resource with the same name replaces the prior binding.
+// Enable SNI SSL using the managed certificate
 resource sslBinding 'Microsoft.Web/sites/hostNameBindings@2023-12-01' = {
   parent: webApp
   name: customDomainName
