@@ -41,10 +41,13 @@ try
         .WaitFor(cosmosDb)
         .WithExternalHttpEndpoints();
 
+    var keyVault = builder.AddConnectionString("AzureKeyVault");
+
     logger.LogInformation("Configuring Sudoku Blazor Server project...");
     builder.AddProject<Projects.Sudoku_Blazor>("sudoku-blazor")
         .WithReference(cosmosDb)
         .WithReference(api)
+        .WithReference(keyVault)
         .WithEnvironment("UseCosmosDb", "true")
         .WithExternalHttpEndpoints()
         .WaitFor(cosmosDb);
