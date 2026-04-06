@@ -183,10 +183,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Azure Login
+      - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: Download publish-web artifact
         uses: actions/download-artifact@v4
@@ -200,16 +202,20 @@ jobs:
           name: publish-api
           path: ${{ github.workspace }}/publish-api
 
-      - name: Deploy to Azure Web App
+      - name: DNS check (scm endpoint)
+        run: |
+          sudo apt-get update && sudo apt-get install -y dnsutils
+          nslookup ${{ env.AZURE_WEBAPP_NAME }}.scm.azurewebsites.net
+          nslookup ${{ env.AZURE_API_NAME }}.scm.azurewebsites.net
+
+      - name: Deploy Web
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ${{ github.workspace }}/publish-web
 
-      - name: Deploy to Azure API App
+      - name: Deploy API
         uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_API_NAME }}
-          publish-profile: ${{ secrets.AZURE_API_PUBLISH_PROFILE }}
           package: ${{ github.workspace }}/publish-api
