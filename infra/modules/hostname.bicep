@@ -16,7 +16,6 @@ resource hostnameBinding 'Microsoft.Web/sites/hostNameBindings@2023-12-01' = {
   name: customDomainName
   properties: {
     siteName: webAppName
-    hostNameType: 'Verified'
     sslState: 'Disabled'
   }
 }
