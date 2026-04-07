@@ -9,6 +9,7 @@ on:
 env:
   AZURE_WEBAPP_NAME: XenobiaSoftSudoku-prod
   AZURE_API_NAME: XenobiasoftSudokuApi-prod
+  CUSTOM_DOMAIN_NAME: "sudoku.xenobiasoft.com"
   DOTNET_VERSION: "10.x"
 
 permissions:
@@ -162,6 +163,25 @@ jobs:
           parameters: ./infra/params/prod.bicepparam
           scope: resourcegroup
           failOnStdErr: true
+          
+      - name: DNS check (scm endpoint)
+        shell: bash
+        run: |
+          sudo apt-get update && sudo apt-get install -y dnsutils
+
+          for host in "${AZURE_WEBAPP_NAME}.scm.azurewebsites.net" "${AZURE_API_NAME}.azurewebsites.net" "${CUSTOM_DOMAIN_NAME}"; do
+            echo "Checking DNS for $host"
+            for i in {1..10}; do
+              if nslookup "$host"; then
+                echo "OK: $host"
+                break
+              fi
+              echo "Waiting for DNS to propagate ($i/10)..."
+              sleep 15
+            done
+            # Do not fail the job just because DNS isn't ready yet
+            nslookup "$host" || echo "WARNING: $host not resolvable yet; continuing to deploy."
+          done
 
       - name: Dump deployment error details (if failed)
         if: failure()
@@ -199,25 +219,6 @@ jobs:
         with:
           name: publish-api
           path: ${{ github.workspace }}/publish-api
-
-      - name: DNS check (scm endpoint)
-        shell: bash
-        run: |
-          sudo apt-get update && sudo apt-get install -y dnsutils
-
-          for host in "${AZURE_WEBAPP_NAME}.scm.azurewebsites.net" "${AZURE_API_NAME}.azurewebsites.net"; do
-            echo "Checking DNS for $host"
-            for i in {1..10}; do
-              if nslookup "$host"; then
-                echo "OK: $host"
-                break
-              fi
-              echo "Waiting for DNS to propagate ($i/10)..."
-              sleep 15
-            done
-            # Do not fail the job just because DNS isn't ready yet
-            nslookup "$host" || echo "WARNING: $host not resolvable yet; continuing to deploy."
-          done
 
       - name: Deploy Web
         uses: azure/webapps-deploy@v3
