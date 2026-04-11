@@ -1,3 +1,4 @@
+using Azure.Identity;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
@@ -41,14 +42,7 @@ public static class InfrastructureServiceCollectionExtensions
         {
             services.AddSingleton<CosmosClient>(serviceProvider =>
             {
-                var connectionString = configuration.GetConnectionString("CosmosDb");
-            
-                if (string.IsNullOrEmpty(connectionString))
-                {
-                    throw new InvalidOperationException(
-                        "CosmosDb connection string not found. Please ensure it's configured in configuration " +
-                        "with the key 'ConnectionStrings:cosmosdb' or 'ConnectionStrings:CosmosDb'.");
-                }
+                var cosmosDbOptions = configuration.GetSection(CosmosDbOptions.SectionName).Get<CosmosDbOptions>();
 
                 var clientOptions = new CosmosClientOptions
                 {
@@ -58,9 +52,7 @@ public static class InfrastructureServiceCollectionExtensions
                     MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(15)
                 };
 
-                var cosmosDbOptions = configuration.GetSection(CosmosDbOptions.SectionName).Get<CosmosDbOptions>();
-
-                if (cosmosDbOptions.DisableSslValidation)
+                if (cosmosDbOptions?.DisableSslValidation == true)
                 {
                     clientOptions.HttpClientFactory = () =>
                     {
@@ -71,6 +63,26 @@ public static class InfrastructureServiceCollectionExtensions
 
                         return new HttpClient(httpMessageHandler);
                     };
+                }
+
+                if (cosmosDbOptions?.UseManagedIdentity == true)
+                {
+                    if (string.IsNullOrEmpty(cosmosDbOptions.AccountEndpoint))
+                    {
+                        throw new InvalidOperationException(
+                            "CosmosDb:AccountEndpoint must be set when CosmosDb:UseManagedIdentity is true.");
+                    }
+
+                    return new CosmosClient(cosmosDbOptions.AccountEndpoint, new DefaultAzureCredential(), clientOptions);
+                }
+
+                var connectionString = configuration.GetConnectionString("CosmosDb");
+
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    throw new InvalidOperationException(
+                        "CosmosDb connection string not found. Please ensure it's configured in configuration " +
+                        "with the key 'ConnectionStrings:CosmosDb', or set CosmosDb:UseManagedIdentity to true.");
                 }
 
                 return new CosmosClient(connectionString, clientOptions);
