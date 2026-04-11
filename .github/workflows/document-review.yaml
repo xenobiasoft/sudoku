@@ -1,0 +1,28 @@
+name: Documentation Review
+
+on:
+  pull_request:
+    paths:
+      - "docs/**"
+    paths-ignore:
+      - "docs/specs/**"
+      - "docs/adr/**"
+
+jobs:
+  docs-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Assign documentation reviewers
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const reviewers = [
+              "documentation-engineer",
+              "project-governance"
+            ];
+            await github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              reviewers
+            });
