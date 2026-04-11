@@ -20,35 +20,40 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const changed = ${{ steps.changes.outputs.all_changed_files }}.split("\n");
+            const changedRaw = `${{ steps.changes.outputs.all_changed_files }}`;
+            const changed = changedRaw
+              .split('\n')
+              .map(s => s.trim())
+              .filter(Boolean);
+        
             const reviewers = new Set();
-
+        
             if (changed.some(f => f.startsWith("src/backend/"))) {
               reviewers.add("reviewer");
               reviewers.add("testing-engineer");
               reviewers.add("project-governance");
             }
-
+        
             if (changed.some(f => f.startsWith("src/frontend/"))) {
               reviewers.add("ui-ux-engineer");
               reviewers.add("reviewer");
               reviewers.add("testing-engineer");
               reviewers.add("project-governance");
             }
-
+        
             if (changed.some(f => f.startsWith("infra/"))) {
               reviewers.add("devops-engineer");
               reviewers.add("project-governance");
             }
-
+        
             if (changed.some(f => f.startsWith(".github/workflows/"))) {
               reviewers.add("devops-engineer");
               reviewers.add("project-governance");
             }
-
+        
             await github.rest.pulls.requestReviewers({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: context.payload.pull_request.number,
-              reviewers: Array.from(reviewers)
+              reviewers: Array.from(reviewers),
             });
