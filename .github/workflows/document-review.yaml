@@ -8,6 +8,10 @@ on:
       - "docs/specs/**"
       - "docs/adr/**"
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   docs-review:
     runs-on: ubuntu-latest
