@@ -1,9 +1,15 @@
+name: Label Automation
+
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
 
 jobs:
   auto-label:
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: write
     runs-on: ubuntu-latest
 
     steps:
@@ -13,52 +19,30 @@ jobs:
 
       - name: Apply labels based on paths
         uses: actions/github-script@v7
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changes.outputs.all_changed_files }}
         with:
           script: |
-            const changed = ${{ steps.changes.outputs.all_changed_files }}.split("\n");
+            const changed = (process.env.ALL_CHANGED_FILES || "")
+              .split("\n")
+              .filter(Boolean);
             const labels = new Set();
 
-            // Backend
-            if (changed.some(f => f.startsWith("src/backend/"))) {
-              labels.add("backend");
-            }
+            if (changed.some(f => f.startsWith("src/backend/"))) labels.add("backend");
+            if (changed.some(f => f.startsWith("src/frontend/"))) labels.add("ui-change");
+            if (changed.some(f => f.startsWith("infra/"))) labels.add("infra");
+            if (changed.some(f => f.startsWith(".github/workflows/"))) labels.add("infra");
+            if (changed.some(f => f.startsWith("docs/specs/"))) labels.add("spec-update");
+            if (changed.some(f => f.startsWith("docs/adr/"))) labels.add("spec-update");
 
-            // Frontend
-            if (changed.some(f => f.startsWith("src/frontend/"))) {
-              labels.add("ui-change");
-            }
-
-            // Infrastructure
-            if (changed.some(f => f.startsWith("infra/"))) {
-              labels.add("infra");
-            }
-
-            // Workflows
-            if (changed.some(f => f.startsWith(".github/workflows/"))) {
-              labels.add("infra");
-            }
-
-            // Specs
-            if (changed.some(f => f.startsWith("docs/specs/"))) {
-              labels.add("spec-update");
-            }
-
-            // ADRs
-            if (changed.some(f => f.startsWith("docs/adr/"))) {
-              labels.add("spec-update");
-            }
-
-            // Docs-only
-            const onlyDocs = changed.every(f => f.startsWith("docs/"));
-            if (onlyDocs) {
-              labels.add("docs-only");
-            }
+            const onlyDocs = changed.length > 0 && changed.every(f => f.startsWith("docs/"));
+            if (onlyDocs) labels.add("docs-only");
 
             if (labels.size > 0) {
               await github.rest.issues.addLabels({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.payload.pull_request.number,
-                labels: Array.from(labels)
+                labels: [...labels],
               });
             }
