@@ -49,10 +49,10 @@ jobs:
         run: dotnet build --configuration Release --no-restore --verbosity normal
 
       - name: Publish Web Server
-        run: dotnet publish Sudoku.Blazor/Sudoku.Blazor.csproj --configuration Release --output ${{ github.workspace }}/publish-web --no-restore --no-build
+        run: dotnet publish src/frontend/Sudoku.Blazor/Sudoku.Blazor.csproj --configuration Release --output ${{ github.workspace }}/publish-web --no-restore --no-build
 
       - name: Publish API
-        run: dotnet publish Sudoku.Api/Sudoku.Api.csproj --configuration Release --output ${{ github.workspace }}/publish-api --no-restore --no-build
+        run: dotnet publish src/backend/Sudoku.Api/Sudoku.Api.csproj --configuration Release --output ${{ github.workspace }}/publish-api --no-restore --no-build
 
       - name: Upload publish-web artifact
         uses: actions/upload-artifact@v4

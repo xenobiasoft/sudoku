@@ -53,7 +53,7 @@ try
         .WaitFor(cosmosDb);
 
     logger.LogInformation("Configuring Sudoku React project...");
-    builder.AddNpmApp("sudoku-react", "../Sudoku.React", "dev")
+    builder.AddNpmApp("sudoku-react", "../../frontend/Sudoku.React", "dev")
         .WithReference(api)
         .WithEnvironment("VITE_API_BASE_URL", api.GetEndpoint("https"))
         .WithHttpEndpoint(port: 5173, env: "VITE_PORT")

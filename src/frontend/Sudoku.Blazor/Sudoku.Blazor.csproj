@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sudoku.ServiceDefaults\Sudoku.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\..\backend\Sudoku.ServiceDefaults\Sudoku.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,9 +1,8 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.0.11222.15
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "Tests\UnitTests.csproj", "{1675BFA1-12B6-4AD4-8932-01DD3140D22E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "src\backend\Tests\UnitTests.csproj", "{1675BFA1-12B6-4AD4-8932-01DD3140D22E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub", "GitHub", "{7DBF7794-0F31-412A-997F-71760CE39417}"
 	ProjectSection(SolutionItems) = preProject
@@ -11,17 +10,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub", "GitHub", "{7DBF77
 		.github\variables.yml = .github\variables.yml
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Api", "Sudoku.Api\Sudoku.Api.csproj", "{825D9287-9613-8670-E0F8-77BF8584E423}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Api", "src\backend\Sudoku.Api\Sudoku.Api.csproj", "{825D9287-9613-8670-E0F8-77BF8584E423}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.AppHost", "Sudoku.AppHost\Sudoku.AppHost.csproj", "{9EB926AC-F796-4872-B081-568F8F3D7CFE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.AppHost", "src\backend\Sudoku.AppHost\Sudoku.AppHost.csproj", "{9EB926AC-F796-4872-B081-568F8F3D7CFE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.ServiceDefaults", "Sudoku.ServiceDefaults\Sudoku.ServiceDefaults.csproj", "{2B5F2794-B11C-7F6D-BA4E-3FD968E80C96}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.ServiceDefaults", "src\backend\Sudoku.ServiceDefaults\Sudoku.ServiceDefaults.csproj", "{2B5F2794-B11C-7F6D-BA4E-3FD968E80C96}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Domain", "Sudoku.Domain\Sudoku.Domain.csproj", "{AC320488-135A-4883-9B1B-329DD7482921}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Domain", "src\backend\Sudoku.Domain\Sudoku.Domain.csproj", "{AC320488-135A-4883-9B1B-329DD7482921}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Application", "Sudoku.Application\Sudoku.Application.csproj", "{42E585E7-9397-452A-8E09-F0BE067F7220}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Application", "src\backend\Sudoku.Application\Sudoku.Application.csproj", "{42E585E7-9397-452A-8E09-F0BE067F7220}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Infrastructure", "Sudoku.Infrastructure\Sudoku.Infrastructure.csproj", "{2CA9D2C9-FC4A-4DB3-A60A-2857E3A6AEFD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Infrastructure", "src\backend\Sudoku.Infrastructure\Sudoku.Infrastructure.csproj", "{2CA9D2C9-FC4A-4DB3-A60A-2857E3A6AEFD}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
@@ -29,7 +28,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Blazor", "Sudoku.Blazor\Sudoku.Blazor.csproj", "{CAE5610D-341A-3FFE-0753-4FA851715908}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Blazor", "src\frontend\Sudoku.Blazor\Sudoku.Blazor.csproj", "{CAE5610D-341A-3FFE-0753-4FA851715908}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infra", "infra", "{9A29756C-E327-47DF-B5A2-BF6956C21A74}"
 	ProjectSection(SolutionItems) = preProject
