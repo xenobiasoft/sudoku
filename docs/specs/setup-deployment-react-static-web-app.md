@@ -37,11 +37,11 @@ The `Sudoku.React` front-end application has been created as a Vite/React projec
 | FR-03 | The API App Service CORS `allowedOrigins` is updated to include the production SWA hostname. |
 | FR-04 | A `staticwebapp.config.json` file is added to `src/frontend/Sudoku.React/public/` to configure SPA fallback routing and security response headers. |
 | FR-05 | `VITE_API_BASE_URL` is injected at build time — production value on `push` to `main`, preview value on `pull_request` events. |
-| FR-06 | The React app is built (Node 20 LTS, `npm ci` + `npm run build`) as part of the `deploy-apps` job in `main.yml`. |
-| FR-07 | The built React app is deployed to the SWA using `Azure/static-web-apps-deploy@v1` on every push to `main` and on PR `opened`/`synchronize` events. |
-| FR-08 | PR preview environments are automatically torn down when a PR is closed, using `Azure/static-web-apps-deploy@v1` with `action: close`. |
+| FR-06 | The React app is built (Node 20 LTS, `actions/checkout@v4`, `actions/setup-node@v4`, `npm ci`, `npm run build`) in the new standalone `deploy-swa` job in `main.yml` — not in `deploy-apps`. |
+| FR-07 | The built React app is deployed to the SWA using `Azure/static-web-apps-deploy@v1` with `action: upload` in the `deploy-swa` job, triggered on push to `main` and on PR `opened`/`synchronize` events. |
+| FR-08 | PR preview environments are automatically torn down using `Azure/static-web-apps-deploy@v1` with `action: close` in the `deploy-swa` job, triggered on PR `closed` events. |
 | FR-09 | The SWA deployment API token is stored as a GitHub repository secret and never committed to source. |
-| FR-10 | All existing Blazor and API deployment steps in `deploy-apps` remain unchanged. |
+| FR-10 | The `deploy-apps` job is entirely unchanged by this spec — no React build or SWA deploy steps are added to it. All existing Blazor and API deployment steps remain unmodified. |
 
 ---
 
@@ -73,7 +73,7 @@ The React app is served as a globally distributed static site via Azure Static W
 | `infra/params/prod.bicepparam` | Add `staticWebAppName` parameter value |
 | `infra/params/staging.bicepparam` | Add `staticWebAppName` parameter value |
 | `src/frontend/Sudoku.React/public/staticwebapp.config.json` | New SPA routing fallback and response header configuration |
-| `.github/workflows/main.yml` | Add `pull_request` event types; add Node setup, build, and SWA deploy steps to `deploy-apps` job |
+| `.github/workflows/main.yml` | Add `pull_request` event types; add new standalone `deploy-swa` job (does not modify `deploy-apps`) |
 | GitHub Repository Secrets | Add `AZURE_STATIC_WEB_APP_API_TOKEN`, `VITE_API_BASE_URL_PRODUCTION`, `VITE_API_BASE_URL_PREVIEW` |
 
 **Resource Sharing Diagram:**
@@ -108,6 +108,7 @@ sequenceDiagram
     participant Test as test job
     participant Infra as deploy-infra job
     participant Apps as deploy-apps job
+    participant SWAJob as deploy-swa job
     participant SWA as Azure Static Web App
     participant Azure as Azure App Services
 
@@ -121,13 +122,17 @@ sequenceDiagram
     Apps->>Azure: Deploy Blazor web app
     Apps->>Azure: Deploy .NET API
 
-    Apps->>Apps: Setup Node 20, npm ci, npm run build
-    Note over Apps: VITE_API_BASE_URL injected at build time
+    Note over SWAJob: needs: [build, test] — runs in parallel with deploy-apps
+
+    Test-->>SWAJob: success (push to main OR pull_request)
+    SWAJob->>SWAJob: actions/checkout@v4
+    SWAJob->>SWAJob: Setup Node 20, npm ci, npm run build
+    Note over SWAJob: VITE_API_BASE_URL injected at build time
 
     alt push to main OR pr opened/synchronize
-        Apps->>SWA: static-web-apps-deploy (action: upload)
+        SWAJob->>SWA: static-web-apps-deploy (action: upload)
     else pr closed
-        Apps->>SWA: static-web-apps-deploy (action: close)
+        SWAJob->>SWA: static-web-apps-deploy (action: close)
     end
 
     SWA-->>GH: Preview URL posted to PR (PR events)
@@ -155,7 +160,7 @@ sequenceDiagram
 | Output | Description |
 |--------|-------------|
 | `staticWebAppUrl` | Default `.azurestaticapps.net` hostname |
-| `staticWebAppApiKey` | Deployment token (sensitive — used only by CI/CD, not persisted in outputs) |
+| ~~`staticWebAppApiKey`~~ | **Not a Bicep output — sensitive.** Retrieved post-deploy via `az staticwebapp secrets list --name <staticWebAppName> --resource-group <rg> --query "properties.apiKey" -o tsv`. Must not be emitted as a plain Bicep output. |
 
 ---
 
@@ -188,6 +193,9 @@ The `navigationFallback` property must be set to `/index.html` so that all paths
 | `X-Frame-Options` | `DENY` |
 | `X-Content-Type-Options` | `nosniff` |
 | `Referrer-Policy` | `strict-origin-when-cross-origin` |
+
+**`deploy-swa` Job Summary:**
+The `deploy-swa` job runs independently of `deploy-apps`. It has `needs: [build, test]` and no `environment:` gate, meaning it executes on both `push` and `pull_request` events. It starts with `actions/checkout@v4` (required because the job does not inherit a workspace from any other job), followed by Node setup, React build, and conditional SWA deployment.
 
 **State Management:** N/A — no changes to React component state or server interaction patterns.
 
@@ -228,6 +236,7 @@ No new API endpoints are introduced. The existing API's CORS configuration is up
 - **Free SKU limitation — staging environments:** The Free SKU supports up to **2 concurrent staging environments** (PR previews). If more than 2 PRs are open simultaneously, additional preview deployments will fail. Upgrading to Standard SKU (10 concurrent staging environments) should be planned for as team size grows.
 - **Free SKU limitation — CORS on PR previews:** PR preview hostnames are dynamic subdomains that cannot be individually added to Azure App Service CORS. PR preview builds must target the production API; this is acceptable for now but limits the ability to test against an isolated API environment.
 - **Deployment token rotation:** The `AZURE_STATIC_WEB_APP_API_TOKEN` GitHub secret must be manually rotated if the SWA resource is re-created (e.g., after a Bicep `complete` mode deployment that deletes and re-provisions the resource). This is a standard operational concern.
+- **`deploy-swa` job `if:` conditions:** The `deploy-swa` job must correctly gate each step across all three PR event types plus push. The `action: upload` step must run only on `push` to `main` or PR `opened`/`synchronize` events; the `action: close` step must run only on PR `closed` events. Incorrect `if:` expressions could result in double-deployment, missed teardowns, or spurious failures on unrelated triggers. These conditions must be carefully validated before merging.
 - **`pull_request` trigger types:** The current `main.yml` `on: pull_request:` block may not include `closed` as an event type. Adding `closed` is necessary for automatic staging teardown; this change should be validated to ensure it does not inadvertently trigger other jobs on PR closure.
 - **Build artifact isolation:** The React `dist/` output is produced directly within the `deploy-apps` job runner and consumed immediately by the SWA deploy action — it does not need to be uploaded as a GitHub Actions artifact. However, this means the built assets are not retained for post-deployment inspection.
 - **Bicep `apiKey` sensitivity:** The `listSecrets` or deployment token output from the SWA Bicep resource is a sensitive value. It must not be emitted as a plain `main.bicep` output, and must be retrieved via the Azure CLI or `az staticwebapp secrets list` in the workflow rather than stored in deployment outputs.
@@ -264,12 +273,17 @@ No new API endpoints are introduced. The existing API's CORS configuration is up
 
 7. **Update `.github/workflows/main.yml`**
    - Add `opened`, `synchronize`, `closed` to the `pull_request` event type list.
-   - In `deploy-apps`, after the existing Blazor and API deploy steps, add:
-     - `actions/setup-node@v4` (Node 20 LTS, cache npm via `src/frontend/Sudoku.React/package-lock.json`)
-     - `npm ci` (working directory: `src/frontend/Sudoku.React`)
-     - `npm run build` with `VITE_API_BASE_URL` env var (production secret on `push`, preview secret on `pull_request`)
-     - `Azure/static-web-apps-deploy@v1` with `action: upload` (conditional: `push` to main or PR not closed)
-     - `Azure/static-web-apps-deploy@v1` with `action: close` (conditional: PR closed)
+   - Add a new `deploy-swa` job with the following definition:
+     - `needs: [build, test]` — runs in parallel with `deploy-apps` after `test` passes; does **not** depend on `deploy-infra`
+     - No `environment:` gate — runs on both `push` to `main` and `pull_request` events
+     - Steps in order:
+       1. `actions/checkout@v4` — required because this job has no pre-checked-out workspace (it does not inherit from `deploy-apps`)
+       2. `actions/setup-node@v4` (Node 20 LTS, cache npm via `src/frontend/Sudoku.React/package-lock.json`)
+       3. `npm ci` (working directory: `src/frontend/Sudoku.React`)
+       4. `npm run build` with `VITE_API_BASE_URL` env var (production secret on `push`, preview secret on `pull_request`)
+       5. `Azure/static-web-apps-deploy@v1` with `action: upload` — `if:` condition: `push` to `main` or PR `opened`/`synchronize`
+       6. `Azure/static-web-apps-deploy@v1` with `action: close` — `if:` condition: PR `closed`
+   - The `deploy-apps` job is **not modified** — no React steps are added to it.
 
 8. **Add GitHub Repository Secrets**
    - `AZURE_STATIC_WEB_APP_API_TOKEN` — retrieved after first Bicep deployment via `az staticwebapp secrets list`.
