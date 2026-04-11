@@ -32,8 +32,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddHealthChecks();
 
 // Get Application Insights connection string
-var appInsightsConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"]
-                                  ?? builder.Configuration["AppInsightsConnectionString"];
+var appInsightsConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
 
 // Register Blazor game services (includes HttpClient configuration for API clients)
 builder.Services
