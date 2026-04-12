@@ -115,7 +115,7 @@ resource webAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
   properties: {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
     ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
-    'ConnectionStrings__AzureKeyVault': keyVaultUri
+    ConnectionStrings__AzureKeyVault: keyVaultUri
   }
 }
 
@@ -182,9 +182,9 @@ resource apiAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
   properties: {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
     ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
-    'ConnectionStrings__AzureKeyVault': keyVaultUri
-    'CosmosDb__UseManagedIdentity': 'true'
-    'CosmosDb__AccountEndpoint': cosmosDbEndpoint
+    ConnectionStrings__AzureKeyVault: keyVaultUri
+    CosmosDb__UseManagedIdentity: 'true'
+    CosmosDb__AccountEndpoint: cosmosDbEndpoint
   }
 }
 
