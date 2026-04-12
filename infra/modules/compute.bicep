@@ -104,12 +104,15 @@ resource webAppConfig 'Microsoft.Web/sites/config@2023-12-01' = {
     remoteDebuggingEnabled: false
     webSocketsEnabled: false
     use32BitWorkerProcess: true
-    appSettings: [
-      {
-        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-        value: appInsightsConnectionString
-      }
-    ]
+  }
+}
+
+resource webAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
+  parent: webApp
+  name: 'appsettings'
+  properties: {
+    APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
+    ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
   }
 }
 
@@ -167,12 +170,15 @@ resource apiAppConfig 'Microsoft.Web/sites/config@2023-12-01' = {
     remoteDebuggingEnabled: false
     webSocketsEnabled: false
     use32BitWorkerProcess: true
-    appSettings: [
-      {
-        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-        value: appInsightsConnectionString
-      }
-    ]
+  }
+}
+
+resource apiAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
+  parent: apiApp
+  name: 'appsettings'
+  properties: {
+    APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
+    ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
   }
 }
 
