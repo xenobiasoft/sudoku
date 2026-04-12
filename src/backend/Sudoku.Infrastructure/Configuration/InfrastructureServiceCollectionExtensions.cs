@@ -47,7 +47,7 @@ public static class InfrastructureServiceCollectionExtensions
 
                 var clientOptions = new CosmosClientOptions
                 {
-                    ConnectionMode = ConnectionMode.Direct,
+                    ConnectionMode = cosmosDbOptions?.ConnectionMode ?? ConnectionMode.Gateway,
                     RequestTimeout = TimeSpan.FromSeconds(30),
                     MaxRetryAttemptsOnRateLimitedRequests = 3,
                     MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(15)

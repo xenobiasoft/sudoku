@@ -132,7 +132,21 @@ module compute 'modules/compute.bicep' = {
     customDomainName: customDomainName
     enableCustomDomain: enableCustomDomain
     appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString
+    keyVaultUri: keyvault.outputs.keyVaultUri
+    cosmosDbEndpoint: storage.outputs.cosmosDbEndpoint
   }
+}
+
+module roleassignments 'modules/roleassignments.bicep' = {
+  name: 'roleassignments'
+  params: {
+    webAppPrincipalId: compute.outputs.webAppPrincipalId
+    apiAppPrincipalId: compute.outputs.apiAppPrincipalId
+    keyVaultName: keyVaultName
+    cosmosDbAccountName: cosmosDbAccountName
+    appConfigName: appConfigName
+  }
+  dependsOn: [storage, keyvault, appconfig]
 }
 
 // Step 1: Bind the custom hostname to the web app (no SSL yet).

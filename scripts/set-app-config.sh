@@ -48,6 +48,7 @@ set_key "CosmosDb:DatabaseName"         "sudoku"
 set_key "CosmosDb:ContainerName"        "games"
 set_key "CosmosDb:UseManagedIdentity"   "true"
 set_key "CosmosDb:AccountEndpoint"      "https://cosmos-sudoku-prod.documents.azure.com:443/"
+set_key "CosmosDb:ConnectionMode"       "Direct"
 
 # -----------------------------------------------------------------------------
 # Azure Storage

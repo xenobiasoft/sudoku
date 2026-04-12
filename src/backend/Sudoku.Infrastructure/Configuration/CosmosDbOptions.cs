@@ -1,3 +1,5 @@
+using Microsoft.Azure.Cosmos;
+
 namespace Sudoku.Infrastructure.Configuration;
 
 public class CosmosDbOptions
@@ -9,4 +11,5 @@ public class CosmosDbOptions
     public bool DisableSslValidation { get; set; }
     public bool UseManagedIdentity { get; set; }
     public string? AccountEndpoint { get; set; }
+    public ConnectionMode ConnectionMode { get; set; } = ConnectionMode.Gateway;
 }

@@ -1,4 +1,5 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.0.11222.15
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -42,6 +43,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{F2DF
 		infra\modules\hostname.bicep = infra\modules\hostname.bicep
 		infra\modules\keyvault.bicep = infra\modules\keyvault.bicep
 		infra\modules\monitoring.bicep = infra\modules\monitoring.bicep
+		infra\modules\roleassignments.bicep = infra\modules\roleassignments.bicep
 		infra\modules\ssl.bicep = infra\modules\ssl.bicep
 		infra\modules\storage.bicep = infra\modules\storage.bicep
 	EndProjectSection
