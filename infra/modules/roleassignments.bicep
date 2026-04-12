@@ -90,6 +90,6 @@ resource apiCosmosRole 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments
   properties: {
     roleDefinitionId: '${cosmosDbAccount.id}/sqlRoleDefinitions/${cosmosBuiltinDataContributorRoleId}'
     principalId: apiAppPrincipalId
-    scope: '/'
+    scope: cosmosDbAccount.id
   }
 }
