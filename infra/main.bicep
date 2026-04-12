@@ -146,6 +146,7 @@ module roleassignments 'modules/roleassignments.bicep' = {
     cosmosDbAccountName: cosmosDbAccountName
     appConfigName: appConfigName
   }
+  dependsOn: [storage, keyvault, appconfig]
 }
 
 // Step 1: Bind the custom hostname to the web app (no SSL yet).
