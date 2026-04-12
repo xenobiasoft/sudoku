@@ -7,6 +7,8 @@ param appServicePlanSku string = 'B1'
 param customDomainName string = 'sudoku.xenobiasoft.com'
 param enableCustomDomain bool = false
 param appInsightsConnectionString string
+param keyVaultUri string
+param cosmosDbEndpoint string
 
 var corsAllowedOrigins = enableCustomDomain ? [
   'https://${customDomainName}'
@@ -113,6 +115,7 @@ resource webAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
   properties: {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
     ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
+    'ConnectionStrings__AzureKeyVault': keyVaultUri
   }
 }
 
@@ -179,6 +182,9 @@ resource apiAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
   properties: {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
     ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
+    'ConnectionStrings__AzureKeyVault': keyVaultUri
+    'CosmosDb__UseManagedIdentity': 'true'
+    'CosmosDb__AccountEndpoint': cosmosDbEndpoint
   }
 }
 
