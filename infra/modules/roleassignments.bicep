@@ -84,7 +84,7 @@ resource apiAppConfigRole 'Microsoft.Authorization/roleAssignments@2022-04-01' =
 // (Blazor is a frontend and talks to the API via HTTP, not Cosmos DB directly)
 // ---------------------------------------------------------------------------
 
-resource apiCosmosRole 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2024-05-15' = {
+resource apiCosmosRole 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2021-10-15' = {
   parent: cosmosDbAccount
   name: guid(apiAppPrincipalId, cosmosDbAccount.id, cosmosBuiltinDataContributorRoleId)
   properties: {
