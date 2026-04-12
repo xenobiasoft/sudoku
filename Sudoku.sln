@@ -43,7 +43,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{F2DF
 		infra\modules\hostname.bicep = infra\modules\hostname.bicep
 		infra\modules\keyvault.bicep = infra\modules\keyvault.bicep
 		infra\modules\monitoring.bicep = infra\modules\monitoring.bicep
-		infra\modules\roleassignments.bicep = infra\modules\roleassignments.bicep
 		infra\modules\ssl.bicep = infra\modules\ssl.bicep
 		infra\modules\storage.bicep = infra\modules\storage.bicep
 	EndProjectSection

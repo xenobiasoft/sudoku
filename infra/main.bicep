@@ -137,18 +137,6 @@ module compute 'modules/compute.bicep' = {
   }
 }
 
-module roleassignments 'modules/roleassignments.bicep' = {
-  name: 'roleassignments'
-  params: {
-    webAppPrincipalId: compute.outputs.webAppPrincipalId
-    apiAppPrincipalId: compute.outputs.apiAppPrincipalId
-    keyVaultName: keyVaultName
-    cosmosDbAccountName: cosmosDbAccountName
-    appConfigName: appConfigName
-  }
-  dependsOn: [storage, keyvault, appconfig]
-}
-
 // Step 1: Bind the custom hostname to the web app (no SSL yet).
 // The managed certificate cannot be created until the hostname is bound.
 module hostname 'modules/hostname.bicep' = if (enableCustomDomain) {
