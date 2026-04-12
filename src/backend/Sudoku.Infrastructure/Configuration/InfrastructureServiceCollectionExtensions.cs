@@ -1,3 +1,4 @@
+using Azure.Core;
 using Azure.Identity;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Azure;
@@ -73,7 +74,8 @@ public static class InfrastructureServiceCollectionExtensions
                             "CosmosDb:AccountEndpoint must be set when CosmosDb:UseManagedIdentity is true.");
                     }
 
-                    return new CosmosClient(cosmosDbOptions.AccountEndpoint, new DefaultAzureCredential(), clientOptions);
+                    TokenCredential credential = new ManagedIdentityCredential();
+                    return new CosmosClient(cosmosDbOptions.AccountEndpoint, credential, clientOptions);
                 }
 
                 var connectionString = configuration.GetConnectionString("CosmosDb");
