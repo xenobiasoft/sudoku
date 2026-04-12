@@ -8,7 +8,7 @@ param appConfigName string
 // Role definition IDs (built-in)
 // ---------------------------------------------------------------------------
 
-var keyVaultSecretsUserRoleId = 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
+var keyVaultSecretsUserRoleId = '4633458b-17de-408a-b874-0445c86b69e0'
 var appConfigDataReaderRoleId = '516239f1-63e1-4d78-a4de-a74fb236a071'
 
 // Cosmos DB Built-in Data Contributor is a Cosmos DB SQL role, not a standard
