@@ -47,7 +47,7 @@ set_key "UseCosmosDb"                   "true"
 set_key "CosmosDb:DatabaseName"         "sudoku"
 set_key "CosmosDb:ContainerName"        "games"
 set_key "CosmosDb:UseManagedIdentity"   "true"
-set_key "CosmosDb:AccountEndpoint"      "https://cosmos-sudoku-prod.documents.azure.com:443/"
+set_key "CosmosDb:AccountEndpoint"      "https://cosmos-sudoku-prod-westus2.documents.azure.com:443/"
 
 # -----------------------------------------------------------------------------
 # Azure Storage
@@ -96,6 +96,4 @@ echo ""
 echo "Done! All keys set under label '$LABEL' in '$APP_CONFIG_NAME'."
 echo ""
 echo "REMINDERS:"
-echo "  - Update CosmosDb:AccountEndpoint with your actual WestUS2 Cosmos DB endpoint"
-echo "  - Update AzureStorage:AccountName with your actual WestUS2 storage account name"
-echo "  - Set EnableSwagger back to 'false' when you're done testing"
+echo "  - Set EnableSwagger back to "false" when you are done testing"
