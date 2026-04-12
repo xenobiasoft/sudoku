@@ -6,6 +6,7 @@ param apiAppName string
 param appServicePlanSku string = 'B1'
 param customDomainName string = 'sudoku.xenobiasoft.com'
 param enableCustomDomain bool = false
+param appInsightsConnectionString string
 
 var corsAllowedOrigins = enableCustomDomain ? [
   'https://${customDomainName}'
@@ -103,6 +104,12 @@ resource webAppConfig 'Microsoft.Web/sites/config@2023-12-01' = {
     remoteDebuggingEnabled: false
     webSocketsEnabled: false
     use32BitWorkerProcess: true
+    appSettings: [
+      {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        value: appInsightsConnectionString
+      }
+    ]
   }
 }
 
@@ -160,6 +167,12 @@ resource apiAppConfig 'Microsoft.Web/sites/config@2023-12-01' = {
     remoteDebuggingEnabled: false
     webSocketsEnabled: false
     use32BitWorkerProcess: true
+    appSettings: [
+      {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        value: appInsightsConnectionString
+      }
+    ]
   }
 }
 

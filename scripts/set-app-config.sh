@@ -90,10 +90,8 @@ set_key "Logging:ApplicationInsights:LogLevel:Microsoft"        "Warning"
 # -----------------------------------------------------------------------------
 # Swagger (temporary — disable when done testing)
 # -----------------------------------------------------------------------------
-set_key "EnableSwagger" "true"
+set_key "EnableSwagger" "false"
 
 echo ""
 echo "Done! All keys set under label '$LABEL' in '$APP_CONFIG_NAME'."
 echo ""
-echo "REMINDERS:"
-echo "  - Set EnableSwagger back to "false" when you are done testing"

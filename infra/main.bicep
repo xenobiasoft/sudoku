@@ -131,6 +131,7 @@ module compute 'modules/compute.bicep' = {
     appServicePlanSku: appServicePlanSku
     customDomainName: customDomainName
     enableCustomDomain: enableCustomDomain
+    appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString
   }
 }
 

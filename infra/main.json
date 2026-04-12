@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.41.2.15936",
-      "templateHash": "3382535320623289072"
+      "version": "0.42.1.51946",
+      "templateHash": "5039587611742931133"
     }
   },
   "parameters": {
@@ -154,8 +154,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.41.2.15936",
-              "templateHash": "14862044833771484739"
+              "version": "0.42.1.51946",
+              "templateHash": "17377878781518953905"
             }
           },
           "parameters": {
@@ -338,8 +338,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.41.2.15936",
-              "templateHash": "13171677364555001590"
+              "version": "0.42.1.51946",
+              "templateHash": "17916479048822438277"
             }
           },
           "parameters": {
@@ -654,8 +654,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.41.2.15936",
-              "templateHash": "14103410663262419579"
+              "version": "0.42.1.51946",
+              "templateHash": "1184856515438312429"
             }
           },
           "parameters": {
@@ -746,8 +746,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.41.2.15936",
-              "templateHash": "14579706232629852368"
+              "version": "0.42.1.51946",
+              "templateHash": "1962415856052964755"
             }
           },
           "parameters": {
@@ -835,6 +835,9 @@
           },
           "enableCustomDomain": {
             "value": "[parameters('enableCustomDomain')]"
+          },
+          "appInsightsConnectionString": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'monitoring'), '2025-04-01').outputs.appInsightsConnectionString.value]"
           }
         },
         "template": {
@@ -843,8 +846,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.41.2.15936",
-              "templateHash": "18375168213623715923"
+              "version": "0.42.1.51946",
+              "templateHash": "5037070137981266867"
             }
           },
           "parameters": {
@@ -874,6 +877,9 @@
             "enableCustomDomain": {
               "type": "bool",
               "defaultValue": false
+            },
+            "appInsightsConnectionString": {
+              "type": "string"
             }
           },
           "variables": {
@@ -962,7 +968,13 @@
                 ],
                 "remoteDebuggingEnabled": false,
                 "webSocketsEnabled": false,
-                "use32BitWorkerProcess": true
+                "use32BitWorkerProcess": true,
+                "appSettings": [
+                  {
+                    "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                    "value": "[parameters('appInsightsConnectionString')]"
+                  }
+                ]
               },
               "dependsOn": [
                 "[resourceId('Microsoft.Web/sites', parameters('webAppName'))]"
@@ -1022,7 +1034,13 @@
                 },
                 "remoteDebuggingEnabled": false,
                 "webSocketsEnabled": false,
-                "use32BitWorkerProcess": true
+                "use32BitWorkerProcess": true,
+                "appSettings": [
+                  {
+                    "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
+                    "value": "[parameters('appInsightsConnectionString')]"
+                  }
+                ]
               },
               "dependsOn": [
                 "[resourceId('Microsoft.Web/sites', parameters('apiAppName'))]"
@@ -1048,7 +1066,10 @@
             }
           }
         }
-      }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'monitoring')]"
+      ]
     },
     {
       "condition": "[parameters('enableCustomDomain')]",
@@ -1074,8 +1095,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.41.2.15936",
-              "templateHash": "11438499118500728223"
+              "version": "0.42.1.51946",
+              "templateHash": "4423708699327572256"
             }
           },
           "parameters": {
@@ -1093,7 +1114,6 @@
               "name": "[format('{0}/{1}', parameters('webAppName'), parameters('customDomainName'))]",
               "properties": {
                 "siteName": "[parameters('webAppName')]",
-                "hostNameType": "Verified",
                 "sslState": "Disabled"
               }
             }
@@ -1134,8 +1154,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.41.2.15936",
-              "templateHash": "6893827796504747527"
+              "version": "0.42.1.51946",
+              "templateHash": "13863812212943500870"
             }
           },
           "parameters": {
@@ -1158,6 +1178,7 @@
               "apiVersion": "2023-12-01",
               "name": "[format('{0}-{1}', parameters('customDomainName'), parameters('webAppName'))]",
               "location": "[parameters('location')]",
+              "kind": "Managed",
               "properties": {
                 "canonicalName": "[parameters('customDomainName')]",
                 "hostNames": [
