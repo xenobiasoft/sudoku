@@ -45,12 +45,9 @@ try
 
     logger.LogInformation("Configuring Sudoku Blazor Server project...");
     builder.AddProject<Projects.Sudoku_Blazor>("sudoku-blazor")
-        .WithReference(cosmosDb)
         .WithReference(api)
         .WithReference(keyVault)
-        .WithEnvironment("UseCosmosDb", "true")
-        .WithExternalHttpEndpoints()
-        .WaitFor(cosmosDb);
+        .WithExternalHttpEndpoints();
 
     logger.LogInformation("Configuring Sudoku React project...");
     builder.AddNpmApp("sudoku-react", "../../frontend/Sudoku.React", "dev")

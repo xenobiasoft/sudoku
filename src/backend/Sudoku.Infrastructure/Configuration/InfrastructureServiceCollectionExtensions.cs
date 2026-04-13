@@ -70,8 +70,7 @@ public static class InfrastructureServiceCollectionExtensions
                 {
                     if (string.IsNullOrEmpty(cosmosDbOptions.AccountEndpoint))
                     {
-                        throw new InvalidOperationException(
-                            "CosmosDb:AccountEndpoint must be set when CosmosDb:UseManagedIdentity is true.");
+                        throw new InvalidOperationException("CosmosDb:AccountEndpoint must be set when CosmosDb:UseManagedIdentity is true.");
                     }
 
                     TokenCredential credential = new ManagedIdentityCredential();
