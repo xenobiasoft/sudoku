@@ -30,17 +30,6 @@ set_key() {
 }
 
 # -----------------------------------------------------------------------------
-# App Configuration Bootstrap
-# -----------------------------------------------------------------------------
-set_key "appconfig:Endpoint"                              "https://appcs-xenobiasoft-prod.azconfig.io"
-set_key "appconfig:ManagedIdentityEnabled"                "true"
-set_key "AzureAppConfiguration:KeyFilter"                 "*"
-set_key "AzureAppConfiguration:LabelFilter"               "Production"
-set_key "AzureAppConfiguration:RefreshInterval"           "30"
-set_key "AzureAppConfiguration:FeatureFlags:Enabled"      "true"
-set_key "AzureAppConfiguration:FeatureFlags:RefreshInterval" "30"
-
-# -----------------------------------------------------------------------------
 # Cosmos DB
 # -----------------------------------------------------------------------------
 set_key "UseCosmosDb"                   "true"
