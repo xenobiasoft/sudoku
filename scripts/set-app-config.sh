@@ -49,10 +49,10 @@ set_key "AzureStorage:AccountName"          "stxenobiasoftprod"
 # -----------------------------------------------------------------------------
 # API & CORS
 # -----------------------------------------------------------------------------
-set_key "ApiBaseUrl"                "https://xenobiasoftsudokuapi.azurewebsites.net/"
+set_key "ApiBaseUrl"                "https://xenobiasoftsudokuapi-prod.azurewebsites.net/"
 set_key "AllowedHosts"              "*"
 set_key "Cors:AllowedOrigins:0"     "https://sudoku.xenobiasoft.com"
-set_key "Cors:AllowedOrigins:1"     "https://xenobiasoftsudoku.azurewebsites.net"
+set_key "Cors:AllowedOrigins:1"     "https://xenobiasoftsudoku-prod.azurewebsites.net"
 
 # -----------------------------------------------------------------------------
 # Sudoku Game Settings
