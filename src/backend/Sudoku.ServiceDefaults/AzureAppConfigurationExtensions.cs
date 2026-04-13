@@ -19,40 +19,34 @@ public static class AzureAppConfigurationExtensions
     /// <returns>The builder for chaining</returns>
     public static TBuilder AddAzureAppConfigurationAdvanced<TBuilder>(this TBuilder builder, string connectionName = "appconfig", Action<AzureAppConfigurationOptions>? configureOptions = null) where TBuilder : IHostApplicationBuilder
     {
-        // Create a temporary logger for this configuration process
         using var loggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
         var logger = loggerFactory.CreateLogger(typeof(AzureAppConfigurationExtensions));
 
+        var connectionString = builder.Configuration.GetConnectionString(connectionName);
+        var appConfigSection = builder.Configuration.GetSection(connectionName);
+        var endpoint = appConfigSection["Endpoint"];
+        var managedIdentityEnabled = appConfigSection.GetValue<bool>("ManagedIdentityEnabled");
+
+        if (string.IsNullOrEmpty(connectionString) && string.IsNullOrEmpty(endpoint))
+        {
+            throw new InvalidOperationException(
+                $"Azure App Configuration connection is required but was not found. " +
+                $"Please configure either 'ConnectionStrings:{connectionName}' or '{connectionName}:Endpoint' in your configuration.");
+        }
+
         try
         {
-            // Try to get connection string first
-            var connectionString = builder.Configuration.GetConnectionString(connectionName);
-            
-            // If no connection string, try to get from the appconfig section
-            var appConfigSection = builder.Configuration.GetSection(connectionName);
-            var endpoint = appConfigSection["Endpoint"];
-            var managedIdentityEnabled = appConfigSection.GetValue<bool>("ManagedIdentityEnabled");
-
-            // If neither connection string nor endpoint is provided, skip configuration
-            if (string.IsNullOrEmpty(connectionString) && string.IsNullOrEmpty(endpoint))
-            {
-                logger.LogInformation("Azure App Configuration skipped - no connection string or endpoint provided for '{ConnectionName}'", connectionName);
-                return builder;
-            }
-
-            // Determine which authentication method to use
             var useManagedIdentity = managedIdentityEnabled && !string.IsNullOrEmpty(endpoint);
             
             logger.LogInformation("Configuring Azure App Configuration with {Method}", useManagedIdentity ? "endpoint + managed identity" : "connection string");
 
             builder.Configuration.AddAzureAppConfiguration(options =>
             {
-                // Configure connection - prefer managed identity when explicitly enabled
                 if (useManagedIdentity)
                 {
                     logger.LogDebug("Using endpoint '{Endpoint}' with managed identity for Azure App Configuration", endpoint);
                     var endpointUri = new Uri(endpoint);
-                    options.Connect(endpointUri, new DefaultAzureCredential());
+                    options.Connect(endpointUri, new ManagedIdentityCredential());
                 }
                 else if (!string.IsNullOrEmpty(connectionString))
                 {
@@ -63,17 +57,15 @@ public static class AzureAppConfigurationExtensions
                 {
                     logger.LogDebug("Using endpoint '{Endpoint}' with managed identity for Azure App Configuration (fallback)", endpoint);
                     var endpointUri = new Uri(endpoint);
-                    options.Connect(endpointUri, new DefaultAzureCredential());
+                    options.Connect(endpointUri, new ManagedIdentityCredential());
                 }
 
-                // Configure key filters from settings
                 var keyFilter = builder.Configuration["AzureAppConfiguration:KeyFilter"] ?? "*";
                 var labelFilter = builder.Configuration["AzureAppConfiguration:LabelFilter"] ?? builder.Environment.EnvironmentName;
                 
                 logger.LogDebug("Using key filter '{KeyFilter}' and label filter '{LabelFilter}'", keyFilter, labelFilter);
                 options.Select(keyFilter, labelFilter);
 
-                // Configure refresh settings
                 if (int.TryParse(builder.Configuration["AzureAppConfiguration:RefreshInterval"], out var refreshInterval))
                 {
                     logger.LogDebug("Configuring refresh with interval of {RefreshInterval} seconds", refreshInterval);
@@ -84,7 +76,6 @@ public static class AzureAppConfigurationExtensions
                     });
                 }
 
-                // Configure feature flags if enabled
                 var featureFlagsEnabled = builder.Configuration.GetValue<bool>("AzureAppConfiguration:FeatureFlags:Enabled");
                 if (featureFlagsEnabled)
                 {
@@ -101,11 +92,9 @@ public static class AzureAppConfigurationExtensions
                     });
                 }
 
-                // Apply custom configuration if provided
                 configureOptions?.Invoke(options);
             });
 
-            // Add Azure App Configuration services for refresh capabilities
             builder.Services.AddAzureAppConfiguration();
             
             logger.LogInformation("Azure App Configuration successfully configured");
@@ -113,7 +102,7 @@ public static class AzureAppConfigurationExtensions
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to configure Azure App Configuration for '{ConnectionName}'", connectionName);
-            // Don't throw - allow the application to continue without Azure App Configuration
+            throw;
         }
 
         return builder;

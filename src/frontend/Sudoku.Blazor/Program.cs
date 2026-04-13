@@ -16,16 +16,14 @@ builder
 
 builder.Configuration.AddEnvironmentVariables();
 
+var vaultUri = builder.Configuration["ConnectionStrings:AzureKeyVault"];
 
-// Try to get the key vault URI from the connection string (Aspire way) or direct configuration
-var vaultUri = builder.Configuration["ConnectionStrings:AzureKeyVault"]
-               ?? builder.Configuration["KeyVault:VaultUri"]
-               ?? string.Empty;
-
-if (!string.IsNullOrEmpty(vaultUri))
+if (string.IsNullOrEmpty(vaultUri))
 {
-    builder.Configuration.AddAzureKeyVault(new Uri(vaultUri), new DefaultAzureCredential());
+    throw new InvalidOperationException("Azure Key Vault connection string is not configured. Please set 'ConnectionStrings:AzureKeyVault' in your configuration.");
 }
+
+builder.Configuration.AddAzureKeyVault(new Uri(vaultUri), new DefaultAzureCredential());
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
