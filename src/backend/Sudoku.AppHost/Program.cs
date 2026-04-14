@@ -22,6 +22,8 @@ try
     
     var cosmosDb = builder.AddConnectionString("CosmosDb");
 
+    var keyVault = builder.AddConnectionString("AzureKeyVault");
+
     logger.LogInformation("Configuring Sudoku API project...");
     var api = builder.AddProject<Projects.Sudoku_Api>("sudoku-api")
         .WithUrlForEndpoint("https", url =>
@@ -37,11 +39,9 @@ try
             logger.LogInformation("Configured HTTP Swagger endpoint for Sudoku API");
         })
         .WithReference(cosmosDb)
+        .WithReference(keyVault)
         .WithEnvironment("UseCosmosDb", "true")
-        .WaitFor(cosmosDb)
         .WithExternalHttpEndpoints();
-
-    var keyVault = builder.AddConnectionString("AzureKeyVault");
 
     logger.LogInformation("Configuring Sudoku Blazor Server project...");
     builder.AddProject<Projects.Sudoku_Blazor>("sudoku-blazor")
