@@ -23,7 +23,7 @@ if (string.IsNullOrEmpty(vaultUri))
     throw new InvalidOperationException("Azure Key Vault connection string is not configured. Please set 'ConnectionStrings:AzureKeyVault' in your configuration.");
 }
 
-builder.Configuration.AddAzureKeyVault(new Uri(vaultUri), new ManagedIdentityCredential());
+builder.Configuration.AddAzureKeyVault(new Uri(vaultUri), new DefaultAzureCredential());
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

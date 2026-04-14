@@ -10,7 +10,7 @@ builder.AddServiceDefaults();
 var keyVaultUri = builder.Configuration["ConnectionStrings:AzureKeyVault"];
 if (!string.IsNullOrEmpty(keyVaultUri))
 {
-    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new ManagedIdentityCredential());
+    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
 }
 else
 {
