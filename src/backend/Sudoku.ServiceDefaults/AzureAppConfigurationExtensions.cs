@@ -37,16 +37,16 @@ public static class AzureAppConfigurationExtensions
         try
         {
             var useManagedIdentity = managedIdentityEnabled && !string.IsNullOrEmpty(endpoint);
-            
+
             logger.LogInformation("Configuring Azure App Configuration with {Method}", useManagedIdentity ? "endpoint + managed identity" : "connection string");
 
             builder.Configuration.AddAzureAppConfiguration(options =>
             {
                 if (useManagedIdentity)
                 {
-                    logger.LogDebug("Using endpoint '{Endpoint}' with managed identity for Azure App Configuration", endpoint);
+                    logger.LogDebug("Using endpoint '{Endpoint}' with DefaultAzureCredential for Azure App Configuration", endpoint);
                     var endpointUri = new Uri(endpoint);
-                    options.Connect(endpointUri, new ManagedIdentityCredential());
+                    options.Connect(endpointUri, new DefaultAzureCredential());
                 }
                 else if (!string.IsNullOrEmpty(connectionString))
                 {
@@ -55,9 +55,9 @@ public static class AzureAppConfigurationExtensions
                 }
                 else if (!string.IsNullOrEmpty(endpoint))
                 {
-                    logger.LogDebug("Using endpoint '{Endpoint}' with managed identity for Azure App Configuration (fallback)", endpoint);
+                    logger.LogDebug("Using endpoint '{Endpoint}' with DefaultAzureCredential for Azure App Configuration (fallback)", endpoint);
                     var endpointUri = new Uri(endpoint);
-                    options.Connect(endpointUri, new ManagedIdentityCredential());
+                    options.Connect(endpointUri, new DefaultAzureCredential());
                 }
 
                 var keyFilter = builder.Configuration["AzureAppConfiguration:KeyFilter"] ?? "*";
