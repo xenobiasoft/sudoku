@@ -1,7 +1,7 @@
 # ADR-007 — React/Vite as the Strategic UI Target
 
 | Field        | Value               |
-|--------------|---------------------|
+| ------------ | ------------------- |
 | **Date**     | 2026-04-15          |
 | **Status**   | Accepted            |
 | **Deciders** | Project maintainers |
@@ -12,10 +12,10 @@
 
 The Sudoku project currently maintains two frontend implementations:
 
-| Project | Technology | Deployment | Role |
-|---|---|---|---|
-| `Sudoku.Blazor` | Blazor Server (.NET) | Direct Aspire service reference | Active, maintenance-only |
-| `Sudoku.React` | React + Vite (TypeScript) | `PublishAsDockerFile()` | **Strategic long-term target** |
+| Project         | Technology                | Deployment                      | Role                           |
+| --------------- | ------------------------- | ------------------------------- | ------------------------------ |
+| `Sudoku.Blazor` | Blazor Server (.NET)      | Direct Aspire service reference | Active, maintenance-only       |
+| `Sudoku.React`  | React + Vite (TypeScript) | `PublishAsDockerFile()`         | **Strategic long-term target** |
 
 Both frontends communicate exclusively with `Sudoku.Api` over HTTP and carry no direct references to backend project assemblies. Both are registered and orchestrated through `Sudoku.AppHost`.
 
@@ -37,13 +37,13 @@ The intent of the project owner is to make React/Vite the exclusive long-term UI
 
 ### Rationale
 
-| Factor | React/Vite | Blazor Server |
-|---|---|---|
-| Deployment model | Containerized via `PublishAsDockerFile()` — portable across Azure Container Apps, AKS, Docker | Requires .NET runtime host; tightly coupled to Aspire |
-| UI ecosystem | Rich component ecosystem (shadcn/ui, Radix, Tailwind, etc.) | Microsoft component ecosystem only |
-| Separation from backend | Pure frontend; decoupled from .NET runtime lifecycle | Co-hosted in the .NET process; harder to scale independently |
-| Long-term investment signal | Active in this project; aligned with modern web standards | Transitional only |
-| API consumption pattern | Fetches from `Sudoku.Api` via `VITE_API_BASE_URL` injected at runtime | Fetches from `Sudoku.Api` via Aspire service reference |
+| Factor                      | React/Vite                                                                                    | Blazor Server                                                |
+| --------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Deployment model            | Containerized via `PublishAsDockerFile()` — portable across Azure Container Apps, AKS, Docker | Requires .NET runtime host; tightly coupled to Aspire        |
+| UI ecosystem                | Rich component ecosystem (shadcn/ui, Radix, Tailwind, etc.)                                   | Microsoft component ecosystem only                           |
+| Separation from backend     | Pure frontend; decoupled from .NET runtime lifecycle                                          | Co-hosted in the .NET process; harder to scale independently |
+| Long-term investment signal | Active in this project; aligned with modern web standards                                     | Transitional only                                            |
+| API consumption pattern     | Fetches from `Sudoku.Api` via `VITE_API_BASE_URL` injected at runtime                         | Fetches from `Sudoku.Api` via Aspire service reference       |
 
 ### Transition State
 
@@ -101,4 +101,4 @@ stateDiagram-v2
 ## Related ADRs
 
 - [ADR-001 — Adoption of Clean Architecture](ADR-001-clean-architecture.md)
-- [ADR-008 — Azure Aspire for Service Orchestration](ADR-008-aspire.md) *(forthcoming)*
+- [ADR-008 — Azure Aspire for Service Orchestration](ADR-008-aspire.md)

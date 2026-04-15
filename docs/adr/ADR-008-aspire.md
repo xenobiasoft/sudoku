@@ -1,7 +1,7 @@
 # ADR-008 — Azure Aspire for Service Orchestration
 
 | Field        | Value               |
-|--------------|---------------------|
+| ------------ | ------------------- |
 | **Date**     | 2026-04-15          |
 | **Status**   | Accepted            |
 | **Deciders** | Project maintainers |
@@ -19,12 +19,12 @@ The Sudoku system is a distributed application composed of multiple independentl
 
 Alternatives considered for orchestration included:
 
-| Option | Considered | Reason not chosen |
-|---|---|---|
-| **Docker Compose** | Yes | Requires containerizing all services; poor debugger integration for .NET; no native service discovery |
-| **Manual launch profiles** | Yes | Does not solve connection string injection or inter-service endpoint wiring |
-| **Kubernetes (local via minikube)** | No | Excessive operational complexity for a development-scale project |
-| **.NET Aspire** | **Chosen** | Native .NET integration, automatic service discovery, built-in dashboard, first-class Azure resource support |
+| Option                              | Considered | Reason not chosen                                                                                            |
+| ----------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------ |
+| **Docker Compose**                  | Yes        | Requires containerizing all services; poor debugger integration for .NET; no native service discovery        |
+| **Manual launch profiles**          | Yes        | Does not solve connection string injection or inter-service endpoint wiring                                  |
+| **Kubernetes (local via minikube)** | No         | Excessive operational complexity for a development-scale project                                             |
+| **.NET Aspire**                     | **Chosen** | Native .NET integration, automatic service discovery, built-in dashboard, first-class Azure resource support |
 
 ---
 
@@ -68,11 +68,11 @@ graph TD
 
 ### Service Configuration Contract
 
-| Service | Exposed Endpoint | External? | Notes |
-|---|---|---|---|
-| `sudoku-api` | HTTP + HTTPS | Yes | Swagger at `/swagger` on both |
-| `sudoku-blazor` | HTTP + HTTPS | Yes | Direct Aspire service reference |
-| `sudoku-react` | HTTP port 5173 | Yes | npm dev server; `PublishAsDockerFile()` |
+| Service         | Exposed Endpoint | External? | Notes                                   |
+| --------------- | ---------------- | --------- | --------------------------------------- |
+| `sudoku-api`    | HTTP + HTTPS     | Yes       | Swagger at `/swagger` on both           |
+| `sudoku-blazor` | HTTP + HTTPS     | Yes       | Direct Aspire service reference         |
+| `sudoku-react`  | HTTP port 5173   | Yes       | npm dev server; `PublishAsDockerFile()` |
 
 ### Environment Variable Injection
 
@@ -113,6 +113,6 @@ This eliminates manual `appsettings.json` editing for local development.
 
 ## Related ADRs
 
-- [ADR-009 — Azure App Configuration for Centralized Configuration Management](ADR-009-azure-app-configuration.md) *(forthcoming)*
-- [ADR-010 — Azure Key Vault for Secret Management](ADR-010-azure-key-vault.md) *(forthcoming)*
+- [ADR-009 — Azure App Configuration for Centralized Configuration Management](ADR-009-azure-app-configuration.md)
+- [ADR-010 — Azure Key Vault for Secret Management](ADR-010-azure-key-vault.md)
 - [ADR-007 — React/Vite as the Strategic UI Target](ADR-007-react-vite-strategic-ui.md)

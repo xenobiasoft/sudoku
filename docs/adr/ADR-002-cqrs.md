@@ -1,7 +1,7 @@
 # ADR-002 — CQRS in the Application Layer
 
 | Field        | Value               |
-|--------------|---------------------|
+| ------------ | ------------------- |
 | **Date**     | 2026-04-15          |
 | **Status**   | Accepted            |
 | **Deciders** | Project maintainers |
@@ -27,12 +27,12 @@ The Application layer (`Sudoku.Application`) adopts **CQRS (Command Query Respon
 
 ### Core Abstractions
 
-| Abstraction | Contract | Return Type |
-|---|---|---|
-| `ICommand` | Extends `IRequest<Result>` | `Result` (success/failure) |
-| `ICommandHandler<TCommand>` | Extends `IRequestHandler<TCommand, Result>` | `Result` |
-| `IQuery<TResponse>` | Extends `IRequest<Result<TResponse>>` | `Result<TResponse>` |
-| `IQueryHandler<TQuery, TResponse>` | Extends `IRequestHandler<TQuery, Result<TResponse>>` | `Result<TResponse>` |
+| Abstraction                        | Contract                                             | Return Type                |
+| ---------------------------------- | ---------------------------------------------------- | -------------------------- |
+| `ICommand`                         | Extends `IRequest<Result>`                           | `Result` (success/failure) |
+| `ICommandHandler<TCommand>`        | Extends `IRequestHandler<TCommand, Result>`          | `Result`                   |
+| `IQuery<TResponse>`                | Extends `IRequest<Result<TResponse>>`                | `Result<TResponse>`        |
+| `IQueryHandler<TQuery, TResponse>` | Extends `IRequestHandler<TQuery, Result<TResponse>>` | `Result<TResponse>`        |
 
 All commands and queries are dispatched through MediatR's `IMediator` interface. Handlers are registered automatically via MediatR's assembly scanning at startup.
 
@@ -101,5 +101,5 @@ sequenceDiagram
 ## Related ADRs
 
 - [ADR-001 — Adoption of Clean Architecture](ADR-001-clean-architecture.md)
-- [ADR-003 — Specification Pattern for Repository Queries](ADR-003-specification-pattern.md) *(forthcoming)*
-- [ADR-004 — Azure Cosmos DB as the Primary Game Persistence Backend](ADR-004-cosmosdb.md) *(forthcoming)*
+- [ADR-003 — Specification Pattern for Repository Queries](ADR-003-specification-pattern.md)
+- [ADR-004 — Azure Cosmos DB as the Primary Game Persistence Backend](ADR-004-cosmosdb.md)

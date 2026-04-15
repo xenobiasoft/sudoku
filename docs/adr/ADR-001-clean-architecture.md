@@ -1,10 +1,10 @@
 # ADR-001 — Adoption of Clean Architecture
 
-| Field      | Value                    |
-|------------|--------------------------|
-| **Date**   | 2026-04-15               |
-| **Status** | Accepted                 |
-| **Deciders** | Project maintainers    |
+| Field        | Value               |
+| ------------ | ------------------- |
+| **Date**     | 2026-04-15          |
+| **Status**   | Accepted            |
+| **Deciders** | Project maintainers |
 
 ---
 
@@ -27,48 +27,54 @@ The project adopts **Clean Architecture** (also known as Ports and Adapters / He
 
 ### Layer Map
 
-```
-┌──────────────────────────────────────────────────────┐
-│                  Presentation Layer                  │
-│   Sudoku.Api (REST)  │  Sudoku.Blazor  │ Sudoku.React│
-└──────────────────┬───────────────────────────────────┘
-                   │ depends on
-┌──────────────────▼───────────────────────────────────┐
-│                 Application Layer                    │
-│               Sudoku.Application                     │
-│  Commands · Queries · Handlers · DTOs · Specs        │
-└──────────────────┬───────────────────────────────────┘
-                   │ depends on
-┌──────────────────▼───────────────────────────────────┐
-│                   Domain Layer                       │
-│                 Sudoku.Domain                        │
-│  Entities · Value Objects · Domain Events ·          │
-│  Domain Exceptions · Repository Interfaces           │
-└──────────────────────────────────────────────────────┘
-                   ▲ implements interfaces defined in Application
-┌──────────────────┴───────────────────────────────────┐
-│               Infrastructure Layer                   │
-│              Sudoku.Infrastructure                   │
-│  CosmosDbGameRepository · InMemoryPuzzleRepository  │
-│  AzureBlobGameRepository · Mappers · EventHandling  │
-└──────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+
+    %% Presentation Layer
+    subgraph Presentation_Layer["Presentation Layer"]
+        API["Sudoku.Api (REST)"]
+        Blazor["Sudoku.Blazor"]
+        React["Sudoku.React"]
+    end
+
+    %% Application Layer
+    subgraph Application_Layer["Application Layer"]
+        AppCore["Sudoku.Application<br/>Commands · Queries · Handlers · DTOs · Specs"]
+    end
+
+    %% Domain Layer
+    subgraph Domain_Layer["Domain Layer"]
+        Domain["Sudoku.Domain<br/>Entities · Value Objects · Domain Events · Exceptions · Repository Interfaces"]
+    end
+
+    %% Infrastructure Layer
+    subgraph Infrastructure_Layer["Infrastructure Layer"]
+        Infra["Sudoku.Infrastructure<br/>CosmosDbGameRepository · InMemoryPuzzleRepository · AzureBlobGameRepository · Mappers · EventHandling"]
+    end
+
+    %% Dependencies
+    Presentation_Layer -->|depends on| Application_Layer
+    Application_Layer -->|depends on| Domain_Layer
+    Infrastructure_Layer -->|implements interfaces defined in Application| Application_Layer
+    Infrastructure_Layer --> Domain_Layer
 ```
 
 ### Dependency Rule
 
 **Dependencies point inward only.** Outer layers may depend on inner layers; inner layers must never depend on outer layers.
 
-| Layer | Allowed dependencies |
-|---|---|
-| `Sudoku.Domain` | None — no project references |
-| `Sudoku.Application` | `Sudoku.Domain` only |
-| `Sudoku.Infrastructure` | `Sudoku.Application`, `Sudoku.Domain` |
-| `Sudoku.Api` | `Sudoku.Application` only |
+| Layer                            | Allowed dependencies                                                   |
+| -------------------------------- | ---------------------------------------------------------------------- |
+| `Sudoku.Domain`                  | None — no project references                                           |
+| `Sudoku.Application`             | `Sudoku.Domain` only                                                   |
+| `Sudoku.Infrastructure`          | `Sudoku.Application`, `Sudoku.Domain`                                  |
+| `Sudoku.Api`                     | `Sudoku.Application` only                                              |
 | `Sudoku.Blazor` / `Sudoku.React` | `Sudoku.Api` via HTTP (no direct project references to backend layers) |
 
 ### Layer Responsibilities
 
 **Domain (`Sudoku.Domain`)**
+
 - Aggregate roots (`SudokuGame`, `SudokuPuzzle`) with rich encapsulated business logic
 - Value objects (`GameId`, `PlayerAlias`, `Cell`, `GameDifficulty`, `GameStatistics`)
 - Domain events (`GameCreatedEvent`, `MoveMadeEvent`, `GameCompletedEvent`, etc.)
@@ -76,6 +82,7 @@ The project adopts **Clean Architecture** (also known as Ports and Adapters / He
 - Repository and service interfaces (`IGameRepository`, `IPuzzleRepository`, `IPuzzleGenerator`, `IPuzzleSolver`, `IPuzzleValidator`)
 
 **Application (`Sudoku.Application`)**
+
 - CQRS commands, queries, and their handlers
 - Application service interfaces (`IGameApplicationService`, `IPlayerApplicationService`)
 - DTOs used as the public contract across the API boundary
@@ -83,6 +90,7 @@ The project adopts **Clean Architecture** (also known as Ports and Adapters / He
 - No business rules — orchestrates domain objects only
 
 **Infrastructure (`Sudoku.Infrastructure`)**
+
 - Implements repository interfaces from the Application layer
 - `CosmosDbGameRepository` — primary game persistence
 - `InMemoryPuzzleRepository` — scoped to puzzle generation; no I/O latency
@@ -90,12 +98,14 @@ The project adopts **Clean Architecture** (also known as Ports and Adapters / He
 - Domain event dispatching, mappers, and external service integrations
 
 **API (`Sudoku.Api`)**
+
 - REST controllers calling Application layer services
 - Request/response model binding and HTTP status code mapping
 - CORS configuration, Swagger, and middleware registration
 - No business logic; no direct domain model exposure
 
 **Frontend (`Sudoku.Blazor`, `Sudoku.React`)**
+
 - Communicate with the backend exclusively through `Sudoku.Api` HTTP endpoints
 - No direct references to any backend project assembly
 

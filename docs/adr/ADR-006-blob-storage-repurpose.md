@@ -1,7 +1,7 @@
 # ADR-006 — Azure Blob Storage Repurposed Away from Game State
 
 | Field        | Value               |
-|--------------|---------------------|
+| ------------ | ------------------- |
 | **Date**     | 2026-04-15          |
 | **Status**   | Accepted            |
 | **Deciders** | Project maintainers |
@@ -26,11 +26,11 @@ The specific repurposing use case has not yet been defined. This ADR serves as a
 
 ### What Changes
 
-| Component | Before | After |
-|---|---|---|
-| `AzureBlobGameRepository` | Registered as `IGameRepository` | **Not registered** — present in codebase but inactive |
-| `Sudoku.Storage.Azure` | Game state persistence | **Retained** — future use TBD |
-| `IAzureStorageService` | Used by `AzureBlobGameRepository` | Retained for future use |
+| Component                 | Before                            | After                                                 |
+| ------------------------- | --------------------------------- | ----------------------------------------------------- |
+| `AzureBlobGameRepository` | Registered as `IGameRepository`   | **Not registered** — present in codebase but inactive |
+| `Sudoku.Storage.Azure`    | Game state persistence            | **Retained** — future use TBD                         |
+| `IAzureStorageService`    | Used by `AzureBlobGameRepository` | Retained for future use                               |
 
 ### What Does Not Change
 
@@ -87,7 +87,7 @@ flowchart LR
 
 ## Open Questions
 
-- What is the intended repurposing of Azure Blob Storage within this system? *(To be resolved in follow-up ADR)*
+- What is the intended repurposing of Azure Blob Storage within this system? _(To be resolved in follow-up ADR)_
 - Should the `sudoku-games` blob container be archived or deleted once the Cosmos DB migration is confirmed complete?
 
 ---
@@ -95,5 +95,5 @@ flowchart LR
 ## Related ADRs
 
 - [ADR-004 — Azure Cosmos DB as the Primary Game Persistence Backend](ADR-004-cosmosdb.md)
-- [ADR-008 — Azure Aspire for Service Orchestration](ADR-008-aspire.md) *(forthcoming)*
-- Follow-up ADR: Azure Blob Storage — Repurposed Use Case *(TBD)*
+- [ADR-008 — Azure Aspire for Service Orchestration](ADR-008-aspire.md)
+- Follow-up ADR: Azure Blob Storage — Repurposed Use Case _(TBD)_
