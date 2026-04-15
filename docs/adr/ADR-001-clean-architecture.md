@@ -128,6 +128,6 @@ The project adopts **Clean Architecture** (also known as Ports and Adapters / He
 
 ## Related ADRs
 
-- [ADR-002 — CQRS in the Application Layer](ADR-002-cqrs.md) *(forthcoming)*
-- [ADR-004 — Azure Cosmos DB as the Primary Game Persistence Backend](ADR-004-cosmosdb.md) *(forthcoming)*
-- [ADR-005 — In-Memory Repository Scoped to Puzzle Generation](ADR-005-in-memory-puzzle-repository.md) *(forthcoming)*
+- [ADR-002 — CQRS in the Application Layer](ADR-002-cqrs.md)
+- [ADR-004 — Azure Cosmos DB as the Primary Game Persistence Backend](ADR-004-cosmosdb.md)
+- [ADR-005 — In-Memory Repository Scoped to Puzzle Generation](ADR-005-in-memory-puzzle-repository.md)
