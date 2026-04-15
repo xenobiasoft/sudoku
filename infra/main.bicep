@@ -60,6 +60,13 @@ param keyVaultName string
 param appConfigName string
 
 // ---------------------------------------------------------------------------
+// Static Web App parameters
+// ---------------------------------------------------------------------------
+
+@description('Name of the Static Web App.')
+param staticWebAppName string
+
+// ---------------------------------------------------------------------------
 // Monitoring parameters
 // ---------------------------------------------------------------------------
 
@@ -137,6 +144,15 @@ module compute 'modules/compute.bicep' = {
   }
 }
 
+module staticwebapp 'modules/staticwebapp.bicep' = {
+  name: 'staticwebapp'
+  params: {
+    location: location
+    environment: environment
+    staticWebAppName: staticWebAppName
+  }
+}
+
 // Step 1: Bind the custom hostname to the web app (no SSL yet).
 // The managed certificate cannot be created until the hostname is bound.
 module hostname 'modules/hostname.bicep' = if (enableCustomDomain) {
@@ -164,6 +180,7 @@ module ssl 'modules/ssl.bicep' = if (enableCustomDomain) {
 // Outputs
 // ---------------------------------------------------------------------------
 
+output staticWebAppUrl string = staticwebapp.outputs.staticWebAppUrl
 output resourceGroupName string = resourceGroup().name
 output webAppUrl string = compute.outputs.webAppUrl
 output apiAppUrl string = compute.outputs.apiAppUrl

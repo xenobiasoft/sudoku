@@ -12,6 +12,9 @@ param appServicePlanSku = 'B1'
 param customDomainName = 'sudoku.xenobiasoft.com'
 param enableCustomDomain = true
 
+// Static Web App
+param staticWebAppName = 'swa-sudoku-xenobiasoft-prod'
+
 // Storage
 param storageAccountName = 'stxenobiasoftprod'
 param cosmosDbAccountName = 'cosmos-sudoku-prod'
