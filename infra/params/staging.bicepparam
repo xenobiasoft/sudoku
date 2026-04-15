@@ -11,6 +11,9 @@ param apiAppName = 'XenobiasoftSudokuApi-staging'
 param appServicePlanSku = 'B1'
 param enableCustomDomain = false
 
+// Static Web App
+param staticWebAppName = 'swa-sudoku-xenobiasoft-staging'
+
 // Storage
 param storageAccountName = 'stxenobiasoftstaging'
 param cosmosDbAccountName = 'cosmos-sudoku-staging'
