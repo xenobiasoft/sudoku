@@ -65,7 +65,6 @@ public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
         foreach (var rowCol in emptyCellCoords)
         {
             puzzle.GetCell(rowCol.Row, rowCol.Col).SetValue(null);
-            puzzle.GetCell(rowCol.Row, rowCol.Row).SetValue(null);
 
             if (puzzle.Cells.Count(x => !x.Value.HasValue) >= numberOfEmptyCells) break;
         }

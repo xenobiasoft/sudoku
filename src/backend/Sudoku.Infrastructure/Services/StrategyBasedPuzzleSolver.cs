@@ -58,7 +58,7 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
 
         foreach (var strategy in strategies.OrderBy(x => x.Order))
         {
-            logger.LogInformation($"Solving with {strategy.GetType().Name}");
+            logger.LogDebug($"Solving with {strategy.GetType().Name}");
 
             changesMade = changesMade || strategy.SolvePuzzle(_puzzle);
 
@@ -79,7 +79,7 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
 
     private bool TryBruteForceMethod()
     {
-        logger.LogInformation("Solving with BruteForce technique");
+        logger.LogDebug("Solving with BruteForce technique");
         _puzzle.PopulatePossibleValues();
         SetCellWithFewestPossibleValues();
 
@@ -101,7 +101,7 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
         }
 
         var value = cell.PossibleValues.ElementAt(rnd.Next(cell.PossibleValues.Count));
-        logger.LogInformation($"Setting cell at ({cell.Row}, {cell.Column}) to {value}");
+        logger.LogDebug($"Setting cell at ({cell.Row}, {cell.Column}) to {value}");
         cell.SetValue(value);
     }
 

@@ -43,6 +43,12 @@
 
 ---
 
+## Performance
+
+- [ ] **Pre-generated puzzle pool** — Run a background `IHostedService` that continuously generates puzzles for each difficulty and queues them in memory (or a distributed cache like Redis). When a player requests a new game, dequeue a ready puzzle instead of generating one on-demand. The service refills the pool asynchronously in the background. This turns a multi-second blocking generation into a near-instant lookup and eliminates the timeout on the "new game" endpoint.
+
+---
+
 ## Quality & Polish
 
 - [ ] **Feature flag / shared feature contract** — Define a shared list of features that both Blazor and React must implement, so parity gaps are caught early (could be a simple checklist in this file or a lightweight config).
