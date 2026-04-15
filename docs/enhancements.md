@@ -35,11 +35,8 @@
 
 ## Gameplay Enhancements
 
-- [ ] **Timer display** — Show an elapsed timer per game session, visible in both frontends.
 - [ ] **Hint system** — Allow users to request a hint (reveal one correct cell) with a configurable limit per game.
 - [ ] **Difficulty-based scoring** — Award points based on difficulty, solve time, and hints used.
-- [ ] **Pause/resume** — Let players pause a game (hiding the board) and resume later without losing progress.
-- [ ] **Keyboard navigation** — Full keyboard support for cell selection and number entry (important for desktop PWA experience).
 
 ---
 
