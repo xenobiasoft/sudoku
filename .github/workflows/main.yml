@@ -298,7 +298,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: frontend-dist
-          path: src/frontend/Sudoku.React/dist
+          path: frontend-dist
 
       - name: Deploy to Static Web App
         uses: Azure/static-web-apps-deploy@v1
@@ -306,6 +306,7 @@ jobs:
           azure_static_web_apps_api_token: ${{ steps.swa-token.outputs.token }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "src/frontend/Sudoku.React"
-          output_location: "dist"
+          app_location: "frontend-dist"
+          output_location: ""
           skip_app_build: true
+    
