@@ -88,6 +88,7 @@ jobs:
       - name: Run frontend tests
         run: npm run test
         working-directory: src/frontend/Sudoku.React
+
       - name: Build frontend
         run: npm run build
         working-directory: src/frontend/Sudoku.React
@@ -270,7 +271,6 @@ jobs:
 
   deploy-swa:
     needs: [deploy-infra, build-frontend]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
 
