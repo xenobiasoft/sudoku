@@ -6,7 +6,7 @@
 
 ## Infrastructure & Deployment
 
-- [ ] **Deploy Sudoku.React to Static Web App** — Add the React frontend to the existing Azure deployment pipeline, alongside the Blazor app. A spec for this already exists at `docs/specs/setup-deployment-react-static-web-app.md`.
+- [x] **Deploy Sudoku.React to Static Web App** — Add the React frontend to the existing Azure deployment pipeline, alongside the Blazor app. A spec for this already exists at `docs/specs/setup-deployment-react-static-web-app.md`.
 - [ ] **Add VNet to infrastructure** — Integrate a Virtual Network into the Bicep infrastructure (`infra/main.bicep`) to secure communication between the API, storage, and frontends.
 
 ---
