@@ -11,10 +11,13 @@ param apiAppName = 'XenobiasoftSudokuApi-staging'
 param appServicePlanSku = 'B1'
 param enableCustomDomain = false
 
-// Static Web App
-param staticWebAppName = 'swa-sudoku-xenobiasoft-staging'
-param swaCustomDomainName = 'beta-sudoku.xenobiasoft.com'
-param enableSwaCustomDomain = true
+// Static Web App — targets the staging environment within the prod SWA.
+// enableSwaCustomDomain should stay false until:
+//   1. The staging environment has been deployed at least once (workflow must run first).
+//   2. A CNAME record for sudoku-beta.xenobiasoft.com points to the staging hostname.
+param staticWebAppName = 'swa-sudoku-xenobiasoft-prod'
+param swaCustomDomainName = 'sudoku-beta.xenobiasoft.com'
+param enableSwaCustomDomain = false
 
 // Storage
 param storageAccountName = 'stxenobiasoftstaging'
