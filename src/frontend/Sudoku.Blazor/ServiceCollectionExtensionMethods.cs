@@ -1,4 +1,5 @@
-﻿using Sudoku.Blazor.Services;
+﻿using Microsoft.Extensions.Http.Resilience;
+using Sudoku.Blazor.Services;
 using Sudoku.Blazor.Services.Abstractions;
 using Sudoku.Blazor.Services.HttpClients;
 
@@ -19,38 +20,37 @@ namespace Sudoku.Blazor
                 .AddScoped<IGameTimer>(sp => new GameTimer(TimeSpan.FromSeconds(1)));
 
             var apiBaseUrl = config["ApiBaseUrl"];
-            
+
+            // Shared resilience configuration for all API clients.
+            // Tweak these values while testing to find the right balance.
+            static void ConfigureResilience(HttpStandardResilienceOptions options)
+            {
+                // Per-attempt timeout.
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(20);
+
+                // 0 retries = 1 total attempt. Bump this as needed while testing.
+                options.Retry.MaxRetryAttempts = 1;
+
+                // TotalRequestTimeout must be strictly greater than AttemptTimeout.
+                // Keep it at least AttemptTimeout * (MaxRetryAttempts + 1) + a small buffer.
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(25);
+
+                // CircuitBreaker.SamplingDuration must be >= 2 * AttemptTimeout.
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(60);
+            }
+
             services.AddHttpClient<IGameApiClient, GameApiClient>(client =>
             {
                 client.BaseAddress = new Uri(apiBaseUrl);
             })
-            .AddStandardResilienceHandler(options =>
-            {
-                // Configure retry policy to only retry idempotent methods (GET, HEAD, OPTIONS, etc.)
-                options.Retry.ShouldHandle = args =>
-                {
-                    // Only retry for GET requests
-                    if (args.Outcome.Result?.RequestMessage?.Method == HttpMethod.Get)
-                    {
-                        return ValueTask.FromResult(args.Outcome.Result.StatusCode >= System.Net.HttpStatusCode.InternalServerError);
-                    }
+            .AddStandardResilienceHandler(ConfigureResilience);
 
-                    // Don't retry POST, PUT, DELETE, PATCH
-                    return ValueTask.FromResult(false);
-                };
-
-                // Reduce max retry attempts
-                options.Retry.MaxRetryAttempts = 2;
-                options.Retry.Delay = TimeSpan.FromMilliseconds(500);
-            });
-
-            // Configure HttpClient for PlayerApiClient with the same logic
             services.AddHttpClient<IPlayerApiClient, PlayerApiClient>(client =>
             {
                 client.BaseAddress = new Uri(apiBaseUrl);
             })
-            .AddStandardResilienceHandler();
-            
+            .AddStandardResilienceHandler(ConfigureResilience);
+
             return services;
         }
     }
