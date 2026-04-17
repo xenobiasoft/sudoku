@@ -15,7 +15,7 @@ param enableCustomDomain = true
 // Static Web App
 param staticWebAppName = 'swa-sudoku-xenobiasoft-prod'
 param swaCustomDomainName = 'sudoku-beta.xenobiasoft.com'
-param enableSwaCustomDomain = true
+param enableSwaCustomDomain = false
 
 // Storage
 param storageAccountName = 'stxenobiasoftprod'
