@@ -1,0 +1,307 @@
+name: Staging - Build and Deploy
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME: XenobiasoftSudoku-staging
+  AZURE_API_NAME: XenobiasoftSudokuApi-staging
+  AZURE_SWA_NAME: swa-sudoku-xenobiasoft-staging
+  CUSTOM_DOMAIN_NAME: "beta-sudoku.xenobiasoft.com"
+  DOTNET_VERSION: "10.x"
+  RESOURCE_GROUP: rg-xenobiasoft-sudoku-staging-westus2
+
+permissions:
+  contents: read
+  id-token: write
+  checks: write
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-quality: "ga"
+
+      - name: Cache .NET packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore --verbosity normal
+
+      - name: Publish Web Server
+        run: dotnet publish src/frontend/Sudoku.Blazor/Sudoku.Blazor.csproj --configuration Release --output ${{ github.workspace }}/publish-web --no-restore --no-build
+
+      - name: Publish API
+        run: dotnet publish src/backend/Sudoku.Api/Sudoku.Api.csproj --configuration Release --output ${{ github.workspace }}/publish-api --no-restore --no-build
+
+      - name: Upload publish-web artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-web
+          path: ${{ github.workspace }}/publish-web
+
+      - name: Upload publish-api artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-api
+          path: ${{ github.workspace }}/publish-api
+
+  build-frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: src/frontend/Sudoku.React/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: src/frontend/Sudoku.React
+
+      - name: Run frontend tests
+        run: npm run test
+        working-directory: src/frontend/Sudoku.React
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: src/frontend/Sudoku.React
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL_STAGING }}
+
+      - name: Upload frontend artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: src/frontend/Sudoku.React/dist
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-quality: "ga"
+
+      - name: Cache .NET packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Run tests with coverage
+        run: dotnet test --configuration Release --no-restore --verbosity normal --logger trx --results-directory TestResults --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+
+      - name: Generate coverage report
+        uses: danielpalme/ReportGenerator-GitHub-Action@5
+        with:
+          reports: TestResults/**/coverage.cobertura.xml
+          targetdir: CoverageReport
+          reporttypes: HtmlInline;Cobertura;MarkdownSummaryGithub
+          verbosity: Warning
+
+      - name: Enforce 80% line coverage threshold
+        run: |
+          PERCENT=$(awk 'NR==2 && /line-rate/ { match($0, /line-rate="([0-9.]+)"/, a); printf "%.2f", a[1] * 100 }' CoverageReport/Cobertura.xml)
+          echo "Line coverage: ${PERCENT}%"
+          echo "### Coverage Summary" >> $GITHUB_STEP_SUMMARY
+          echo "Line coverage: **${PERCENT}%**" >> $GITHUB_STEP_SUMMARY
+          if awk "BEGIN { exit !($PERCENT < 80) }"; then
+            echo "❌ Coverage ${PERCENT}% is below the required 80% threshold." | tee -a $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "✅ Coverage ${PERCENT}% meets the required 80% threshold." | tee -a $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Publish test results as PR annotations
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: .NET Tests
+          path: TestResults/*.trx
+          reporter: dotnet-trx
+          fail-on-error: false
+
+      - name: Upload test-results artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults
+
+  deploy-infra:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_STAGING }}
+
+      - name: Debug Azure context
+        run: |
+          az account show --output table
+          az group show -n ${{ env.RESOURCE_GROUP }} --output table
+
+      - name: Deploy Bicep template (staging)
+        id: deploy
+        uses: azure/arm-deploy@v2
+        with:
+          resourceGroupName: ${{ env.RESOURCE_GROUP }}
+          template: ./infra/main.bicep
+          parameters: ./infra/params/staging.bicepparam
+          scope: resourcegroup
+          failOnStdErr: false
+
+      - name: DNS check
+        shell: bash
+        run: |
+          sudo apt-get update && sudo apt-get install -y dnsutils
+
+          for host in "${AZURE_WEBAPP_NAME}.azurewebsites.net" "${AZURE_API_NAME}.azurewebsites.net" "${CUSTOM_DOMAIN_NAME}"; do
+            echo "Checking DNS for $host"
+            for i in {1..10}; do
+              if nslookup "$host"; then
+                echo "OK: $host"
+                break
+              fi
+              echo "Waiting for DNS to propagate ($i/10)..."
+              sleep 15
+            done
+            nslookup "$host" || echo "WARNING: $host not resolvable yet; continuing to deploy."
+          done
+
+      - name: Dump deployment error details (if failed)
+        if: failure()
+        run: |
+          echo "Showing deployment operations for 'main'..."
+          az deployment operation group list \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --name main \
+            --output jsonc
+
+          echo "Showing deployment details for 'main'..."
+          az deployment group show \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --name main \
+            --output jsonc
+
+  deploy-apps:
+    needs: deploy-infra
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_STAGING }}
+
+      - name: Download publish-web artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: publish-web
+          path: ${{ github.workspace }}/publish-web
+
+      - name: Download publish-api artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: publish-api
+          path: ${{ github.workspace }}/publish-api
+
+      - name: Deploy Web
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          package: ${{ github.workspace }}/publish-web
+
+      - name: Deploy API
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_API_NAME }}
+          package: ${{ github.workspace }}/publish-api
+
+  deploy-swa:
+    needs: [deploy-infra, build-frontend]
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_STAGING }}
+
+      - name: Get SWA deployment token
+        id: swa-token
+        run: |
+          TOKEN=$(az staticwebapp secrets list \
+            --name ${{ env.AZURE_SWA_NAME }} \
+            --query "properties.apiKey" \
+            --output tsv)
+          if [ -z "$TOKEN" ]; then
+            echo "ERROR: Failed to retrieve SWA deployment token for ${{ env.AZURE_SWA_NAME }}" >&2
+            exit 1
+          fi
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend-dist
+
+      - name: Deploy to Static Web App (staging)
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ steps.swa-token.outputs.token }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "frontend-dist"
+          output_location: ""
+          skip_app_build: true
