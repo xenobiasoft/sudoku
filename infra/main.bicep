@@ -66,6 +66,12 @@ param appConfigName string
 @description('Name of the Static Web App.')
 param staticWebAppName string
 
+@description('Custom domain name to bind to the SWA production environment (e.g. sudoku-beta.xenobiasoft.com).')
+param swaCustomDomainName string = ''
+
+@description('Whether to bind a custom domain to the SWA production environment. Requires DNS to be configured first.')
+param enableSwaCustomDomain bool = false
+
 // ---------------------------------------------------------------------------
 // Monitoring parameters
 // ---------------------------------------------------------------------------
@@ -150,6 +156,8 @@ module staticwebapp 'modules/staticwebapp.bicep' = {
     location: location
     environment: environment
     staticWebAppName: staticWebAppName
+    customDomainName: swaCustomDomainName
+    enableCustomDomain: enableSwaCustomDomain
   }
 }
 
