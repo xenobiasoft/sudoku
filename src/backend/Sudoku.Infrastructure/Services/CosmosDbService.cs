@@ -167,9 +167,6 @@ public class CosmosDbService(CosmosClient cosmosClient, IOptions<CosmosDbOptions
         try
         {
             await InitializeCosmosDbAsync();
-
-            var database = cosmosClient.GetDatabase(_options.DatabaseName);
-            _container = database.GetContainer(_options.ContainerName);
         }
         catch (Exception ex)
         {
@@ -180,16 +177,42 @@ public class CosmosDbService(CosmosClient cosmosClient, IOptions<CosmosDbOptions
 
     private async Task InitializeCosmosDbAsync()
     {
-        logger.LogInformation("Ensuring CosmosDB database and container exist at endpoint URI: {Endpoint}", cosmosClient.Endpoint);
+        logger.LogInformation("Verifying CosmosDB database and container exist at endpoint URI: {Endpoint}", cosmosClient.Endpoint);
 
-        var database = await cosmosClient.CreateDatabaseIfNotExistsAsync(_options.DatabaseName, throughput: 400);
+        var database = cosmosClient.GetDatabase(_options.DatabaseName);
 
-        logger.LogInformation("Database {DatabaseName} ensured", _options.DatabaseName);
+        try
+        {
+            await database.ReadAsync();
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            throw new InvalidOperationException($"CosmosDB database '{_options.DatabaseName}' does not exist.", ex);
+        }
+        catch (CosmosException ex)
+        {
+            throw new InvalidOperationException($"Failed to access CosmosDB database '{_options.DatabaseName}'. Status: {ex.StatusCode}", ex);
+        }
 
-        var containerProperties = new ContainerProperties(id: _options.ContainerName, partitionKeyPath: "/gameId");
+        logger.LogInformation("Database {DatabaseName} verified", _options.DatabaseName);
 
-        await database.Database.CreateContainerIfNotExistsAsync(containerProperties);
+        var container = database.GetContainer(_options.ContainerName);
 
-        logger.LogInformation("Container {ContainerName} ensured", _options.ContainerName);
+        try
+        {
+            await container.ReadContainerAsync();
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            throw new InvalidOperationException($"CosmosDB container '{_options.ContainerName}' does not exist in database '{_options.DatabaseName}'.", ex);
+        }
+        catch (CosmosException ex)
+        {
+            throw new InvalidOperationException($"Failed to access CosmosDB container '{_options.ContainerName}'. Status: {ex.StatusCode}", ex);
+        }
+
+        logger.LogInformation("Container {ContainerName} verified", _options.ContainerName);
+
+        _container = container;
     }
 }
