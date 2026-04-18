@@ -108,8 +108,8 @@ push_development() {
     # Cosmos DB (same account as prod, separate container for dev data)
     # -------------------------------------------------------------------------
     set_key "$LABEL" "UseCosmosDb"                       "true"
-    set_key "$LABEL" "CosmosDb:DatabaseName"             "sudoku"
-    set_key "$LABEL" "CosmosDb:ContainerName"            "games-dev"
+    set_key "$LABEL" "CosmosDb:DatabaseName"             "sudoku-dev"
+    set_key "$LABEL" "CosmosDb:ContainerName"            "games"
     set_key "$LABEL" "CosmosDb:UseManagedIdentity"       "true"
     set_key "$LABEL" "CosmosDb:AccountEndpoint"          "https://cosmos-sudoku-prod.documents.azure.com:443/"
     set_key "$LABEL" "CosmosDb:ConnectionMode"           "Direct"

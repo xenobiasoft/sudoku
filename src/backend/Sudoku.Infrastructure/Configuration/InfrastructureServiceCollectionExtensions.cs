@@ -73,7 +73,7 @@ public static class InfrastructureServiceCollectionExtensions
                         throw new InvalidOperationException("CosmosDb:AccountEndpoint must be set when CosmosDb:UseManagedIdentity is true.");
                     }
 
-                    TokenCredential credential = new ManagedIdentityCredential();
+                    TokenCredential credential = new DefaultAzureCredential();
                     return new CosmosClient(cosmosDbOptions.AccountEndpoint, credential, clientOptions);
                 }
 
