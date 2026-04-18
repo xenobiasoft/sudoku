@@ -1,0 +1,17 @@
+{
+  "name": "sudoku-e2e",
+  "version": "1.0.0",
+  "description": "End-to-end tests for Sudoku Blazor and React applications",
+  "scripts": {
+    "test": "playwright test",
+    "test:blazor": "playwright test --project=blazor",
+    "test:react": "playwright test --project=react",
+    "test:report": "playwright show-report",
+    "install:browsers": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "@types/node": "^22.0.0",
+    "typescript": "~5.9.0"
+  }
+}

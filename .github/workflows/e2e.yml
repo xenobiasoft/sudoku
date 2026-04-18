@@ -1,0 +1,76 @@
+name: E2E Tests
+
+on:
+  # Manual trigger only until the staging environment exists and all tests
+  # pass reliably. Once staging is provisioned, add `push` / `pull_request`
+  # triggers here and remove the workflow_dispatch block (or keep it for ad-hoc runs).
+  #
+  # ⚠️  BLOCKER: Set BLAZOR_BASE_URL and REACT_BASE_URL as repository variables
+  # (Settings → Secrets and variables → Variables) before running this workflow
+  # against a real environment.
+  workflow_dispatch:
+    inputs:
+      blazor_base_url:
+        description: 'Blazor app URL (overrides repo variable BLAZOR_BASE_URL)'
+        required: false
+        default: ''
+      react_base_url:
+        description: 'React app URL (overrides repo variable REACT_BASE_URL)'
+        required: false
+        default: ''
+      project:
+        description: 'Which project to test (blazor | react | all)'
+        required: false
+        default: 'all'
+
+jobs:
+  e2e:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Tests/E2E
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: Tests/E2E/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests (all projects)
+        if: ${{ inputs.project == 'all' || inputs.project == '' }}
+        run: npx playwright test
+        env:
+          BLAZOR_BASE_URL: ${{ inputs.blazor_base_url || vars.BLAZOR_BASE_URL }}
+          REACT_BASE_URL: ${{ inputs.react_base_url || vars.REACT_BASE_URL }}
+
+      - name: Run E2E tests (blazor only)
+        if: ${{ inputs.project == 'blazor' }}
+        run: npx playwright test --project=blazor
+        env:
+          BLAZOR_BASE_URL: ${{ inputs.blazor_base_url || vars.BLAZOR_BASE_URL }}
+
+      - name: Run E2E tests (react only)
+        if: ${{ inputs.project == 'react' }}
+        run: npx playwright test --project=react
+        env:
+          REACT_BASE_URL: ${{ inputs.react_base_url || vars.REACT_BASE_URL }}
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: Tests/E2E/playwright-report/
+          retention-days: 30
