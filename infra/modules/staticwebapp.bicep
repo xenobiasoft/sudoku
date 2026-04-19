@@ -8,6 +8,9 @@ param customDomainName string = ''
 @description('Whether to bind a custom domain to the SWA. Requires DNS to be configured first.')
 param enableCustomDomain bool = false
 
+@description('Resource ID of the API App Service to link as a backend. SWA will proxy /api/* requests to it.')
+param apiAppResourceId string
+
 var tags = {
   environment: environment
   project: 'XenobiaSoftSudoku'
@@ -22,6 +25,15 @@ resource staticWebApp 'Microsoft.Web/staticSites@2023-12-01' = {
     tier: 'Standard'
   }
   properties: {}
+}
+
+resource staticWebAppLinkedBackend 'Microsoft.Web/staticSites/linkedBackends@2023-12-01' = {
+  parent: staticWebApp
+  name: 'backend'
+  properties: {
+    backendResourceId: apiAppResourceId
+    region: location
+  }
 }
 
 // Binds the custom domain to the SWA production environment.

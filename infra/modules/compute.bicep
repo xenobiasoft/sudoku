@@ -190,5 +190,6 @@ resource apiAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
 
 output webAppUrl string = webApp.properties.defaultHostName
 output apiAppUrl string = apiApp.properties.defaultHostName
+output apiAppId string = apiApp.id
 output webAppPrincipalId string = webApp.identity.principalId
 output apiAppPrincipalId string = apiApp.identity.principalId

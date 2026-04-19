@@ -158,6 +158,7 @@ module staticwebapp 'modules/staticwebapp.bicep' = {
     staticWebAppName: staticWebAppName
     customDomainName: swaCustomDomainName
     enableCustomDomain: enableSwaCustomDomain
+    apiAppResourceId: compute.outputs.apiAppId
   }
 }
 
