@@ -5,8 +5,7 @@ import { apiClient } from '../api/apiClient';
 
 vi.mock('../api/apiClient', () => ({
   apiClient: {
-    createPlayer: vi.fn(),
-    playerExists: vi.fn(),
+    createPlayer: vi.fn()
   },
 }));
 
@@ -62,7 +61,6 @@ describe('usePlayerService', () => {
 
     it('should use existing valid player alias from localStorage', async () => {
       mockLocalStorage.getItem.mockReturnValue('existing-player-456');
-      (apiClient.playerExists as any).mockResolvedValue(true);
 
       const { result } = renderHook(() => usePlayerService());
 
@@ -71,45 +69,10 @@ describe('usePlayerService', () => {
       });
 
       expect(mockLocalStorage.getItem).toHaveBeenCalledWith('sudoku-alias');
-      expect(apiClient.playerExists).toHaveBeenCalledWith('existing-player-456');
       expect(apiClient.createPlayer).not.toHaveBeenCalled();
       expect(result.current.playerAlias).toBe('existing-player-456');
       expect(result.current.isLoading).toBe(false);
       expect(result.current.error).toBeNull();
-    });
-
-    it('should create new player when stored alias no longer exists on server', async () => {
-      mockLocalStorage.getItem.mockReturnValue('invalid-player-789');
-      (apiClient.playerExists as any).mockResolvedValue(false);
-      (apiClient.createPlayer as any).mockResolvedValue('new-player-987');
-
-      const { result } = renderHook(() => usePlayerService());
-
-      await waitFor(() => {
-        expect(result.current.isInitialized).toBe(true);
-      });
-
-      expect(apiClient.playerExists).toHaveBeenCalledWith('invalid-player-789');
-      expect(apiClient.createPlayer).toHaveBeenCalled();
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('sudoku-alias', 'new-player-987');
-      expect(result.current.playerAlias).toBe('new-player-987');
-    });
-
-    it('should create new player when playerExists API call fails', async () => {
-      mockLocalStorage.getItem.mockReturnValue('existing-player-456');
-      (apiClient.playerExists as any).mockRejectedValue(new Error('API Error'));
-      (apiClient.createPlayer as any).mockResolvedValue('fallback-player-111');
-
-      const { result } = renderHook(() => usePlayerService());
-
-      await waitFor(() => {
-        expect(result.current.isInitialized).toBe(true);
-      });
-
-      expect(apiClient.playerExists).toHaveBeenCalledWith('existing-player-456');
-      expect(apiClient.createPlayer).toHaveBeenCalled();
-      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('sudoku-alias', 'fallback-player-111');
-      expect(result.current.playerAlias).toBe('fallback-player-111');
     });
   });
 
@@ -159,13 +122,11 @@ describe('usePlayerService', () => {
       // Reset mocks and simulate manual re-initialization
       vi.clearAllMocks();
       mockLocalStorage.getItem.mockReturnValue('cached-player-333');
-      (apiClient.playerExists as any).mockResolvedValue(true);
 
       await act(async () => {
         await result.current.initializePlayer();
       });
 
-      expect(apiClient.playerExists).toHaveBeenCalledWith('cached-player-333');
       expect(result.current.playerAlias).toBe('cached-player-333');
     });
 
@@ -196,7 +157,6 @@ describe('usePlayerService', () => {
   describe('clearPlayer', () => {
     it('should clear player data and localStorage', async () => {
       mockLocalStorage.getItem.mockReturnValue('player-to-clear-555');
-      (apiClient.playerExists as any).mockResolvedValue(true);
 
       const { result } = renderHook(() => usePlayerService());
 

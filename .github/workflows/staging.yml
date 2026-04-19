@@ -7,6 +7,7 @@ name: Deploy SWA to Staging Environment
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, closed]
     branches: [main]
   push:
     branches: [staging]
@@ -25,6 +26,7 @@ permissions:
 
 jobs:
   build-and-test-frontend:
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
 
     steps:
@@ -60,6 +62,7 @@ jobs:
 
   deploy-swa-staging:
     needs: build-and-test-frontend
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     environment: staging
 
@@ -110,3 +113,35 @@ jobs:
           echo "### SWA Staging Environment" >> $GITHUB_STEP_SUMMARY
           echo "Staging URL: https://${HOSTNAME}" >> $GITHUB_STEP_SUMMARY
           echo "Custom domain: https://sudoku-beta.xenobiasoft.com" >> $GITHUB_STEP_SUMMARY
+
+  delete-staging-environment:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get SWA deployment token
+        id: swa-token
+        run: |
+          TOKEN=$(az staticwebapp secrets list \
+            --name ${{ env.AZURE_SWA_NAME }} \
+            --query "properties.apiKey" \
+            --output tsv)
+          if [ -z "$TOKEN" ]; then
+            echo "ERROR: Failed to retrieve SWA deployment token for ${{ env.AZURE_SWA_NAME }}" >&2
+            exit 1
+          fi
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Delete SWA staging environment
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ steps.swa-token.outputs.token }}
+          action: "close"
+          deployment_environment: ${{ env.SWA_DEPLOYMENT_ENV }}
