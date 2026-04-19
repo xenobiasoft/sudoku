@@ -27,23 +27,8 @@ export function usePlayerService(): UsePlayerServiceReturn {
       let alias = localStorage.getItem(playerAliasKey);
       
       if (!alias) {
-        // No stored alias, create new player
         alias = await apiClient.createPlayer();
         localStorage.setItem(playerAliasKey, alias);
-      } else {
-        // Check if stored alias still exists on server
-        try {
-          const exists = await apiClient.playerExists(alias);
-          if (!exists) {
-            // Player no longer exists, create new one
-            alias = await apiClient.createPlayer();
-            localStorage.setItem(playerAliasKey, alias);
-          }
-        } catch {
-          // API call failed, create new player
-          alias = await apiClient.createPlayer();
-          localStorage.setItem(playerAliasKey, alias);
-        }
       }
       
       setPlayerAlias(alias);
