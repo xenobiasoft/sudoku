@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DepenMock.Moq;
+using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Controllers;
 using Sudoku.Api.Models;
 using Sudoku.Application.Common;
@@ -6,14 +7,14 @@ using Sudoku.Application.Interfaces;
 
 namespace UnitTests.API;
 
-public class PlayersControllerTests : BaseTestByType<PlayersController>
+public class PlayersControllerTests : MoqBaseTestByType<PlayersController>
 {
     private readonly Mock<IPlayerApplicationService> _mockPlayerService;
     private readonly PlayersController _sut;
 
     public PlayersControllerTests()
     {
-        _mockPlayerService = Container.ResolveMock<IPlayerApplicationService>();
+        _mockPlayerService = Container.ResolveMock<IPlayerApplicationService>().AsMoq();
         _sut = ResolveSut();
     }
 

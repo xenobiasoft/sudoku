@@ -1,9 +1,8 @@
-using DepenMock.XUnit;
 using Sudoku.Application.Common;
 
 namespace UnitTests.Application.Common;
 
-public class ResultOfTTests : BaseTestByType<Result<string>>
+public class ResultOfTTests : MoqBaseTestByType<Result<string>>
 {
     [Fact]
     public void Success_WithValue_CreatesSuccessfulResult()

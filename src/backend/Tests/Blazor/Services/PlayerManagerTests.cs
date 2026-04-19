@@ -1,10 +1,11 @@
+using DepenMock.Moq;
 using Sudoku.Blazor.Services;
 using Sudoku.Blazor.Services.Abstractions;
 using Sudoku.Blazor.Services.HttpClients;
 
 namespace UnitTests.Blazor.Services;
 
-public class PlayerManagerTests : BaseTestByAbstraction<PlayerManager, IPlayerManager>
+public class PlayerManagerTests : MoqBaseTestByAbstraction<PlayerManager, IPlayerManager>
 {
     private const string TestAlias = "TestPlayer";
     private const string CreatedAlias = "CreatedPlayer";
@@ -14,8 +15,8 @@ public class PlayerManagerTests : BaseTestByAbstraction<PlayerManager, IPlayerMa
 
     public PlayerManagerTests()
     {
-        _mockPlayerApiClient = Container.ResolveMock<IPlayerApiClient>();
-        _mockLocalStorageService = Container.ResolveMock<ILocalStorageService>();
+        _mockPlayerApiClient = Container.ResolveMock<IPlayerApiClient>().AsMoq();
+        _mockLocalStorageService = Container.ResolveMock<ILocalStorageService>().AsMoq();
     }
 
     [Fact]

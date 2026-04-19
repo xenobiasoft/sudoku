@@ -1,5 +1,4 @@
-using System.Runtime.CompilerServices;
-using DepenMock.XUnit;
+using DepenMock.Moq;
 using Sudoku.Application.Interfaces;
 using Sudoku.Application.Specifications;
 using Sudoku.Domain.Entities;
@@ -12,7 +11,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Repositories;
 
-public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameRepository, IGameRepository>
+public class AzureBlobGameRepositoryTests : MoqBaseTestByAbstraction<AzureBlobGameRepository, IGameRepository>
 {
     private readonly Mock<IAzureStorageService> _mockStorageService;
     private const string ContainerName = "sudoku-games";
@@ -20,7 +19,7 @@ public class AzureBlobGameRepositoryTests : BaseTestByAbstraction<AzureBlobGameR
 
     public AzureBlobGameRepositoryTests()
     {
-        _mockStorageService = Container.ResolveMock<IAzureStorageService>();
+        _mockStorageService = Container.ResolveMock<IAzureStorageService>().AsMoq();
     }
 
     protected override void AddContainerCustomizations(Container container)

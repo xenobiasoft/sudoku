@@ -1,4 +1,5 @@
 using DepenMock.Attributes;
+using DepenMock.Moq;
 using DepenMock.XUnit.V3.Attributes;
 using Sudoku.Application.Common;
 using Sudoku.Application.DTOs;
@@ -15,14 +16,14 @@ using LogOutput = DepenMock.XUnit.V3.Attributes.LogOutputAttribute;
 namespace UnitTests.Application.Handlers;
 
 [LogOutput(LogOutputTiming.Always)]
-public class ValidateGameQueryHandlerTests : BaseTestByAbstraction<ValidateGameQueryHandler, IQueryHandler<ValidateGameQuery, ValidationResultDto>>
+public class ValidateGameQueryHandlerTests : MoqBaseTestByAbstraction<ValidateGameQueryHandler, IQueryHandler<ValidateGameQuery, ValidationResultDto>>
 {
     private readonly Mock<IGameRepository> _mockGameRepository;
     private readonly ValidateGameQuery _query;
 
     public ValidateGameQueryHandlerTests()
     {
-        _mockGameRepository = Container.ResolveMock<IGameRepository>();
+        _mockGameRepository = Container.ResolveMock<IGameRepository>().AsMoq();
 
         _query = new ValidateGameQuery(GameId.New());
         _mockGameRepository

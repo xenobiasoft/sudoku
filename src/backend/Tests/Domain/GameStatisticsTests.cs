@@ -1,10 +1,9 @@
-using DepenMock.XUnit;
 using Sudoku.Domain.ValueObjects;
 using UnitTests.Helpers;
 
 namespace UnitTests.Domain;
 
-public class GameStatisticsTests : BaseTestByType<GameStatistics>
+public class GameStatisticsTests : MoqBaseTestByType<GameStatistics>
 {
     [Fact]
     public void Create_ReturnsNewGameStatisticsWithInitialValues()

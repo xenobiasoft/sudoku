@@ -1,10 +1,9 @@
-using DepenMock.XUnit;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 
 namespace UnitTests.Domain;
 
-public class CellTests : BaseTestByType<Cell>
+public class CellTests : MoqBaseTestByType<Cell>
 {
     [Fact]
     public void Create_WithValidParameters_CreatesCell()

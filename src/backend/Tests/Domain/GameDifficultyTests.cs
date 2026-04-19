@@ -1,10 +1,9 @@
-using DepenMock.XUnit;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 
 namespace UnitTests.Domain;
 
-public class GameDifficultyTests : BaseTestByType<GameDifficulty>
+public class GameDifficultyTests : MoqBaseTestByType<GameDifficulty>
 {
     [Fact]
     public void PredefinedDifficulties_HaveCorrectValues()

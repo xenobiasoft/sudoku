@@ -1,4 +1,3 @@
-using DepenMock.XUnit;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.Events;
@@ -8,7 +7,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Domain;
 
-public class SudokuGameTests : BaseTestByType<SudokuGame>
+public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
 {
     [Fact]
     public void AbandonGame_WhenGameIsCompleted_ThrowsGameAlreadyCompletedException()

@@ -1,11 +1,10 @@
-using DepenMock.XUnit;
 using Sudoku.Application.DTOs;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
 
 namespace UnitTests.Application.DTOs;
 
-public class GameDtoTests : BaseTestByType<GameDto>
+public class GameDtoTests : MoqBaseTestByType<GameDto>
 {
     [Fact]
     public void FromGame_WithValidGame_CreatesCorrectDto()

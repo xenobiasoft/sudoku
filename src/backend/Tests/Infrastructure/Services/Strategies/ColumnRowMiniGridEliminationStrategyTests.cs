@@ -1,11 +1,10 @@
-﻿using DepenMock.XUnit;
-using Sudoku.Domain.ValueObjects;
+﻿using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Services.Strategies;
 using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Services.Strategies;
 
-public class ColumnRowMiniGridEliminationStrategyTests : BaseTestByAbstraction<ColumnRowMiniGridEliminationStrategy, SolverStrategy>
+public class ColumnRowMiniGridEliminationStrategyTests : MoqBaseTestByAbstraction<ColumnRowMiniGridEliminationStrategy, SolverStrategy>
 {
 	[Fact]
 	public void SolvePuzzle_WhenOnlyOnePossibleValue_ThenValueEqualsThatNumber()

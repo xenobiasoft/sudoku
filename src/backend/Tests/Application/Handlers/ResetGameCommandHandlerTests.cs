@@ -1,4 +1,5 @@
 using DepenMock.Attributes;
+using DepenMock.Moq;
 using DepenMock.XUnit.V3.Attributes;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
@@ -12,7 +13,7 @@ using LogOutput = DepenMock.XUnit.V3.Attributes.LogOutputAttribute;
 namespace UnitTests.Application.Handlers;
 
 [LogOutput(LogOutputTiming.Always)]
-public class ResetGameCommandHandlerTests : BaseTestByAbstraction<ResetGameCommandHandler, ICommandHandler<ResetGameCommand>>
+public class ResetGameCommandHandlerTests : MoqBaseTestByAbstraction<ResetGameCommandHandler, ICommandHandler<ResetGameCommand>>
 {
     private readonly Mock<IGameRepository> _mockGameRepository;
     private readonly SudokuGame _game;
@@ -20,7 +21,7 @@ public class ResetGameCommandHandlerTests : BaseTestByAbstraction<ResetGameComma
 
     public ResetGameCommandHandlerTests()
     {
-        _mockGameRepository = Container.ResolveMock<IGameRepository>();
+        _mockGameRepository = Container.ResolveMock<IGameRepository>().AsMoq();
 
         _cmd = new ResetGameCommand(GameId.New());
         _game = GetStartedGame();

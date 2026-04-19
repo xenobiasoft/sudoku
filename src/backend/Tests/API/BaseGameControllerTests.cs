@@ -1,17 +1,17 @@
-﻿using DepenMock.XUnit.V3;
+﻿using DepenMock.Moq;
 using Sudoku.Application.DTOs;
 using Sudoku.Application.Interfaces;
 
 namespace UnitTests.API;
 
-public abstract class BaseGameControllerTests<TControllerType> : BaseTestByType<TControllerType> where TControllerType : class
+public abstract class BaseGameControllerTests<TControllerType> : MoqBaseTestByType<TControllerType> where TControllerType : class
 {
     protected readonly Mock<IGameApplicationService> MockGameService;
     protected TControllerType Sut;
 
     protected BaseGameControllerTests()
     {
-        MockGameService = Container.ResolveMock<IGameApplicationService>();
+        MockGameService = Container.ResolveMock<IGameApplicationService>().AsMoq();
         Sut = ResolveSut();
     }
     

@@ -1,4 +1,3 @@
-using DepenMock.XUnit;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
@@ -6,7 +5,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Domain;
 
-public class SudokuGameMoveHistoryTests : BaseTestByType<SudokuGame>
+public class SudokuGameMoveHistoryTests : MoqBaseTestByType<SudokuGame>
 {
     [Fact]
     public void GetMoveHistory_NewGame_ReturnsEmptyCollection()

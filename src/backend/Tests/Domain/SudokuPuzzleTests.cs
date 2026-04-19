@@ -1,10 +1,9 @@
-using DepenMock.XUnit;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
 
 namespace UnitTests.Domain;
 
-public class SudokuPuzzleTests : BaseTestByType<SudokuPuzzle>
+public class SudokuPuzzleTests : MoqBaseTestByType<SudokuPuzzle>
 {
     [Fact]
     public void Clone_CreatesDeepCopyOfPuzzle()

@@ -1,11 +1,10 @@
-using DepenMock.XUnit;
 using Sudoku.Domain.Events;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.EventHandling;
 
 namespace UnitTests.Infrastructure.EventHandling;
 
-public class GameCreatedEventHandlerTests : BaseTestByAbstraction<GameCreatedEventHandler, IDomainEventHandler<GameCreatedEvent>>
+public class GameCreatedEventHandlerTests : MoqBaseTestByAbstraction<GameCreatedEventHandler, IDomainEventHandler<GameCreatedEvent>>
 {
     [Fact]
     public async Task HandleAsync_WithValidEvent_LogsInformation()

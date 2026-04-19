@@ -1,11 +1,10 @@
-﻿using DepenMock.XUnit;
-using Sudoku.Domain.ValueObjects;
+﻿using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Services.Strategies;
 using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Services.Strategies;
 
-public class SinglesInMiniGridStrategyTests : BaseTestByAbstraction<SinglesInMiniGridsStrategy, SolverStrategy>
+public class SinglesInMiniGridStrategyTests : MoqBaseTestByAbstraction<SinglesInMiniGridsStrategy, SolverStrategy>
 {
 	[Fact]
 	public void SolvePuzzle_WhenPossibleNumberOccursOnlyOnceInMiniGrid_SetValueToThatNumber()
