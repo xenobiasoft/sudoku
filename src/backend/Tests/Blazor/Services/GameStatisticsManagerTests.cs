@@ -1,4 +1,5 @@
-﻿using Sudoku.Blazor.Models;
+﻿using DepenMock.Moq;
+using Sudoku.Blazor.Models;
 using Sudoku.Blazor.Services;
 using Sudoku.Blazor.Services.Abstractions;
 using Sudoku.Blazor.Services.HttpClients;
@@ -6,7 +7,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Blazor.Services;
 
-public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGameStatisticsManager>
+public class GameStatisticsManagerTests : MoqBaseTestByAbstraction<GameManager, IGameStatisticsManager>
 {
     private readonly Mock<IGameApiClient> _mockGameApiClient;
     private readonly Mock<IGameTimer> _mockGameTimer;
@@ -17,8 +18,8 @@ public class GameStatisticsManagerTests : BaseTestByAbstraction<GameManager, IGa
 
     public GameStatisticsManagerTests()
     {
-        _mockGameApiClient = Container.ResolveMock<IGameApiClient>();
-        _mockGameTimer = Container.ResolveMock<IGameTimer>();
+        _mockGameApiClient = Container.ResolveMock<IGameApiClient>().AsMoq();
+        _mockGameTimer = Container.ResolveMock<IGameTimer>().AsMoq();
 
         _testAlias = Container.Create<string>();
         _testGameId = Container.Create<string>();

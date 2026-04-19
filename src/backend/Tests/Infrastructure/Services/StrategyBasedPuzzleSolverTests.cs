@@ -1,4 +1,4 @@
-﻿using DepenMock.XUnit;
+﻿using DepenMock.Moq;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
@@ -7,14 +7,14 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Services;
 
-public class StrategyBasedPuzzleSolverTests : BaseTestByAbstraction<StrategyBasedPuzzleSolver, IPuzzleSolver>
+public class StrategyBasedPuzzleSolverTests : MoqBaseTestByAbstraction<StrategyBasedPuzzleSolver, IPuzzleSolver>
 {
     private const string Alias = "SudokuSolverAlias";
     private readonly Mock<IPuzzleRepository> _puzzleRepository;
 
     public StrategyBasedPuzzleSolverTests()
     {
-        _puzzleRepository = Container.ResolveMock<IPuzzleRepository>();
+        _puzzleRepository = Container.ResolveMock<IPuzzleRepository>().AsMoq();
     }
 
     [Fact]

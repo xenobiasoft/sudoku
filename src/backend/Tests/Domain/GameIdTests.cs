@@ -1,9 +1,8 @@
-using DepenMock.XUnit;
 using Sudoku.Domain.ValueObjects;
 
 namespace UnitTests.Domain;
 
-public class GameIdTests : BaseTestByType<GameId>
+public class GameIdTests : MoqBaseTestByType<GameId>
 {
     [Fact]
     public void New_CreatesGameIdWithNewGuid()

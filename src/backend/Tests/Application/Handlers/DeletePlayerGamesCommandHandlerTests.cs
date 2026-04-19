@@ -1,4 +1,5 @@
 using DepenMock.Attributes;
+using DepenMock.Moq;
 using DepenMock.XUnit.V3.Attributes;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
@@ -12,13 +13,13 @@ using LogOutput = DepenMock.XUnit.V3.Attributes.LogOutputAttribute;
 namespace UnitTests.Application.Handlers;
 
 [LogOutput(LogOutputTiming.Always)]
-public class DeletePlayerGamesCommandHandlerTests : BaseTestByAbstraction<DeletePlayerGamesCommandHandler, ICommandHandler<DeletePlayerGamesCommand>>
+public class DeletePlayerGamesCommandHandlerTests : MoqBaseTestByAbstraction<DeletePlayerGamesCommandHandler, ICommandHandler<DeletePlayerGamesCommand>>
 {
     private readonly Mock<IGameRepository> _mockGameRepository;
 
     public DeletePlayerGamesCommandHandlerTests()
     {
-        _mockGameRepository = Container.ResolveMock<IGameRepository>();
+        _mockGameRepository = Container.ResolveMock<IGameRepository>().AsMoq();
     }
 
     protected override void AddContainerCustomizations(Container container)

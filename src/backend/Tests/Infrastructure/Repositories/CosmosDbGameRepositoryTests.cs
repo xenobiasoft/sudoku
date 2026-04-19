@@ -1,4 +1,4 @@
-using DepenMock.XUnit;
+using DepenMock.Moq;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
@@ -8,17 +8,16 @@ using Sudoku.Infrastructure.Repositories;
 using Sudoku.Infrastructure.Services;
 using UnitTests.Helpers.Builders;
 using UnitTests.Helpers.Factories;
-using UnitTests.Mocks;
 
 namespace UnitTests.Infrastructure.Repositories;
 
-public class CosmosDbGameRepositoryTests : BaseTestByAbstraction<CosmosDbGameRepository, IGameRepository>
+public class CosmosDbGameRepositoryTests : MoqBaseTestByAbstraction<CosmosDbGameRepository, IGameRepository>
 {
     private readonly Mock<ICosmosDbService> _mockCosmosDbService;
 
     public CosmosDbGameRepositoryTests()
     {
-        _mockCosmosDbService = Container.ResolveMock<ICosmosDbService>();
+        _mockCosmosDbService = Container.ResolveMock<ICosmosDbService>().AsMoq();
     }
 
     protected override void AddContainerCustomizations(Container container)

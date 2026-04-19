@@ -1,17 +1,18 @@
-﻿using System.Text.Json;
+﻿using DepenMock.Moq;
 using Sudoku.Blazor.Models;
 using Sudoku.Blazor.Services;
 using Sudoku.Blazor.Services.Abstractions;
+using System.Text.Json;
 
 namespace UnitTests.Blazor.Services;
 
-public class LocalStorageServiceTests : BaseTestByAbstraction<LocalStorageService, ILocalStorageService>
+public class LocalStorageServiceTests : MoqBaseTestByAbstraction<LocalStorageService, ILocalStorageService>
 {
     private readonly Mock<IJsRuntimeWrapper> _mockJsRuntime;
 
     public LocalStorageServiceTests()
     {
-        _mockJsRuntime = Container.ResolveMock<IJsRuntimeWrapper>();
+        _mockJsRuntime = Container.ResolveMock<IJsRuntimeWrapper>().AsMoq();
     }
 
     #region DeleteGameAsync Tests

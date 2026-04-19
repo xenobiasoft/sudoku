@@ -1,10 +1,9 @@
-using DepenMock.XUnit;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 
 namespace UnitTests.Domain;
 
-public class PlayerAliasTests : BaseTestByType<PlayerAlias>
+public class PlayerAliasTests : MoqBaseTestByType<PlayerAlias>
 {
     [Theory]
     [InlineData("John")]

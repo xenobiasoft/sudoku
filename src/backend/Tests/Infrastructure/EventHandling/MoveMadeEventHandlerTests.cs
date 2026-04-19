@@ -1,11 +1,10 @@
-using DepenMock.XUnit;
 using Sudoku.Domain.Events;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.EventHandling;
 
 namespace UnitTests.Infrastructure.EventHandling;
 
-public class MoveMadeEventHandlerTests : BaseTestByAbstraction<MoveMadeEventHandler, IDomainEventHandler<MoveMadeEvent>>
+public class MoveMadeEventHandlerTests : MoqBaseTestByAbstraction<MoveMadeEventHandler, IDomainEventHandler<MoveMadeEvent>>
 {
     [Fact]
     public async Task HandleAsync_WithValidEvent_LogsDebugInformation()

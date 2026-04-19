@@ -1,4 +1,3 @@
-using DepenMock.XUnit;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.Events;
@@ -7,7 +6,7 @@ using Sudoku.Domain.ValueObjects;
 
 namespace UnitTests.Domain;
 
-public class SudokuGamePossibleValuesTests : BaseTestByType<SudokuGame>
+public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
 {
     private readonly PlayerAlias _playerAlias = PlayerAlias.Create("TestPlayer");
     private readonly GameDifficulty _difficulty = GameDifficulty.Easy;

@@ -1,21 +1,20 @@
-﻿using DepenMock.XUnit;
+﻿using DepenMock.Moq;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Services;
 using UnitTests.Helpers;
-using UnitTests.Mocks;
 using PuzzleFactory = UnitTests.Helpers.Factories.PuzzleFactory;
 
 namespace UnitTests.Infrastructure.Services;
 
-public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzzleGenerator>
+public class PuzzleGeneratorTests : MoqBaseTestByAbstraction<PuzzleGenerator, IPuzzleGenerator>
 {
     public PuzzleGeneratorTests()
     {
         var solvedPuzzle = PuzzleFactory.GetSolvedPuzzle();
         Container
-            .ResolveMock<IPuzzleSolver>()
+            .ResolveMock<IPuzzleSolver>().AsMoq()
             .Setup(x => x.SolvePuzzle(It.IsAny<SudokuPuzzle>()))
             .ReturnsAsync(solvedPuzzle);
     }
@@ -42,7 +41,7 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
     public async Task Generate_SolvesEmptyPuzzle()
     {
         // Arrange
-        var puzzleSolver = Container.ResolveMock<IPuzzleSolver>();
+        var puzzleSolver = Container.ResolveMock<IPuzzleSolver>().AsMoq();
         var sut = ResolveSut();
 
         // Act
@@ -69,7 +68,7 @@ public class PuzzleGeneratorTests : BaseTestByAbstraction<PuzzleGenerator, IPuzz
     public async Task Generate_WhenSolverThrowsInvalidBoardException_RegeneratesBoard()
     {
         // Arrange
-        var mockSolver = Container.ResolveMock<IPuzzleSolver>();
+        var mockSolver = Container.ResolveMock<IPuzzleSolver>().AsMoq();
         mockSolver.ThrowInvalidPuzzleException();
         var sut = ResolveSut();
 

@@ -1,19 +1,17 @@
-using DepenMock.XUnit;
+using DepenMock.Moq;
 using Sudoku.Domain.Events;
-using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.EventHandling;
 using UnitTests.Helpers.Builders;
-using UnitTests.Mocks;
 
 namespace UnitTests.Infrastructure.EventHandling;
 
-public class DomainEventDispatcherTests : BaseTestByAbstraction<DomainEventDispatcher, IDomainEventDispatcher>
+public class DomainEventDispatcherTests : MoqBaseTestByAbstraction<DomainEventDispatcher, IDomainEventDispatcher>
 {
     private readonly Mock<IServiceProvider> _mockServiceProvider;
 
     public DomainEventDispatcherTests()
     {
-        _mockServiceProvider = Container.ResolveMock<IServiceProvider>();
+        _mockServiceProvider = Container.ResolveMock<IServiceProvider>().AsMoq();
     }
 
     protected override void AddContainerCustomizations(Container container)
@@ -104,8 +102,8 @@ public class DomainEventDispatcherTests : BaseTestByAbstraction<DomainEventDispa
         var gameCreatedEvent = Container.Create<GameCreatedEvent>();
         var gameStartedEvent = Container.Create<GameStartedEvent>();
         var domainEvents = new DomainEvent[] { gameCreatedEvent, gameStartedEvent };
-        var mockCreatedHandler = Container.ResolveMock<IDomainEventHandler<GameCreatedEvent>>();
-        var mockStartedHandler = Container.ResolveMock<IDomainEventHandler<GameStartedEvent>>();
+        var mockCreatedHandler = Container.ResolveMock<IDomainEventHandler<GameCreatedEvent>>().AsMoq();
+        var mockStartedHandler = Container.ResolveMock<IDomainEventHandler<GameStartedEvent>>().AsMoq();
         _mockServiceProvider.SetupGetService(typeof(IEnumerable<IDomainEventHandler<GameCreatedEvent>>), new[] { mockCreatedHandler.Object });
         _mockServiceProvider.SetupGetService(typeof(IEnumerable<IDomainEventHandler<GameStartedEvent>>), new[] { mockStartedHandler.Object });
         var sut = ResolveSut();
@@ -174,7 +172,7 @@ public class DomainEventDispatcherTests : BaseTestByAbstraction<DomainEventDispa
     {
         // Arrange
         var domainEvent = Container.Create<GameCreatedEvent>();
-        var mockHandler = Container.ResolveMock<IDomainEventHandler<GameCreatedEvent>>();
+        var mockHandler = Container.ResolveMock<IDomainEventHandler<GameCreatedEvent>>().AsMoq();
         var handlers = new[] { mockHandler.Object };
         _mockServiceProvider.SetupGetService(typeof(IEnumerable<IDomainEventHandler<GameCreatedEvent>>), handlers);
         var sut = ResolveSut();

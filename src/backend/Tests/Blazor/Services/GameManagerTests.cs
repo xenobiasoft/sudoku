@@ -1,4 +1,5 @@
-﻿using Sudoku.Blazor.Services;
+﻿using DepenMock.Moq;
+using Sudoku.Blazor.Services;
 using Sudoku.Blazor.Services.Abstractions;
 using Sudoku.Blazor.Services.HttpClients;
 using Sudoku.Domain.ValueObjects;
@@ -6,7 +7,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Blazor.Services;
 
-public class GameManagerTests : BaseTestByAbstraction<GameManager, IGameManager>
+public class GameManagerTests : MoqBaseTestByAbstraction<GameManager, IGameManager>
 {
     private const string Alias = "TestPlayer";
     private const string GameId = "TestGameId";
@@ -16,8 +17,8 @@ public class GameManagerTests : BaseTestByAbstraction<GameManager, IGameManager>
 
     public GameManagerTests()
     {
-        _mockGameApiClient = Container.ResolveMock<IGameApiClient>();
-        _mockLocalStorageService = Container.ResolveMock<ILocalStorageService>();
+        _mockGameApiClient = Container.ResolveMock<IGameApiClient>().AsMoq();
+        _mockLocalStorageService = Container.ResolveMock<ILocalStorageService>().AsMoq();
     }
 
 	[Theory]

@@ -1,13 +1,11 @@
-﻿using DepenMock.XUnit;
-using Sudoku.Domain.Entities;
-using Sudoku.Domain.Exceptions;
+﻿using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Services.Strategies;
 using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Services.Strategies;
 
-public class TripletsInMiniGridsStrategyTests : BaseTestByAbstraction<TripletsInMiniGridsStrategy, SolverStrategy>
+public class TripletsInMiniGridsStrategyTests : MoqBaseTestByAbstraction<TripletsInMiniGridsStrategy, SolverStrategy>
 {
     [Fact]
     public void Execute_WithNakedTripletsInMiniGrid_ReturnsTrue()

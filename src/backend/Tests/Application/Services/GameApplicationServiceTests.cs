@@ -1,3 +1,4 @@
+using DepenMock.Moq;
 using MediatR;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
@@ -8,13 +9,13 @@ using Sudoku.Application.Services;
 
 namespace UnitTests.Application.Services;
 
-public class GameApplicationServiceTests : BaseTestByAbstraction<GameApplicationService, IGameApplicationService>
+public class GameApplicationServiceTests : MoqBaseTestByAbstraction<GameApplicationService, IGameApplicationService>
 {
     private readonly Mock<IMediator> _mockMediator;
 
     public GameApplicationServiceTests()
     {
-        _mockMediator = Container.ResolveMock<IMediator>();
+        _mockMediator = Container.ResolveMock<IMediator>().AsMoq();
     }
 
     [Fact]

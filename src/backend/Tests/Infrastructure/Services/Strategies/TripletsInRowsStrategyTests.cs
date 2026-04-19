@@ -1,12 +1,11 @@
-﻿using DepenMock.XUnit;
-using Sudoku.Domain.Entities;
+﻿using Sudoku.Domain.Entities;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Services.Strategies;
 
 namespace UnitTests.Infrastructure.Services.Strategies;
 
-public class TripletsInRowsStrategyTests : BaseTestByAbstraction<TripletsInRowsStrategy, SolverStrategy>
+public class TripletsInRowsStrategyTests : MoqBaseTestByAbstraction<TripletsInRowsStrategy, SolverStrategy>
 {
     [Fact]
     public void Execute_WhenRemovalLeadsToEmptyPossibleValues_ThrowsInvalidMoveException()

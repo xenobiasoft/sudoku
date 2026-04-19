@@ -1,6 +1,4 @@
-﻿using DepenMock.XUnit;
-using FluentAssertions;
-using Sudoku.Domain.Entities;
+﻿using Sudoku.Domain.Entities;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Services.Strategies;
@@ -8,7 +6,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Services.Strategies;
 
-public class TwinsInColumnsStrategyTests : BaseTestByAbstraction<TwinsInColumnsStrategy, SolverStrategy>
+public class TwinsInColumnsStrategyTests : MoqBaseTestByAbstraction<TwinsInColumnsStrategy, SolverStrategy>
 {
     [Fact]
     public void Execute_WhenColumnHasNakedTwins_EliminatesTwinValuesFromOtherCells()
