@@ -1,6 +1,5 @@
 using Azure.Identity;
 using BlazorApplicationInsights;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Sudoku.Blazor;
 using Sudoku.Blazor.Components;
 
@@ -36,25 +35,15 @@ var appInsightsConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CON
 builder.Services
     .RegisterBlazorGameServices(builder.Configuration);
 
-// Only configure Application Insights if connection string is provided
+// Only configure client-side Application Insights if connection string is provided
+// Server-side telemetry is handled by Azure.Monitor.OpenTelemetry.AspNetCore via ServiceDefaults
 if (!string.IsNullOrEmpty(appInsightsConnectionString))
 {
     builder.Services
         .AddBlazorApplicationInsights(x =>
         {
             x.ConnectionString = appInsightsConnectionString;
-        })
-        .AddApplicationInsightsTelemetry(new ApplicationInsightsServiceOptions
-        {
-            ConnectionString = appInsightsConnectionString,
-            EnableQuickPulseMetricStream = true
         });
-
-    // Configure Application Insights logging
-    builder.Logging
-        .AddApplicationInsights(
-            configureTelemetryConfiguration: (config) => config.ConnectionString = appInsightsConnectionString,
-            configureApplicationInsightsLoggerOptions: (options) => { });
 }
 
 var app = builder.Build();

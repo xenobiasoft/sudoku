@@ -254,11 +254,19 @@ export default function GamePage() {
     );
   }
 
+  if (solved) {
+    return (
+      <Layout>
+        <VictoryDisplay onClose={handleVictoryClose} />
+      </Layout>
+    );
+  }
+
   if (isGameLoading || !game) {
     return (
       <Layout>
         <div style={{ textAlign: 'center', marginTop: '4rem' }}>
-          {isGameLoading ? 'Loading puzzle...' : 'Loading puzzle...'}
+          Loading puzzle...
         </div>
       </Layout>
     );
@@ -291,7 +299,6 @@ export default function GamePage() {
           onReset={handleReset}
           onTogglePencil={() => setPencilMode(p => !p)}
         />
-        {solved && <VictoryDisplay onClose={handleVictoryClose} />}
       </div>
     </Layout>
   );
