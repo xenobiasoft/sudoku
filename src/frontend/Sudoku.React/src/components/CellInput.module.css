@@ -39,11 +39,18 @@
   background-color: #F0F8FF !important;
 }
 
-.highlight {
-  background-color: #F0F8F0 !important;
+.highlight input,
+.highlight label {
+  background-color: #d8eef8 !important;
 }
 
-.invalid {
+.selected input,
+.selected label {
+  background-color: #b8d8f0 !important;
+}
+
+.invalid input,
+.invalid label {
   background-color: #ffdddd !important;
   outline: 1px solid red;
 }

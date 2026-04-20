@@ -23,7 +23,7 @@ export default function CellInput({
   const getCellClass = (): string => {
     const classes = [styles.cell];
     if (isInvalid) classes.push(styles.invalid);
-    else if (isSelected) classes.push(styles.highlight);
+    else if (isSelected) classes.push(styles.selected);
     else if (isHighlighted) classes.push(styles.highlight);
     return classes.join(' ');
   };
