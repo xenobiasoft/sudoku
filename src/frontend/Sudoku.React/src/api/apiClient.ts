@@ -41,60 +41,72 @@ export const apiClient = {
   deleteGame: (alias: string, gameId: string): Promise<void> =>
     request(`/api/players/${alias}/games/${gameId}`, { method: 'DELETE' }),
 
-  makeMove: (
+  makeMove: async (
     alias: string,
     gameId: string,
     row: number,
     column: number,
     value: number | null,
     playDuration: string
-  ): Promise<GameModel> =>
-    request(`/api/players/${alias}/games/${gameId}/actions`, {
+  ): Promise<GameModel> => {
+    await request(`/api/players/${alias}/games/${gameId}/actions`, {
       method: 'PUT',
       body: JSON.stringify({ row, column, value, playDuration }),
-    }),
+    });
+    return request(`/api/players/${alias}/games/${gameId}`);
+  },
 
-  resetGame: (alias: string, gameId: string): Promise<GameModel> =>
-    request(`/api/players/${alias}/games/${gameId}/actions/reset`, { method: 'POST' }),
+  resetGame: async (alias: string, gameId: string): Promise<GameModel> => {
+    await request(`/api/players/${alias}/games/${gameId}/actions/reset`, { method: 'POST' });
+    return request(`/api/players/${alias}/games/${gameId}`);
+  },
 
-  undoMove: (alias: string, gameId: string): Promise<GameModel> =>
-    request(`/api/players/${alias}/games/${gameId}/actions/undo`, { method: 'POST' }),
+  undoMove: async (alias: string, gameId: string): Promise<GameModel> => {
+    await request(`/api/players/${alias}/games/${gameId}/actions/undo`, { method: 'POST' });
+    return request(`/api/players/${alias}/games/${gameId}`);
+  },
 
   updateStatus: (alias: string, gameId: string, status: string): Promise<void> =>
     request(`/api/players/${alias}/games/${gameId}/status/${status}`, { method: 'PATCH' }),
 
-  addPossibleValue: (
+  addPossibleValue: async (
     alias: string,
     gameId: string,
     row: number,
     column: number,
     value: number
-  ): Promise<GameModel> =>
-    request(`/api/players/${alias}/games/${gameId}/possible-values`, {
+  ): Promise<GameModel> => {
+    await request(`/api/players/${alias}/games/${gameId}/possible-values`, {
       method: 'POST',
       body: JSON.stringify({ row, column, value }),
-    }),
+    });
+    return request(`/api/players/${alias}/games/${gameId}`);
+  },
 
-  removePossibleValue: (
+  removePossibleValue: async (
     alias: string,
     gameId: string,
     row: number,
     column: number,
     value: number
-  ): Promise<GameModel> =>
-    request(`/api/players/${alias}/games/${gameId}/possible-values`, {
+  ): Promise<GameModel> => {
+    await request(`/api/players/${alias}/games/${gameId}/possible-values`, {
       method: 'DELETE',
       body: JSON.stringify({ row, column, value }),
-    }),
+    });
+    return request(`/api/players/${alias}/games/${gameId}`);
+  },
 
-  clearPossibleValues: (
+  clearPossibleValues: async (
     alias: string,
     gameId: string,
     row: number,
     column: number
-  ): Promise<GameModel> =>
-    request(`/api/players/${alias}/games/${gameId}/possible-values/clear`, {
+  ): Promise<GameModel> => {
+    await request(`/api/players/${alias}/games/${gameId}/possible-values/clear`, {
       method: 'DELETE',
       body: JSON.stringify({ row, column }),
-    }),
+    });
+    return request(`/api/players/${alias}/games/${gameId}`);
+  },
 };
