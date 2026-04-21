@@ -69,38 +69,44 @@ export const apiClient = {
   updateStatus: (alias: string, gameId: string, status: string): Promise<void> =>
     request(`/api/players/${alias}/games/${gameId}/status/${status}`, { method: 'PATCH' }),
 
-  addPossibleValue: (
+  addPossibleValue: async (
     alias: string,
     gameId: string,
     row: number,
     column: number,
     value: number
-  ): Promise<GameModel> =>
-    request(`/api/players/${alias}/games/${gameId}/possible-values`, {
+  ): Promise<GameModel> => {
+    await request(`/api/players/${alias}/games/${gameId}/possible-values`, {
       method: 'POST',
       body: JSON.stringify({ row, column, value }),
-    }),
+    });
+    return request(`/api/players/${alias}/games/${gameId}`);
+  },
 
-  removePossibleValue: (
+  removePossibleValue: async (
     alias: string,
     gameId: string,
     row: number,
     column: number,
     value: number
-  ): Promise<GameModel> =>
-    request(`/api/players/${alias}/games/${gameId}/possible-values`, {
+  ): Promise<GameModel> => {
+    await request(`/api/players/${alias}/games/${gameId}/possible-values`, {
       method: 'DELETE',
       body: JSON.stringify({ row, column, value }),
-    }),
+    });
+    return request(`/api/players/${alias}/games/${gameId}`);
+  },
 
-  clearPossibleValues: (
+  clearPossibleValues: async (
     alias: string,
     gameId: string,
     row: number,
     column: number
-  ): Promise<GameModel> =>
-    request(`/api/players/${alias}/games/${gameId}/possible-values/clear`, {
+  ): Promise<GameModel> => {
+    await request(`/api/players/${alias}/games/${gameId}/possible-values/clear`, {
       method: 'DELETE',
       body: JSON.stringify({ row, column }),
-    }),
+    });
+    return request(`/api/players/${alias}/games/${gameId}`);
+  },
 };
