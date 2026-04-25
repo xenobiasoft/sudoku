@@ -59,7 +59,7 @@ export default function CellInput({
         value={cell.hasValue && cell.value !== null ? cell.value.toString() : ''}
         onClick={handleClick}
         onChange={() => {}}
-        style={cell.possibleValues.length > 0 && !cell.hasValue ? { opacity: 0 } : undefined}
+        style={cell.possibleValues.length > 0 && !cell.hasValue ? { backgroundColor: 'transparent' } : undefined}
       />
     </td>
   );

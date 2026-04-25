@@ -3,7 +3,20 @@
 }
 
 .cell {
+  background-color: #FAEBD7;
   position: relative;
+}
+
+.highlight {
+  background-color: #d8eef8 !important;
+}
+
+.selected {
+  background-color: #b8d8f0 !important;
+}
+
+.invalid {
+  background-color: #ffdddd !important;
 }
 
 .cell input,
