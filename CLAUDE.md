@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 dotnet build
 
 # Run Blazor Server UI
-dotnet run --project src/backend/Sudoku.Blazor
+dotnet run --project src/frontend/Sudoku.Blazor
 
 # Run REST API
 dotnet run --project src/backend/Sudoku.Api
