@@ -4,8 +4,6 @@ using Sudoku.McpServer.Tools;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
-
 // ---------------------------------------------------------------------------
 // Azure Monitor Logs client
 // Uses DefaultAzureCredential → SystemAssigned Managed Identity in Azure,
