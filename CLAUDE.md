@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ### Build & Run
-```bashV
+```bash
 # Build entire solution
 dotnet build
 
