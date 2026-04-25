@@ -8,6 +8,7 @@ param environment = 'prod'
 param appServicePlanName = 'XenobiasoftServicePlan-prod'
 param webAppName = 'XenobiasoftSudoku-prod'
 param apiAppName = 'XenobiasoftSudokuApi-prod'
+param mcpAppName = 'XenobiasoftSudokuMcp-prod'
 param appServicePlanSku = 'B1'
 param customDomainName = 'sudoku.xenobiasoft.com'
 param enableCustomDomain = true

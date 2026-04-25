@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GitHub", "GitHub", "{7DBF77
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Api", "src\backend\Sudoku.Api\Sudoku.Api.csproj", "{825D9287-9613-8670-E0F8-77BF8584E423}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.McpServer", "src\backend\Sudoku.McpServer\Sudoku.McpServer.csproj", "{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.AppHost", "src\backend\Sudoku.AppHost\Sudoku.AppHost.csproj", "{9EB926AC-F796-4872-B081-568F8F3D7CFE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.ServiceDefaults", "src\backend\Sudoku.ServiceDefaults\Sudoku.ServiceDefaults.csproj", "{2B5F2794-B11C-7F6D-BA4E-3FD968E80C96}"
@@ -45,6 +47,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{F2DF
 		infra\modules\monitoring.bicep = infra\modules\monitoring.bicep
 		infra\modules\ssl.bicep = infra\modules\ssl.bicep
 		infra\modules\staticwebapp.bicep = infra\modules\staticwebapp.bicep
+		infra\modules\mcp.bicep = infra\modules\mcp.bicep
 		infra\modules\storage.bicep = infra\modules\storage.bicep
 	EndProjectSection
 EndProject
@@ -88,6 +91,18 @@ Global
 		{825D9287-9613-8670-E0F8-77BF8584E423}.Release|x64.Build.0 = Release|Any CPU
 		{825D9287-9613-8670-E0F8-77BF8584E423}.Release|x86.ActiveCfg = Release|Any CPU
 		{825D9287-9613-8670-E0F8-77BF8584E423}.Release|x86.Build.0 = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|x64.Build.0 = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Debug|x86.Build.0 = Debug|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|x64.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|x64.Build.0 = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|x86.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}.Release|x86.Build.0 = Release|Any CPU
 		{9EB926AC-F796-4872-B081-568F8F3D7CFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9EB926AC-F796-4872-B081-568F8F3D7CFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9EB926AC-F796-4872-B081-568F8F3D7CFE}.Debug|x64.ActiveCfg = Debug|Any CPU

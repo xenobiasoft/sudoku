@@ -23,6 +23,9 @@ param webAppName string
 @description('Name of the API app.')
 param apiAppName string
 
+@description('Name of the MCP server app.')
+param mcpAppName string
+
 @description('App Service Plan SKU.')
 param appServicePlanSku string = 'B1'
 
@@ -150,6 +153,20 @@ module compute 'modules/compute.bicep' = {
   }
 }
 
+module mcp 'modules/mcp.bicep' = {
+  name: 'mcp'
+  params: {
+    location: location
+    environment: environment
+    appServicePlanName: appServicePlanName
+    mcpAppName: mcpAppName
+    logAnalyticsWorkspaceId: monitoring.outputs.logAnalyticsWorkspaceId
+    logAnalyticsWorkspaceCustomerId: monitoring.outputs.logAnalyticsWorkspaceCustomerId
+    appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString
+    keyVaultUri: keyvault.outputs.keyVaultUri
+  }
+}
+
 module staticwebapp 'modules/staticwebapp.bicep' = {
   name: 'staticwebapp'
   params: {
@@ -193,6 +210,7 @@ output staticWebAppUrl string = staticwebapp.outputs.staticWebAppUrl
 output resourceGroupName string = resourceGroup().name
 output webAppUrl string = compute.outputs.webAppUrl
 output apiAppUrl string = compute.outputs.apiAppUrl
+output mcpAppUrl string = mcp.outputs.mcpAppUrl
 output appInsightsConnectionString string = monitoring.outputs.appInsightsConnectionString
 output cosmosDbEndpoint string = storage.outputs.cosmosDbEndpoint
 output keyVaultUri string = keyvault.outputs.keyVaultUri
