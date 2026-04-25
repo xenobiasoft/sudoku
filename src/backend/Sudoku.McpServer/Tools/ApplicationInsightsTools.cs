@@ -20,9 +20,15 @@ public sealed class ApplicationInsightsTools
     public ApplicationInsightsTools(LogsQueryClient logsClient, IConfiguration config)
     {
         _logsClient = logsClient;
-        _workspaceId = config["AppInsights:WorkspaceId"]
-            ?? throw new InvalidOperationException(
-                "AppInsights:WorkspaceId is required. Set it in app settings (Log Analytics workspace GUID).");
+
+        var workspaceId = config["AppInsights:WorkspaceId"];
+        if (string.IsNullOrWhiteSpace(workspaceId))
+        {
+            throw new InvalidOperationException(
+                "AppInsights:WorkspaceId is required and cannot be empty. Set it in app settings (Log Analytics workspace GUID).");
+        }
+
+        _workspaceId = workspaceId;
     }
 
     // -------------------------------------------------------------------------
