@@ -10,10 +10,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Azure.Security.KeyVault" Version="13.2.2" />
-    <PackageReference Include="Aspire.Microsoft.Azure.Cosmos" Version="13.2.2" />
+    <PackageReference Include="Aspire.Azure.Security.KeyVault" Version="13.2.4" />
+    <PackageReference Include="Aspire.Microsoft.Azure.Cosmos" Version="13.2.4" />
     <PackageReference Include="MediatR" Version="14.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
   </ItemGroup>
 
