@@ -48,7 +48,7 @@ npm run lint           # React frontend only
 
 ## Architecture
 
-This solution follows **Clean Architecture** with **DDD** and **CQRS** across five backend projects and two frontend projects.
+This solution follows **Clean Architecture** with **DDD** and **CQRS** across six backend projects and two frontend projects.
 
 ### Layer Dependency Flow
 ```
