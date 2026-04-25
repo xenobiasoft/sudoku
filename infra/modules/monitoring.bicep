@@ -99,6 +99,8 @@ resource failureAnomaliesAlert 'microsoft.alertsmanagement/smartdetectoralertrul
 }
 
 output logAnalyticsWorkspaceId string = logAnalyticsWorkspace.id
+// customerId is the workspace GUID used by LogsQueryClient.QueryWorkspaceAsync
+output logAnalyticsWorkspaceCustomerId string = logAnalyticsWorkspace.properties.customerId
 output appInsightsId string = appInsights.id
 output appInsightsConnectionString string = appInsights.properties.ConnectionString
 output appInsightsInstrumentationKey string = appInsights.properties.InstrumentationKey

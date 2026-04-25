@@ -9,6 +9,7 @@ on:
 env:
   AZURE_WEBAPP_NAME: XenobiasoftSudoku-prod
   AZURE_API_NAME: XenobiasoftSudokuApi-prod
+  AZURE_MCP_NAME: XenobiasoftSudokuMcp-prod
   AZURE_SWA_NAME: swa-sudoku-xenobiasoft-prod
   CUSTOM_DOMAIN_NAME: "sudoku.xenobiasoft.com"
   DOTNET_VERSION: "10.x"
@@ -55,6 +56,9 @@ jobs:
       - name: Publish API
         run: dotnet publish src/backend/Sudoku.Api/Sudoku.Api.csproj --configuration Release --output ${{ github.workspace }}/publish-api --no-restore --no-build
 
+      - name: Publish MCP Server
+        run: dotnet publish src/backend/Sudoku.McpServer/Sudoku.McpServer.csproj --configuration Release --output ${{ github.workspace }}/publish-mcp --no-restore --no-build
+
       - name: Upload publish-web artifact
         uses: actions/upload-artifact@v4
         with:
@@ -66,6 +70,12 @@ jobs:
         with:
           name: publish-api
           path: ${{ github.workspace }}/publish-api
+
+      - name: Upload publish-mcp artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-mcp
+          path: ${{ github.workspace }}/publish-mcp
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -266,6 +276,18 @@ jobs:
         with:
           app-name: ${{ env.AZURE_API_NAME }}
           package: ${{ github.workspace }}/publish-api
+
+      - name: Download publish-mcp artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: publish-mcp
+          path: ${{ github.workspace }}/publish-mcp
+
+      - name: Deploy MCP Server
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ env.AZURE_MCP_NAME }}
+          package: ${{ github.workspace }}/publish-mcp
 
   deploy-swa:
     needs: [deploy-infra, build-frontend]
