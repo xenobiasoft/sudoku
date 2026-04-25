@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "github": {
+      "type": "http",
+      "url": "https://mcp.github.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${GITHUB_TOKEN}"
+      }
+    },
+    "azure-appinsights": {
+      "type": "http",
+      "url": "https://xenobiasoftsudokumcp-prod.azurewebsites.net/mcp"
+    }
+  },
+  "allowedTools": [
+    "mcp__github__*",
+    "mcp__azure-appinsights__*"
+  ],
+  "settingSources": ["project", "user"]
+}
