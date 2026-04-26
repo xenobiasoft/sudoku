@@ -99,6 +99,26 @@ function makeNearSolvedCells(emptyRow = 0, emptyCol = 0): CellModel[] {
 }
 
 /**
+ * Builds 81 cells with TWO empty user-editable cells.
+ * Filling only one of them won't solve the board, so isSolved() stays false.
+ */
+function makeNearSolvedCellsWith2Empty(
+  emptyRow1 = 0, emptyCol1 = 0,
+  emptyRow2 = 0, emptyCol2 = 1,
+): CellModel[] {
+  const cells: CellModel[] = [];
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      const isEmpty =
+        (r === emptyRow1 && c === emptyCol1) ||
+        (r === emptyRow2 && c === emptyCol2);
+      cells.push(isEmpty ? makeEmptyCell(r, c) : makeCell(r, c, SOLVED_BOARD[r][c], true));
+    }
+  }
+  return cells;
+}
+
+/**
  * Builds a fully solved 81-cell board.
  * Cell (0,0) is user-placed (isFixed=false) to reflect that the user filled it in.
  */
@@ -176,6 +196,30 @@ export function makeSolvedGame(): GameModel {
     moveHistory: [{ row: EMPTY_CELL_ROW, column: EMPTY_CELL_COL, value: EMPTY_CELL_VALUE, isValid: true }],
     statistics: makeStats({ totalMoves: 1, invalidMoves: 0, playDuration: '00:01:00' }),
   });
+}
+
+/**
+ * A game with TWO empty cells — cell (0,0) and cell (0,1) — so that filling
+ * cell (0,0) does NOT complete the board and isSolved() stays false.
+ * Use this as `initialGame` in cell-interaction tests.
+ */
+export function makeTestGameForInteraction(): GameModel {
+  return makeTestGame({
+    cells: makeNearSolvedCellsWith2Empty(EMPTY_CELL_ROW, EMPTY_CELL_COL, 0, 1),
+  });
+}
+
+/**
+ * State after the user places EMPTY_CELL_VALUE in cell (0,0) while cell (0,1)
+ * is still empty. isSolved() returns false so no victory display is triggered.
+ * Use as `gameAfterMove` in cell-interaction tests.
+ */
+export function makeTestGameAfterInteractionMove(): GameModel {
+  const cells = makeNearSolvedCellsWith2Empty(EMPTY_CELL_ROW, EMPTY_CELL_COL, 0, 1);
+  const cell = cells.find(c => c.row === EMPTY_CELL_ROW && c.column === EMPTY_CELL_COL)!;
+  cell.value = EMPTY_CELL_VALUE;
+  cell.hasValue = true;
+  return makeTestGame({ cells });
 }
 
 /**

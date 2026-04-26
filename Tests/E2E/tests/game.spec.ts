@@ -9,6 +9,8 @@ import {
   makeTestGameWithMove,
   makeTestGameWithStats,
   makeSolvedGame,
+  makeTestGameForInteraction,
+  makeTestGameAfterInteractionMove,
 } from '../fixtures/game-data';
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -58,8 +60,8 @@ test.describe('Game Page – Board', () => {
 test.describe('Game Page – Cell Interaction', () => {
   test('clicking a number button places a value in the selected cell', async ({ page, gamePage }) => {
     await setupApiMocks(page, {
-      initialGame: makeTestGame(),
-      gameAfterMove: makeTestGameWithMove(),
+      initialGame: makeTestGameForInteraction(),
+      gameAfterMove: makeTestGameAfterInteractionMove(),
     });
     await gamePage.goto(TEST_GAME_ID);
 
@@ -72,8 +74,8 @@ test.describe('Game Page – Cell Interaction', () => {
 
   test('pressing a number key on the keyboard places a value in the selected cell', async ({ page, gamePage }) => {
     await setupApiMocks(page, {
-      initialGame: makeTestGame(),
-      gameAfterMove: makeTestGameWithMove(),
+      initialGame: makeTestGameForInteraction(),
+      gameAfterMove: makeTestGameAfterInteractionMove(),
     });
     await gamePage.goto(TEST_GAME_ID);
 

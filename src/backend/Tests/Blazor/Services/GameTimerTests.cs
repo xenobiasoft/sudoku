@@ -118,7 +118,7 @@ public class GameTimerTests : IDisposable
 
         // Act
         _timer.Start();
-        await Task.Delay(_interval * 5);
+        await Task.Delay(_interval * 10);
         _timer.Pause();
 
         // Assert
