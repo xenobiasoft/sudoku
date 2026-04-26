@@ -1,6 +1,6 @@
 ---
 name: UI/UX Engineer
-description: Use this agent when you need UX guidance, interaction design, wireframes, component structure, accessibility review, or design consistency validation for Blazor or React/Vite frontends. Also use to identify usability issues or produce UI flow diagrams.
+description: Use this agent when you need UX guidance, interaction design, wireframes, component structure, accessibility review, or design consistency validation for Blazor or React/Vite frontends. Also use it to identify usability issues or produce UI flow diagrams.
 tools: Read, Glob, Grep, Edit, Write
 ---
 
