@@ -4,9 +4,12 @@ namespace UnitTests.Mocks;
 
 public static class MockPlayerManagerExtensions
 {
-    public static void SetupGetCurrentPlayerAsync(this Mock<IPlayerManager> mock, string alias)
+    extension(Mock<IPlayerManager> mock)
     {
-        mock.Setup(x => x.GetCurrentPlayerAsync())
-            .ReturnsAsync(alias);
+        public void SetupGetCurrentPlayerAsync(string alias)
+        {
+            mock.Setup(x => x.GetCurrentPlayerAsync())
+                .ReturnsAsync(alias);
+        }
     }
 }

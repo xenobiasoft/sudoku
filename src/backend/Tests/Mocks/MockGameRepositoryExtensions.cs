@@ -6,21 +6,24 @@ namespace UnitTests.Mocks;
 
 public static class MockGameRepositoryExtensions
 {
-    public static void SetupGameStarted(this Mock<IGameRepository> mock)
+    extension(Mock<IGameRepository> mock)
     {
-        var game = GameFactory.CreateStartedGame();
+        public void SetupGameStarted()
+        {
+            var game = GameFactory.CreateStartedGame();
 
-        mock
-            .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
-            .ReturnsAsync(game);
-    }
+            mock
+                .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
+                .ReturnsAsync(game);
+        }
 
-    public static void SetupInvalidGame(this Mock<IGameRepository> mock)
-    {
-        var game = GameFactory.CreateInvalidGame();
+        public void SetupInvalidGame()
+        {
+            var game = GameFactory.CreateInvalidGame();
 
-        mock
-            .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
-            .ReturnsAsync(game);
+            mock
+                .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
+                .ReturnsAsync(game);
+        }
     }
 }

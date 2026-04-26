@@ -5,21 +5,24 @@ namespace UnitTests.Mocks;
 
 public static class MockServiceProviderExtensions
 {
-    public static void SetupFaultyHandlers<TDomainEvent, TExceptionType>(this Mock<IServiceProvider> mock, TDomainEvent domainEvent) where TDomainEvent : DomainEvent where TExceptionType : Exception, new()
+    extension(Mock<IServiceProvider> mock)
     {
-        var mockHandler = new Mock<IDomainEventHandler<TDomainEvent>>();
-        mockHandler
-            .Setup(x => x.HandleAsync(domainEvent))
-            .ThrowsAsync(new TExceptionType());
+        public void SetupFaultyHandlers<TDomainEvent, TExceptionType>(TDomainEvent domainEvent) where TDomainEvent : DomainEvent where TExceptionType : Exception, new()
+        {
+            var mockHandler = new Mock<IDomainEventHandler<TDomainEvent>>();
+            mockHandler
+                .Setup(x => x.HandleAsync(domainEvent))
+                .ThrowsAsync(new TExceptionType());
 
-        var handlers = new[] { mockHandler.Object };
-        mock.SetupGetService(typeof(IEnumerable<IDomainEventHandler<TDomainEvent>>), handlers);
-    }
+            var handlers = new[] { mockHandler.Object };
+            mock.SetupGetService(typeof(IEnumerable<IDomainEventHandler<TDomainEvent>>), handlers);
+        }
 
-    public static void SetupGetService(this Mock<IServiceProvider> mock, Type serviceType, object? serviceInstance)
-    {
-        mock
-            .Setup(sp => sp.GetService(serviceType))
-            .Returns(serviceInstance);
+        public void SetupGetService(Type serviceType, object? serviceInstance)
+        {
+            mock
+                .Setup(sp => sp.GetService(serviceType))
+                .Returns(serviceInstance);
+        }
     }
 }

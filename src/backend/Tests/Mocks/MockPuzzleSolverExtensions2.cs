@@ -7,27 +7,30 @@ namespace UnitTests.Mocks;
 
 public static class MockPuzzleSolverExtensions2
 {
-    public static Mock<IPuzzleSolver> ThrowInvalidPuzzleException(this Mock<IPuzzleSolver> mock)
+    extension(Mock<IPuzzleSolver> mock)
     {
-        mock
-            .SetupSequence(x => x.SolvePuzzle(It.IsAny<SudokuPuzzle>()))
-            .Throws<InvalidPuzzleException>()
-            .ReturnsAsync(PuzzleFactory.GetSolvedPuzzle);
+        public Mock<IPuzzleSolver> ThrowInvalidPuzzleException()
+        {
+            mock
+                .SetupSequence(x => x.SolvePuzzle(It.IsAny<SudokuPuzzle>()))
+                .Throws<InvalidPuzzleException>()
+                .ReturnsAsync(PuzzleFactory.GetSolvedPuzzle);
 
-        return mock;
-    }
+            return mock;
+        }
 
-    public static Mock<IPuzzleSolver> VerifyCallsSolvePuzzle(this Mock<IPuzzleSolver> mock, Func<Times> times)
-    {
-        mock.Verify(x => x.SolvePuzzle(It.IsAny<SudokuPuzzle>()), times);
+        public Mock<IPuzzleSolver> VerifyCallsSolvePuzzle(Func<Times> times)
+        {
+            mock.Verify(x => x.SolvePuzzle(It.IsAny<SudokuPuzzle>()), times);
 
-        return mock;
-    }
+            return mock;
+        }
 
-    public static Mock<IPuzzleSolver> VerifyRetriesPuzzleGeneration(this Mock<IPuzzleSolver> mock)
-    {
-        mock.Verify(x => x.SolvePuzzle(It.IsAny<SudokuPuzzle>()), Times.Exactly(2));
+        public Mock<IPuzzleSolver> VerifyRetriesPuzzleGeneration()
+        {
+            mock.Verify(x => x.SolvePuzzle(It.IsAny<SudokuPuzzle>()), Times.Exactly(2));
 
-        return mock;
+            return mock;
+        }
     }
 }
