@@ -20,6 +20,8 @@ builder.Services
     .WithHttpTransport()
     .WithTools<ApplicationInsightsTools>();
 
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
