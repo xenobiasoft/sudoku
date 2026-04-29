@@ -11,6 +11,9 @@ param enableCustomDomain bool = false
 @description('Resource ID of the API App Service to link as a backend. SWA will proxy /api/* requests to it.')
 param apiAppResourceId string
 
+@description('Name of the API App Service. Used to reset Easy Auth after SWA linking re-enables it.')
+param apiAppName string
+
 var tags = {
   environment: environment
   project: 'XenobiaSoftSudoku'
@@ -33,6 +36,27 @@ resource staticWebAppLinkedBackend 'Microsoft.Web/staticSites/linkedBackends@202
   properties: {
     backendResourceId: apiAppResourceId
     region: location
+  }
+}
+
+// SWA's linkedBackend creation automatically re-enables Easy Auth on the API App Service
+// and configures it to only accept SWA-issued tokens. Reset it here (after linking) so
+// direct callers (e.g. the Blazor App Service) are not blocked by the injected auth layer.
+resource existingApiApp 'Microsoft.Web/sites@2023-12-01' existing = {
+  name: apiAppName
+}
+
+resource apiAuthDisabledAfterLinking 'Microsoft.Web/sites/config@2023-12-01' = {
+  parent: existingApiApp
+  name: 'authsettingsV2'
+  dependsOn: [staticWebAppLinkedBackend]
+  properties: {
+    globalValidation: {
+      requireAuthentication: false
+    }
+    platform: {
+      enabled: false
+    }
   }
 }
 
