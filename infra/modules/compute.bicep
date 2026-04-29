@@ -188,6 +188,19 @@ resource apiAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
   }
 }
 
+resource apiAppAuthSettings 'Microsoft.Web/sites/config@2023-12-01' = {
+  parent: apiApp
+  name: 'authsettingsV2'
+  properties: {
+    globalValidation: {
+      requireAuthentication: false
+    }
+    platform: {
+      enabled: false
+    }
+  }
+}
+
 output webAppUrl string = webApp.properties.defaultHostName
 output apiAppUrl string = apiApp.properties.defaultHostName
 output apiAppId string = apiApp.id
