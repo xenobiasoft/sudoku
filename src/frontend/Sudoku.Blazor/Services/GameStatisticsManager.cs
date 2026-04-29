@@ -31,6 +31,7 @@ public partial class GameManager : IGameStatisticsManager
     /// <returns>A task that represents the asynchronous operation of ending the session.</returns>
     public async Task EndSession()
     {
+        if (Game == null) return;
         Game.Status = Game.IsSolved() ? GameStatus.Completed : GameStatus.Abandoned;
         gameTimer.OnTick -= OnTimerTick;
         gameTimer.Reset();
@@ -45,6 +46,7 @@ public partial class GameManager : IGameStatisticsManager
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task PauseSession()
     {
+        if (Game == null) return;
         Game.Status = GameStatus.Paused;
         gameTimer.OnTick -= OnTimerTick;
         gameTimer.Pause();
@@ -76,6 +78,7 @@ public partial class GameManager : IGameStatisticsManager
     /// <returns>A task that represents the asynchronous operation. The task completes when the session is successfully resumed.</returns>
     public Task ResumeSession()
     {
+        if (Game == null) return Task.CompletedTask;
         Game.Status = GameStatus.InProgress;
         var playDuration = CurrentStatistics.PlayDuration;
         gameTimer.OnTick += OnTimerTick;
@@ -91,6 +94,7 @@ public partial class GameManager : IGameStatisticsManager
     /// <returns>A task that represents the asynchronous operation of starting a new session.</returns>
     public async Task StartNewSession()
     {
+        if (Game == null) return;
         Game.Status = GameStatus.InProgress;
         CurrentStatistics.Reset();
         gameTimer.Reset();
