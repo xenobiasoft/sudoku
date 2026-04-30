@@ -41,13 +41,15 @@ try
         .WithReference(cosmosDb)
         .WithReference(keyVault)
         .WithEnvironment("UseCosmosDb", "true")
-        .WithExternalHttpEndpoints();
+        .WithExternalHttpEndpoints()
+        .WaitFor(cosmosDb);
 
     logger.LogInformation("Configuring Sudoku Blazor Server project...");
     builder.AddProject<Projects.Sudoku_Blazor>("sudoku-blazor")
         .WithReference(api)
         .WithReference(keyVault)
-        .WithExternalHttpEndpoints();
+        .WithExternalHttpEndpoints()
+        .WaitFor(api);
 
     logger.LogInformation("Configuring Sudoku React project...");
     builder.AddNpmApp("sudoku-react", "../../frontend/Sudoku.React", "dev")
@@ -55,6 +57,7 @@ try
         .WithEnvironment("VITE_API_BASE_URL", api.GetEndpoint("https"))
         .WithHttpEndpoint(port: 5173, env: "VITE_PORT")
         .WithExternalHttpEndpoints()
+        .WaitFor(api)
         .PublishAsDockerFile();
 
     logger.LogInformation("Building and starting application...");
