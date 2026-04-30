@@ -31,19 +31,20 @@ Users are silently assigned a random auto-generated alias (e.g., `CleverTiger42`
 | ID | Requirement |
 |----|-------------|
 | FR-1 | New users (no `sudoku-profile` in localStorage) are redirected to `/create-profile` before any other page loads |
-| FR-2 | Profile creation requires the user to enter an alias: 2–50 characters, alphanumeric and spaces only |
+| FR-2 | Profile creation requires the user to enter an alias: 2–50 characters, alphanumeric and spaces only. Aliases are treated as **case-insensitive**: the value is normalized to lowercase before validation, storage, and uniqueness checks ("Tiger" and "tiger" are the same alias) |
 | FR-3 | Alias must be globally unique; a duplicate alias returns HTTP 409 with a user-friendly error message |
 | FR-4 | On successful creation, `{ profileId, alias }` is stored in localStorage and the user is redirected to home |
-| FR-5 | Existing users with only an alias in localStorage (pre-migration) have a profile silently created on next app load; if the alias is taken (409), append a random 2-digit suffix and retry once before falling through to the creation flow |
-| FR-6 | `/profile` page displays: current alias, `createdAt` date, and a game summary (total, in-progress, completed) |
+| FR-5 | Existing users with only an alias in localStorage (pre-migration) have a profile silently created on next app load; if the alias is taken (409), append a random 2-digit suffix and retry once before falling through to the creation flow. **Edge case:** if the stored alias is exactly 50 characters, a suffix cannot be appended without exceeding the limit — skip the retry and fall through to the creation flow with an appropriate message |
+| FR-6 | `/profile` page displays: current alias and `createdAt` date. Game stats (total, in-progress, completed) are deferred to a future issue |
 | FR-7 | Users can edit their alias on the profile page; a successful change updates the profile document and all associated game documents |
 | FR-8 | Both React and Blazor frontends implement all flows to maintain feature parity |
+| FR-9 | If `sudoku-profile` is present in localStorage but the profile API returns 404 (CosmosDB document missing — e.g., after a data migration or container recreation), the app attempts to re-create the profile using the stored alias. On 201: update localStorage with the new profileId and continue. On 409 (alias claimed by another user): redirect to `/create-profile` |
 
 ---
 
 ## 3. Non-Functional Requirements
 
-- **Performance:** Profile lookup by alias must be a single indexed CosmosDB point-read (O(1)); no full-container scans
+- **Performance:** Profile lookup by alias must be a single within-partition query (O(1) per partition); no full-container scans. Note: because `id = profileId` (GUID) and the partition key is `/alias`, a lookup by alias uses a within-partition SQL query rather than a true CosmosDB point-read — both are O(1) but this distinction matters for the CosmosDB SDK call
 - **Security:** `lockToken` field is stored hashed (bcrypt/SHA-256); never returned in API responses (reserved for #212)
 - **Reliability:** Alias change is a best-effort sequential batch update across game documents; partial failure is logged but does not roll back the profile update
 - **Observability:** Log `ProfileCreated` and `ProfileAliasUpdated` events with alias and profileId (no PII beyond alias); emit Application Insights custom events
@@ -302,7 +303,7 @@ Follows the same pattern as `CosmosDbGameRepository`: inject `ICosmosDbService`,
 
 **React — New files:**
 - `src/pages/CreateProfilePage.tsx` — alias input, client-side validation, submit → `POST /api/profiles`, store in localStorage, navigate to `/`
-- `src/pages/ProfilePage.tsx` — displays alias and `createdAt`; inline edit form; game summary stats
+- `src/pages/ProfilePage.tsx` — displays alias and `createdAt`; inline edit form
 
 **React — Updated files:**
 - `src/App.tsx` — add routes `/create-profile` and `/profile`
@@ -325,9 +326,10 @@ After:  key='sudoku-profile' value='{"profileId":"<guid>","alias":"CleverTiger42
 ```
 
 Migration in `usePlayerService.initializePlayer()`:
-1. Check for `sudoku-profile` → if present, use it (already migrated)
-2. Else check for `sudoku-alias` → call `POST /api/profiles` silently → on success write `sudoku-profile`, remove `sudoku-alias`
-3. Else → navigate to `/create-profile`
+1. Check for `sudoku-profile` → attempt to parse JSON; if parse fails (malformed/corrupted value), treat as missing and fall through to step 3
+2. If `sudoku-profile` is present and valid → use it (already migrated). If a subsequent profile API call returns 404 (orphaned profile — CosmosDB document missing), attempt `POST /api/profiles` with the stored alias. On 201: update localStorage with new profileId and continue. On 409: redirect to `/create-profile` (FR-9)
+3. Else check for `sudoku-alias` → call `POST /api/profiles` silently → on success write `sudoku-profile`, remove `sudoku-alias`. If alias is exactly 50 chars, skip suffix retry and redirect to `/create-profile` with a message (FR-5 edge case)
+4. Else → navigate to `/create-profile`
 
 ### User Flow
 
@@ -337,8 +339,8 @@ New user:
   /create-profile: enter alias → submit → 201 → store profile → redirect /
 
 Returning user (already migrated):
-  Any page → has sudoku-profile → proceed normally
-  Nav to /profile → view alias + stats → edit alias → PATCH → update localStorage
+  Any page → has sudoku-profile → proceed normally (or orphaned-profile recovery per FR-9 if API returns 404)
+  Nav to /profile → view alias + createdAt → edit alias → PATCH → update localStorage
 
 Returning user (pre-migration, has sudoku-alias):
   Any page → has sudoku-alias, no sudoku-profile → silent POST /api/profiles
@@ -396,10 +398,13 @@ Returning user (pre-migration, has sudoku-alias):
 ## 12. Risks & Considerations
 
 - **Alias uniqueness race condition:** Two users submitting the same alias simultaneously. Mitigated by the CosmosDB unique key constraint on `/alias`, which will return a conflict error at the database level regardless of application-layer checks.
-- **Alias change → game documents:** Updating an alias is a multi-document operation with no distributed transaction. Implement as a best-effort sequential loop; log any document that fails to update. Consider making the alias change UI rare/confirmable (e.g., "Are you sure? This cannot be undone easily.").
+- **Alias change → game documents:** Updating an alias is a multi-document operation with no distributed transaction. Implement as a best-effort sequential loop; log any document that fails to update. Consider making the alias change UI rare/confirmable (e.g., "Are you sure? This cannot be undone easily."). For users with large game histories, the sequential batch may approach API timeout limits; if this becomes an issue, moving the batch to a background job (returning 202 Accepted immediately) is the recommended mitigation.
 - **Migration collision:** A user whose auto-generated alias was already claimed by another migrated user. FR-5 handles this with a suffix retry; if the retry also fails, fall through to the creation flow so the user can pick a fresh alias.
 - **Blazor rendering mode:** The existing `ILocalStorageService` already handles the JS interop required for localStorage in SSR mode — no additional work needed.
 - **`lockToken` field:** Never include this field in any API response DTO. It is write-only from the application's perspective until #212 is implemented.
+- **Concurrent alias updates — last-write-wins:** `UpdateProfileAliasCommandHandler` performs a read-then-write with no atomic lock between them. Two simultaneous PATCH requests for the same profile can both pass the alias uniqueness check; the second write silently overwrites the first. CosmosDB's unique key constraint applies to creates only, not updates. This is accepted as last-write-wins. If this becomes a concern, ETag-based optimistic concurrency on the profile document is the recommended mitigation.
+- **Stale PATCH routing after alias change:** `PATCH /api/profiles/{alias}` uses the current alias as the path parameter. After renaming "Tiger" → "Lion," a stale client still holding "Tiger" in localStorage will receive 404 on the next PATCH attempt. On PATCH 404, the client should apply the FR-9 orphaned-profile recovery flow. Typical single-session, single-tab usage is unaffected.
+- **localStorage loss — no profile recovery path (until #212):** If a user clears browser history (including localStorage), they lose their `sudoku-profile` entry. Attempting to re-create their profile with the same alias returns 409, leaving them locked out of their game history. Without authentication there is no way to prove ownership of an alias. This is a **known limitation** until issue #212 (passwordless profile locking) is implemented; once shipped, users can use their lock token to recover their profile. Until then, users who lose localStorage must choose a new alias and forfeit access to prior games. Consider surfacing this in the UI (e.g., a note on the profile page: "Your profile is stored in this browser — clearing browser data will require you to create a new profile").
 
 ---
 
@@ -420,3 +425,4 @@ Returning user (pre-migration, has sudoku-alias):
 
 - Should alias editing on the profile page be restricted (e.g., once every 30 days) to discourage abuse, or is unrestricted editing acceptable for now?
 - When `UpdateProfileAliasCommand` batch-updates game documents, should the operation be synchronous (blocking the API response) or kicked off as a background job?
+- How should the profile page surface game stats? FR-6 currently shows alias + `createdAt` only. A follow-up issue should define whether stats are added to `ProfileDto`, fetched via `GET /api/players/{alias}/games`, or via a new `GET /api/profiles/{alias}/stats` endpoint.
