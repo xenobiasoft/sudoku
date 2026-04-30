@@ -22,7 +22,7 @@ public class CreateProfileCommandHandler(
             if (await profileRepository.AliasExistsAsync(playerAlias))
             {
                 logger.LogWarning("Alias already taken: {Alias}", playerAlias.Value);
-                return Result<ProfileDto>.Failure($"Alias '{playerAlias.Value}' is already taken.");
+                return Result<ProfileDto>.Failure($"Alias '{playerAlias.Value}' is already taken.", ProfileErrorCodes.AliasTaken);
             }
 
             var profile = Domain.Entities.UserProfile.Create(playerAlias);

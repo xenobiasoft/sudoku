@@ -35,6 +35,7 @@ export interface UsePlayerServiceReturn {
 export function usePlayerService(): UsePlayerServiceReturn {
   const navigate = useNavigate();
   const clearedRef = useRef(false);
+  const navigatingRef = useRef(false);
   const [playerAlias, setPlayerAlias] = useState<string | null>(null);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
@@ -72,11 +73,15 @@ export function usePlayerService(): UsePlayerServiceReturn {
             setIsInitialized(true);
             return;
           }
-          // 409 or other error — fall through to creation flow
+          // 409 or other — definite failure, redirect to creation flow
+          navigatingRef.current = true;
+          navigate('/create-profile');
+          return;
         }
 
-        navigate('/create-profile');
-        return;
+        // Non-404 (e.g., 500/503) — transient backend error; surface error without redirecting to onboarding
+        throw new Error(`Backend unavailable (HTTP ${getResult.status})`);
+
       }
 
       // Step 2: Check for legacy sudoku-alias (silent migration, FR-5)
@@ -114,11 +119,13 @@ export function usePlayerService(): UsePlayerServiceReturn {
         }
 
         // Migration failed — redirect to creation flow
+        navigatingRef.current = true;
         navigate('/create-profile');
         return;
       }
 
       // Step 3: No profile at all — redirect to creation flow
+      navigatingRef.current = true;
       navigate('/create-profile');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to initialize player';
@@ -131,6 +138,7 @@ export function usePlayerService(): UsePlayerServiceReturn {
 
   const clearPlayer = () => {
     clearedRef.current = true;
+    navigatingRef.current = false;
     localStorage.removeItem(PROFILE_KEY);
     localStorage.removeItem(LEGACY_ALIAS_KEY);
     setPlayerAlias(null);
@@ -140,7 +148,7 @@ export function usePlayerService(): UsePlayerServiceReturn {
   };
 
   useEffect(() => {
-    if (!isInitialized && !isLoading && !clearedRef.current) {
+    if (!isInitialized && !isLoading && !clearedRef.current && !navigatingRef.current) {
       initializePlayer();
     }
   }, [isInitialized, isLoading]);

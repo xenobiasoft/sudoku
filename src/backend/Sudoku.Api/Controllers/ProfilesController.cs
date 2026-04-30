@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Models;
 using Sudoku.Application.Commands;
+using Sudoku.Application.Common;
 using Sudoku.Application.DTOs;
 using Sudoku.Application.Queries;
 
@@ -21,7 +22,7 @@ public class ProfilesController(IMediator mediator) : ControllerBase
 
         if (!result.IsSuccess)
         {
-            if (result.Error!.Contains("already taken", StringComparison.OrdinalIgnoreCase))
+            if (result.ErrorCode == ProfileErrorCodes.AliasTaken)
                 return Conflict(result.Error);
             return BadRequest(result.Error);
         }
@@ -63,9 +64,9 @@ public class ProfilesController(IMediator mediator) : ControllerBase
 
         if (!updateResult.IsSuccess)
         {
-            if (updateResult.Error!.Contains("already taken", StringComparison.OrdinalIgnoreCase))
+            if (updateResult.ErrorCode == ProfileErrorCodes.AliasTaken)
                 return Conflict(updateResult.Error);
-            if (updateResult.Error.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            if (updateResult.ErrorCode == ProfileErrorCodes.NotFound)
                 return NotFound();
             return BadRequest(updateResult.Error);
         }

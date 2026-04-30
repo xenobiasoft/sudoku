@@ -61,7 +61,7 @@ export default function CreateProfilePage() {
       <div className={styles.card}>
         <h1 className={styles.title}>Choose Your Alias</h1>
         <p className={styles.subtitle}>
-          Pick a unique name to identify yourself. This cannot be changed easily later.
+          Pick a unique name to identify yourself. You can update it later from your profile page.
         </p>
         <form onSubmit={handleSubmit} className={styles.form}>
           <label htmlFor="alias" className={styles.label}>Alias</label>

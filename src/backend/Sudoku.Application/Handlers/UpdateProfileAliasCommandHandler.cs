@@ -23,13 +23,18 @@ public class UpdateProfileAliasCommandHandler(
             var profile = await profileRepository.GetByIdAsync(ProfileId.From(request.ProfileId));
             if (profile == null)
             {
-                return Result<ProfileDto>.Failure($"Profile not found: {request.ProfileId}");
+                return Result<ProfileDto>.Failure($"Profile not found: {request.ProfileId}", ProfileErrorCodes.NotFound);
+            }
+
+            if (string.Equals(profile.Alias.Value, newAlias.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                return Result<ProfileDto>.Success(ProfileDto.FromProfile(profile));
             }
 
             if (await profileRepository.AliasExistsAsync(newAlias))
             {
                 logger.LogWarning("Alias already taken: {Alias}", newAlias.Value);
-                return Result<ProfileDto>.Failure($"Alias '{newAlias.Value}' is already taken.");
+                return Result<ProfileDto>.Failure($"Alias '{newAlias.Value}' is already taken.", ProfileErrorCodes.AliasTaken);
             }
 
             var oldAlias = profile.Alias;

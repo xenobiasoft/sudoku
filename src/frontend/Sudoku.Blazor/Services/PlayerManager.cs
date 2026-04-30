@@ -81,21 +81,25 @@ public class PlayerManager(IPlayerApiClient playerApiClient, ILocalStorageServic
         if (profile != null)
         {
             var getResult = await playerApiClient.GetProfileAsync(profile.Alias);
-            if (getResult.IsSuccess && getResult.Value != null) return true;
 
-            if (getResult.IsSuccess && getResult.Value == null)
+            if (!getResult.IsSuccess)
             {
-                // Orphaned profile — attempt re-create
-                var recreateResult = await playerApiClient.CreateProfileAsync(profile.Alias);
-                if (recreateResult.IsSuccess && recreateResult.Value != null)
+                // Transient backend failure — throw so caller can route to an error page
+                throw new InvalidOperationException($"Backend unavailable while verifying profile: {getResult.Error}");
+            }
+
+            if (getResult.Value != null) return true;
+
+            // Profile exists in localStorage but 404 in backend (orphaned) — attempt re-create
+            var recreateResult = await playerApiClient.CreateProfileAsync(profile.Alias);
+            if (recreateResult.IsSuccess && recreateResult.Value != null)
+            {
+                await localStorageService.SetProfileAsync(new ProfileInfo
                 {
-                    await localStorageService.SetProfileAsync(new ProfileInfo
-                    {
-                        ProfileId = recreateResult.Value.ProfileId,
-                        Alias = recreateResult.Value.Alias
-                    });
-                    return true;
-                }
+                    ProfileId = recreateResult.Value.ProfileId,
+                    Alias = recreateResult.Value.Alias
+                });
+                return true;
             }
 
             return false;
@@ -122,7 +126,7 @@ public class PlayerManager(IPlayerApiClient playerApiClient, ILocalStorageServic
 
             if (createResult.StatusCode == 409 && canRetry)
             {
-                var suffix = new Random().Next(10, 100).ToString();
+                var suffix = Random.Shared.Next(10, 100).ToString();
                 var aliasWithSuffix = normalizedAlias[..Math.Min(normalizedAlias.Length, 48)] + suffix;
                 var retryResult = await playerApiClient.CreateProfileAsync(aliasWithSuffix);
                 if (retryResult.IsSuccess && retryResult.Value != null)

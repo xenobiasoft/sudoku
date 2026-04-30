@@ -47,17 +47,13 @@ public class CosmosDbUserProfileRepository(
         await EnsureContainerAsync();
         try
         {
-            var sqlQuery = "SELECT * FROM c WHERE c.profileId = @profileId";
-            var queryDefinition = new QueryDefinition(sqlQuery).WithParameter("@profileId", id.ToString());
-            var results = new List<UserProfileDocument>();
-            using var iterator = _container!.GetItemQueryIterator<UserProfileDocument>(queryDefinition);
-            while (iterator.HasMoreResults)
-            {
-                var response = await iterator.ReadNextAsync();
-                results.AddRange(response);
-            }
-            var document = results.FirstOrDefault();
-            return document == null ? null : UserProfileMapper.ToDomain(document);
+            var idStr = id.ToString();
+            var response = await _container!.ReadItemAsync<UserProfileDocument>(idStr, new PartitionKey(idStr));
+            return UserProfileMapper.ToDomain(response.Resource);
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            return null;
         }
         catch (Exception ex)
         {
@@ -95,7 +91,7 @@ public class CosmosDbUserProfileRepository(
         try
         {
             var document = UserProfileMapper.ToDocument(profile);
-            await _container!.UpsertItemAsync(document, new PartitionKey(document.Alias));
+            await _container!.UpsertItemAsync(document, new PartitionKey(document.ProfileId));
             logger.LogDebug("Saved profile {ProfileId}", profile.Id);
         }
         catch (Exception ex)

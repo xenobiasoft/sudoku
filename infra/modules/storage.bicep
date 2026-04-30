@@ -236,7 +236,7 @@ resource profilesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/c
     resource: {
       id: 'profiles'
       partitionKey: {
-        paths: ['/alias']
+        paths: ['/profileId']
         kind: 'Hash'
         version: 2
       }
@@ -247,9 +247,7 @@ resource profilesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/c
         excludedPaths: [{ path: '/"_etag"/?' }]
       }
       uniqueKeyPolicy: {
-        uniqueKeys: [
-          { paths: ['/alias'] }
-        ]
+        uniqueKeys: []
       }
       conflictResolutionPolicy: {
         mode: 'LastWriterWins'
