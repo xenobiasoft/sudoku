@@ -20,7 +20,7 @@ try
 {
     logger.LogInformation("Starting Sudoku Distributed Application...");
     
-    var cosmosDb = builder.AddConnectionString("CosmosDb");
+    var cosmosDb = builder.AddAzureCosmosDB("CosmosDb").RunAsEmulator();
 
     var keyVault = builder.AddConnectionString("AzureKeyVault");
 
