@@ -29,6 +29,13 @@ public partial class Index
     {
         try
         {
+            var profileInitialized = await PlayerManager.EnsureProfileInitializedAsync();
+            if (!profileInitialized)
+            {
+                NavigationManager.NavigateTo("/create-profile");
+                return;
+            }
+
             Alias = await PlayerManager.TryGetPlayerAlias();
             Logger.LogInformation("Current player retrieved: {Alias}", Alias);
             

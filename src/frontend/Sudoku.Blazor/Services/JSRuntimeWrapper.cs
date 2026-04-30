@@ -14,4 +14,9 @@ public class JsRuntimeWrapper(IJSRuntime jsRuntime) : IJsRuntimeWrapper
     {
         return jsRuntime.InvokeVoidAsync("localStorage.setItem", key, value);
     }
+
+    public ValueTask RemoveAsync(string key)
+    {
+        return jsRuntime.InvokeVoidAsync("localStorage.removeItem", key);
+    }
 }

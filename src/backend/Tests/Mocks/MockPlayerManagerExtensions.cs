@@ -10,6 +10,10 @@ public static class MockPlayerManagerExtensions
         {
             mock.Setup(x => x.GetCurrentPlayerAsync())
                 .ReturnsAsync(alias);
+            mock.Setup(x => x.EnsureProfileInitializedAsync())
+                .ReturnsAsync(true);
+            mock.Setup(x => x.TryGetPlayerAlias())
+                .ReturnsAsync(alias);
         }
     }
 }

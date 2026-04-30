@@ -1,0 +1,57 @@
+@page "/profile"
+
+<PageTitle>Your Profile</PageTitle>
+
+<div class="profile-container">
+    <div class="profile-card">
+        <h1>Your Profile</h1>
+
+        @if (_isLoading)
+        {
+            <p>Loading…</p>
+        }
+        else
+        {
+            <div class="profile-field">
+                <span class="field-label">Alias</span>
+                @if (_isEditing)
+                {
+                    <EditForm Model="@_editModel" OnValidSubmit="HandleSaveAliasAsync">
+                        <DataAnnotationsValidator />
+                        <div class="edit-row">
+                            <InputText @bind-Value="_editModel.NewAlias" class="form-control" maxlength="50" />
+                            <button type="submit" class="btn-primary" disabled="@_isSaving">
+                                @(_isSaving ? "Saving…" : "Save")
+                            </button>
+                            <button type="button" class="btn-secondary" @onclick="CancelEdit">Cancel</button>
+                        </div>
+                        <ValidationMessage For="@(() => _editModel.NewAlias)" />
+                        @if (!string.IsNullOrEmpty(_editError))
+                        {
+                            <div class="error-message" role="alert">@_editError</div>
+                        }
+                    </EditForm>
+                }
+                else
+                {
+                    <div class="field-value-row">
+                        <span>@_alias</span>
+                        <button class="btn-link" @onclick="StartEdit">Edit</button>
+                    </div>
+                }
+            </div>
+
+            @if (_createdAt.HasValue)
+            {
+                <div class="profile-field">
+                    <span class="field-label">Member since</span>
+                    <span>@_createdAt.Value.ToLocalTime().ToString("MMMM d, yyyy")</span>
+                </div>
+            }
+
+            <p class="warning-note">
+                Your profile is stored in this browser. Clearing browser data will require you to create a new profile.
+            </p>
+        }
+    </div>
+</div>

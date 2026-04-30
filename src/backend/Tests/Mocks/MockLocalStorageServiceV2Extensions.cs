@@ -12,6 +12,9 @@ public static class MockLocalStorageServiceV2Extensions
             mock
                 .Setup(x => x.GetAliasAsync())
                 .ReturnsAsync(alias);
+            mock
+                .Setup(x => x.GetProfileAsync())
+                .ReturnsAsync((Sudoku.Blazor.Models.ProfileInfo?)null);
         }
 
         public void SetupLoadGameAsync(GameModel? gameState)
