@@ -18,7 +18,7 @@ param staticWebAppName = 'swa-sudoku-xenobiasoft-prod'
 // Storage
 param storageAccountName = 'stxenobiasoftstaging'
 param cosmosDbAccountName = 'cosmos-sudoku-staging'
-param cosmosDbEnableFreeTier = true
+param cosmosDbEnableFreeTier = false
 
 // Key Vault
 param keyVaultName = 'kv-xenobiasoft-staging'

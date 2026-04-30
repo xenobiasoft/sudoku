@@ -178,6 +178,9 @@ resource sudokuDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024
     resource: {
       id: 'sudoku'
     }
+    options: {
+      throughput: 1000
+    }
   }
 }
 
@@ -219,16 +222,6 @@ resource gamesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/cont
     }
 }
 
-resource gamesThroughput 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/throughputSettings@2024-05-15' = {
-  parent: gamesContainer
-  name: 'default'
-  properties: {
-    resource: {
-      throughput: 400
-    }
-  }
-}
-
 resource profilesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
   parent: sudokuDatabase
   name: 'profiles'
@@ -253,16 +246,6 @@ resource profilesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/c
         mode: 'LastWriterWins'
         conflictResolutionPath: '/_ts'
       }
-    }
-  }
-}
-
-resource profilesThroughput 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/throughputSettings@2024-05-15' = {
-  parent: profilesContainer
-  name: 'default'
-  properties: {
-    resource: {
-      throughput: 400
     }
   }
 }

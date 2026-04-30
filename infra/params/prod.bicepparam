@@ -21,7 +21,7 @@ param enableSwaCustomDomain = true
 // Storage
 param storageAccountName = 'stxenobiasoftprod'
 param cosmosDbAccountName = 'cosmos-sudoku-prod'
-param cosmosDbEnableFreeTier = false
+param cosmosDbEnableFreeTier = true
 
 // Key Vault
 param keyVaultName = 'kv-xenobiasoft-prod'
