@@ -229,6 +229,44 @@ resource gamesThroughput 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/con
   }
 }
 
+resource profilesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
+  parent: sudokuDatabase
+  name: 'profiles'
+  properties: {
+    resource: {
+      id: 'profiles'
+      partitionKey: {
+        paths: ['/profileId']
+        kind: 'Hash'
+        version: 2
+      }
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [{ path: '/*' }]
+        excludedPaths: [{ path: '/"_etag"/?' }]
+      }
+      uniqueKeyPolicy: {
+        uniqueKeys: []
+      }
+      conflictResolutionPolicy: {
+        mode: 'LastWriterWins'
+        conflictResolutionPath: '/_ts'
+      }
+    }
+  }
+}
+
+resource profilesThroughput 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/throughputSettings@2024-05-15' = {
+  parent: profilesContainer
+  name: 'default'
+  properties: {
+    resource: {
+      throughput: 400
+    }
+  }
+}
+
 output storageAccountId string = storageAccount.id
 output storageAccountName string = storageAccount.name
 output cosmosDbAccountId string = cosmosDbAccount.id

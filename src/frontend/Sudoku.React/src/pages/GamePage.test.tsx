@@ -63,6 +63,7 @@ beforeEach(() => {
   // Mock usePlayerService to return successful initialization
   vi.mocked(usePlayerService).mockReturnValue({
     playerAlias: 'test-player',
+    profileId: null,
     isInitialized: true,
     isLoading: false,
     error: null,
@@ -138,6 +139,7 @@ describe('GamePage - loading', () => {
   it('shows "Initializing player..." when player is loading', () => {
     vi.mocked(usePlayerService).mockReturnValue({
       playerAlias: null,
+      profileId: null,
       isInitialized: false,
       isLoading: true,
       error: null,
@@ -151,6 +153,7 @@ describe('GamePage - loading', () => {
   it('shows "Loading..." when player is not initialized but not loading', () => {
     vi.mocked(usePlayerService).mockReturnValue({
       playerAlias: null,
+      profileId: null,
       isInitialized: false,
       isLoading: false,
       error: null,
@@ -164,6 +167,7 @@ describe('GamePage - loading', () => {
   it('shows error message when player service has error', async () => {
     vi.mocked(usePlayerService).mockReturnValue({
       playerAlias: null,
+      profileId: null,
       isInitialized: true,
       isLoading: false,
       error: 'Failed to initialize player',
@@ -263,6 +267,7 @@ describe('GamePage - after load', () => {
     // Start with player not initialized
     vi.mocked(usePlayerService).mockReturnValue({
       playerAlias: null,
+      profileId: null,
       isInitialized: false,
       isLoading: false,
       error: null,

@@ -1,4 +1,4 @@
-﻿using Sudoku.Blazor.Models;
+using Sudoku.Blazor.Models;
 
 namespace Sudoku.Blazor.Services.Abstractions;
 
@@ -10,4 +10,7 @@ public interface ILocalStorageService
     Task<List<GameModel>> LoadGameStatesAsync();
     Task SaveGameStateAsync(GameModel gameState);
     Task SetAliasAsync(string alias);
+    Task<ProfileInfo?> GetProfileAsync();
+    Task SetProfileAsync(ProfileInfo profile);
+    Task RemoveAliasAsync();
 }

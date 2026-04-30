@@ -1,3 +1,4 @@
+using Sudoku.Blazor.Models;
 using Sudoku.Blazor.Services.HttpClients;
 using ILocalStorageService = Sudoku.Blazor.Services.Abstractions.ILocalStorageService;
 
@@ -5,25 +6,8 @@ namespace Sudoku.Blazor.Services;
 
 using IPlayerManager = Abstractions.IPlayerManager;
 
-/// <summary>
-/// Manages player operations including creation, loading, and verification of player aliases.
-/// This service coordinates between the Player API client and local storage to provide a unified
-/// interface for player management operations.
-/// </summary>
-/// <remarks>This class is responsible for managing player lifecycle operations such as creating new players,
-/// verifying existing players, and managing the current player state in local storage. It serves as the single
-/// point of access for all player-related operations and handles API communication and local storage coordination.</remarks>
-/// <param name="playerApiClient">The client for communicating with the Player API</param>
-/// <param name="localStorageService">The service for managing local storage operations</param>
 public class PlayerManager(IPlayerApiClient playerApiClient, ILocalStorageService localStorageService) : IPlayerManager
 {
-    /// <summary>
-    /// Creates a new player with an optional custom alias.
-    /// If no alias is provided, the server will auto-generate one.
-    /// </summary>
-    /// <param name="alias">Optional custom alias for the player</param>
-    /// <returns>The created player's alias</returns>
-    /// <exception cref="Exception">Thrown when the API fails to create the player</exception>
     public async Task<string> CreatePlayerAsync(string? alias = null)
     {
         var response = await playerApiClient.CreatePlayerAsync(alias);
@@ -31,78 +15,135 @@ public class PlayerManager(IPlayerApiClient playerApiClient, ILocalStorageServic
         {
             throw new Exception("Failed to create player.");
         }
-        
-        // Store the created player alias as the current player
+
         await localStorageService.SetAliasAsync(response.Value);
-        
+
         return response.Value;
     }
-    
-    /// <summary>
-    /// Checks if a player with the given alias exists on the server.
-    /// </summary>
-    /// <param name="alias">The player's alias to verify</param>
-    /// <returns>True if the player exists, false otherwise</returns>
-    /// <exception cref="ArgumentException">Thrown when the alias is null or empty</exception>
-    /// <exception cref="Exception">Thrown when the API fails to check player existence</exception>
+
     public async Task<bool> PlayerExistsAsync(string alias)
     {
         if (string.IsNullOrEmpty(alias))
         {
             throw new ArgumentException("Alias not set.");
         }
-        
+
         var response = await playerApiClient.PlayerExistsAsync(alias);
         if (!response.IsSuccess)
         {
             throw new Exception("Failed to check if player exists.");
         }
-        
+
         return response.Value;
     }
-    
-    /// <summary>
-    /// Gets the current player alias from local storage.
-    /// </summary>
-    /// <returns>The current player's alias, or null if none is set</returns>
+
     public async Task<string?> GetCurrentPlayerAsync()
     {
+        var profile = await localStorageService.GetProfileAsync();
+        if (profile != null) return profile.Alias;
         return await localStorageService.GetAliasAsync();
     }
-    
-    /// <summary>
-    /// Sets the current player alias in local storage.
-    /// </summary>
-    /// <param name="alias">The player's alias to store</param>
-    /// <exception cref="ArgumentException">Thrown when the alias is null or empty</exception>
+
     public async Task SetCurrentPlayerAsync(string alias)
     {
         if (string.IsNullOrEmpty(alias))
         {
             throw new ArgumentException("Alias not set.");
         }
-        
+
         await localStorageService.SetAliasAsync(alias);
     }
-    
-    /// <summary>
-    /// Attempts to retrieve the alias of the current player asynchronously.
-    /// </summary>
-    /// <remarks>This method may involve network calls or other asynchronous operations, and should be awaited
-    /// to ensure proper handling of the result.</remarks>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the player's alias as a string, or
-    /// null if the alias could not be retrieved.</returns>
+
     public async Task<string> TryGetPlayerAlias()
     {
-        var alias = await GetCurrentPlayerAsync();
+        var profile = await localStorageService.GetProfileAsync();
+        if (profile != null) return profile.Alias;
+
+        var alias = await localStorageService.GetAliasAsync();
 
         if (string.IsNullOrEmpty(alias))
         {
             alias = await CreatePlayerAsync();
-
             await SetCurrentPlayerAsync(alias);
         }
 
         return alias;
+    }
+
+    public async Task<ProfileInfo?> GetCurrentProfileAsync()
+    {
+        return await localStorageService.GetProfileAsync();
+    }
+
+    public async Task<bool> EnsureProfileInitializedAsync()
+    {
+        var profile = await localStorageService.GetProfileAsync();
+        if (profile != null)
+        {
+            var getResult = await playerApiClient.GetProfileAsync(profile.Alias);
+
+            if (!getResult.IsSuccess)
+            {
+                // Transient backend failure — throw so caller can route to an error page
+                throw new InvalidOperationException($"Backend unavailable while verifying profile: {getResult.Error}");
+            }
+
+            if (getResult.Value != null) return true;
+
+            // Profile exists in localStorage but 404 in backend (orphaned) — attempt re-create
+            var recreateResult = await playerApiClient.CreateProfileAsync(profile.Alias);
+            if (recreateResult.IsSuccess && recreateResult.Value != null)
+            {
+                await localStorageService.SetProfileAsync(new ProfileInfo
+                {
+                    ProfileId = recreateResult.Value.ProfileId,
+                    Alias = recreateResult.Value.Alias
+                });
+                return true;
+            }
+
+            return false;
+        }
+
+        // Check for legacy alias and attempt silent migration
+        var legacyAlias = await localStorageService.GetAliasAsync();
+        if (!string.IsNullOrEmpty(legacyAlias))
+        {
+            var normalizedAlias = legacyAlias.Trim().ToLowerInvariant();
+            var canRetry = normalizedAlias.Length < 50;
+
+            var createResult = await playerApiClient.CreateProfileAsync(normalizedAlias);
+            if (createResult.IsSuccess && createResult.Value != null)
+            {
+                await localStorageService.SetProfileAsync(new ProfileInfo
+                {
+                    ProfileId = createResult.Value.ProfileId,
+                    Alias = createResult.Value.Alias
+                });
+                await localStorageService.RemoveAliasAsync();
+                return true;
+            }
+
+            if (createResult.StatusCode == 409 && canRetry)
+            {
+                var suffix = Random.Shared.Next(10, 100).ToString();
+                var aliasWithSuffix = normalizedAlias[..Math.Min(normalizedAlias.Length, 48)] + suffix;
+                var retryResult = await playerApiClient.CreateProfileAsync(aliasWithSuffix);
+                if (retryResult.IsSuccess && retryResult.Value != null)
+                {
+                    await localStorageService.SetProfileAsync(new ProfileInfo
+                    {
+                        ProfileId = retryResult.Value.ProfileId,
+                        Alias = retryResult.Value.Alias
+                    });
+                    await localStorageService.RemoveAliasAsync();
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return false;
     }
 }

@@ -20,6 +20,18 @@ export interface MoveHistoryModel {
   isValid: boolean;
 }
 
+export interface ProfileModel {
+  profileId: string;
+  alias: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProfileInfo {
+  profileId: string;
+  alias: string;
+}
+
 export interface GameModel {
   id: string;
   playerAlias: string;

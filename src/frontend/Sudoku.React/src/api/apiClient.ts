@@ -1,4 +1,4 @@
-import type { GameModel } from '../types';
+import type { GameModel, ProfileModel } from '../types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -10,16 +10,28 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
   const text = await res.text();
-  
+
   if (!text) return undefined as T;
-  
-  // Try to parse as JSON first
+
   try {
     return JSON.parse(text);
   } catch {
-    // If parsing fails, return the text as-is (for plain string responses)
     return text as T;
   }
+}
+
+async function requestWithStatus<T>(path: string, options?: RequestInit): Promise<{ status: number; data: T | null }> {
+  console.log(`BASE_URL: ${BASE_URL}, Requesting: ${path}`);
+  const res = await fetch(`${BASE_URL}${path}`, {
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    ...options,
+  });
+  const text = await res.text();
+  let data: T | null = null;
+  if (text) {
+    try { data = JSON.parse(text); } catch { data = text as unknown as T; }
+  }
+  return { status: res.status, data };
 }
 
 export const apiClient = {
@@ -28,6 +40,18 @@ export const apiClient = {
 
   playerExists: (alias: string): Promise<boolean> =>
     request(`/api/players/${alias}/exists`),
+
+  createProfile: (alias: string): Promise<{ status: number; data: ProfileModel | null }> =>
+    requestWithStatus<ProfileModel>('/api/profiles', { method: 'POST', body: JSON.stringify({ alias }) }),
+
+  getProfile: (alias: string): Promise<{ status: number; data: ProfileModel | null }> =>
+    requestWithStatus<ProfileModel>(`/api/profiles/${encodeURIComponent(alias)}`),
+
+  updateProfileAlias: (alias: string, newAlias: string): Promise<{ status: number; data: ProfileModel | null }> =>
+    requestWithStatus<ProfileModel>(`/api/profiles/${encodeURIComponent(alias)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ newAlias }),
+    }),
 
   createGame: (alias: string, difficulty: string): Promise<GameModel> =>
     request(`/api/players/${alias}/games/${difficulty}`, { method: 'POST' }),

@@ -43,6 +43,7 @@ beforeEach(() => {
   // Default mock implementations
   mockUsePlayerService.mockReturnValue({
     playerAlias: 'existing-player',
+    profileId: null,
     isInitialized: true,
     isLoading: false,
     error: null,
@@ -92,6 +93,7 @@ describe('HomePage', () => {
     const mockLoadGames = vi.fn();
     mockUsePlayerService.mockReturnValue({
       playerAlias: null,
+      profileId: null,
       isInitialized: false,
       isLoading: true,
       error: null,
