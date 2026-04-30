@@ -42,6 +42,7 @@ beforeEach(() => {
   // Mock usePlayerService to return successful initialization
   vi.mocked(usePlayerService).mockReturnValue({
     playerAlias: 'test-player',
+    profileId: null,
     isInitialized: true,
     isLoading: false,
     error: null,
@@ -147,6 +148,7 @@ describe('GamePage - New Architecture', () => {
   it('does not call getGame when player is not initialized', () => {
     vi.mocked(usePlayerService).mockReturnValue({
       playerAlias: null,
+      profileId: null,
       isInitialized: false,
       isLoading: false,
       error: null,
