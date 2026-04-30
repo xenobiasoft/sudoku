@@ -150,9 +150,9 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
       }
     }
     capabilities: []
-    capacity: {
+    capacity: cosmosDbEnableFreeTier ? {
       totalThroughputLimit: 1000
-    }
+    } : null
     defaultIdentity: 'FirstPartyIdentity'
     enableFreeTier: cosmosDbEnableFreeTier
     enableAutomaticFailover: true
