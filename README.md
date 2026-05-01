@@ -94,4 +94,4 @@ dotnet test
 
 ## Architecture Diagram
 
-For a detailed architecture diagram and explanation, see `current-architecture-diagram.md` in the root of the repository.
+For a detailed architecture diagram and explanation, see [`docs/architecture-diagram.md`](docs/architecture-diagram.md).

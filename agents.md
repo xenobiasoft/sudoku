@@ -10,15 +10,18 @@ This is a modern Sudoku game built with .NET, Blazor, and C# following Clean Arc
 
 ```
 Sudoku.sln
-├── Sudoku.Api/                       # REST API presentation layer
-├── Sudoku.AppHost/                   # Application orchestration
-├── Sudoku.Application/               # Application use cases and orchestration
-├── Sudoku.Blazor/                    # Blazor Server presentation layer
-├── Sudoku.Domain/                    # Core domain entities and business rules
-├── Sudoku.Infrastructure/            # External concerns (storage, external APIs)
-├── Sudoku.McpServer                  # MPC server for AI tooling
-├── Sudoku.ServiceDefaults/           # Default service configurations
-└── Tests/                            # Unit and integration tests
+├── src/backend/
+│   ├── Sudoku.Api/                   # REST API presentation layer
+│   ├── Sudoku.AppHost/               # Application orchestration
+│   ├── Sudoku.Application/           # Application use cases and orchestration
+│   ├── Sudoku.Domain/                # Core domain entities and business rules
+│   ├── Sudoku.Infrastructure/        # External concerns (storage, external APIs)
+│   ├── Sudoku.McpServer/             # MCP server for AI tooling
+│   ├── Sudoku.ServiceDefaults/       # Default service configurations
+│   └── Tests/                        # Unit and integration tests
+└── src/frontend/
+    ├── Sudoku.Blazor/                # Blazor Server presentation layer
+    └── Sudoku.React/                 # React/Vite SPA (TypeScript)
 ```
 
 ### Key Architectural Principles
@@ -242,7 +245,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddSudokuServices(this IServiceCollection services)
     {
         // Register domain services
-        services.AddScoped<IGameRepository, AzureBlobGameRepository>();
+        services.AddScoped<IGameRepository, CosmosDbGameRepository>();
         services.AddScoped<ICommandHandler<CreateGameCommand>, CreateGameCommandHandler>();
 
         // Register application services
