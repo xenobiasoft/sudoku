@@ -10,15 +10,15 @@ This is a modern Sudoku game built with .NET, Blazor, and C# following Clean Arc
 
 ```
 Sudoku.sln
-├── Sudoku.Domain/                    # Core domain entities and business rules
-├── Sudoku.Application/               # Application use cases and orchestration
-├── Sudoku.Infrastructure/            # External concerns (storage, external APIs)
-├── Sudoku.Web.Server/                # Blazor Server presentation layer
 ├── Sudoku.Api/                       # REST API presentation layer
 ├── Sudoku.AppHost/                   # Application orchestration
-├── Sudoku.Storage.Azure/             # Azure storage implementations
+├── Sudoku.Application/               # Application use cases and orchestration
+├── Sudoku.Blazor/                    # Blazor Server presentation layer
+├── Sudoku.Domain/                    # Core domain entities and business rules
+├── Sudoku.Infrastructure/            # External concerns (storage, external APIs)
+├── Sudoku.McpServer                  # MPC server for AI tooling
 ├── Sudoku.ServiceDefaults/           # Default service configurations
-└── Tests/                           # Unit and integration tests
+└── Tests/                            # Unit and integration tests
 ```
 
 ### Key Architectural Principles
@@ -34,14 +34,12 @@ Sudoku.sln
 ### C# Coding Standards
 
 - **Naming Conventions**:
-
   - Use PascalCase for public members, classes, and methods
   - Use camelCase for private fields and local variables
   - Use UPPER_CASE for constants
   - Prefix private fields with underscore: `_fieldName`
 
 - **File Organization**:
-
   - One public class per file
   - File name should match class name
   - Group related classes in appropriate namespaces
@@ -295,30 +293,42 @@ public static class ServiceCollectionExtensions
 
 ## API Design Guidelines
 
+### CQRS Command vs Query Separation
+
+This is a CQRS application. Command endpoints and query endpoints are strictly separate:
+
+- **Command endpoints** (`POST`, `PUT`, `PATCH`, `DELETE`) mutate state and **must not return domain data**. Return only an HTTP status code — `201 Created` with a `Location` header for creates, `204 No Content` for updates and deletes.
+- **Query endpoints** (`GET`) read state and return data.
+
+If a client needs the updated resource after a command, it issues a separate GET request. Mixing the two breaks the CQRS separation.
+
 ### REST API Controllers
 
 ```csharp
-[ApiController]
-[Route("api/[controller]")]
-public class GamesController : ControllerBase
+// COMMAND endpoint — mutates state, returns no data
+[HttpPost("{alias}/games/{difficulty}")]
+[ProducesResponseType(StatusCodes.Status201Created)]
+[ProducesResponseType(StatusCodes.Status400BadRequest)]
+public async Task<ActionResult> CreateGame(string alias, string difficulty)
 {
-    private readonly IGameApplicationService _gameService;
+    var result = await _gameService.CreateGameAsync(alias, difficulty);
+    if (!result.IsSuccess)
+        return BadRequest(result.Error);
 
-    [HttpPost]
-    public async Task<ActionResult<GameDto>> CreateGame(CreateGameRequest request)
-    {
-        var command = new CreateGameCommand(request.PlayerAlias, request.Difficulty);
-        var result = await _gameService.CreateGameAsync(command);
+    return Created($"/api/players/{alias}/games/{result.Value.Id}", null);
+}
 
-        if (result.IsSuccess)
-        {
-            return Ok(result.Value);
-        }
-        else
-        {
-            return BadRequest(result.Error);
-        }
-    }
+// QUERY endpoint — reads state, returns data
+[HttpGet("{alias}/games/{gameId}")]
+[ProducesResponseType(typeof(GameDto), StatusCodes.Status200OK)]
+[ProducesResponseType(StatusCodes.Status404NotFound)]
+public async Task<ActionResult<GameDto>> GetGame(string alias, string gameId)
+{
+    var result = await _gameService.GetGameAsync(gameId);
+    if (!result.IsSuccess)
+        return NotFound();
+
+    return Ok(result.Value);
 }
 ```
 
@@ -419,6 +429,7 @@ public class GameByPlayerSpecification : ISpecification<Game>
 5. **Magic Numbers**: Use constants or enums instead of magic numbers
 6. **Long Methods**: Keep methods focused and under 20 lines when possible
 7. **Deep Nesting**: Avoid deeply nested if statements and loops
+8. **Returning data from command endpoints**: Command endpoints mutate state — they must not return domain data. If the client needs the updated resource after a command, it should issue a separate GET request. This keeps commands and queries cleanly separated.
 
 Remember: This is a learning project focused on TDD, clean architecture, and modern .NET development practices. Prioritize code quality, testability, and maintainability over quick solutions.
 
