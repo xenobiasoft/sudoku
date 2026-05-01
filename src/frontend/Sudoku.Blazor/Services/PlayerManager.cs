@@ -8,35 +8,6 @@ using IPlayerManager = Abstractions.IPlayerManager;
 
 public class PlayerManager(IPlayerApiClient playerApiClient, ILocalStorageService localStorageService) : IPlayerManager
 {
-    public async Task<string> CreatePlayerAsync(string? alias = null)
-    {
-        var response = await playerApiClient.CreatePlayerAsync(alias);
-        if (!response.IsSuccess || response.Value == null)
-        {
-            throw new Exception("Failed to create player.");
-        }
-
-        await localStorageService.SetAliasAsync(response.Value);
-
-        return response.Value;
-    }
-
-    public async Task<bool> PlayerExistsAsync(string alias)
-    {
-        if (string.IsNullOrEmpty(alias))
-        {
-            throw new ArgumentException("Alias not set.");
-        }
-
-        var response = await playerApiClient.PlayerExistsAsync(alias);
-        if (!response.IsSuccess)
-        {
-            throw new Exception("Failed to check if player exists.");
-        }
-
-        return response.Value;
-    }
-
     public async Task<string?> GetCurrentPlayerAsync()
     {
         var profile = await localStorageService.GetProfileAsync();
@@ -61,13 +32,7 @@ public class PlayerManager(IPlayerApiClient playerApiClient, ILocalStorageServic
 
         var alias = await localStorageService.GetAliasAsync();
 
-        if (string.IsNullOrEmpty(alias))
-        {
-            alias = await CreatePlayerAsync();
-            await SetCurrentPlayerAsync(alias);
-        }
-
-        return alias;
+        return alias ?? string.Empty;
     }
 
     public async Task<ProfileInfo?> GetCurrentProfileAsync()

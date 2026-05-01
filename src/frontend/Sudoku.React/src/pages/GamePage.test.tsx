@@ -7,8 +7,6 @@ import { makeGame, make81Cells, makeCell } from '../test/helpers';
 
 vi.mock('../api/apiClient', () => ({
   apiClient: {
-    createPlayer: vi.fn(),
-    playerExists: vi.fn(),
     createGame: vi.fn(),
     getGames: vi.fn(),
     getGame: vi.fn(),
@@ -100,8 +98,6 @@ beforeEach(() => {
   });
   
   // Mock apiClient methods
-  vi.mocked(apiClient.createPlayer).mockResolvedValue('test-player');
-  vi.mocked(apiClient.playerExists).mockResolvedValue(true);
   vi.mocked(apiClient.createGame).mockResolvedValue(makeGame());
   vi.mocked(apiClient.getGames).mockResolvedValue([]);
   vi.mocked(apiClient.getGame).mockResolvedValue(makeGame());

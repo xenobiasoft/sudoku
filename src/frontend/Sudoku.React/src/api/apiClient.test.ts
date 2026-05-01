@@ -21,36 +21,6 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('apiClient.createPlayer', () => {
-  it('POSTs to /api/players and returns alias string', async () => {
-    vi.stubGlobal('fetch', mockFetch(200, 'player-alias'));
-    const result = await apiClient.createPlayer('testAlias');
-    expect(result).toBe('player-alias');
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/players'),
-      expect.objectContaining({ method: 'POST' })
-    );
-  });
-});
-
-describe('apiClient.playerExists', () => {
-  it('GETs /api/players/:alias/exists and returns boolean', async () => {
-    vi.stubGlobal('fetch', mockFetch(200, true));
-    const result = await apiClient.playerExists('testAlias');
-    expect(result).toBe(true);
-    expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/players/testAlias/exists'),
-      expect.any(Object)
-    );
-  });
-
-  it('returns false when player does not exist', async () => {
-    vi.stubGlobal('fetch', mockFetch(200, false));
-    const result = await apiClient.playerExists('unknown');
-    expect(result).toBe(false);
-  });
-});
-
 describe('apiClient.createGame', () => {
   it('POSTs to /api/players/:alias/games/:difficulty and returns GameModel', async () => {
     const game = makeGame();

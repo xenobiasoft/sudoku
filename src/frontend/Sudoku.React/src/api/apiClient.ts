@@ -35,12 +35,6 @@ async function requestWithStatus<T>(path: string, options?: RequestInit): Promis
 }
 
 export const apiClient = {
-  createPlayer: (alias?: string): Promise<string> =>
-    request('/api/players', { method: 'POST', body: JSON.stringify({ alias }) }),
-
-  playerExists: (alias: string): Promise<boolean> =>
-    request(`/api/players/${alias}/exists`),
-
   createProfile: (alias: string): Promise<{ status: number; data: ProfileModel | null }> =>
     requestWithStatus<ProfileModel>('/api/profiles', { method: 'POST', body: JSON.stringify({ alias }) }),
 

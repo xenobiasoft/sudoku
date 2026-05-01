@@ -1,96 +1,18 @@
 using DepenMock.Moq;
 using Sudoku.Blazor.Services;
 using Sudoku.Blazor.Services.Abstractions;
-using Sudoku.Blazor.Services.HttpClients;
 
 namespace UnitTests.Blazor.Services;
 
 public class PlayerManagerTests : MoqBaseTestByAbstraction<PlayerManager, IPlayerManager>
 {
     private const string TestAlias = "TestPlayer";
-    private const string CreatedAlias = "CreatedPlayer";
-    
-    private readonly Mock<IPlayerApiClient> _mockPlayerApiClient;
+
     private readonly Mock<ILocalStorageService> _mockLocalStorageService;
 
     public PlayerManagerTests()
     {
-        _mockPlayerApiClient = Container.ResolveMock<IPlayerApiClient>().AsMoq();
         _mockLocalStorageService = Container.ResolveMock<ILocalStorageService>().AsMoq();
-    }
-
-    [Fact]
-    public async Task CreatePlayerAsync_WhenApiCallFails_ThrowsException()
-    {
-        // Arrange
-        _mockPlayerApiClient.SetupCreatePlayerAsyncFails();
-        var sut = ResolveSut();
-
-        // Act
-        Func<Task> act = async () => await sut.CreatePlayerAsync(TestAlias);
-
-        // Assert
-        await act.Should().ThrowAsync<Exception>().WithMessage("Failed to create player.");
-    }
-
-    [Fact]
-    public async Task CreatePlayerAsync_WhenApiReturnsNullValue_ThrowsException()
-    {
-        // Arrange
-        _mockPlayerApiClient.SetupCreatePlayerAsync(null);
-        var sut = ResolveSut();
-
-        // Act
-        Func<Task> act = async () => await sut.CreatePlayerAsync(TestAlias);
-
-        // Assert
-        await act.Should().ThrowAsync<Exception>().WithMessage("Failed to create player.");
-    }
-
-    [Fact]
-    public async Task CreatePlayerAsync_WithNullAlias_CallsApiWithNull()
-    {
-        // Arrange
-        var expectedAlias = CreatedAlias;
-        _mockPlayerApiClient.SetupCreatePlayerAsync(expectedAlias);
-        var sut = ResolveSut();
-
-        // Act
-        var result = await sut.CreatePlayerAsync(null);
-
-        // Assert
-        result.Should().Be(expectedAlias);
-        _mockPlayerApiClient.Verify(x => x.CreatePlayerAsync(null), Times.Once);
-    }
-
-    [Fact]
-    public async Task CreatePlayerAsync_WithValidAlias_ReturnsCreatedAlias()
-    {
-        // Arrange
-        var expectedAlias = CreatedAlias;
-        _mockPlayerApiClient.SetupCreatePlayerAsync(expectedAlias);
-        var sut = ResolveSut();
-
-        // Act
-        var result = await sut.CreatePlayerAsync(TestAlias);
-
-        // Assert
-        result.Should().Be(expectedAlias);
-    }
-
-    [Fact]
-    public async Task CreatePlayerAsync_WithValidAlias_StoresAliasInLocalStorage()
-    {
-        // Arrange
-        var expectedAlias = CreatedAlias;
-        _mockPlayerApiClient.SetupCreatePlayerAsync(expectedAlias);
-        var sut = ResolveSut();
-
-        // Act
-        await sut.CreatePlayerAsync(TestAlias);
-
-        // Assert
-        _mockLocalStorageService.Verify(x => x.SetAliasAsync(expectedAlias), Times.Once);
     }
 
     [Fact]
@@ -109,20 +31,6 @@ public class PlayerManagerTests : MoqBaseTestByAbstraction<PlayerManager, IPlaye
     }
 
     [Fact]
-    public async Task PlayerExistsAsync_WhenApiCallFails_ThrowsException()
-    {
-        // Arrange
-        _mockPlayerApiClient.SetupPlayerExistsAsyncFails();
-        var sut = ResolveSut();
-
-        // Act
-        Func<Task> act = async () => await sut.PlayerExistsAsync(TestAlias);
-
-        // Assert
-        await act.Should().ThrowAsync<Exception>().WithMessage("Failed to check if player exists.");
-    }
-
-    [Fact]
     public async Task GetCurrentPlayerAsync_WhenNoAliasStored_ReturnsNull()
     {
         // Arrange
@@ -134,60 +42,6 @@ public class PlayerManagerTests : MoqBaseTestByAbstraction<PlayerManager, IPlaye
 
         // Assert
         result.Should().BeNull();
-    }
-
-    [Fact]
-    public async Task PlayerExistsAsync_WithEmptyAlias_ThrowsArgumentException()
-    {
-        // Arrange
-        var sut = ResolveSut();
-
-        // Act
-        Func<Task> act = async () => await sut.PlayerExistsAsync(string.Empty);
-
-        // Assert
-        await act.Should().ThrowAsync<ArgumentException>().WithMessage("Alias not set.");
-    }
-
-    [Fact]
-    public async Task PlayerExistsAsync_WithNullAlias_ThrowsArgumentException()
-    {
-        // Arrange
-        var sut = ResolveSut();
-
-        // Act
-        Func<Task> act = async () => await sut.PlayerExistsAsync(null!);
-
-        // Assert
-        await act.Should().ThrowAsync<ArgumentException>().WithMessage("Alias not set.");
-    }
-
-    [Fact]
-    public async Task PlayerExistsAsync_WithValidAlias_ReturnsFalse()
-    {
-        // Arrange
-        _mockPlayerApiClient.SetupPlayerExistsAsync(false);
-        var sut = ResolveSut();
-
-        // Act
-        var result = await sut.PlayerExistsAsync(TestAlias);
-
-        // Assert
-        result.Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task PlayerExistsAsync_WithValidAlias_ReturnsTrue()
-    {
-        // Arrange
-        _mockPlayerApiClient.SetupPlayerExistsAsync(true);
-        var sut = ResolveSut();
-
-        // Act
-        var result = await sut.PlayerExistsAsync(TestAlias);
-
-        // Assert
-        result.Should().BeTrue();
     }
 
     [Fact]

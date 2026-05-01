@@ -5,8 +5,6 @@ import App from './App';
 
 vi.mock('./api/apiClient', () => ({
   apiClient: {
-    createPlayer: vi.fn().mockResolvedValue('test-alias'),
-    playerExists: vi.fn().mockResolvedValue(true),
     getGames: vi.fn().mockResolvedValue([]),
   },
 }));

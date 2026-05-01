@@ -27,19 +27,6 @@ public class DependencyInjectionTests
     }
 
     [Fact]
-    public void ApiDefaults_WhenServicesRegistered_CanResolvePlayersController()
-    {
-        // Arrange
-        var serviceProvider = CreateServiceProvider();
-
-        // Act
-        var controller = serviceProvider.GetService<PlayersController>();
-
-        // Assert
-        controller.Should().NotBeNull();
-    }
-
-    [Fact]
     public void ApiDefaults_WhenServicesRegistered_CanResolveApplicationServices()
     {
         // Arrange
@@ -47,11 +34,9 @@ public class DependencyInjectionTests
 
         // Act
         var gameApplicationService = serviceProvider.GetService<IGameApplicationService>();
-        var playerApplicationService = serviceProvider.GetService<IPlayerApplicationService>();
 
         // Assert
         gameApplicationService.Should().NotBeNull();
-        playerApplicationService.Should().NotBeNull();
     }
 
     [Fact]
@@ -150,7 +135,6 @@ public class DependencyInjectionTests
         var requiredServiceTypes = new[]
         {
             typeof(IGameApplicationService),
-            typeof(IPlayerApplicationService),
             typeof(IGameRepository),
             typeof(IPuzzleRepository),
             typeof(IPuzzleGenerator),
@@ -256,7 +240,6 @@ public class DependencyInjectionTests
         
         // Register controllers manually for testing
         services.AddTransient<GamesController>();
-        services.AddTransient<PlayersController>();
 
         var factory = new TestServiceProviderFactory();
         return factory.CreateServiceProvider(factory.CreateBuilder(services));

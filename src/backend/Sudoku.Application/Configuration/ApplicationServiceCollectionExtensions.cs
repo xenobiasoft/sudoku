@@ -16,7 +16,6 @@ public static class ServiceCollectionExtensions
 
         // Register application services
         services.AddScoped<IGameApplicationService, GameApplicationService>();
-        services.AddScoped<IPlayerApplicationService, PlayerApplicationService>();
 
         return services;
     }
