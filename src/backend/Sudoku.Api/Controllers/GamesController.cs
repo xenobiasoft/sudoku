@@ -1,38 +1,40 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Models;
+using Sudoku.Application.Commands;
 using Sudoku.Application.DTOs;
-using Sudoku.Application.Interfaces;
+using Sudoku.Application.Queries;
 
 namespace Sudoku.Api.Controllers;
 
 [Route("api/players/{alias}/games")]
 [ApiController]
-public class GamesController(IGameApplicationService gameService) : BaseGameController(gameService)
+public class GamesController(IMediator mediator) : BaseGameController(mediator)
 {
     /// <summary>
     /// Creates a new game for the specified player with the given difficulty.
     /// </summary>
     /// <param name="alias">The alias of the player</param>
     /// <param name="difficulty">The difficulty level of the game</param>
-    /// <returns>The created game</returns>
+    /// <returns>Location of the created game</returns>
     [HttpPost("{difficulty}")]
-    [ProducesResponseType(typeof(GameDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<GameDto>> CreateGameAsync(string alias, string difficulty)
+    public async Task<ActionResult> CreateGameAsync(string alias, string difficulty)
     {
         if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(difficulty))
         {
             return BadRequest("Player alias and difficulty cannot be null or empty.");
         }
 
-        var result = await GameService.CreateGameAsync(alias, difficulty);
+        var result = await Mediator.Send(new CreateGameCommand(alias, difficulty));
 
         if (!result.IsSuccess)
         {
             return BadRequest(result.Error);
         }
 
-        return Created($"/api/players/{alias}/games/{result.Value.Id}", result.Value);
+        return Created($"/api/players/{alias}/games/{result.Value}", null);
     }
 
     /// <summary>
@@ -50,14 +52,8 @@ public class GamesController(IGameApplicationService gameService) : BaseGameCont
             return BadRequest("Player alias cannot be null or empty.");
         }
 
-        var result = await GameService.DeletePlayerGamesAsync(alias);
-
-        if (!result.IsSuccess)
-        {
-            return BadRequest(result.Error);
-        }
-
-        return NoContent();
+        var result = await Mediator.Send(new DeletePlayerGamesCommand(alias));
+        return HandleUnitResult(result);
     }
 
     /// <summary>
@@ -72,10 +68,10 @@ public class GamesController(IGameApplicationService gameService) : BaseGameCont
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> DeleteGameAsync(string alias, string gameId)
     {
-        var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+        var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
         if (error != null) return error;
 
-        var result = await GameService.DeleteGameAsync(gameId);
+        var result = await Mediator.Send(new DeleteGameCommand(gameId));
         return HandleUnitResult(result);
     }
 
@@ -95,7 +91,7 @@ public class GamesController(IGameApplicationService gameService) : BaseGameCont
             return BadRequest("Player alias cannot be null or empty.");
         }
 
-        var result = await GameService.GetPlayerGamesAsync(alias);
+        var result = await Mediator.Send(new GetPlayerGamesQuery(alias));
 
         if (!result.IsSuccess)
         {
@@ -120,7 +116,6 @@ public class GamesController(IGameApplicationService gameService) : BaseGameCont
         var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
         if (error != null) return error;
 
-        // We already fetched the game in GetAuthorizedGameAsync, so return it directly.
         return Ok(game);
     }
 }

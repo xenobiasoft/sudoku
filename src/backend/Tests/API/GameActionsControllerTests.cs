@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Controllers;
 using Sudoku.Api.Models;
+using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
 using Sudoku.Application.DTOs;
+using Sudoku.Application.Queries;
 
 namespace UnitTests.API;
 
@@ -19,12 +22,12 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
         var game = CreateTestGameDto(playerAlias, "Medium", gameId);
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        MockGameService
-            .Setup(x => x.MakeMoveAsync(gameId, move.Row, move.Column, move.Value, move.PlayDuration))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<MakeMoveCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
         // Act
@@ -38,12 +41,10 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
     public async Task MakeMoveAsync_WithEmptyAlias_ReturnsBadRequest()
     {
         // Arrange
-        var emptyAlias = string.Empty;
-        var gameId = Guid.NewGuid().ToString();
         var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
 
         // Act
-        var result = await Sut.MakeMoveAsync(emptyAlias, gameId, move);
+        var result = await Sut.MakeMoveAsync(string.Empty, Guid.NewGuid().ToString(), move);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -53,12 +54,10 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
     public async Task MakeMoveAsync_WithEmptyGameId_ReturnsBadRequest()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
-        var emptyGameId = string.Empty;
         var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
 
         // Act
-        var result = await Sut.MakeMoveAsync(playerAlias, emptyGameId, move);
+        var result = await Sut.MakeMoveAsync("TestPlayer", string.Empty, move);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -73,8 +72,8 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
         var errorMessage = "Failed to get game";
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Failure(errorMessage));
 
         // Act
@@ -92,11 +91,10 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
         var move = new MoveRequest(1, 1, 5, Container.Create<TimeSpan>());
-        var differentPlayerAlias = "OtherPlayer";
-        var game = CreateTestGameDto(differentPlayerAlias, "Medium", gameId);
+        var game = CreateTestGameDto("OtherPlayer", "Medium", gameId);
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
         // Act
@@ -116,12 +114,12 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         var game = CreateTestGameDto(playerAlias, "Medium", gameId);
         var errorMessage = "Failed to make move";
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        MockGameService
-            .Setup(x => x.MakeMoveAsync(gameId, move.Row, move.Column, move.Value, move.PlayDuration))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<MakeMoveCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         // Act
@@ -144,12 +142,12 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         var gameId = Guid.NewGuid().ToString();
         var game = CreateTestGameDto(playerAlias, "Medium", gameId);
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        MockGameService
-            .Setup(x => x.ResetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<ResetGameCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
         // Act
@@ -162,12 +160,8 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
     [Fact]
     public async Task ResetGameAsync_WithEmptyAlias_ReturnsBadRequest()
     {
-        // Arrange
-        var emptyAlias = string.Empty;
-        var gameId = Guid.NewGuid().ToString();
-
         // Act
-        var result = await Sut.ResetGameAsync(emptyAlias, gameId);
+        var result = await Sut.ResetGameAsync(string.Empty, Guid.NewGuid().ToString());
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -176,12 +170,8 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
     [Fact]
     public async Task ResetGameAsync_WithEmptyGameId_ReturnsBadRequest()
     {
-        // Arrange
-        var playerAlias = "TestPlayer";
-        var emptyGameId = string.Empty;
-
         // Act
-        var result = await Sut.ResetGameAsync(playerAlias, emptyGameId);
+        var result = await Sut.ResetGameAsync("TestPlayer", string.Empty);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -195,8 +185,8 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         var gameId = Guid.NewGuid().ToString();
         var errorMessage = "Failed to get game";
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Failure(errorMessage));
 
         // Act
@@ -213,11 +203,10 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var differentPlayerAlias = "OtherPlayer";
-        var game = CreateTestGameDto(differentPlayerAlias, "Medium", gameId);
+        var game = CreateTestGameDto("OtherPlayer", "Medium", gameId);
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
         // Act
@@ -236,12 +225,12 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         var game = CreateTestGameDto(playerAlias, "Medium", gameId);
         var errorMessage = "Failed to reset game";
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        MockGameService
-            .Setup(x => x.ResetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<ResetGameCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         // Act
@@ -264,12 +253,12 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         var gameId = Guid.NewGuid().ToString();
         var game = CreateTestGameDto(playerAlias, "Medium", gameId);
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        MockGameService
-            .Setup(x => x.UndoLastMoveAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<UndoLastMoveCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
         // Act
@@ -282,12 +271,8 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
     [Fact]
     public async Task UndoMoveAsync_WithEmptyAlias_ReturnsBadRequest()
     {
-        // Arrange
-        var emptyAlias = string.Empty;
-        var gameId = Guid.NewGuid().ToString();
-
         // Act
-        var result = await Sut.UndoMoveAsync(emptyAlias, gameId);
+        var result = await Sut.UndoMoveAsync(string.Empty, Guid.NewGuid().ToString());
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -296,12 +281,8 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
     [Fact]
     public async Task UndoMoveAsync_WithEmptyGameId_ReturnsBadRequest()
     {
-        // Arrange
-        var playerAlias = "TestPlayer";
-        var emptyGameId = string.Empty;
-
         // Act
-        var result = await Sut.UndoMoveAsync(playerAlias, emptyGameId);
+        var result = await Sut.UndoMoveAsync("TestPlayer", string.Empty);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -315,8 +296,8 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         var gameId = Guid.NewGuid().ToString();
         var errorMessage = "Failed to get game";
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Failure(errorMessage));
 
         // Act
@@ -333,11 +314,10 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var differentPlayerAlias = "OtherPlayer";
-        var game = CreateTestGameDto(differentPlayerAlias, "Medium", gameId);
+        var game = CreateTestGameDto("OtherPlayer", "Medium", gameId);
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
         // Act
@@ -356,12 +336,12 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         var game = CreateTestGameDto(playerAlias, "Medium", gameId);
         var errorMessage = "Failed to undo move";
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        MockGameService
-            .Setup(x => x.UndoLastMoveAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<UndoLastMoveCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         // Act
@@ -370,27 +350,6 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
         badRequestResult.Value.Should().Be(errorMessage);
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static GameDto CreateTestGameDto(string playerAlias, string difficulty, string? gameId = null)
-    {
-        return new GameDto(
-            gameId ?? Guid.NewGuid().ToString(),
-            playerAlias,
-            difficulty,
-            "NotStarted",
-            new GameStatisticsDto(0, 0, 0, TimeSpan.Zero, 0.0),
-            DateTime.UtcNow,
-            null,
-            null,
-            null,
-            new List<CellDto>(),
-            new List<MoveHistoryDto>()
-        );
     }
 
     #endregion

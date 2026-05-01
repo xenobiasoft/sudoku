@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Models;
-using Sudoku.Application.Interfaces;
+using Sudoku.Application.Commands;
 
 namespace Sudoku.Api.Controllers
 {
     [Route("api/players/{alias}/games/{gameId}/actions")]
     [ApiController]
-    public class GameActionsController(IGameApplicationService gameService) : BaseGameController(gameService)
+    public class GameActionsController(IMediator mediator) : BaseGameController(mediator)
     {
         /// <summary>
         /// Updates a game (makes a move)
@@ -24,7 +25,7 @@ namespace Sudoku.Api.Controllers
             var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
             if (error != null) return error;
 
-            var result = await GameService.MakeMoveAsync(gameId, move.Row, move.Column, move.Value, move.PlayDuration);
+            var result = await Mediator.Send(new MakeMoveCommand(gameId, move.Row, move.Column, move.Value, move.PlayDuration));
             return HandleUnitResult(result);
         }
 
@@ -40,10 +41,10 @@ namespace Sudoku.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> ResetGameAsync(string alias, string gameId)
         {
-            var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
             if (error != null) return error;
 
-            var result = await GameService.ResetGameAsync(gameId);
+            var result = await Mediator.Send(new ResetGameCommand(gameId));
             return HandleUnitResult(result);
         }
 
@@ -59,10 +60,10 @@ namespace Sudoku.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> UndoMoveAsync(string alias, string gameId)
         {
-            var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
             if (error != null) return error;
 
-            var result = await GameService.UndoLastMoveAsync(gameId);
+            var result = await Mediator.Send(new UndoLastMoveCommand(gameId));
             return HandleUnitResult(result);
         }
     }

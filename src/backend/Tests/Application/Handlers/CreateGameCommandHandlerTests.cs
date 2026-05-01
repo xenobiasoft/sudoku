@@ -13,7 +13,7 @@ using LogOutput = DepenMock.XUnit.V3.Attributes.LogOutputAttribute;
 namespace UnitTests.Application.Handlers;
 
 [LogOutput(LogOutputTiming.Always)]
-public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGameCommandHandler, ICommandHandler<CreateGameCommand>>
+public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGameCommandHandler, ICommandHandler<CreateGameCommand, string>>
 {
     private readonly Mock<IGameRepository> _mockGameRepository;
     private readonly Mock<IPuzzleGenerator> _mockPuzzleRepository;
@@ -46,6 +46,7 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
 
         // Assert
         result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNullOrEmpty();
         _mockPuzzleRepository.Verify(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()), Times.Once);
         _mockGameRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Once);
     }

@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Controllers;
+using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
 using Sudoku.Application.DTOs;
+using Sudoku.Application.Queries;
 
 namespace UnitTests.API;
 
@@ -14,13 +17,13 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
     {
         // Arrange
         var playerAlias = "TestPlayer";
-        var games = new List<GameDto> 
+        var games = new List<GameDto>
         {
             CreateTestGameDto(playerAlias, "Medium")
         };
-        
-        MockGameService
-            .Setup(x => x.GetPlayerGamesAsync(playerAlias))
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetPlayerGamesQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<List<GameDto>>.Success(games));
 
         // Act
@@ -35,11 +38,8 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
     [Fact]
     public async Task GetAllGamesAsync_WithEmptyAlias_ReturnsBadRequest()
     {
-        // Arrange
-        var emptyAlias = string.Empty;
-
         // Act
-        var result = await Sut.GetAllGamesAsync(emptyAlias);
+        var result = await Sut.GetAllGamesAsync(string.Empty);
 
         // Assert
         result.Result.Should().BeOfType<BadRequestObjectResult>();
@@ -51,9 +51,9 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
         // Arrange
         var playerAlias = "TestPlayer";
         var errorMessage = "Failed to get games";
-        
-        MockGameService
-            .Setup(x => x.GetPlayerGamesAsync(playerAlias))
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetPlayerGamesQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<List<GameDto>>.Failure(errorMessage));
 
         // Act
@@ -75,9 +75,9 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
         var game = CreateTestGameDto(playerAlias, "Medium", gameId);
-        
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
         // Act
@@ -92,12 +92,8 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
     [Fact]
     public async Task GetGameAsync_WithEmptyAlias_ReturnsBadRequest()
     {
-        // Arrange
-        var emptyAlias = string.Empty;
-        var gameId = Guid.NewGuid().ToString();
-
         // Act
-        var result = await Sut.GetGameAsync(emptyAlias, gameId);
+        var result = await Sut.GetGameAsync(string.Empty, Guid.NewGuid().ToString());
 
         // Assert
         result.Result.Should().BeOfType<BadRequestObjectResult>();
@@ -106,12 +102,8 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
     [Fact]
     public async Task GetGameAsync_WithEmptyGameId_ReturnsBadRequest()
     {
-        // Arrange
-        var playerAlias = "TestPlayer";
-        var emptyGameId = string.Empty;
-
         // Act
-        var result = await Sut.GetGameAsync(playerAlias, emptyGameId);
+        var result = await Sut.GetGameAsync("TestPlayer", string.Empty);
 
         // Assert
         result.Result.Should().BeOfType<BadRequestObjectResult>();
@@ -124,9 +116,9 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
         var errorMessage = "Failed to get game";
-        
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Failure(errorMessage));
 
         // Act
@@ -143,11 +135,10 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var differentPlayerAlias = "OtherPlayer";
-        var game = CreateTestGameDto(differentPlayerAlias, "Medium", gameId);
-        
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        var game = CreateTestGameDto("OtherPlayer", "Medium", gameId);
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
         // Act
@@ -162,73 +153,61 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
     #region CreateGameAsync Tests
 
     [Fact]
-    public async Task CreateGameAsync_WithValidParameters_ReturnsCreatedAtAction()
+    public async Task CreateGameAsync_WithValidParameters_ReturnsCreated()
     {
         // Arrange
         var playerAlias = "TestPlayer";
         var difficulty = "Medium";
         var gameId = Guid.NewGuid().ToString();
-        var game = CreateTestGameDto(playerAlias, difficulty, gameId);
-        
-        MockGameService
-            .Setup(x => x.CreateGameAsync(playerAlias, difficulty))
-            .ReturnsAsync(Result<GameDto>.Success(game));
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<CreateGameCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<string>.Success(gameId));
 
         // Act
         var result = await Sut.CreateGameAsync(playerAlias, difficulty);
 
         // Assert
-        var createdAtActionResult = result.Result.Should().BeOfType<CreatedResult>().Subject;
-        createdAtActionResult.Location.Should().Be($"/api/players/{playerAlias}/games/{gameId}");
-        var returnedGame = createdAtActionResult.Value.Should().BeAssignableTo<GameDto>().Subject;
-        returnedGame.Should().BeEquivalentTo(game);
+        var createdResult = result.Should().BeOfType<CreatedResult>().Subject;
+        createdResult.Location.Should().Be($"/api/players/{playerAlias}/games/{gameId}");
+        createdResult.Value.Should().BeNull();
     }
 
     [Fact]
     public async Task CreateGameAsync_WithEmptyAlias_ReturnsBadRequest()
     {
-        // Arrange
-        var emptyAlias = string.Empty;
-        var difficulty = "Medium";
-
         // Act
-        var result = await Sut.CreateGameAsync(emptyAlias, difficulty);
+        var result = await Sut.CreateGameAsync(string.Empty, "Medium");
 
         // Assert
-        result.Result.Should().BeOfType<BadRequestObjectResult>();
+        result.Should().BeOfType<BadRequestObjectResult>();
     }
 
     [Fact]
     public async Task CreateGameAsync_WithEmptyDifficulty_ReturnsBadRequest()
     {
-        // Arrange
-        var playerAlias = "TestPlayer";
-        var emptyDifficulty = string.Empty;
-
         // Act
-        var result = await Sut.CreateGameAsync(playerAlias, emptyDifficulty);
+        var result = await Sut.CreateGameAsync("TestPlayer", string.Empty);
 
         // Assert
-        result.Result.Should().BeOfType<BadRequestObjectResult>();
+        result.Should().BeOfType<BadRequestObjectResult>();
     }
 
     [Fact]
-    public async Task CreateGameAsync_WhenServiceReturnsFailed_ReturnsBadRequest()
+    public async Task CreateGameAsync_WhenCommandFails_ReturnsBadRequest()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
-        var difficulty = "Medium";
         var errorMessage = "Failed to create game";
-        
-        MockGameService
-            .Setup(x => x.CreateGameAsync(playerAlias, difficulty))
-            .ReturnsAsync(Result<GameDto>.Failure(errorMessage));
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<CreateGameCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<string>.Failure(errorMessage));
 
         // Act
-        var result = await Sut.CreateGameAsync(playerAlias, difficulty);
+        var result = await Sut.CreateGameAsync("TestPlayer", "Medium");
 
         // Assert
-        var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
+        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
         badRequestResult.Value.Should().Be(errorMessage);
     }
 
@@ -243,13 +222,13 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
         var game = CreateTestGameDto(playerAlias, "Medium", gameId);
-        
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
-        
-        MockGameService
-            .Setup(x => x.DeleteGameAsync(gameId))
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<DeleteGameCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
         // Act
@@ -262,12 +241,8 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
     [Fact]
     public async Task DeleteGameAsync_WithEmptyAlias_ReturnsBadRequest()
     {
-        // Arrange
-        var emptyAlias = string.Empty;
-        var gameId = Guid.NewGuid().ToString();
-
         // Act
-        var result = await Sut.DeleteGameAsync(emptyAlias, gameId);
+        var result = await Sut.DeleteGameAsync(string.Empty, Guid.NewGuid().ToString());
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -276,12 +251,8 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
     [Fact]
     public async Task DeleteGameAsync_WithEmptyGameId_ReturnsBadRequest()
     {
-        // Arrange
-        var playerAlias = "TestPlayer";
-        var emptyGameId = string.Empty;
-
         // Act
-        var result = await Sut.DeleteGameAsync(playerAlias, emptyGameId);
+        var result = await Sut.DeleteGameAsync("TestPlayer", string.Empty);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -294,9 +265,9 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
         var errorMessage = "Failed to get game";
-        
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Failure(errorMessage));
 
         // Act
@@ -313,11 +284,10 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var differentPlayerAlias = "OtherPlayer";
-        var game = CreateTestGameDto(differentPlayerAlias, "Medium", gameId);
-        
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        var game = CreateTestGameDto("OtherPlayer", "Medium", gameId);
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
         // Act
@@ -335,13 +305,13 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
         var gameId = Guid.NewGuid().ToString();
         var game = CreateTestGameDto(playerAlias, "Medium", gameId);
         var errorMessage = "Failed to delete game";
-        
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
-        
-        MockGameService
-            .Setup(x => x.DeleteGameAsync(gameId))
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<DeleteGameCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         // Act
@@ -361,9 +331,9 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
     {
         // Arrange
         var playerAlias = "TestPlayer";
-        
-        MockGameService
-            .Setup(x => x.DeletePlayerGamesAsync(playerAlias))
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<DeletePlayerGamesCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
         // Act
@@ -376,11 +346,8 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
     [Fact]
     public async Task DeleteAllGamesAsync_WithEmptyAlias_ReturnsBadRequest()
     {
-        // Arrange
-        var emptyAlias = string.Empty;
-
         // Act
-        var result = await Sut.DeleteAllGamesAsync(emptyAlias);
+        var result = await Sut.DeleteAllGamesAsync(string.Empty);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -390,40 +357,18 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
     public async Task DeleteAllGamesAsync_WhenServiceReturnsFailed_ReturnsBadRequest()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
         var errorMessage = "Failed to delete games";
-        
-        MockGameService
-            .Setup(x => x.DeletePlayerGamesAsync(playerAlias))
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<DeletePlayerGamesCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         // Act
-        var result = await Sut.DeleteAllGamesAsync(playerAlias);
+        var result = await Sut.DeleteAllGamesAsync("TestPlayer");
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
         badRequestResult.Value.Should().Be(errorMessage);
-    }
-
-    #endregion
-
-    #region Helper Methods
-
-    private static GameDto CreateTestGameDto(string playerAlias, string difficulty, string? gameId = null)
-    {
-        return new GameDto(
-            gameId ?? Guid.NewGuid().ToString(),
-            playerAlias,
-            difficulty,
-            "NotStarted",
-            new GameStatisticsDto(0, 0, 0, TimeSpan.Zero, 0.0),
-            DateTime.UtcNow,
-            null,
-            null,
-            null,
-            new List<CellDto>(),
-            new List<MoveHistoryDto>()
-        );
     }
 
     #endregion

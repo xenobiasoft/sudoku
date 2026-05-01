@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using Sudoku.Application.Common;
 using Sudoku.Application.DTOs;
-using Sudoku.Application.Interfaces;
+using Sudoku.Application.Queries;
 
 namespace Sudoku.Api.Controllers;
 
-public abstract class BaseGameController(IGameApplicationService gameService) : ControllerBase
+public abstract class BaseGameController(IMediator mediator) : ControllerBase
 {
-    protected IGameApplicationService GameService => gameService;
+    protected IMediator Mediator => mediator;
 
     protected async Task<(GameDto? game, ActionResult? error)> GetAuthorizedGameAsync(string alias, string gameId)
     {
@@ -15,7 +17,7 @@ public abstract class BaseGameController(IGameApplicationService gameService) : 
             return (null, BadRequest("Player alias and game id cannot be null or empty."));
         }
 
-        var gameResult = await GameService.GetGameAsync(gameId);
+        var gameResult = await mediator.Send(new GetGameQuery(gameId));
         if (!gameResult.IsSuccess)
         {
             return (null, BadRequest(gameResult.Error));
@@ -29,9 +31,8 @@ public abstract class BaseGameController(IGameApplicationService gameService) : 
         return (gameResult.Value, null);
     }
 
-    protected ActionResult HandleUnitResult(dynamic result)
+    protected ActionResult HandleUnitResult(Result result)
     {
-        // result is expected to have IsSuccess and Error members.
         if (!result.IsSuccess)
         {
             return BadRequest(result.Error);
