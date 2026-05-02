@@ -58,7 +58,7 @@ public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
     }
 
     [Fact]
-    public void AddPossibleValue_ToCellWithValue_ThrowsInvalidOperationException()
+    public void AddPossibleValue_ToCellWithValue_ThrowsCellAlreadyHasValueException()
     {
         // Arrange
         var game = SudokuGame.Create(_playerAlias, _difficulty, _initialCells);
@@ -69,7 +69,7 @@ public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
         Action act = () => game.AddPossibleValue(row, col, value);
 
         // Assert
-        act.Should().Throw<InvalidOperationException>()
+        act.Should().Throw<CellAlreadyHasValueException>()
             .WithMessage($"*Cannot add possible values to cell with a definite value*");
     }
 
