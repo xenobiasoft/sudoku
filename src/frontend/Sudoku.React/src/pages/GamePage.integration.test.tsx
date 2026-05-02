@@ -68,7 +68,8 @@ beforeEach(() => {
     isGameLoading: false,
     gameError: null,
     getGame: vi.fn().mockResolvedValue(makeGame()),
-    updateStatus: vi.fn().mockResolvedValue(undefined),
+    pauseGame: vi.fn().mockResolvedValue(undefined),
+    resumeGame: vi.fn().mockResolvedValue(undefined),
     makeMove: vi.fn(),
     undoMove: vi.fn(),
     resetGame: vi.fn(),
@@ -104,7 +105,7 @@ describe('GamePage - New Architecture', () => {
       currentGame: null,
       isGameLoading: true,
       gameError: null,
-      getGame: vi.fn(), updateStatus: vi.fn(), makeMove: vi.fn(), undoMove: vi.fn(), resetGame: vi.fn(),
+      getGame: vi.fn(), pauseGame: vi.fn(), resumeGame: vi.fn(), makeMove: vi.fn(), undoMove: vi.fn(), resetGame: vi.fn(),
       addPossibleValue: vi.fn(), removePossibleValue: vi.fn(), clearPossibleValues: vi.fn(), clearCurrentGame: vi.fn(),
     });
     
@@ -119,7 +120,7 @@ describe('GamePage - New Architecture', () => {
       currentGame: null,
       isGameLoading: false,
       gameError: 'Failed to load game',
-      getGame: vi.fn(), updateStatus: vi.fn(), makeMove: vi.fn(), undoMove: vi.fn(), resetGame: vi.fn(),
+      getGame: vi.fn(), pauseGame: vi.fn(), resumeGame: vi.fn(), makeMove: vi.fn(), undoMove: vi.fn(), resetGame: vi.fn(),
       addPossibleValue: vi.fn(), removePossibleValue: vi.fn(), clearPossibleValues: vi.fn(), clearCurrentGame: vi.fn(),
     });
     
@@ -134,7 +135,7 @@ describe('GamePage - New Architecture', () => {
       savedGames: [], isLoading: false, error: null, isLoaded: false,
       loadGames: vi.fn(), deleteGame: vi.fn(), createGame: vi.fn(), clearCache: vi.fn(), refreshGames: vi.fn(),
       currentGame: null, isGameLoading: false, gameError: null,
-      getGame: mockGetGame, updateStatus: vi.fn(), makeMove: vi.fn(), undoMove: vi.fn(), resetGame: vi.fn(),
+      getGame: mockGetGame, pauseGame: vi.fn(), resumeGame: vi.fn(), makeMove: vi.fn(), undoMove: vi.fn(), resetGame: vi.fn(),
       addPossibleValue: vi.fn(), removePossibleValue: vi.fn(), clearPossibleValues: vi.fn(), clearCurrentGame: vi.fn(),
     });
     
@@ -161,7 +162,7 @@ describe('GamePage - New Architecture', () => {
       savedGames: [], isLoading: false, error: null, isLoaded: false,
       loadGames: vi.fn(), deleteGame: vi.fn(), createGame: vi.fn(), clearCache: vi.fn(), refreshGames: vi.fn(),
       currentGame: null, isGameLoading: false, gameError: null,
-      getGame: mockGetGame, updateStatus: vi.fn(), makeMove: vi.fn(), undoMove: vi.fn(), resetGame: vi.fn(),
+      getGame: mockGetGame, pauseGame: vi.fn(), resumeGame: vi.fn(), makeMove: vi.fn(), undoMove: vi.fn(), resetGame: vi.fn(),
       addPossibleValue: vi.fn(), removePossibleValue: vi.fn(), clearPossibleValues: vi.fn(), clearCurrentGame: vi.fn(),
     });
     
