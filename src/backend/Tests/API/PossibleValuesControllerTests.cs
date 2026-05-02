@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Controllers;
 using Sudoku.Api.Models;
+using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
 using Sudoku.Application.DTOs;
+using Sudoku.Application.Queries;
 
 namespace UnitTests.API;
 
@@ -17,14 +20,14 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
         var request = new PossibleValueRequest(1, 1, 5);
-        var game = CreateTestGameDto(playerAlias, gameId);
+        var game = CreateTestGameDto(playerAlias, "Medium", gameId);
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        MockGameService
-            .Setup(x => x.AddPossibleValueAsync(gameId, request.Row, request.Column, request.Value))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<AddPossibleValueCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
         // Act
@@ -38,12 +41,10 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     public async Task AddPossibleValueAsync_WithEmptyAlias_ReturnsBadRequest()
     {
         // Arrange
-        var emptyAlias = string.Empty;
-        var gameId = Guid.NewGuid().ToString();
         var request = new PossibleValueRequest(1, 1, 5);
 
         // Act
-        var result = await Sut.AddPossibleValueAsync(emptyAlias, gameId, request);
+        var result = await Sut.AddPossibleValueAsync(string.Empty, Guid.NewGuid().ToString(), request);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -53,12 +54,10 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     public async Task AddPossibleValueAsync_WithEmptyGameId_ReturnsBadRequest()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
-        var emptyGameId = string.Empty;
         var request = new PossibleValueRequest(1, 1, 5);
 
         // Act
-        var result = await Sut.AddPossibleValueAsync(playerAlias, emptyGameId, request);
+        var result = await Sut.AddPossibleValueAsync("TestPlayer", string.Empty, request);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -68,17 +67,15 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     public async Task AddPossibleValueAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
-        var gameId = Guid.NewGuid().ToString();
         var request = new PossibleValueRequest(1, 1, 5);
         var errorMessage = "Failed to get game";
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Failure(errorMessage));
 
         // Act
-        var result = await Sut.AddPossibleValueAsync(playerAlias, gameId, request);
+        var result = await Sut.AddPossibleValueAsync("TestPlayer", Guid.NewGuid().ToString(), request);
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -89,39 +86,37 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     public async Task AddPossibleValueAsync_WhenGameBelongsToAnotherPlayer_ReturnsNotFound()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var differentPlayerAlias = "OtherPlayer";
         var request = new PossibleValueRequest(1, 1, 5);
-        var game = CreateTestGameDto(differentPlayerAlias, gameId);
+        var game = CreateTestGameDto("OtherPlayer", "Medium", gameId);
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
         // Act
-        var result = await Sut.AddPossibleValueAsync(playerAlias, gameId, request);
+        var result = await Sut.AddPossibleValueAsync("TestPlayer", gameId, request);
 
         // Assert
         result.Should().BeOfType<NotFoundResult>();
     }
 
     [Fact]
-    public async Task AddPossibleValueAsync_WhenAddPossibleValueFails_ReturnsBadRequest()
+    public async Task AddPossibleValueAsync_WhenCommandFails_ReturnsBadRequest()
     {
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
         var request = new PossibleValueRequest(1, 1, 5);
-        var game = CreateTestGameDto(playerAlias, gameId);
+        var game = CreateTestGameDto(playerAlias, "Medium", gameId);
         var errorMessage = "Failed to add possible value";
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        MockGameService
-            .Setup(x => x.AddPossibleValueAsync(gameId, request.Row, request.Column, request.Value))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<AddPossibleValueCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         // Act
@@ -143,14 +138,14 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
         var request = new CellRequest(1, 1);
-        var game = CreateTestGameDto(playerAlias, gameId);
+        var game = CreateTestGameDto(playerAlias, "Medium", gameId);
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        MockGameService
-            .Setup(x => x.ClearPossibleValuesAsync(gameId, request.Row, request.Column))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<ClearPossibleValuesCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
         // Act
@@ -164,12 +159,10 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     public async Task ClearPossibleValuesAsync_WithEmptyAlias_ReturnsBadRequest()
     {
         // Arrange
-        var emptyAlias = string.Empty;
-        var gameId = Guid.NewGuid().ToString();
         var request = new CellRequest(1, 1);
 
         // Act
-        var result = await Sut.ClearPossibleValuesAsync(emptyAlias, gameId, request);
+        var result = await Sut.ClearPossibleValuesAsync(string.Empty, Guid.NewGuid().ToString(), request);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -179,12 +172,10 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     public async Task ClearPossibleValuesAsync_WithEmptyGameId_ReturnsBadRequest()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
-        var emptyGameId = string.Empty;
         var request = new CellRequest(1, 1);
 
         // Act
-        var result = await Sut.ClearPossibleValuesAsync(playerAlias, emptyGameId, request);
+        var result = await Sut.ClearPossibleValuesAsync("TestPlayer", string.Empty, request);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -194,17 +185,15 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     public async Task ClearPossibleValuesAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
-        var gameId = Guid.NewGuid().ToString();
         var request = new CellRequest(1, 1);
         var errorMessage = "Failed to get game";
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Failure(errorMessage));
 
         // Act
-        var result = await Sut.ClearPossibleValuesAsync(playerAlias, gameId, request);
+        var result = await Sut.ClearPossibleValuesAsync("TestPlayer", Guid.NewGuid().ToString(), request);
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -215,39 +204,37 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     public async Task ClearPossibleValuesAsync_WhenGameBelongsToAnotherPlayer_ReturnsNotFound()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var differentPlayerAlias = "OtherPlayer";
         var request = new CellRequest(1, 1);
-        var game = CreateTestGameDto(differentPlayerAlias, gameId);
+        var game = CreateTestGameDto("OtherPlayer", "Medium", gameId);
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
         // Act
-        var result = await Sut.ClearPossibleValuesAsync(playerAlias, gameId, request);
+        var result = await Sut.ClearPossibleValuesAsync("TestPlayer", gameId, request);
 
         // Assert
         result.Should().BeOfType<NotFoundResult>();
     }
 
     [Fact]
-    public async Task ClearPossibleValuesAsync_WhenClearPossibleValuesFails_ReturnsBadRequest()
+    public async Task ClearPossibleValuesAsync_WhenCommandFails_ReturnsBadRequest()
     {
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
         var request = new CellRequest(1, 1);
-        var game = CreateTestGameDto(playerAlias, gameId);
+        var game = CreateTestGameDto(playerAlias, "Medium", gameId);
         var errorMessage = "Failed to clear possible values";
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        MockGameService
-            .Setup(x => x.ClearPossibleValuesAsync(gameId, request.Row, request.Column))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<ClearPossibleValuesCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         // Act
@@ -269,14 +256,14 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
         var request = new PossibleValueRequest(1, 1, 5);
-        var game = CreateTestGameDto(playerAlias, gameId);
+        var game = CreateTestGameDto(playerAlias, "Medium", gameId);
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        MockGameService
-            .Setup(x => x.RemovePossibleValueAsync(gameId, request.Row, request.Column, request.Value))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<RemovePossibleValueCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Success());
 
         // Act
@@ -290,12 +277,10 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     public async Task RemovePossibleValueAsync_WithEmptyAlias_ReturnsBadRequest()
     {
         // Arrange
-        var emptyAlias = string.Empty;
-        var gameId = Guid.NewGuid().ToString();
         var request = new PossibleValueRequest(1, 1, 5);
 
         // Act
-        var result = await Sut.RemovePossibleValueAsync(emptyAlias, gameId, request);
+        var result = await Sut.RemovePossibleValueAsync(string.Empty, Guid.NewGuid().ToString(), request);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -305,12 +290,10 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     public async Task RemovePossibleValueAsync_WithEmptyGameId_ReturnsBadRequest()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
-        var emptyGameId = string.Empty;
         var request = new PossibleValueRequest(1, 1, 5);
 
         // Act
-        var result = await Sut.RemovePossibleValueAsync(playerAlias, emptyGameId, request);
+        var result = await Sut.RemovePossibleValueAsync("TestPlayer", string.Empty, request);
 
         // Assert
         result.Should().BeOfType<BadRequestObjectResult>();
@@ -320,17 +303,15 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     public async Task RemovePossibleValueAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
-        var gameId = Guid.NewGuid().ToString();
         var request = new PossibleValueRequest(1, 1, 5);
         var errorMessage = "Failed to get game";
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Failure(errorMessage));
 
         // Act
-        var result = await Sut.RemovePossibleValueAsync(playerAlias, gameId, request);
+        var result = await Sut.RemovePossibleValueAsync("TestPlayer", Guid.NewGuid().ToString(), request);
 
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
@@ -341,39 +322,37 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     public async Task RemovePossibleValueAsync_WhenGameBelongsToAnotherPlayer_ReturnsNotFound()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var differentPlayerAlias = "OtherPlayer";
         var request = new PossibleValueRequest(1, 1, 5);
-        var game = CreateTestGameDto(differentPlayerAlias, gameId);
+        var game = CreateTestGameDto("OtherPlayer", "Medium", gameId);
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
         // Act
-        var result = await Sut.RemovePossibleValueAsync(playerAlias, gameId, request);
+        var result = await Sut.RemovePossibleValueAsync("TestPlayer", gameId, request);
 
         // Assert
         result.Should().BeOfType<NotFoundResult>();
     }
 
     [Fact]
-    public async Task RemovePossibleValueAsync_WhenRemovePossibleValueFails_ReturnsBadRequest()
+    public async Task RemovePossibleValueAsync_WhenCommandFails_ReturnsBadRequest()
     {
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
         var request = new PossibleValueRequest(1, 1, 5);
-        var game = CreateTestGameDto(playerAlias, gameId);
+        var game = CreateTestGameDto(playerAlias, "Medium", gameId);
         var errorMessage = "Failed to remove possible value";
 
-        MockGameService
-            .Setup(x => x.GetGameAsync(gameId))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<GameDto>.Success(game));
 
-        MockGameService
-            .Setup(x => x.RemovePossibleValueAsync(gameId, request.Row, request.Column, request.Value))
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<RemovePossibleValueCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure(errorMessage));
 
         // Act

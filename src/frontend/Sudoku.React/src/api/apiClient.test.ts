@@ -22,14 +22,32 @@ afterEach(() => {
 });
 
 describe('apiClient.createGame', () => {
-  it('POSTs to /api/players/:alias/games/:difficulty and returns GameModel', async () => {
-    const game = makeGame();
-    vi.stubGlobal('fetch', mockFetch(200, game));
+  it('POSTs to create, follows Location header, and GETs the new game', async () => {
+    const game = makeGame({ id: 'new-game-id' });
+    const createRes = {
+      ok: true, status: 201, statusText: 'Created',
+      text: () => Promise.resolve(''),
+      headers: { get: (name: string) => name === 'Location' ? '/api/players/player1/games/new-game-id' : null },
+    };
+    const getRes = {
+      ok: true, status: 200, statusText: 'OK',
+      text: () => Promise.resolve(JSON.stringify(game)),
+      headers: { get: () => null },
+    };
+    let call = 0;
+    vi.stubGlobal('fetch', vi.fn().mockImplementation(() => Promise.resolve(call++ === 0 ? createRes : getRes)));
+
     const result = await apiClient.createGame('player1', 'Easy');
+
     expect(result).toEqual(game);
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(fetch).toHaveBeenNthCalledWith(1,
       expect.stringContaining('/api/players/player1/games/Easy'),
       expect.objectContaining({ method: 'POST' })
+    );
+    expect(fetch).toHaveBeenNthCalledWith(2,
+      expect.stringContaining('/api/players/player1/games/new-game-id'),
+      expect.not.objectContaining({ method: 'POST' })
     );
   });
 });
@@ -105,13 +123,24 @@ describe('apiClient.undoMove', () => {
   });
 });
 
-describe('apiClient.updateStatus', () => {
-  it('PATCHes /api/players/:alias/games/:gameId/status/:status', async () => {
+describe('apiClient.pauseGame', () => {
+  it('POSTs to /api/players/:alias/games/:gameId/status/pause', async () => {
     vi.stubGlobal('fetch', mockFetch(200, ''));
-    await apiClient.updateStatus('player1', 'game-1', 'Paused');
+    await apiClient.pauseGame('player1', 'game-1');
     expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/players/player1/games/game-1/status/Paused'),
-      expect.objectContaining({ method: 'PATCH' })
+      expect.stringContaining('/api/players/player1/games/game-1/status/pause'),
+      expect.objectContaining({ method: 'POST' })
+    );
+  });
+});
+
+describe('apiClient.resumeGame', () => {
+  it('POSTs to /api/players/:alias/games/:gameId/status/resume', async () => {
+    vi.stubGlobal('fetch', mockFetch(200, ''));
+    await apiClient.resumeGame('player1', 'game-1');
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/players/player1/games/game-1/status/resume'),
+      expect.objectContaining({ method: 'POST' })
     );
   });
 });

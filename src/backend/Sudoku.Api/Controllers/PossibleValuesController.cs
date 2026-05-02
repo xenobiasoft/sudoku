@@ -1,70 +1,59 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Models;
-using Sudoku.Application.Interfaces;
+using Sudoku.Application.Commands;
 
 namespace Sudoku.Api.Controllers
 {
     [Route("api/players/{alias}/games/{gameId}/possible-values")]
     [ApiController]
-    public class PossibleValuesController(IGameApplicationService gameService) : BaseGameController(gameService)
+    public class PossibleValuesController(IMediator mediator) : BaseGameController(mediator)
     {
         /// <summary>
         /// Adds a possible value to a cell
         /// </summary>
-        /// <param name="alias">The player's alias</param>
-        /// <param name="gameId">The game id</param>
-        /// <param name="request">The possible value request</param>
-        /// <returns>Success or failure result</returns>
         [HttpPost("")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> AddPossibleValueAsync(string alias, string gameId, [FromBody] PossibleValueRequest request)
         {
-            var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
             if (error != null) return error;
 
-            var result = await GameService.AddPossibleValueAsync(gameId, request.Row, request.Column, request.Value);
+            var result = await Mediator.Send(new AddPossibleValueCommand(gameId, request.Row, request.Column, request.Value));
             return HandleUnitResult(result);
         }
 
         /// <summary>
         /// Clears all possible values from a cell
         /// </summary>
-        /// <param name="alias">The player's alias</param>
-        /// <param name="gameId">The game id</param>
-        /// <param name="request">The cell request</param>
-        /// <returns>Success or failure result</returns>
         [HttpDelete("clear")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> ClearPossibleValuesAsync(string alias, string gameId, [FromBody] CellRequest request)
         {
-            var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
             if (error != null) return error;
 
-            var result = await GameService.ClearPossibleValuesAsync(gameId, request.Row, request.Column);
+            var result = await Mediator.Send(new ClearPossibleValuesCommand(gameId, request.Row, request.Column));
             return HandleUnitResult(result);
         }
 
         /// <summary>
         /// Removes a possible value from a cell
         /// </summary>
-        /// <param name="alias">The player's alias</param>
-        /// <param name="gameId">The game id</param>
-        /// <param name="request">The possible value request</param>
-        /// <returns>Success or failure result</returns>
         [HttpDelete("")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> RemovePossibleValueAsync(string alias, string gameId, [FromBody] PossibleValueRequest request)
         {
-            var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
             if (error != null) return error;
 
-            var result = await GameService.RemovePossibleValueAsync(gameId, request.Row, request.Column, request.Value);
+            var result = await Mediator.Send(new RemovePossibleValueCommand(gameId, request.Row, request.Column, request.Value));
             return HandleUnitResult(result);
         }
     }

@@ -15,14 +15,17 @@ builder
 
 builder.Configuration.AddEnvironmentVariables();
 
-var vaultUri = builder.Configuration["ConnectionStrings:AzureKeyVault"];
-
-if (string.IsNullOrEmpty(vaultUri))
+if (!builder.Environment.IsDevelopment())
 {
-    throw new InvalidOperationException("Azure Key Vault connection string is not configured. Please set 'ConnectionStrings:AzureKeyVault' in your configuration.");
-}
+    var vaultUri = builder.Configuration["ConnectionStrings:AzureKeyVault"];
 
-builder.Configuration.AddAzureKeyVault(new Uri(vaultUri), new DefaultAzureCredential());
+    if (string.IsNullOrEmpty(vaultUri))
+    {
+        throw new InvalidOperationException("Azure Key Vault connection string is not configured. Please set 'ConnectionStrings:AzureKeyVault' in your configuration.");
+    }
+
+    builder.Configuration.AddAzureKeyVault(new Uri(vaultUri), new DefaultAzureCredential());
+}
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

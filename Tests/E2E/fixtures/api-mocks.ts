@@ -90,8 +90,14 @@ export async function setupApiMocks(page: Page, options: ApiMockOptions = {}): P
       return;
     }
 
-    // ── Game status update (both apps call this on start/pause/resume) ────────
-    if (path.includes('/status/') && method === 'PATCH') {
+    // ── Game status: validate (POST /status/validate) ─────────────────────────
+    if (path.includes('/status/validate') && method === 'POST') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ isValid: true, errors: [] }) });
+      return;
+    }
+
+    // ── Game status: pause / resume / abandon / complete ──────────────────────
+    if (path.includes('/status/') && method === 'POST') {
       await route.fulfill({ status: 204 });
       return;
     }
@@ -152,7 +158,11 @@ export async function setupApiMocks(page: Page, options: ApiMockOptions = {}): P
 
     // ── Create game: POST /games/{difficulty} (difficulty is all alpha) ───────
     if (/\/games\/[A-Za-z]+$/.test(path) && method === 'POST') {
-      await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(newGame) });
+      currentGame = newGame;
+      await route.fulfill({
+        status: 201,
+        headers: { Location: `/api/players/${TEST_ALIAS}/games/${newGame.id}` },
+      });
       return;
     }
 

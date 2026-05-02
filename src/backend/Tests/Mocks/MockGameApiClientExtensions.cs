@@ -1,4 +1,5 @@
 ﻿using Sudoku.Blazor.Models;
+using Sudoku.Blazor.Services;
 using Sudoku.Blazor.Services.HttpClients;
 
 namespace UnitTests.Mocks;
@@ -19,7 +20,13 @@ public static class MockGameApiClientExtensions
 
         public void VerifySavesGameStatus(string alias, string gameId, string gameStatus, Func<Times> times)
         {
-            mock.Verify(x => x.SaveGameStatusAsync(alias, gameId, gameStatus), times);
+            switch (gameStatus)
+            {
+                case GameStatus.InProgress: mock.Verify(x => x.ResumeGameAsync(alias, gameId), times); break;
+                case GameStatus.Paused:     mock.Verify(x => x.PauseGameAsync(alias, gameId), times); break;
+                case GameStatus.Completed:  mock.Verify(x => x.CompleteGameAsync(alias, gameId), times); break;
+                case GameStatus.Abandoned:  mock.Verify(x => x.AbandonGameAsync(alias, gameId), times); break;
+            }
         }
     }
 }

@@ -8,9 +8,9 @@ using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Application.Handlers;
 
-public class CreateGameCommandHandler(IGameRepository gameRepository, IPuzzleGenerator puzzleGenerator, ILogger<CreateGameCommandHandler> logger) : ICommandHandler<CreateGameCommand>
+public class CreateGameCommandHandler(IGameRepository gameRepository, IPuzzleGenerator puzzleGenerator, ILogger<CreateGameCommandHandler> logger) : ICommandHandler<CreateGameCommand, string>
 {
-    public async Task<Result> Handle(CreateGameCommand request, CancellationToken cancellationToken)
+    public async Task<Result<string>> Handle(CreateGameCommand request, CancellationToken cancellationToken)
     {
         try
         {
@@ -20,26 +20,26 @@ public class CreateGameCommandHandler(IGameRepository gameRepository, IPuzzleGen
 
             if (puzzle == null)
             {
-                return Result.Failure($"No puzzle available for difficulty: {difficulty.Name}");
+                return Result<string>.Failure($"No puzzle available for difficulty: {difficulty.Name}");
             }
 
             var game = SudokuGame.Create(playerAlias, difficulty, puzzle.Cells);
 
             await gameRepository.SaveAsync(game);
 
-            logger.LogInformation("Created game {GameId} for player {PlayerAlias} with difficulty {Difficulty}", 
+            logger.LogInformation("Created game {GameId} for player {PlayerAlias} with difficulty {Difficulty}",
                 game.Id.Value, playerAlias.Value, difficulty.Name);
-            return Result.Success();
+            return Result<string>.Success(game.Id.Value.ToString());
         }
         catch (DomainException ex)
         {
             logger.LogWarning("Failed to create game for player {PlayerAlias}: {Error}", request.PlayerAlias, ex.Message);
-            return Result.Failure(ex.Message);
+            return Result<string>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "An unexpected error occurred creating game for player {PlayerAlias}", request.PlayerAlias);
-            return Result.Failure($"An unexpected error occurred: {ex.Message}");
+            return Result<string>.Failure($"An unexpected error occurred: {ex.Message}");
         }
     }
 }

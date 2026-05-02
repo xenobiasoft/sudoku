@@ -43,7 +43,8 @@ push_production() {
     # -------------------------------------------------------------------------
     set_key "$LABEL" "UseCosmosDb"                   "true"
     set_key "$LABEL" "CosmosDb:DatabaseName"         "sudoku"
-    set_key "$LABEL" "CosmosDb:ContainerName"        "games"
+    set_key "$LABEL" "CosmosDb:DisableSslValidation" "false"
+    set_key "$LABEL" "CosmosDb:AutoCreateContainers" "false"
     set_key "$LABEL" "CosmosDb:UseManagedIdentity"   "true"
     set_key "$LABEL" "CosmosDb:AccountEndpoint"      "https://cosmos-sudoku-prod.documents.azure.com:443/"
     set_key "$LABEL" "CosmosDb:ConnectionMode"       "Direct"
@@ -107,12 +108,13 @@ push_development() {
     # -------------------------------------------------------------------------
     # Cosmos DB (same account as prod, separate container for dev data)
     # -------------------------------------------------------------------------
-    set_key "$LABEL" "UseCosmosDb"                       "true"
-    set_key "$LABEL" "CosmosDb:DatabaseName"             "sudoku-dev"
-    set_key "$LABEL" "CosmosDb:ContainerName"            "games"
-    set_key "$LABEL" "CosmosDb:UseManagedIdentity"       "true"
-    set_key "$LABEL" "CosmosDb:AccountEndpoint"          "https://cosmos-sudoku-prod.documents.azure.com:443/"
-    set_key "$LABEL" "CosmosDb:ConnectionMode"           "Direct"
+    set_key "$LABEL" "UseCosmosDb"                   "true"
+    set_key "$LABEL" "CosmosDb:DatabaseName"         "sudoku"
+    set_key "$LABEL" "CosmosDb:DisableSslValidation" "true"
+    set_key "$LABEL" "CosmosDb:AutoCreateContainers" "true"
+    set_key "$LABEL" "CosmosDb:UseManagedIdentity"   "false"
+    set_key "$LABEL" "CosmosDb:AccountEndpoint"      "https://localhost:8081/"
+    set_key "$LABEL" "CosmosDb:ConnectionMode"       "Gateway"
 
     # -------------------------------------------------------------------------
     # Azure Storage

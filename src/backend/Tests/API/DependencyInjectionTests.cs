@@ -1,3 +1,4 @@
+using MediatR;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,19 +25,6 @@ public class DependencyInjectionTests
 
         // Assert
         controller.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ApiDefaults_WhenServicesRegistered_CanResolveApplicationServices()
-    {
-        // Arrange
-        var serviceProvider = CreateServiceProvider();
-
-        // Act
-        var gameApplicationService = serviceProvider.GetService<IGameApplicationService>();
-
-        // Assert
-        gameApplicationService.Should().NotBeNull();
     }
 
     [Fact]
@@ -93,61 +81,13 @@ public class DependencyInjectionTests
     {
         // Arrange
         var serviceProvider = CreateServiceProvider();
-        var gameApplicationService = serviceProvider.GetRequiredService<IGameApplicationService>();
+        var mediator = serviceProvider.GetRequiredService<IMediator>();
 
         // Act
-        var controller = new GamesController(gameApplicationService);
+        var controller = new GamesController(mediator);
 
         // Assert
         controller.Should().NotBeNull();
-    }
-
-    [Fact]
-    public void ApiDefaults_WhenServicesRegistered_VerifyServiceLifetimes()
-    {
-        // Arrange
-        var serviceProvider = CreateServiceProvider();
-
-        // Act & Assert - Verify scoped services return the same instance within scope
-        using (var scope = serviceProvider.CreateScope())
-        {
-            var gameService1 = scope.ServiceProvider.GetService<IGameApplicationService>();
-            var gameService2 = scope.ServiceProvider.GetService<IGameApplicationService>();
-            
-            gameService1.Should().BeSameAs(gameService2, "Scoped services should return the same instance within a scope");
-        }
-
-        // Verify different scopes get different instances
-        using var scope1 = serviceProvider.CreateScope();
-        using var scope2 = serviceProvider.CreateScope();
-        
-        var gameServiceScope1 = scope1.ServiceProvider.GetService<IGameApplicationService>();
-        var gameServiceScope2 = scope2.ServiceProvider.GetService<IGameApplicationService>();
-        
-        gameServiceScope1.Should().NotBeSameAs(gameServiceScope2, "Different scopes should get different instances");
-    }
-
-    [Fact]
-    public void ApiDefaults_WhenServicesRegistered_AllRequiredServicesAreRegistered()
-    {
-        // Arrange
-        var serviceProvider = CreateServiceProvider();
-        var requiredServiceTypes = new[]
-        {
-            typeof(IGameApplicationService),
-            typeof(IGameRepository),
-            typeof(IPuzzleRepository),
-            typeof(IPuzzleGenerator),
-            typeof(IPuzzleSolver),
-            typeof(IDomainEventDispatcher)
-        };
-
-        // Act & Assert
-        foreach (var serviceType in requiredServiceTypes)
-        {
-            var service = serviceProvider.GetService(serviceType);
-            service.Should().NotBeNull($"Service {serviceType.Name} should be registered");
-        }
     }
 
     [Fact]
@@ -164,16 +104,15 @@ public class DependencyInjectionTests
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddControllers();
-        
-        // This should work fine
+
         services.AddApiDefaults(invalidConfiguration, mockEnvironment.Object);
-        
+
         var serviceProvider = services.BuildServiceProvider();
 
-        // Act & Assert - Exception should be thrown when trying to use Azure services
+        // Act & Assert
         var act = () => serviceProvider.GetRequiredService<IAzureStorageService>();
-        
-        act.Should().Throw<Exception>(); // Some form of exception will be thrown when invalid configuration is used
+
+        act.Should().Throw<Exception>();
     }
 
     [Fact]
@@ -202,7 +141,7 @@ public class DependencyInjectionTests
 
         // Assert
         gameCreatedHandlers.Should().NotBeEmpty();
-        moveMadeHandlers.Should().NotBeEmpty(); 
+        moveMadeHandlers.Should().NotBeEmpty();
         gameCompletedHandlers.Should().NotBeEmpty();
     }
 
@@ -213,10 +152,33 @@ public class DependencyInjectionTests
         var serviceProvider = CreateServiceProvider();
 
         // Act
-        var mediator = serviceProvider.GetService<MediatR.IMediator>();
+        var mediator = serviceProvider.GetService<IMediator>();
 
         // Assert
         mediator.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void ApiDefaults_WhenServicesRegistered_AllRequiredServicesAreRegistered()
+    {
+        // Arrange
+        var serviceProvider = CreateServiceProvider();
+        var requiredServiceTypes = new[]
+        {
+            typeof(IMediator),
+            typeof(IGameRepository),
+            typeof(IPuzzleRepository),
+            typeof(IPuzzleGenerator),
+            typeof(IPuzzleSolver),
+            typeof(IDomainEventDispatcher)
+        };
+
+        // Act & Assert
+        foreach (var serviceType in requiredServiceTypes)
+        {
+            var service = serviceProvider.GetService(serviceType);
+            service.Should().NotBeNull($"Service {serviceType.Name} should be registered");
+        }
     }
 
     private IServiceProvider CreateServiceProvider()
@@ -230,15 +192,12 @@ public class DependencyInjectionTests
             .Build();
         var mockEnvironment = new Mock<IWebHostEnvironment>();
         var services = new ServiceCollection();
-        
-        // Add required framework services
+
         services.AddLogging();
         services.AddControllers();
-        
-        // Add API services using the extension method
+
         services.AddApiDefaults(configuration, mockEnvironment.Object);
-        
-        // Register controllers manually for testing
+
         services.AddTransient<GamesController>();
 
         var factory = new TestServiceProviderFactory();

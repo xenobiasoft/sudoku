@@ -1,41 +1,78 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using Sudoku.Application.Commands;
 using Sudoku.Application.DTOs;
-using Sudoku.Application.Interfaces;
+using Sudoku.Application.Queries;
 
 namespace Sudoku.Api.Controllers
 {
     [Route("api/players/{alias}/games/{gameId}/status")]
     [ApiController]
-    public class GameStatusController(IGameApplicationService gameService) : BaseGameController(gameService)
+    public class GameStatusController(IMediator mediator) : BaseGameController(mediator)
     {
         /// <summary>
-        /// Updates the status of a game for the specified player.
+        /// Pauses an in-progress game.
         /// </summary>
-        /// <param name="alias">The alias of the player associated with the game. Cannot be null or empty.</param>
-        /// <param name="gameId">The unique identifier of the game to update. Cannot be null or empty.</param>
-        /// <param name="gameStatus">The new status to set for the game.</param>
-        /// <returns>An <see cref="ActionResult"/> indicating the result of the operation. Returns 204 No Content if the update is
-        /// successful, 400 Bad Request if the input is invalid or the update fails, or 404 Not Found if the game does not
-        /// exist or does not belong to the specified player.</returns>
-        [HttpPatch("{gameStatus}")]
+        [HttpPost("pause")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> UpdateGameStatusAsync(string alias, string gameId, string gameStatus)
+        public async Task<ActionResult> PauseGameAsync(string alias, string gameId)
         {
-            var (game, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
             if (error != null) return error;
 
-            var result = await GameService.UpdateGameStatusAsync(gameId, gameStatus);
-            return HandleUnitResult(result);
+            return HandleUnitResult(await Mediator.Send(new PauseGameCommand(gameId)));
         }
 
         /// <summary>
-        /// Validates a game to check if it's completed correctly
+        /// Resumes a paused game.
         /// </summary>
-        /// <param name="alias">The player's alias</param>
-        /// <param name="gameId">The game id</param>
-        /// <returns>Result of the validation</returns>
+        [HttpPost("resume")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> ResumeGameAsync(string alias, string gameId)
+        {
+            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
+            if (error != null) return error;
+
+            return HandleUnitResult(await Mediator.Send(new ResumeGameCommand(gameId)));
+        }
+
+        /// <summary>
+        /// Abandons a game.
+        /// </summary>
+        [HttpPost("abandon")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> AbandonGameAsync(string alias, string gameId)
+        {
+            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
+            if (error != null) return error;
+
+            return HandleUnitResult(await Mediator.Send(new AbandonGameCommand(gameId)));
+        }
+
+        /// <summary>
+        /// Marks a game as complete.
+        /// </summary>
+        [HttpPost("complete")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> CompleteGameAsync(string alias, string gameId)
+        {
+            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
+            if (error != null) return error;
+
+            return HandleUnitResult(await Mediator.Send(new CompleteGameCommand(gameId)));
+        }
+
+        /// <summary>
+        /// Validates a game to check if it is completed correctly.
+        /// </summary>
         [HttpPost("validate")]
         [ProducesResponseType(typeof(ValidationResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -45,7 +82,7 @@ namespace Sudoku.Api.Controllers
             var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
             if (error != null) return error;
 
-            var result = await GameService.ValidateGameAsync(gameId);
+            var result = await Mediator.Send(new ValidateGameQuery(gameId));
 
             if (!result.IsSuccess)
             {

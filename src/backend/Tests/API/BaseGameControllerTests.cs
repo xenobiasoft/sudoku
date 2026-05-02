@@ -1,20 +1,20 @@
-﻿using DepenMock.Moq;
+using DepenMock.Moq;
+using MediatR;
 using Sudoku.Application.DTOs;
-using Sudoku.Application.Interfaces;
 
 namespace UnitTests.API;
 
 public abstract class BaseGameControllerTests<TControllerType> : MoqBaseTestByType<TControllerType> where TControllerType : class
 {
-    protected readonly Mock<IGameApplicationService> MockGameService;
+    protected readonly Mock<IMediator> MockMediator;
     protected TControllerType Sut;
 
     protected BaseGameControllerTests()
     {
-        MockGameService = Container.ResolveMock<IGameApplicationService>().AsMoq();
+        MockMediator = Container.ResolveMock<IMediator>().AsMoq();
         Sut = ResolveSut();
     }
-    
+
     protected static GameDto CreateTestGameDto(string playerAlias, string difficulty, string? gameId = null)
     {
         return new GameDto(

@@ -141,9 +141,13 @@ public partial class GameManager : IGameStateManager
         Game = await LoadGameAsync(Game.PlayerAlias, Game.Id);
     }
 
-    public async Task SaveGameStatusAsync()
+    public Task SaveGameStatusAsync()
     {
-        await gameApiClient.SaveGameStatusAsync(Game.PlayerAlias, Game.Id, Game.Status);
+        if (Game.Status == GameStatus.InProgress) return gameApiClient.ResumeGameAsync(Game.PlayerAlias, Game.Id);
+        if (Game.Status == GameStatus.Paused)     return gameApiClient.PauseGameAsync(Game.PlayerAlias, Game.Id);
+        if (Game.Status == GameStatus.Completed)  return gameApiClient.CompleteGameAsync(Game.PlayerAlias, Game.Id);
+        if (Game.Status == GameStatus.Abandoned)  return gameApiClient.AbandonGameAsync(Game.PlayerAlias, Game.Id);
+        return Task.CompletedTask;
     }
 
     public async Task<GameModel> UndoGameAsync()

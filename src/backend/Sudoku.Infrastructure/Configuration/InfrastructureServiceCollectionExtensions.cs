@@ -1,6 +1,3 @@
-using Azure.Core;
-using Azure.Identity;
-using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,54 +38,6 @@ public static class InfrastructureServiceCollectionExtensions
 
         private IServiceCollection AddCosmosDbServices(IConfiguration configuration)
         {
-            services.AddSingleton<CosmosClient>(serviceProvider =>
-            {
-                var cosmosDbOptions = configuration.GetSection(CosmosDbOptions.SectionName).Get<CosmosDbOptions>();
-
-                var clientOptions = new CosmosClientOptions
-                {
-                    ConnectionMode = cosmosDbOptions?.ConnectionMode ?? ConnectionMode.Gateway,
-                    RequestTimeout = TimeSpan.FromSeconds(30),
-                    MaxRetryAttemptsOnRateLimitedRequests = 3,
-                    MaxRetryWaitTimeOnRateLimitedRequests = TimeSpan.FromSeconds(15)
-                };
-
-                if (cosmosDbOptions?.DisableSslValidation == true)
-                {
-                    clientOptions.HttpClientFactory = () =>
-                    {
-                        HttpMessageHandler httpMessageHandler = new HttpClientHandler()
-                        {
-                            ServerCertificateCustomValidationCallback = (req, cert, chain, errors) => true
-                        };
-
-                        return new HttpClient(httpMessageHandler);
-                    };
-                }
-
-                if (cosmosDbOptions?.UseManagedIdentity == true)
-                {
-                    if (string.IsNullOrEmpty(cosmosDbOptions.AccountEndpoint))
-                    {
-                        throw new InvalidOperationException("CosmosDb:AccountEndpoint must be set when CosmosDb:UseManagedIdentity is true.");
-                    }
-
-                    TokenCredential credential = new DefaultAzureCredential();
-                    return new CosmosClient(cosmosDbOptions.AccountEndpoint, credential, clientOptions);
-                }
-
-                var connectionString = configuration.GetConnectionString("CosmosDb");
-
-                if (string.IsNullOrEmpty(connectionString))
-                {
-                    throw new InvalidOperationException(
-                        "CosmosDb connection string not found. Please ensure it's configured in configuration " +
-                        "with the key 'ConnectionStrings:CosmosDb', or set CosmosDb:UseManagedIdentity to true.");
-                }
-
-                return new CosmosClient(connectionString, clientOptions);
-            });
-
             services.AddScoped<ICosmosDbService, CosmosDbService>();
             services.AddScoped<IGameRepository, CosmosDbGameRepository>();
             services.AddScoped<IUserProfileRepository, CosmosDbUserProfileRepository>();

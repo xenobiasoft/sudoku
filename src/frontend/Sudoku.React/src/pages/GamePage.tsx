@@ -20,7 +20,8 @@ export default function GamePage() {
     isGameLoading,
     gameError,
     getGame,
-    updateStatus,
+    pauseGame,
+    resumeGame,
     makeMove,
     undoMove,
     resetGame,
@@ -74,15 +75,15 @@ export default function GamePage() {
     return [h, m, s].map(v => v.toString().padStart(2, '0')).join(':');
   };
 
-  const pauseGame = useCallback(async () => {
+  const pauseGameStatus = useCallback(async () => {
     if (!game || solvedRef.current || !playerAlias) return;
     stopTimer();
     try {
-      await updateStatus(playerAlias, game.id, 'Paused');
+      await pauseGame(playerAlias, game.id);
     } catch {
       // ignore
     }
-  }, [game, playerAlias, stopTimer, updateStatus]);
+  }, [game, playerAlias, stopTimer, pauseGame]);
 
   useEffect(() => {
     if (!puzzleId || !playerAlias || !isInitialized) return;
@@ -91,7 +92,7 @@ export default function GamePage() {
         const g = await getGame(playerAlias, puzzleId);
         const duration = g.statistics?.playDuration ?? '00:00:00';
         startTimer(duration);
-        await updateStatus(playerAlias, g.id, 'InProgress');
+        await resumeGame(playerAlias, g.id);
       } catch (e) {
         console.error('Failed to load game', e);
         navigate('/');
@@ -102,13 +103,13 @@ export default function GamePage() {
       stopTimer();
       clearCurrentGame();
     };
-  }, [puzzleId, playerAlias, isInitialized, getGame, updateStatus, startTimer, stopTimer, navigate, clearCurrentGame]);
+  }, [puzzleId, playerAlias, isInitialized, getGame, resumeGame, startTimer, stopTimer, navigate, clearCurrentGame]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden) pauseGame();
+      if (document.hidden) pauseGameStatus();
     };
-    const handleBeforeUnload = () => pauseGame();
+    const handleBeforeUnload = () => pauseGameStatus();
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -116,7 +117,7 @@ export default function GamePage() {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [pauseGame]);
+  }, [pauseGameStatus]);
 
   const handleCellAction = async (_cells: unknown, action: () => Promise<GameModel>) => {
     if (!game) return;
@@ -186,7 +187,7 @@ export default function GamePage() {
   };
 
   const handleHome = async () => {
-    await pauseGame();
+    await pauseGameStatus();
     navigate('/');
   };
 

@@ -177,7 +177,20 @@ public class CosmosDbService(CosmosClient cosmosClient, IOptions<CosmosDbOptions
 
     private async Task InitializeCosmosDbAsync()
     {
-        logger.LogInformation("Verifying CosmosDB database and container exist at endpoint URI: {Endpoint}", cosmosClient.Endpoint);
+        logger.LogInformation("Initializing CosmosDB at endpoint: {Endpoint}", cosmosClient.Endpoint);
+
+        if (_options.AutoCreateContainers && !_options.UseManagedIdentity)
+        {
+            var dbResponse = await cosmosClient.CreateDatabaseIfNotExistsAsync(_options.DatabaseName);
+            logger.LogInformation("Database {DatabaseName} ready", _options.DatabaseName);
+
+            var containerProperties = new ContainerProperties(_options.ContainerName, _options.ContainerPartitionKeyPath);
+            var containerResponse = await dbResponse.Database.CreateContainerIfNotExistsAsync(containerProperties);
+            logger.LogInformation("Container {ContainerName} ready", _options.ContainerName);
+
+            _container = containerResponse.Container;
+            return;
+        }
 
         var database = cosmosClient.GetDatabase(_options.DatabaseName);
 
