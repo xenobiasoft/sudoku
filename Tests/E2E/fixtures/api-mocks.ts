@@ -158,7 +158,11 @@ export async function setupApiMocks(page: Page, options: ApiMockOptions = {}): P
 
     // ── Create game: POST /games/{difficulty} (difficulty is all alpha) ───────
     if (/\/games\/[A-Za-z]+$/.test(path) && method === 'POST') {
-      await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(newGame) });
+      currentGame = newGame;
+      await route.fulfill({
+        status: 201,
+        headers: { Location: `/api/players/${TEST_ALIAS}/games/${newGame.id}` },
+      });
       return;
     }
 

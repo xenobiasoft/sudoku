@@ -47,8 +47,17 @@ export const apiClient = {
       body: JSON.stringify({ newAlias }),
     }),
 
-  createGame: (alias: string, difficulty: string): Promise<GameModel> =>
-    request(`/api/players/${alias}/games/${difficulty}`, { method: 'POST' }),
+  createGame: async (alias: string, difficulty: string): Promise<GameModel> => {
+    const res = await fetch(`${BASE_URL}/api/players/${alias}/games/${difficulty}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    const location = res.headers.get('Location');
+    const gameId = location?.split('/').pop();
+    if (!gameId) throw new Error('No Location header in createGame response');
+    return request(`/api/players/${alias}/games/${gameId}`);
+  },
 
   getGames: (alias: string): Promise<GameModel[]> =>
     request(`/api/players/${alias}/games`),
