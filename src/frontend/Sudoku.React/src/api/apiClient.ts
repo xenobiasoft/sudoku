@@ -84,8 +84,11 @@ export const apiClient = {
     return request(`/api/players/${alias}/games/${gameId}`);
   },
 
-  updateStatus: (alias: string, gameId: string, status: string): Promise<void> =>
-    request(`/api/players/${alias}/games/${gameId}/status/${status}`, { method: 'PATCH' }),
+  pauseGame: (alias: string, gameId: string): Promise<void> =>
+    request(`/api/players/${alias}/games/${gameId}/status/pause`, { method: 'POST' }),
+
+  resumeGame: (alias: string, gameId: string): Promise<void> =>
+    request(`/api/players/${alias}/games/${gameId}/status/resume`, { method: 'POST' }),
 
   addPossibleValue: async (
     alias: string,

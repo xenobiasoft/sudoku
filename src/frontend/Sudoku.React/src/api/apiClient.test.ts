@@ -105,13 +105,24 @@ describe('apiClient.undoMove', () => {
   });
 });
 
-describe('apiClient.updateStatus', () => {
-  it('PATCHes /api/players/:alias/games/:gameId/status/:status', async () => {
+describe('apiClient.pauseGame', () => {
+  it('POSTs to /api/players/:alias/games/:gameId/status/pause', async () => {
     vi.stubGlobal('fetch', mockFetch(200, ''));
-    await apiClient.updateStatus('player1', 'game-1', 'Paused');
+    await apiClient.pauseGame('player1', 'game-1');
     expect(fetch).toHaveBeenCalledWith(
-      expect.stringContaining('/api/players/player1/games/game-1/status/Paused'),
-      expect.objectContaining({ method: 'PATCH' })
+      expect.stringContaining('/api/players/player1/games/game-1/status/pause'),
+      expect.objectContaining({ method: 'POST' })
+    );
+  });
+});
+
+describe('apiClient.resumeGame', () => {
+  it('POSTs to /api/players/:alias/games/:gameId/status/resume', async () => {
+    vi.stubGlobal('fetch', mockFetch(200, ''));
+    await apiClient.resumeGame('player1', 'game-1');
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/players/player1/games/game-1/status/resume'),
+      expect.objectContaining({ method: 'POST' })
     );
   });
 });

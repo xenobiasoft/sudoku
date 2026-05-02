@@ -471,37 +471,37 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
         }
     }
 
-    /// <summary>
-    /// Asynchronously saves the current status of a game for the specified user alias and game identifier.
-    /// </summary>
-    /// <param name="alias">The unique alias representing the user whose game status will be saved. Cannot be null or empty.</param>
-    /// <param name="gameId">The identifier of the game for which the status is being saved. Cannot be null or empty.</param>
-    /// <param name="gameStatus">The serialized status data to be saved for the game. Cannot be null or empty.</param>
-    /// <returns>A task that represents the asynchronous save operation.</returns>
-    public async Task<ApiResult<bool>> SaveGameStatusAsync(string alias, string gameId, string gameStatus)
-    {
-        if (string.IsNullOrEmpty(alias)) throw new ArgumentNullException(nameof(alias));
-        if (string.IsNullOrEmpty(gameId)) throw new ArgumentNullException(nameof(gameId));
-        if (string.IsNullOrEmpty(gameStatus)) throw new ArgumentNullException(nameof(gameStatus));
+    public async Task<ApiResult<bool>> AbandonGameAsync(string alias, string gameId)
+        => await PostStatusAsync(alias, gameId, "abandon");
 
+    public async Task<ApiResult<bool>> CompleteGameAsync(string alias, string gameId)
+        => await PostStatusAsync(alias, gameId, "complete");
+
+    public async Task<ApiResult<bool>> PauseGameAsync(string alias, string gameId)
+        => await PostStatusAsync(alias, gameId, "pause");
+
+    public async Task<ApiResult<bool>> ResumeGameAsync(string alias, string gameId)
+        => await PostStatusAsync(alias, gameId, "resume");
+
+    private async Task<ApiResult<bool>> PostStatusAsync(string alias, string gameId, string action)
+    {
         try
         {
-            _logger.LogInformation("Saving game status for game {GameId}, player: {Alias}", gameId, alias);
-            
-            var response = await _httpClient.PatchAsJsonAsync($"api/players/{Uri.EscapeDataString(alias)}/games/{Uri.EscapeDataString(gameId)}/status/{gameStatus}", _jsonOptions);
+            _logger.LogInformation("Posting game status '{Action}' for game {GameId}, player: {Alias}", action, gameId, alias);
+            var response = await _httpClient.PostAsync($"api/players/{Uri.EscapeDataString(alias)}/games/{Uri.EscapeDataString(gameId)}/status/{action}", null);
             if (response.IsSuccessStatusCode)
             {
-                _logger.LogInformation("Game status saved successfully for game {GameId}", gameId);
+                _logger.LogInformation("Game status '{Action}' applied successfully for game {GameId}", action, gameId);
                 return ApiResult<bool>.Success(true);
             }
 
             var error = await response.Content.ReadAsStringAsync();
-            _logger.LogWarning("Failed to save game status. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
+            _logger.LogWarning("Failed to apply game status '{Action}'. Status: {StatusCode}, Error: {Error}", action, response.StatusCode, error);
             return ApiResult<bool>.Failure(error);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Exception occurred while saving game status");
+            _logger.LogError(ex, "Exception occurred while applying game status '{Action}'", action);
             return ApiResult<bool>.Failure($"Exception occurred: {ex.Message}");
         }
     }

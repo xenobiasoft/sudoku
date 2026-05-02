@@ -109,14 +109,17 @@ public interface IGameApiClient
     /// indicating whether the save operation was successful.</returns>
     Task<ApiResult<bool>> SaveGameAsync(GameModel game);
 
-    /// <summary>
-    /// Asynchronously saves the current status of a game for the specified user alias and game identifier.
-    /// </summary>
-    /// <param name="alias">The unique alias representing the user whose game status is being saved. Cannot be null or empty.</param>
-    /// <param name="gameId">The identifier of the game for which the status is being saved. Cannot be null or empty.</param>
-    /// <param name="gameStatus">The serialized status data of the game to be saved. Cannot be null or empty.</param>
-    /// <returns>A task that represents the asynchronous save operation.</returns>
-    Task<ApiResult<bool>> SaveGameStatusAsync(string alias, string gameId, string gameStatus);
+    /// <summary>Abandons an in-progress or paused game.</summary>
+    Task<ApiResult<bool>> AbandonGameAsync(string alias, string gameId);
+
+    /// <summary>Marks a game as complete.</summary>
+    Task<ApiResult<bool>> CompleteGameAsync(string alias, string gameId);
+
+    /// <summary>Pauses an in-progress game.</summary>
+    Task<ApiResult<bool>> PauseGameAsync(string alias, string gameId);
+
+    /// <summary>Resumes a paused or not-started game.</summary>
+    Task<ApiResult<bool>> ResumeGameAsync(string alias, string gameId);
 
     /// <summary>
     /// Undoes the last move in a game

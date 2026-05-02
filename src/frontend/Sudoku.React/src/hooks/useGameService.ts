@@ -19,7 +19,8 @@ export interface UseGameServiceReturn {
   isGameLoading: boolean;
   gameError: string | null;
   getGame: (playerAlias: string, gameId: string) => Promise<GameModel>;
-  updateStatus: (playerAlias: string, gameId: string, status: string) => Promise<void>;
+  pauseGame: (playerAlias: string, gameId: string) => Promise<void>;
+  resumeGame: (playerAlias: string, gameId: string) => Promise<void>;
   makeMove: (playerAlias: string, gameId: string, row: number, column: number, value: number | null, duration: string) => Promise<GameModel>;
   undoMove: (playerAlias: string, gameId: string) => Promise<GameModel>;
   resetGame: (playerAlias: string, gameId: string) => Promise<GameModel>;
@@ -209,14 +210,21 @@ export function useGameService(): UseGameServiceReturn {
     }
   }, []);
 
-  const updateStatus = useCallback(async (playerAlias: string, gameId: string, status: string): Promise<void> => {
+  const pauseGame = useCallback(async (playerAlias: string, gameId: string): Promise<void> => {
     if (!playerAlias || !gameId) return;
-
     try {
-      await apiClient.updateStatus(playerAlias, gameId, status);
+      await apiClient.pauseGame(playerAlias, gameId);
     } catch (err) {
-      console.error('Failed to update status:', err);
-      // Don't throw here as this is often called in cleanup scenarios
+      console.error('Failed to pause game:', err);
+    }
+  }, []);
+
+  const resumeGame = useCallback(async (playerAlias: string, gameId: string): Promise<void> => {
+    if (!playerAlias || !gameId) return;
+    try {
+      await apiClient.resumeGame(playerAlias, gameId);
+    } catch (err) {
+      console.error('Failed to resume game:', err);
     }
   }, []);
 
@@ -351,7 +359,8 @@ export function useGameService(): UseGameServiceReturn {
     isGameLoading,
     gameError,
     getGame,
-    updateStatus,
+    pauseGame,
+    resumeGame,
     makeMove,
     undoMove,
     resetGame,
