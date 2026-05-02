@@ -90,8 +90,14 @@ export async function setupApiMocks(page: Page, options: ApiMockOptions = {}): P
       return;
     }
 
-    // ── Game status update (both apps call this on start/pause/resume) ────────
-    if (path.includes('/status/') && method === 'PATCH') {
+    // ── Game status: validate (POST /status/validate) ─────────────────────────
+    if (path.includes('/status/validate') && method === 'POST') {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ isValid: true, errors: [] }) });
+      return;
+    }
+
+    // ── Game status: pause / resume / abandon / complete ──────────────────────
+    if (path.includes('/status/') && method === 'POST') {
       await route.fulfill({ status: 204 });
       return;
     }
