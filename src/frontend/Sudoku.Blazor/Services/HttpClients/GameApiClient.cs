@@ -125,29 +125,26 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
         try
         {
             _logger.LogInformation("Creating game for player: {Alias}, difficulty: {Difficulty}", alias, difficulty);
-            
+
             var response = await _httpClient.PostAsync($"api/players/{Uri.EscapeDataString(alias)}/games/{Uri.EscapeDataString(difficulty)}", null);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var game = await response.Content.ReadFromJsonAsync<GameModel>(_jsonOptions);
-                if (game != null)
-                {
-                    _logger.LogInformation("Created game {GameId} for player: {Alias}", game.Id, alias);
-                    return ApiResult<GameModel>.Success(game);
-                }
-                else
-                {
-                    _logger.LogWarning("Failed to deserialize created game for player: {Alias}", alias);
-                    return ApiResult<GameModel>.Failure("Failed to deserialize created game");
-                }
-            }
-            else
+            if (!response.IsSuccessStatusCode)
             {
                 var error = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("Failed to create game. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
                 return ApiResult<GameModel>.Failure($"Failed to create game: {error}");
             }
+
+            var location = response.Headers.Location?.ToString();
+            var gameId = location?.Split('/').LastOrDefault();
+            if (string.IsNullOrEmpty(gameId))
+            {
+                _logger.LogWarning("Created game but Location header was missing or unparseable for player: {Alias}", alias);
+                return ApiResult<GameModel>.Failure("Game created but could not determine game ID from Location header");
+            }
+
+            _logger.LogInformation("Created game {GameId} for player: {Alias}, fetching full game", gameId, alias);
+            return await GetGameAsync(alias, gameId);
         }
         catch (Exception ex)
         {
