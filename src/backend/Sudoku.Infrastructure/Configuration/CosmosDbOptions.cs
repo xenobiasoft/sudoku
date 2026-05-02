@@ -12,4 +12,6 @@ public class CosmosDbOptions
     public bool UseManagedIdentity { get; set; }
     public string? AccountEndpoint { get; set; }
     public ConnectionMode ConnectionMode { get; set; } = ConnectionMode.Gateway;
+    public bool AutoCreateContainers { get; set; }
+    public string ContainerPartitionKeyPath { get; set; } = "/id";
 }

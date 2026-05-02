@@ -2,19 +2,30 @@ using Azure.Identity;
 using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.OpenApi;
 using Sudoku.Api;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-var keyVaultUri = builder.Configuration["ConnectionStrings:AzureKeyVault"];
-if (!string.IsNullOrEmpty(keyVaultUri))
+builder.Configuration.AddUserSecrets(Assembly.GetAssembly(typeof(Program)));
+
+if (!builder.Environment.IsDevelopment())
 {
-    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
+    var keyVaultUri = builder.Configuration["ConnectionStrings:AzureKeyVault"];
+    if (!string.IsNullOrEmpty(keyVaultUri))
+    {
+        builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
+    }
+    else
+    {
+        throw new InvalidOperationException("Azure Key Vault connection string is not configured. Please set 'ConnectionStrings:AzureKeyVault' in your configuration.");
+    }
 }
-else
+
+if (builder.Configuration.GetValue<bool>("UseCosmosDb"))
 {
-    throw new InvalidOperationException("Azure Key Vault connection string is not configured. Please set 'ConnectionStrings:AzureKeyVault' in your configuration.");
+    builder.AddAzureCosmosClient("CosmosDb");
 }
 
 builder.Services.AddApiDefaults(builder.Configuration, builder.Environment);

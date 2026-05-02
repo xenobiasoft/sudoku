@@ -20,9 +20,9 @@ public class CosmosDbUserProfileRepository(
 
     public async Task<UserProfile?> GetByAliasAsync(PlayerAlias alias)
     {
-        await EnsureContainerAsync();
         try
         {
+            await EnsureContainerAsync();
             var sqlQuery = "SELECT * FROM c WHERE c.alias = @alias";
             var queryDefinition = new QueryDefinition(sqlQuery).WithParameter("@alias", alias.Value);
             var results = new List<UserProfileDocument>();
@@ -44,9 +44,9 @@ public class CosmosDbUserProfileRepository(
 
     public async Task<UserProfile?> GetByIdAsync(ProfileId id)
     {
-        await EnsureContainerAsync();
         try
         {
+            await EnsureContainerAsync();
             var idStr = id.ToString();
             var response = await _container!.ReadItemAsync<UserProfileDocument>(idStr, new PartitionKey(idStr));
             return UserProfileMapper.ToDomain(response.Resource);
@@ -64,9 +64,9 @@ public class CosmosDbUserProfileRepository(
 
     public async Task<bool> AliasExistsAsync(PlayerAlias alias)
     {
-        await EnsureContainerAsync();
         try
         {
+            await EnsureContainerAsync();
             var sqlQuery = "SELECT VALUE COUNT(1) FROM c WHERE c.alias = @alias";
             var queryDefinition = new QueryDefinition(sqlQuery).WithParameter("@alias", alias.Value);
             var results = new List<int>();
@@ -87,9 +87,9 @@ public class CosmosDbUserProfileRepository(
 
     public async Task SaveAsync(UserProfile profile)
     {
-        await EnsureContainerAsync();
         try
         {
+            await EnsureContainerAsync();
             var document = UserProfileMapper.ToDocument(profile);
             await _container!.UpsertItemAsync(document, new PartitionKey(document.ProfileId));
             logger.LogDebug("Saved profile {ProfileId}", profile.Id);
@@ -104,8 +104,19 @@ public class CosmosDbUserProfileRepository(
     private async Task EnsureContainerAsync()
     {
         if (_container != null) return;
-        var database = cosmosClient.GetDatabase(options.Value.DatabaseName);
-        _container = database.GetContainer(ProfilesContainerName);
-        await _container.ReadContainerAsync();
+
+        if (options.Value.AutoCreateContainers)
+        {
+            var dbResponse = await cosmosClient.CreateDatabaseIfNotExistsAsync(options.Value.DatabaseName);
+            var containerProperties = new ContainerProperties(ProfilesContainerName, "/profileId");
+            var containerResponse = await dbResponse.Database.CreateContainerIfNotExistsAsync(containerProperties);
+            _container = containerResponse.Container;
+        }
+        else
+        {
+            var database = cosmosClient.GetDatabase(options.Value.DatabaseName);
+            _container = database.GetContainer(ProfilesContainerName);
+            await _container.ReadContainerAsync();
+        }
     }
 }

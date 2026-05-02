@@ -19,10 +19,8 @@ var logger = loggerFactory.CreateLogger<Program>();
 try
 {
     logger.LogInformation("Starting Sudoku Distributed Application...");
-    
-    var cosmosDb = builder.AddAzureCosmosDB("CosmosDb").RunAsEmulator();
 
-    var keyVault = builder.AddConnectionString("AzureKeyVault");
+    var cosmosDb = builder.AddAzureCosmosDB("CosmosDb").RunAsEmulator();
 
     logger.LogInformation("Configuring Sudoku API project...");
     var api = builder.AddProject<Projects.Sudoku_Api>("sudoku-api")
@@ -39,7 +37,6 @@ try
             logger.LogInformation("Configured HTTP Swagger endpoint for Sudoku API");
         })
         .WithReference(cosmosDb)
-        .WithReference(keyVault)
         .WithEnvironment("UseCosmosDb", "true")
         .WithExternalHttpEndpoints()
         .WaitFor(cosmosDb);
@@ -47,7 +44,6 @@ try
     logger.LogInformation("Configuring Sudoku Blazor Server project...");
     builder.AddProject<Projects.Sudoku_Blazor>("sudoku-blazor")
         .WithReference(api)
-        .WithReference(keyVault)
         .WithExternalHttpEndpoints()
         .WaitFor(api);
 

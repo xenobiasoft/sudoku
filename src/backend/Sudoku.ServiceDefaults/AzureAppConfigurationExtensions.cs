@@ -22,6 +22,13 @@ public static class AzureAppConfigurationExtensions
         using var loggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
         var logger = loggerFactory.CreateLogger(typeof(AzureAppConfigurationExtensions));
 
+        var enabled = builder.Configuration.GetValue("AzureAppConfiguration:Enabled", defaultValue: true);
+        if (!enabled)
+        {
+            logger.LogInformation("Azure App Configuration is disabled via 'AzureAppConfiguration:Enabled'. Skipping.");
+            return builder;
+        }
+
         var connectionString = builder.Configuration.GetConnectionString(connectionName);
         var appConfigSection = builder.Configuration.GetSection(connectionName);
         var endpoint = appConfigSection["Endpoint"];
