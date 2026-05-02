@@ -41,23 +41,6 @@ public class UpdateProfileAliasCommandHandler(
             profile.UpdateAlias(newAlias);
             await profileRepository.SaveAsync(profile);
 
-            var games = await gameRepository.GetByPlayerAsync(oldAlias);
-            foreach (var game in games)
-            {
-                try
-                {
-                    // Update playerAlias via reconstitution is not straightforward;
-                    // games store alias as a string field - update via SaveAsync after mutation
-                    // The domain game does not expose alias mutation — we need to handle this at document level
-                    // For now, we log a note; a full implementation would update the document directly
-                    logger.LogDebug("Game {GameId} associated with old alias {OldAlias} — batch update pending", game.Id, oldAlias.Value);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "Failed to update game {GameId} for alias change", game.Id);
-                }
-            }
-
             logger.LogInformation("Updated alias from {OldAlias} to {NewAlias} for profile {ProfileId}",
                 oldAlias.Value, newAlias.Value, profile.Id);
             return Result<ProfileDto>.Success(ProfileDto.FromProfile(profile));

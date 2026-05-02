@@ -8,6 +8,15 @@ namespace Sudoku.Infrastructure.Services;
 
 public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
 {
+    private const int EASY_EMPTY_MIN = 40;
+    private const int EASY_EMPTY_MAX = 45;
+    private const int MEDIUM_EMPTY_MIN = 46;
+    private const int MEDIUM_EMPTY_MAX = 49;
+    private const int HARD_EMPTY_MIN = 50;
+    private const int HARD_EMPTY_MAX = 53;
+    private const int EXPERT_EMPTY_MIN = 54;
+    private const int EXPERT_EMPTY_MAX = 58;
+
     public async Task<SudokuPuzzle> GeneratePuzzleAsync(GameDifficulty difficulty)
     {
         var puzzle = await GenerateEmptyPuzzleAsync().ConfigureAwait(false);
@@ -41,10 +50,10 @@ public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
     {
         var numberOfEmptyCells = difficulty.Name switch
         {
-            "Easy" => RandomGenerator.RandomNumber(40, 45),
-            "Medium" => RandomGenerator.RandomNumber(46, 49),
-            "Hard" => RandomGenerator.RandomNumber(50, 53),
-            "Expert" => RandomGenerator.RandomNumber(54, 58),
+            "Easy" => RandomGenerator.RandomNumber(EASY_EMPTY_MIN, EASY_EMPTY_MAX),
+            "Medium" => RandomGenerator.RandomNumber(MEDIUM_EMPTY_MIN, MEDIUM_EMPTY_MAX),
+            "Hard" => RandomGenerator.RandomNumber(HARD_EMPTY_MIN, HARD_EMPTY_MAX),
+            "Expert" => RandomGenerator.RandomNumber(EXPERT_EMPTY_MIN, EXPERT_EMPTY_MAX),
             _ => 0
         };
         var emptyCellCoords = new List<(int Row, int Col)>();

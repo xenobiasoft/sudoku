@@ -62,7 +62,6 @@ public record Cell
         }
 
         Value = value;
-        // Clear possible values when a definite value is set
         PossibleValues.Clear();
     }
 
@@ -83,7 +82,6 @@ public record Cell
 
         Value = value;
 
-        // Clear possible values when a definite value is set
         if (value.HasValue)
         {
             PossibleValues.Clear();
@@ -109,7 +107,7 @@ public record Cell
 
         if (Value.HasValue)
         {
-            throw new InvalidOperationException($"Cannot add possible values to cell with a definite value at position ({Row}, {Column})");
+            throw new CellAlreadyHasValueException($"Cannot add possible values to cell with a definite value at position ({Row}, {Column})");
         }
 
         if (value < 1 || value > 9)
@@ -153,15 +151,10 @@ public record Cell
         return Value?.ToString() ?? ".";
     }
 
-    /// <summary>
-    /// Creates a deep copy of the current cell.
-    /// </summary>
-    /// <returns>A deep copy of the current cell with all possible values copied.</returns>
     public Cell DeepCopy()
     {
         var clonedCell = new Cell(Row, Column, Value, IsFixed);
-        
-        // Deep copy the possible values
+
         foreach (var possibleValue in PossibleValues)
         {
             clonedCell.PossibleValues.Add(possibleValue);

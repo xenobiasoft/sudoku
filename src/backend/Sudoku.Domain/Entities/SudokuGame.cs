@@ -131,7 +131,7 @@ public class SudokuGame : AggregateRoot
 
         if (cell.HasValue)
         {
-            throw new InvalidOperationException($"Cannot add possible values to cell with a definite value at position ({row}, {column})");
+            throw new CellAlreadyHasValueException($"Cannot add possible values to cell with a definite value at position ({row}, {column})");
         }
 
         cell.AddPossibleValue(value);

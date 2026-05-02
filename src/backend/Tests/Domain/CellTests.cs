@@ -353,7 +353,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     }
 
     [Fact]
-    public void AddPossibleValue_OnCellWithValue_ThrowsInvalidOperationException()
+    public void AddPossibleValue_OnCellWithValue_ThrowsCellAlreadyHasValueException()
     {
         // Arrange
         var cell = Cell.Create(5, 5, 7);
@@ -362,7 +362,7 @@ public class CellTests : MoqBaseTestByType<Cell>
         Action act = () => cell.AddPossibleValue(3);
 
         // Assert
-        act.Should().Throw<InvalidOperationException>()
+        act.Should().Throw<CellAlreadyHasValueException>()
             .WithMessage($"*Cannot add possible values to cell with a definite value*");
     }
 
