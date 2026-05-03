@@ -1,0 +1,120 @@
+.profile-container {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.profile-card {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.profile-card h1 {
+    margin: 0 0 1.5rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.profile-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.field-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.field-value-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.btn-link {
+    font-size: 0.85rem;
+    color: #555;
+    background: transparent;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0.2rem 0.6rem;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.warning-note {
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    color: #888;
+}
+
+/* Everything below is inside EditForm → requires ::deep */
+
+::deep .edit-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+::deep .form-control {
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+::deep .form-control:focus {
+    border-color: #555;
+    box-shadow: none;
+}
+
+::deep .edit-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+}
+
+::deep .btn-primary {
+    padding: 0.45rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: #333;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+::deep .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+::deep .btn-secondary {
+    padding: 0.45rem 1rem;
+    font-size: 0.9rem;
+    background: transparent;
+    color: #555;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+::deep .error-message {
+    color: #d9534f;
+    font-size: 0.875rem;
+    margin: 0;
+}
