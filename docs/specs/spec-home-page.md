@@ -41,8 +41,9 @@ The current landing page (`/`) uses an accordion-style menu to expose "Start New
 | FR-7 | Clicking **Browse Game List** (when enabled) shall navigate to a new **Game List** page. |
 | FR-8 | The **Game List** page shall display all in-progress saved games for the current player, with the ability to load (navigate to `/game/{id}`) or delete each game, and an empty-state message when no games exist. |
 | FR-9 | The home page shall **not** automatically redirect new players to `/create-profile`; the "Create Profile" card is the explicit call-to-action. |
-| FR-10 | The home page shall determine player state (new vs. returning) from local storage only, with no backend API call on initial render. |
+| FR-10 | The home page shall determine player state from local storage only, with no backend API call on initial render. Three states are recognised: **new player** (`sudoku-alias` absent, `sudoku-profile` absent), **legacy player** (`sudoku-alias` present, `sudoku-profile` absent), and **returning player** (`sudoku-profile` present). |
 | FR-11 | Both Blazor Server and React/Vite frontends shall implement the above with feature parity. |
+| FR-12 | When a **legacy player** is detected on home page mount, the app shall silently migrate: read the `sudoku-alias` string, generate a new GUID, write `sudoku-profile = { Id: newGuid, Alias: aliasValue }` to local storage, remove the `sudoku-alias` key, then render the page as a returning player (all cards enabled). No redirect, spinner, or visible feedback shall be shown. If migration fails for any reason, the app shall silently treat the user as a new player. |
 
 ---
 
@@ -81,11 +82,17 @@ sequenceDiagram
     HomePage->>LocalStorage: Read ProfileInfo (sync / async)
     LocalStorage-->>HomePage: ProfileInfo | null
 
-    alt New Player (no profile)
+    alt New Player (sudoku-alias absent, sudoku-profile absent)
         HomePage-->>User: Cards rendered — "Create Profile" enabled, others disabled
         User->>HomePage: Click "Create Profile"
         HomePage->>User: Navigate to /create-profile
-    else Returning Player
+    else Legacy Player (sudoku-alias present, sudoku-profile absent)
+        HomePage->>LocalStorage: Read sudoku-alias
+        LocalStorage-->>HomePage: alias string
+        HomePage->>LocalStorage: Write sudoku-profile { Id: newGuid, Alias: alias }
+        HomePage->>LocalStorage: Remove sudoku-alias
+        HomePage-->>User: All three cards enabled (migrated as returning player)
+    else Returning Player (sudoku-profile present)
         HomePage-->>User: All three cards enabled
         User->>HomePage: Click "Start New Game"
         HomePage->>SelectDifficultyPage: Navigate to /select-difficulty
@@ -107,7 +114,7 @@ sequenceDiagram
 
 **DTOs / API Contracts:** No changes. The existing `GameModel` DTO (returned by `GET /api/games/{alias}`) is reused on the Game List page.
 
-**Persistence Changes:** None. Local storage keys (`sudoku-profile`, `sudoku-alias`) and their shapes are unchanged.
+**Persistence Changes:** `sudoku-profile` shape is unchanged (`{ Id: string, Alias: string }`). The `sudoku-alias` key is removed from local storage during legacy migration; no other persistence changes.
 
 ---
 
@@ -158,7 +165,7 @@ Three navigation cards arranged in a grid or column layout. Each card has an ico
 - Requires an active player profile (redirect to `/` if no profile found).
 
 **State Management:**
-- **Home page:** reads local storage on mount; no server calls; no loading state required.
+- **Home page:** reads local storage on mount; performs silent legacy migration if needed (write new `sudoku-profile`, remove `sudoku-alias`); no server calls; no loading state or visible feedback required for migration.
 - **Select Difficulty page:** stateless; navigation only.
 - **Game List page:** fetches saved games via existing game service/hook on mount; manages loading and error states locally.
 
@@ -174,11 +181,15 @@ No new API endpoints. The existing `GET /api/games/{alias}` endpoint is used by 
 
 **Unit Tests — React (Vitest + React Testing Library):**
 - `HomePage`: renders three cards; correct enabled/disabled state based on mocked player service; navigation targets; no API call on mount.
+- `HomePage` — legacy migration: `sudoku-alias` present and `sudoku-profile` absent → writes `sudoku-profile` with correct alias and a valid GUID `Id`, removes `sudoku-alias`, renders all cards enabled.
+- `HomePage` — migration failure: local storage write throws → `sudoku-alias` not removed, renders as new player (Profile card enabled, game cards disabled).
 - `SelectDifficultyPage`: renders three difficulty buttons; clicking each navigates to the correct `/new/{difficulty}` route.
 - `GameListPage`: renders game list from mocked service; load navigates to `/game/{id}`; delete calls service and removes item; empty state; error state.
 
 **Unit Tests — Blazor (bunit):**
 - `Index` page: renders three cards for a new player with only "Create Profile" enabled; renders all cards enabled for a returning player; no backend call on `OnAfterRenderAsync`.
+- `Index` page — legacy migration: `sudoku-alias` present and `sudoku-profile` absent → writes `sudoku-profile` with correct alias and a valid GUID `Id`, removes `sudoku-alias`, renders all cards enabled.
+- `Index` page — migration failure: local storage write throws → renders as new player.
 - `SelectDifficulty` page: renders three difficulty buttons; clicking each triggers correct navigation.
 - `GameList` page: renders game thumbnails; load and delete actions behave correctly.
 
@@ -197,6 +208,9 @@ No new API endpoints. The existing `GET /api/games/{alias}` endpoint is used by 
 - **Blazor `EnsureProfileInitializedAsync` backend call:** The current `Index.razor.cs` calls `EnsureProfileInitializedAsync()`, which hits the backend API. This call should be removed from the home-page initialization so the page renders without a network round-trip. Backend profile validation can be deferred to when the player attempts to start or load a game.
 - **Existing tests:** `HomePage.test.tsx` (React) and the Blazor `Index` page tests will need to be updated or replaced to reflect the new card-based UI. Difficulty and game-list tests will move to their respective new page test files.
 - **Route additions:** Two new routes (`/select-difficulty` and `/games`) must be registered in `App.tsx` (React) and the Blazor `Routes.razor` / `App.razor`.
+- **Legacy migration — alias carries over unchanged:** The migrated `sudoku-profile.Alias` is copied directly from `sudoku-alias`, so existing backend game lookups (`GET /api/games/{alias}`) continue to work without any data loss. The newly generated `Id` is a client-side identifier only and does not affect backend queries.
+- **Legacy migration — failure fallback:** If the local storage write fails (e.g., storage quota exceeded, private-browsing restriction), the app silently falls back to new-player state. The user will see the "Create Profile" card enabled and game-action cards disabled. They can re-create their profile; their saved games on the backend remain accessible once a matching alias is re-entered.
+- **Concurrent tabs:** If the same legacy player has the app open in two tabs simultaneously, both may attempt migration. Because both tabs read the same `sudoku-alias` and write the same derived value, the outcome is idempotent; the last writer wins without data corruption.
 
 ---
 
@@ -204,7 +218,8 @@ No new API endpoints. The existing `GET /api/games/{alias}` endpoint is used by 
 
 1. **React frontend**
    - Refactor `usePlayerService` to expose an `isNewPlayer` boolean derived from local storage only, removing the auto-navigate-to-create-profile side effect from the home page context.
-   - Replace `HomePage.tsx` with a card-based layout; update `HomePage.module.css`.
+   - Add a `migrateProfileIfNeeded` utility (pure function): reads `sudoku-alias`; if present and `sudoku-profile` absent, writes `sudoku-profile = { Id: newGuid, Alias: alias }` and removes `sudoku-alias`; swallows errors silently.
+   - Replace `HomePage.tsx` with a card-based layout; call `migrateProfileIfNeeded` on mount before deriving player state; update `HomePage.module.css`.
    - Create `SelectDifficultyPage.tsx` at `/select-difficulty`.
    - Create `GameListPage.tsx` at `/games`, extracting the saved-game list logic previously inline in `HomePage.tsx`.
    - Register the two new routes in `App.tsx`.
@@ -212,6 +227,8 @@ No new API endpoints. The existing `GET /api/games/{alias}` endpoint is used by 
 
 2. **Blazor frontend**
    - Rewrite `Index.razor` and `Index.razor.cs` with card-based layout; remove `EnsureProfileInitializedAsync` call on initial render; use local-storage-only profile check.
+   - Add a `ProfileMigrationService` (or inline logic in `Index.razor.cs`): reads `sudoku-alias`; if present and `sudoku-profile` absent, writes `sudoku-profile = { Id: Guid.NewGuid(), Alias: alias }` and removes `sudoku-alias`; swallows exceptions silently.
+   - Call migration logic in `OnAfterRenderAsync` before deriving player state.
    - Create `SelectDifficulty.razor` at `/select-difficulty`.
    - Create `GameList.razor` at `/games`, extracting game-list logic from the current `Index.razor.cs`.
    - Update bunit tests for all three pages.
