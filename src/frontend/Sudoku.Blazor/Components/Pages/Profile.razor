@@ -20,10 +20,12 @@
                         <DataAnnotationsValidator />
                         <div class="edit-row">
                             <InputText @bind-Value="_editModel.NewAlias" class="form-control" maxlength="50" />
-                            <button type="submit" class="btn-primary" disabled="@_isSaving">
-                                @(_isSaving ? "Saving…" : "Save")
-                            </button>
-                            <button type="button" class="btn-secondary" @onclick="CancelEdit">Cancel</button>
+                            <div class="edit-actions">
+                                <button type="submit" class="btn-primary" disabled="@_isSaving">
+                                    @(_isSaving ? "Saving…" : "Save")
+                                </button>
+                                <button type="button" class="btn-secondary" @onclick="CancelEdit">Cancel</button>
+                            </div>
                         </div>
                         <ValidationMessage For="@(() => _editModel.NewAlias)" />
                         @if (!string.IsNullOrEmpty(_editError))
