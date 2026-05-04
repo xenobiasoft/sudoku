@@ -1,0 +1,33 @@
+@page "/games"
+
+<PageTitle>Saved Games</PageTitle>
+
+<div class="game-list-container">
+    <h2 class="title">Saved Games</h2>
+
+    @if (_isLoading)
+    {
+        <p class="status">Loading…</p>
+    }
+    else if (_hasError)
+    {
+        <p class="error-status">Failed to load games. Please try again.</p>
+    }
+    else if (_games != null && !_games.Any())
+    {
+        <p class="empty-state">No saved games yet. Start a new game to get going!</p>
+    }
+    else if (_games != null)
+    {
+        <ul class="game-list">
+            @foreach (var game in _games)
+            {
+                <li>
+                    <GameThumbnail Game="@game" OnLoadGame="@LoadGame" OnDeleteGame="@DeleteGameAsync" />
+                </li>
+            }
+        </ul>
+    }
+
+    <button class="back-button" @onclick="GoBack">← Back</button>
+</div>

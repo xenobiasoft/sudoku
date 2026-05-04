@@ -14,7 +14,7 @@ import styles from './GamePage.module.css';
 export default function GamePage() {
   const { puzzleId } = useParams<{ puzzleId: string }>();
   const navigate = useNavigate();
-  const { playerAlias, isInitialized, isLoading: playerLoading, error: playerError } = usePlayerService();
+  const { playerAlias, isInitialized, isNewPlayer, isLoading: playerLoading, error: playerError } = usePlayerService();
   const {
     currentGame,
     isGameLoading,
@@ -44,6 +44,10 @@ export default function GamePage() {
 
   // Use currentGame from useGameService instead of local state
   const game = currentGame;
+
+  useEffect(() => {
+    if (isNewPlayer) navigate('/');
+  }, [isNewPlayer, navigate]);
 
   const startTimer = useCallback((baseDuration: string) => {
     const [h, m, s] = baseDuration.split(':').map(Number);

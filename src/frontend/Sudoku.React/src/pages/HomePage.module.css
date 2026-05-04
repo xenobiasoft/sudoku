@@ -3,54 +3,59 @@
   padding: 2rem;
 }
 
-.menu {
-  align-items: flex-start;
+.cards {
   display: flex;
   flex-direction: column;
-  list-style-type: none;
-  padding-left: 0;
+  gap: 1rem;
   margin: 2rem auto;
-  max-width: 330px;
+  max-width: 360px;
 }
 
-.menu li {
-  margin: 0.25rem 0;
-}
-
-.subMenu {
-  align-items: flex-start;
+.card {
   display: flex;
   flex-direction: column;
-  list-style-type: none;
-  padding-left: 0;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s ease-in-out;
-}
-
-.subMenuOpen {
-  max-height: 500px;
-}
-
-.subMenu li {
-  margin: 0.25rem 1.5rem;
-}
-
-.menu button {
-  background-color: transparent;
-  border: none;
+  align-items: flex-start;
+  gap: 0.25rem;
+  width: 100%;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
   color: #0070f3;
   font-size: 1.2rem;
   cursor: pointer;
   text-align: left;
-  width: 100%;
+  transition: box-shadow 0.2s;
 }
 
-.menu button:hover {
-  color: #0366d6;
+.card:hover:not(:disabled) {
+  box-shadow: 0 2px 12px rgba(0, 112, 243, 0.15);
+  border-color: #0070f3;
 }
 
-.menu button:disabled {
-  color: #ccc;
+.card i {
+  margin-right: 0.5rem;
+}
+
+.cardPrimary {
+  border-color: #0070f3;
+  background: #f0f7ff;
+  font-weight: 600;
+}
+
+.cardDisabled {
+  opacity: 0.6;
+}
+
+.card:disabled {
+  color: #aaa;
   cursor: not-allowed;
+  border-color: #e0e0e0;
+}
+
+.helperText {
+  display: block;
+  font-size: 0.8rem;
+  color: #999;
+  font-weight: normal;
 }

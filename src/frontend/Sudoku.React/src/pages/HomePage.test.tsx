@@ -1,314 +1,117 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import HomePage from './HomePage';
-import { makeGame } from '../test/helpers';
 
 const mockNavigate = vi.fn();
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
+  return { ...actual, useNavigate: () => mockNavigate };
 });
 
-// Mock the custom hooks
 const mockUsePlayerService = vi.fn();
-const mockUseGameService = vi.fn();
-
 vi.mock('../hooks/usePlayerService', () => ({
   usePlayerService: () => mockUsePlayerService(),
 }));
 
-vi.mock('../hooks/useGameService', () => ({
-  useGameService: () => mockUseGameService(),
-}));
+function newPlayer() {
+  return { playerAlias: null, profileId: null, isInitialized: false, isNewPlayer: true, isLoading: false, error: null, initializePlayer: vi.fn(), clearPlayer: vi.fn() };
+}
 
+function returningPlayer(alias = 'test-user') {
+  return { playerAlias: alias, profileId: 'p1', isInitialized: true, isNewPlayer: false, isLoading: false, error: null, initializePlayer: vi.fn(), clearPlayer: vi.fn() };
+}
 
-
-function renderHomePage() {
-  return render(
-    <MemoryRouter>
-      <HomePage />
-    </MemoryRouter>
-  );
+function renderPage() {
+  return render(<MemoryRouter><HomePage /></MemoryRouter>);
 }
 
 beforeEach(() => {
   mockNavigate.mockClear();
-  
-  // Default mock implementations
-  mockUsePlayerService.mockReturnValue({
-    playerAlias: 'existing-player',
-    profileId: null,
-    isInitialized: true,
-    isLoading: false,
-    error: null,
-    initializePlayer: vi.fn(),
-    clearPlayer: vi.fn(),
-  });
-  
-  mockUseGameService.mockReturnValue({
-    savedGames: [],
-    isLoading: false,
-    error: null,
-    isLoaded: true,
-    loadGames: vi.fn(),
-    deleteGame: vi.fn(),
-    clearCache: vi.fn(),
-    refreshGames: vi.fn(),
-  });
+  mockUsePlayerService.mockReturnValue(returningPlayer());
 });
 
 describe('HomePage', () => {
-  it('renders Start New Game and Load Game buttons', () => {
-    renderHomePage();
+  it('renders three navigation cards', () => {
+    renderPage();
+    expect(screen.getByText(/Manage Profile/i)).toBeInTheDocument();
     expect(screen.getByText(/Start New Game/i)).toBeInTheDocument();
-    expect(screen.getByText(/Load Game/i)).toBeInTheDocument();
+    expect(screen.getByText(/Browse Game List/i)).toBeInTheDocument();
   });
 
-  it('calls loadGames when player is initialized', async () => {
-    const mockLoadGames = vi.fn();
-    mockUseGameService.mockReturnValue({
-      savedGames: [],
-      isLoading: false,
-      error: null,
-      isLoaded: true,
-      loadGames: mockLoadGames,
-      deleteGame: vi.fn(),
-      clearCache: vi.fn(),
-      refreshGames: vi.fn(),
-    });
-    
-    renderHomePage();
-    await waitFor(() => {
-      expect(mockLoadGames).toHaveBeenCalledWith('existing-player');
-    });
-  });
+  describe('new player', () => {
+    beforeEach(() => { mockUsePlayerService.mockReturnValue(newPlayer()); });
 
-  it('does not load games when player is not initialized', async () => {
-    const mockLoadGames = vi.fn();
-    mockUsePlayerService.mockReturnValue({
-      playerAlias: null,
-      profileId: null,
-      isInitialized: false,
-      isLoading: true,
-      error: null,
-      initializePlayer: vi.fn(),
-      clearPlayer: vi.fn(),
+    it('shows "Create Profile" on the profile card', () => {
+      renderPage();
+      expect(screen.getByText(/Create Profile/i)).toBeInTheDocument();
     });
-    
-    mockUseGameService.mockReturnValue({
-      savedGames: [],
-      isLoading: false,
-      error: null,
-      isLoaded: false,
-      loadGames: mockLoadGames,
-      deleteGame: vi.fn(),
-      clearCache: vi.fn(),
-      refreshGames: vi.fn(),
+
+    it('disables Start New Game card', () => {
+      renderPage();
+      expect(screen.getByRole('button', { name: /Start New Game/i })).toBeDisabled();
     });
-    
-    renderHomePage();
-    await waitFor(() => {
-      expect(mockLoadGames).not.toHaveBeenCalled();
+
+    it('disables Browse Game List card', () => {
+      renderPage();
+      expect(screen.getByRole('button', { name: /Browse Game List/i })).toBeDisabled();
+    });
+
+    it('shows helper text on both disabled cards', () => {
+      renderPage();
+      expect(screen.getAllByText(/Create a profile to unlock this/i)).toHaveLength(2);
+    });
+
+    it('navigates to /create-profile when Profile card is clicked', async () => {
+      const user = userEvent.setup();
+      renderPage();
+      await user.click(screen.getByRole('button', { name: /Create Profile/i }));
+      expect(mockNavigate).toHaveBeenCalledWith('/create-profile');
+    });
+
+    it('does not make any API calls on mount', () => {
+      renderPage();
+      expect(screen.queryByText(/Loading/i)).not.toBeInTheDocument();
     });
   });
 
+  describe('returning player', () => {
+    it('shows "Manage Profile" on the profile card', () => {
+      renderPage();
+      expect(screen.getByText(/Manage Profile/i)).toBeInTheDocument();
+    });
 
+    it('enables all three cards', () => {
+      renderPage();
+      screen.getAllByRole('button').forEach(btn => expect(btn).not.toBeDisabled());
+    });
 
-  it('shows New Game submenu when Start New Game is clicked', async () => {
-    const user = userEvent.setup();
-    renderHomePage();
-    // The submenu ul should not have the open class initially
-    const subMenus = document.querySelectorAll('ul ul');
-    const newGameSubMenu = subMenus[0];
-    expect(newGameSubMenu.className).not.toContain('subMenuOpen');
-    await user.click(screen.getByText(/Start New Game/i));
-    expect(newGameSubMenu.className).toContain('subMenuOpen');
-  });
+    it('does not show helper text', () => {
+      renderPage();
+      expect(screen.queryByText(/Create a profile to unlock this/i)).not.toBeInTheDocument();
+    });
 
-  it('navigates to /new/:difficulty when a difficulty is selected', async () => {
-    const user = userEvent.setup();
-    renderHomePage();
-    await user.click(screen.getByText(/Start New Game/i));
-    await user.click(screen.getByRole('button', { name: 'Medium' }));
-    expect(mockNavigate).toHaveBeenCalledWith('/new/Medium');
-  });
+    it('navigates to /profile when Manage Profile is clicked', async () => {
+      const user = userEvent.setup();
+      renderPage();
+      await user.click(screen.getByRole('button', { name: /Manage Profile/i }));
+      expect(mockNavigate).toHaveBeenCalledWith('/profile');
+    });
 
-  it('loads games on component mount', async () => {
-    const games = [makeGame({ id: 'g1', status: 'InProgress' })];
-    const mockLoadGames = vi.fn();
-    mockUseGameService.mockReturnValue({
-      savedGames: games,
-      isLoading: false,
-      error: null,
-      isLoaded: true,
-      loadGames: mockLoadGames,
-      deleteGame: vi.fn(),
-      clearCache: vi.fn(),
-      refreshGames: vi.fn(),
+    it('navigates to /select-difficulty when Start New Game is clicked', async () => {
+      const user = userEvent.setup();
+      renderPage();
+      await user.click(screen.getByRole('button', { name: /Start New Game/i }));
+      expect(mockNavigate).toHaveBeenCalledWith('/select-difficulty');
     });
-    
-    renderHomePage();
-    await waitFor(() => {
-      expect(mockLoadGames).toHaveBeenCalledWith('existing-player');
-    });
-  });
 
-  it('disables Load Game button when there are no saved games', async () => {
-    mockUseGameService.mockReturnValue({
-      savedGames: [],
-      isLoading: false,
-      error: null,
-      isLoaded: true,
-      loadGames: vi.fn(),
-      deleteGame: vi.fn(),
-      clearCache: vi.fn(),
-      refreshGames: vi.fn(),
+    it('navigates to /games when Browse Game List is clicked', async () => {
+      const user = userEvent.setup();
+      renderPage();
+      await user.click(screen.getByRole('button', { name: /Browse Game List/i }));
+      expect(mockNavigate).toHaveBeenCalledWith('/games');
     });
-    
-    renderHomePage();
-    const loadGameButton = screen.getByText(/Load Game/i);
-    expect(loadGameButton).toBeDisabled();
-  });
-
-  it('enables Load Game button when there are saved games', async () => {
-    const games = [makeGame({ id: 'g1', status: 'InProgress' })];
-    mockUseGameService.mockReturnValue({
-      savedGames: games,
-      isLoading: false,
-      error: null,
-      isLoaded: true,
-      loadGames: vi.fn(),
-      deleteGame: vi.fn(),
-      clearCache: vi.fn(),
-      refreshGames: vi.fn(),
-    });
-    
-    renderHomePage();
-    const loadGameButton = screen.getByText(/Load Game/i);
-    expect(loadGameButton).not.toBeDisabled();
-  });
-
-  it('shows "No saved games" when there are no saved games and submenu is opened', async () => {
-    // This test is no longer valid since Load Game button is disabled when no games exist
-    // The "No saved games" message only shows when the button can be clicked (i.e., when there are games initially but the submenu opens)
-    // We'll test the disabled button behavior instead
-    mockUseGameService.mockReturnValue({
-      savedGames: [],
-      isLoading: false,
-      error: null,
-      isLoaded: true,
-      loadGames: vi.fn(),
-      deleteGame: vi.fn(),
-      clearCache: vi.fn(),
-      refreshGames: vi.fn(),
-    });
-    
-    renderHomePage();
-    const loadGameButton = screen.getByText(/Load Game/i);
-    expect(loadGameButton).toBeDisabled();
-  });
-
-  it('filters out completed games from the list', async () => {
-    const user = userEvent.setup();
-    const games = [
-      makeGame({ id: 'g1', status: 'InProgress' }),
-      // Completed games should already be filtered out by the hook
-    ];
-    mockUseGameService.mockReturnValue({
-      savedGames: games, // Hook already filters out completed games
-      isLoading: false,
-      error: null,
-      isLoaded: true,
-      loadGames: vi.fn(),
-      deleteGame: vi.fn(),
-      clearCache: vi.fn(),
-      refreshGames: vi.fn(),
-    });
-    
-    renderHomePage();
-    await user.click(screen.getByText(/Load Game/i));
-    await waitFor(() => {
-      // g1 (InProgress) should appear; completed games are filtered by the hook
-      const thumbnails = document.querySelectorAll('[title="Easy - InProgress"]');
-      expect(thumbnails).toHaveLength(1);
-    });
-  });
-
-  it('navigates to /game/:id when a saved game is selected', async () => {
-    const user = userEvent.setup();
-    const game = makeGame({ id: 'game-abc', difficulty: 'Hard', status: 'InProgress' });
-    mockUseGameService.mockReturnValue({
-      savedGames: [game],
-      isLoading: false,
-      error: null,
-      isLoaded: true,
-      loadGames: vi.fn(),
-      deleteGame: vi.fn(),
-      clearCache: vi.fn(),
-      refreshGames: vi.fn(),
-    });
-    
-    renderHomePage();
-    await user.click(screen.getByText(/Load Game/i));
-    await waitFor(() => {
-      expect(screen.getByTitle('Hard - InProgress')).toBeInTheDocument();
-    });
-    await user.click(screen.getByTitle('Hard - InProgress'));
-    expect(mockNavigate).toHaveBeenCalledWith('/game/game-abc');
-  });
-
-  it('deletes a game when delete button is clicked', async () => {
-    const user = userEvent.setup();
-    const game = makeGame({ id: 'del-game', status: 'InProgress' });
-    const mockDeleteGame = vi.fn();
-    mockUseGameService.mockReturnValue({
-      savedGames: [game],
-      isLoading: false,
-      error: null,
-      isLoaded: true,
-      loadGames: vi.fn(),
-      deleteGame: mockDeleteGame,
-      clearCache: vi.fn(),
-      refreshGames: vi.fn(),
-    });
-    
-    renderHomePage();
-    await user.click(screen.getByText(/Load Game/i));
-    await waitFor(() => {
-      expect(screen.getByTitle('Delete game')).toBeInTheDocument();
-    });
-    await user.click(screen.getByTitle('Delete game'));
-    await waitFor(() => {
-      expect(mockDeleteGame).toHaveBeenCalledWith('existing-player', 'del-game');
-    });
-  });
-
-  it('closes New Game submenu when Load Game is clicked', async () => {
-    const user = userEvent.setup();
-    const games = [makeGame({ id: 'g1', status: 'InProgress' })];
-    mockUseGameService.mockReturnValue({
-      savedGames: games,
-      isLoading: false,
-      error: null,
-      isLoaded: true,
-      loadGames: vi.fn(),
-      deleteGame: vi.fn(),
-      clearCache: vi.fn(),
-      refreshGames: vi.fn(),
-    });
-    
-    renderHomePage();
-    const subMenus = document.querySelectorAll('ul ul');
-    const newGameSubMenu = subMenus[0];
-    await user.click(screen.getByText(/Start New Game/i));
-    expect(newGameSubMenu.className).toContain('subMenuOpen');
-    await user.click(screen.getByText(/Load Game/i));
-    expect(newGameSubMenu.className).not.toContain('subMenuOpen');
   });
 });

@@ -8,7 +8,7 @@ import styles from './NewGamePage.module.css';
 export default function NewGamePage() {
   const { difficulty } = useParams<{ difficulty: string }>();
   const navigate = useNavigate();
-  const { playerAlias, isInitialized } = usePlayerService();
+  const { playerAlias, isInitialized, isNewPlayer } = usePlayerService();
   const { createGame } = useGameService();
 
   useEffect(() => {
@@ -26,6 +26,10 @@ export default function NewGamePage() {
     };
     create();
   }, [difficulty, navigate, playerAlias, isInitialized, createGame]);
+
+  useEffect(() => {
+    if (isNewPlayer) navigate('/');
+  }, [isNewPlayer, navigate]);
 
   return (
     <Layout>
