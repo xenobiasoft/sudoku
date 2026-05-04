@@ -9,13 +9,17 @@ const PROFILE_KEY = 'sudoku-profile';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { playerAlias, isInitialized } = usePlayerService();
+  const { playerAlias, isInitialized, isNewPlayer } = usePlayerService();
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [newAlias, setNewAlias] = useState('');
   const [editError, setEditError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (isNewPlayer) navigate('/');
+  }, [isNewPlayer, navigate]);
 
   useEffect(() => {
     if (!isInitialized || !playerAlias) return;

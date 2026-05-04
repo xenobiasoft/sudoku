@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using Sudoku.Blazor.Models;
 using Sudoku.Blazor.Services.Abstractions;
 
@@ -7,86 +7,64 @@ namespace Sudoku.Blazor.Components.Pages;
 public partial class Index
 {
     [Inject] public required NavigationManager NavigationManager { get; set; }
-    [Inject] public required IGameManager GameManager { get; set; }
-    [Inject] public required IPlayerManager PlayerManager { get; set; }
+    [Inject] public required ILocalStorageService LocalStorageService { get; set; }
     [Inject] public required ILogger<Index> Logger { get; set; }
 
-    private string Alias { get; set; } = string.Empty;
-    private bool _showSavedGames;
-    private bool _showDifficulty;
-    private IEnumerable<GameModel>? _savedGames;
+    private bool _isReturningPlayer;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender) return;
 
-        Logger.LogInformation("Index page first render completed, initializing page");
+        Logger.LogInformation("Home page initializing");
 
-        await InitializePageAsync();
+        await MigrateProfileIfNeededAsync();
+
+        var profile = await LocalStorageService.GetProfileAsync();
+        _isReturningPlayer = profile != null;
+
+        Logger.LogInformation("Home page initialized, returning player: {IsReturningPlayer}", _isReturningPlayer);
+
+        StateHasChanged();
     }
 
-    private async Task InitializePageAsync()
+    private async Task MigrateProfileIfNeededAsync()
     {
         try
         {
-            var profileInitialized = await PlayerManager.EnsureProfileInitializedAsync();
-            if (!profileInitialized)
-            {
-                NavigationManager.NavigateTo("/create-profile");
-                return;
-            }
+            var profile = await LocalStorageService.GetProfileAsync();
+            if (profile != null) return;
 
-            Alias = await PlayerManager.TryGetPlayerAlias();
-            Logger.LogInformation("Current player retrieved: {Alias}", Alias);
-            
-            await LoadGamesAsync();
-            StateHasChanged();
+            var legacyAlias = await LocalStorageService.GetAliasAsync();
+            if (string.IsNullOrEmpty(legacyAlias)) return;
+
+            await LocalStorageService.SetProfileAsync(new ProfileInfo
+            {
+                ProfileId = Guid.NewGuid().ToString(),
+                Alias = legacyAlias.Trim()
+            });
+            await LocalStorageService.RemoveAliasAsync();
+
+            Logger.LogInformation("Migrated legacy alias to profile");
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error initializing Index page");
-            NavigationManager.NavigateTo("/Error");
+            Logger.LogWarning(ex, "Profile migration failed silently, treating as new player");
         }
     }
 
-    private void LoadGame(string gameId)
+    private void NavigateToProfile()
     {
-        Logger.LogInformation("Loading game with ID: {GameId}", gameId);
-        NavigationManager.NavigateTo($"/game/{gameId}");
+        NavigationManager.NavigateTo(_isReturningPlayer ? "/profile" : "/create-profile");
     }
 
-    private async Task LoadGamesAsync()
+    private void NavigateToSelectDifficulty()
     {
-        _savedGames = await GameManager.LoadGamesAsync(Alias) ?? [];
-        Logger.LogInformation("Loaded {GameCount} saved games for player {Alias}", _savedGames.Count(), Alias);
+        NavigationManager.NavigateTo("/select-difficulty");
     }
 
-    private async Task DeleteGameAsync(string gameId)
+    private void NavigateToGameList()
     {
-        Logger.LogInformation("Deleting game {GameId} for player {Alias}", gameId, Alias);
-        await GameManager.DeleteGameAsync(Alias, gameId);
-        _savedGames = _savedGames?.Where(x => x.Id != gameId).ToList();
-        Logger.LogInformation("Successfully deleted game {GameId}", gameId);
-        StateHasChanged();
-    }
-
-    private void StartNewGame(string difficulty)
-    {
-        Logger.LogInformation("Starting new game with difficulty: {Difficulty}", difficulty);
-        NavigationManager.NavigateTo($"/new/{difficulty}");
-    }
-
-    private void ToggleDisplaySavedGames()
-    {
-        _showSavedGames = !_showSavedGames;
-        Logger.LogDebug("Toggled saved games display to: {ShowSavedGames}", _showSavedGames);
-        StateHasChanged();
-    }
-
-    private void ToggleDifficultyOptions()
-    {
-        _showDifficulty = !_showDifficulty;
-        Logger.LogDebug("Toggled difficulty options display to: {ShowDifficulty}", _showDifficulty);
-        StateHasChanged();
+        NavigationManager.NavigateTo("/games");
     }
 }

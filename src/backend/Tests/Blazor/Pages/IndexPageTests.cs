@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sudoku.Blazor.Models;
@@ -9,117 +9,120 @@ namespace UnitTests.Blazor.Pages;
 
 public class IndexPageTests : BunitContext
 {
-    private const string Alias = "test-alias";
-    private readonly Mock<IGameManager> _mockGameManager = new();
-    private readonly Mock<IPlayerManager> _mockPlayerManager = new();
+    private readonly Mock<ILocalStorageService> _mockLocalStorage = new();
 
     public IndexPageTests()
     {
-        var savedGames = new List<GameModel>
-        {
-            new() { Id = Guid.NewGuid().ToString(), PlayerAlias = Alias},
-            new() { Id = Guid.NewGuid().ToString(), PlayerAlias = Alias},
-        };
-        _mockGameManager.SetupLoadGamesAsync(savedGames);
-        _mockPlayerManager.SetupGetCurrentPlayerAsync(Alias);
-        Services.AddSingleton(_mockGameManager.Object);
-        Services.AddSingleton(_mockPlayerManager.Object);
-        
-        // Add IWebHostEnvironment mock for error boundary
+        Services.AddSingleton(_mockLocalStorage.Object);
+
         var mockWebHostEnvironment = new Mock<IWebHostEnvironment>();
         mockWebHostEnvironment.Setup(x => x.EnvironmentName).Returns("Test");
         Services.AddSingleton(mockWebHostEnvironment.Object);
-        
-        // Add logger mocks
+
         Services.AddSingleton(new Mock<ILogger<IndexPage>>().Object);
         Services.AddSingleton(new Mock<ILogger<Sudoku.Blazor.Components.IndexErrorBoundary>>().Object);
     }
 
-    [Fact]
-    public void DeleteGame_RemovesGameFromList()
+    private void SetupReturningPlayer(string alias = "test-alias")
     {
-        // Arrange
-        var component = Render<IndexPage>();
-        var delGameElement = component.Find(".del-game-icon");
+        var profile = new ProfileInfo { ProfileId = Guid.NewGuid().ToString(), Alias = alias };
+        _mockLocalStorage.Setup(x => x.GetProfileAsync()).ReturnsAsync(profile);
+        _mockLocalStorage.Setup(x => x.GetAliasAsync()).ReturnsAsync((string?)null);
+    }
 
-        // Act
-        delGameElement.Click();
+    private void SetupNewPlayer()
+    {
+        _mockLocalStorage.Setup(x => x.GetProfileAsync()).ReturnsAsync((ProfileInfo?)null);
+        _mockLocalStorage.Setup(x => x.GetAliasAsync()).ReturnsAsync((string?)null);
+    }
 
-        // Assert
-        component.FindAll(".del-game-icon").Count.Should().Be(1);
+    private void SetupLegacyPlayer(string alias)
+    {
+        _mockLocalStorage.Setup(x => x.GetProfileAsync()).ReturnsAsync((ProfileInfo?)null);
+        _mockLocalStorage.Setup(x => x.GetAliasAsync()).ReturnsAsync(alias);
+        _mockLocalStorage.Setup(x => x.SetProfileAsync(It.IsAny<ProfileInfo>())).Returns(Task.CompletedTask);
+        _mockLocalStorage.Setup(x => x.RemoveAliasAsync()).Returns(Task.CompletedTask);
     }
 
     [Fact]
-    public void DeleteGame_WhenClicked_RemovesGameFromGameStateManager()
+    public void Render_NewPlayer_ShowsCreateProfileCard()
     {
-        // Arrange
+        SetupNewPlayer();
         var component = Render<IndexPage>();
-        var delGameElement = component.Find(".del-game-icon");
-
-        // Act
-        delGameElement.Click();
-
-        // Assert
-        _mockGameManager.VerifyDeleteGameAsyncCalled(Times.Once);
+        var profileButton = component.Find("button:contains('Create Profile')");
+        Assert.NotNull(profileButton);
     }
 
     [Fact]
-    public void Render_WhenSavedGamesPresent_DisplaysEachSavedGame()
+    public void Render_ReturningPlayer_ShowsManageProfileCard()
     {
-        // Arrange
+        SetupReturningPlayer();
         var component = Render<IndexPage>();
-
-        // Act
-        var delGameElements = component.FindAll(".del-game-icon");
-
-        // Assert
-        delGameElements.Count.Should().Be(2);
+        var profileButton = component.Find("button:contains('Manage Profile')");
+        Assert.NotNull(profileButton);
     }
 
     [Fact]
-    public void RendersCorrectly()
+    public void Render_NewPlayer_StartNewGameIsDisabled()
     {
-        // Arrange
+        SetupNewPlayer();
         var component = Render<IndexPage>();
-
-        // Act
-        var startNewGameButton = component.Find("button:contains('Start New Game')");
-        var loadGameButton = component.Find("button:contains('Load Game')");
-
-        // Assert
-        Assert.NotNull(startNewGameButton);
-        Assert.NotNull(loadGameButton);
+        var startBtn = component.Find("button:contains('Start New Game')");
+        Assert.True(startBtn.HasAttribute("disabled"));
     }
 
     [Fact]
-    public void ShowsDifficultyOptions_WhenStartNewGameClicked()
+    public void Render_NewPlayer_BrowseGameListIsDisabled()
     {
-        // Arrange
+        SetupNewPlayer();
         var component = Render<IndexPage>();
-
-        // Act
-        component.Find("button:contains('Start New Game')").Click();
-        var difficultyButtons = component.FindAll("button:contains('Easy'), button:contains('Medium'), button:contains('Hard')");
-
-        // Assert
-        Assert.Equal(3, difficultyButtons.Count);
+        var browseBtn = component.Find("button:contains('Browse Game List')");
+        Assert.True(browseBtn.HasAttribute("disabled"));
     }
 
     [Fact]
-    public void ShowsSavedGames_WhenLoadGameClicked()
+    public void Render_ReturningPlayer_StartNewGameIsEnabled()
     {
-        // Arrange
-        var savedGames = new List<GameModel>
-        {
-        };
-        _mockGameManager.SetupLoadGamesAsync(savedGames);
+        SetupReturningPlayer();
         var component = Render<IndexPage>();
+        var startBtn = component.Find("button:contains('Start New Game')");
+        Assert.False(startBtn.HasAttribute("disabled"));
+    }
 
-        // Act
-        component.Find("button:contains('Load Game')").Click();
+    [Fact]
+    public void Render_ReturningPlayer_BrowseGameListIsEnabled()
+    {
+        SetupReturningPlayer();
+        var component = Render<IndexPage>();
+        var browseBtn = component.Find("button:contains('Browse Game List')");
+        Assert.False(browseBtn.HasAttribute("disabled"));
+    }
 
-        // Assert
-        var savedGameButtons = component.FindAll(".saved-game-card");
-        savedGameButtons.Count.Should().Be(savedGames.Count);
+    [Fact]
+    public void Render_NewPlayer_ShowsHelperTextOnDisabledCards()
+    {
+        SetupNewPlayer();
+        var component = Render<IndexPage>();
+        var helperTexts = component.FindAll(".helper-text");
+        helperTexts.Count.Should().Be(2);
+    }
+
+    [Fact]
+    public void Render_DoesNotCallBackendApi()
+    {
+        SetupNewPlayer();
+        Render<IndexPage>();
+        // LocalStorageService is the only service injected — no IPlayerApiClient or IGameManager
+        // This test verifies no backend dependency is needed
+        _mockLocalStorage.Verify(x => x.GetProfileAsync(), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public void LegacyMigration_WritesProfileAndRemovesAlias()
+    {
+        SetupLegacyPlayer("old-alias");
+        Render<IndexPage>();
+        _mockLocalStorage.Verify(x => x.SetProfileAsync(It.Is<ProfileInfo>(p => p.Alias == "old-alias")), Times.Once);
+        _mockLocalStorage.Verify(x => x.RemoveAliasAsync(), Times.Once);
     }
 }
