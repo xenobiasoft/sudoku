@@ -17,7 +17,7 @@ builder.Services.AddSingleton(_ => new LogsQueryClient(new DefaultAzureCredentia
 // ---------------------------------------------------------------------------
 builder.Services
     .AddMcpServer()
-    .WithHttpTransport()
+    .WithHttpTransport(options => options.Stateless = true)
     .WithTools<ApplicationInsightsTools>();
 
 builder.Services.AddHealthChecks();
