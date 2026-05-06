@@ -44,12 +44,7 @@ public sealed class ApplicationInsightsTools
         CancellationToken cancellationToken = default)
     {
         hours = Math.Clamp(hours, 1, 720);
-        var response = await _logsClient.QueryWorkspaceAsync(
-            _workspaceId, kql,
-            new QueryTimeRange(TimeSpan.FromHours(hours)),
-            cancellationToken: cancellationToken);
-
-        return FormatTables(response.Value);
+        return await ExecuteKql(kql, hours, cancellationToken);
     }
 
     // -------------------------------------------------------------------------
@@ -209,12 +204,19 @@ public sealed class ApplicationInsightsTools
 
     private async Task<string> ExecuteKql(string kql, int hours, CancellationToken cancellationToken)
     {
-        var response = await _logsClient.QueryWorkspaceAsync(
-            _workspaceId, kql,
-            new QueryTimeRange(TimeSpan.FromHours(hours)),
-            cancellationToken: cancellationToken);
+        try
+        {
+            var response = await _logsClient.QueryWorkspaceAsync(
+                _workspaceId, kql,
+                new QueryTimeRange(TimeSpan.FromHours(hours)),
+                cancellationToken: cancellationToken);
 
-        return FormatTables(response.Value);
+            return FormatTables(response.Value);
+        }
+        catch (Exception ex)
+        {
+            return $"Error querying Log Analytics: {ex.GetType().Name}: {ex.Message}";
+        }
     }
 
     private static string FormatTables(LogsQueryResult result)
