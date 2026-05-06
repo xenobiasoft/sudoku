@@ -39,7 +39,7 @@ public sealed class ApplicationInsightsTools
         "Run an arbitrary KQL query against the Log Analytics workspace that backs Application Insights. " +
         "Returns results as a pipe-delimited table. Use this for ad-hoc investigation.")]
     public async Task<string> QueryLogs(
-        [Description("KQL query to execute. Tables available: requests, exceptions, traces, customEvents, dependencies, pageViews, performanceCounters.")] string kql,
+        [Description("KQL query to execute. Tables available: AppRequests, AppExceptions, AppTraces, AppEvents, AppDependencies, AppPageViews, AppPerformanceCounters.")] string kql,
         [Description("Look-back window in hours (1–720). Defaults to 1.")] int hours = 1,
         CancellationToken cancellationToken = default)
     {
@@ -63,10 +63,10 @@ public sealed class ApplicationInsightsTools
         topN = Math.Clamp(topN, 1, 100);
 
         var kql = $"""
-            exceptions
-            | summarize Count = count(), SampleMessage = any(outerMessage) by type
+            AppExceptions
+            | summarize Count = count(), SampleMessage = any(OuterMessage) by ExceptionType
             | top {topN} by Count desc
-            | project ExceptionType = type, Count, SampleMessage
+            | project ExceptionType, Count, SampleMessage
             """;
 
         return await ExecuteKql(kql, hours, cancellationToken);
@@ -88,18 +88,18 @@ public sealed class ApplicationInsightsTools
 
         var roleFilter = string.IsNullOrWhiteSpace(roleName)
             ? string.Empty
-            : $"| where cloud_RoleName == '{roleName}'";
+            : $"| where AppRoleName == '{roleName}'";
 
         var kql = $"""
-            requests
+            AppRequests
             {roleFilter}
             | summarize
                 TotalRequests = count(),
-                FailedRequests = countif(success == false),
-                AvgDurationMs = round(avg(duration), 1)
-              by name, cloud_RoleName
+                FailedRequests = countif(Success == false),
+                AvgDurationMs = round(avg(DurationMs), 1)
+              by Name, AppRoleName
             | extend FailureRate = round(todouble(FailedRequests) / TotalRequests * 100, 2)
-            | project Operation = name, Role = cloud_RoleName, TotalRequests, FailedRequests, FailureRate, AvgDurationMs
+            | project Operation = Name, Role = AppRoleName, TotalRequests, FailedRequests, FailureRate, AvgDurationMs
             | order by TotalRequests desc
             """;
 
@@ -125,8 +125,8 @@ public sealed class ApplicationInsightsTools
         if (bucketMinutes <= 0)
         {
             kql = """
-                customEvents
-                | summarize Count = count() by name
+                AppEvents
+                | summarize Count = count() by Name
                 | order by Count desc
                 """;
         }
@@ -134,9 +134,9 @@ public sealed class ApplicationInsightsTools
         {
             bucketMinutes = Math.Max(bucketMinutes, 1);
             kql = $"""
-                customEvents
-                | summarize Count = count() by name, bin(timestamp, {bucketMinutes}m)
-                | order by timestamp asc, Count desc
+                AppEvents
+                | summarize Count = count() by Name, bin(TimeGenerated, {bucketMinutes}m)
+                | order by TimeGenerated asc, Count desc
                 """;
         }
 
@@ -157,14 +157,14 @@ public sealed class ApplicationInsightsTools
         hours = Math.Clamp(hours, 1, 168);
 
         var kql = """
-            requests
-            | where isnotempty(user_Id) or isnotempty(session_Id)
+            AppRequests
+            | where isnotempty(UserId) or isnotempty(SessionId)
             | summarize
-                UniqueUsers    = dcount(user_Id),
-                UniqueSessions = dcount(session_Id),
+                UniqueUsers    = dcount(UserId),
+                UniqueSessions = dcount(SessionId),
                 TotalRequests  = count()
-              by bin(timestamp, 1h)
-            | order by timestamp asc
+              by bin(TimeGenerated, 1h)
+            | order by TimeGenerated asc
             """;
 
         return await ExecuteKql(kql, hours, cancellationToken);
@@ -184,13 +184,13 @@ public sealed class ApplicationInsightsTools
         hours = Math.Clamp(hours, 1, 720);
 
         var kql = """
-            dependencies
+            AppDependencies
             | summarize
                 TotalCalls    = count(),
-                FailedCalls   = countif(success == false),
-                AvgDurationMs = round(avg(duration), 1),
-                MaxDurationMs = round(max(duration), 1)
-              by type, target
+                FailedCalls   = countif(Success == false),
+                AvgDurationMs = round(avg(DurationMs), 1),
+                MaxDurationMs = round(max(DurationMs), 1)
+              by DependencyType, Target
             | extend FailureRate = round(todouble(FailedCalls) / TotalCalls * 100, 2)
             | order by FailedCalls desc
             """;
