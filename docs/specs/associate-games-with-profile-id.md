@@ -11,9 +11,10 @@
 **Problem Statement**
 Games are currently looked up using a composite key of `GameId + PlayerAlias`. The alias is a mutable string chosen by the user; if it changes, the relationship between player and game breaks. Because `UserProfile` already has a stable, immutable `ProfileId` (GUID), all game-player associations should use that stable identity instead. The alias field on `SudokuGame` becomes a human-readable display label only — not a lookup key.
 
-Additionally, `CreateProfileCommandHandler` currently lowercases aliases via `.ToLowerInvariant()` because lookup correctness depended on consistent casing. Once lookups use `ProfileId`, case normalization for storage is no longer necessary; the alias should be stored with its original casing (trimmed only), preserving user intent.
+Additionally, `CreateProfileCommandHandler`, `GetProfileByAliasQueryHandler`, `UpdateProfileAliasCommandHandler` currently lowercases aliases via `.ToLowerInvariant()` because lookup correctness depended on consistent casing. Once lookups use `ProfileId`, case normalization for storage is no longer necessary; the alias should be stored with its original casing (trimmed only), preserving user intent.
 
 **Goals**
+
 - Replace all `(xxx)ByAlias` game lookups with `(xxx)ByProfileId` equivalents at every layer
 - Rename `GameDto.PlayerAlias` → `GameDto.DisplayName` (add `GameDto.ProfileId` for ownership check)
 - Add `profileId` to the `SudokuGameDocument` persistence model
@@ -23,6 +24,7 @@ Additionally, `CreateProfileCommandHandler` currently lowercases aliases via `.T
 - Update both React and Blazor frontends to pass `profileId` instead of `alias` to all game API calls
 
 **Non-Goals**
+
 - Backfilling `profileId` onto existing CosmosDB game documents (separate story)
 - Changing the profiles API or `ProfilesController` routes
 - Any authentication or authorization changes
@@ -32,27 +34,27 @@ Additionally, `CreateProfileCommandHandler` currently lowercases aliases via `.T
 
 ## 2. Functional Requirements
 
-| ID | Requirement |
-|----|-------------|
-| FR-1 | `SudokuGame` gains a `ProfileId ProfileId` property. The `PlayerAlias PlayerAlias` property is renamed to `PlayerAlias DisplayName`. Both `Create()` and `Reconstitute()` factory methods accept `ProfileId` as a required parameter. |
-| FR-2 | `CreateGameCommand` carries `string ProfileId` and `string DisplayName` (renamed from `string PlayerAlias`). `string Difficulty` is unchanged. |
-| FR-3 | `DeletePlayerGamesCommand` carries `string ProfileId` (renamed from `string PlayerAlias`). |
-| FR-4 | `GetPlayerGamesQuery` carries `string ProfileId` (renamed from `string PlayerAlias`). |
-| FR-5 | `GetPlayerGamesByStatusQuery` carries `string ProfileId` (renamed from `string PlayerAlias`). |
-| FR-6 | `IGameRepository` replaces `GetByPlayerAsync(PlayerAlias)` with `GetByProfileIdAsync(ProfileId)` and `GetByPlayerAndStatusAsync(PlayerAlias, ...)` with `GetByProfileIdAndStatusAsync(ProfileId, ...)`. The optional `PlayerAlias?` parameters on `GetCompletedGamesAsync`, `GetTotalGamesCountAsync`, `GetCompletedGamesCountAsync`, and `GetAverageCompletionTimeAsync` are replaced with optional `ProfileId?`. |
-| FR-7 | `SudokuGameDocument` gains `string ProfileId` (JSON: `"profileId"`) and `string DisplayName` (JSON: `"displayName"`). The `string PlayerAlias` C# property is removed; the legacy JSON key `"playerAlias"` is silently ignored by the deserializer. |
-| FR-8 | `SudokuGameMapper.ToDocument()` writes `game.ProfileId.ToString()` and `game.DisplayName.Value`. `ToDomain()` reads `document.ProfileId` (null-guarded: use `ProfileId.From(Guid.Empty)` for legacy docs) and `document.DisplayName` (null-guarded: fall back to `PlayerAlias.Create("Unknown")`). |
-| FR-9 | `CosmosDbGameRepository` SQL queries filter on `c.profileId` instead of `c.playerAlias`. |
-| FR-10 | `GameSpecifications` replaces `GameByPlayerSpecification` → `GameByProfileIdSpecification`, `GameByPlayerAndStatusSpecification` → `GameByProfileIdAndStatusSpecification`, and updates `CompletedGamesSpecification` and `GameByPlayerAndDifficultySpecification` to accept `ProfileId?`. |
-| FR-11 | `GameDto` adds `string ProfileId` and renames `string PlayerAlias` to `string DisplayName`. `FromGame()` maps `game.ProfileId.ToString()` and `game.DisplayName.Value`. |
-| FR-12 | A new `GetProfileByIdQuery(string ProfileId)` and its handler are added to resolve the player's display name in `GamesController.CreateGameAsync`. |
-| FR-13 | API route prefix changes from `api/players/{alias}/games` to `api/players/{profileId}/games` across all four game controllers. |
-| FR-14 | `BaseGameController.GetAuthorizedGameAsync` compares `game.ProfileId == profileId` (using the new `GameDto.ProfileId` field). Parameter is renamed from `alias` to `profileId`. |
-| FR-15 | React `GameModel` interface adds `profileId: string` and renames `playerAlias` to `displayName`. All game API calls in `apiClient` and `useGameService` use `profileId`. |
-| FR-16 | Blazor `GameModel` adds `ProfileId` property and renames `PlayerAlias` to `DisplayName`. `IGameApiClient` / `GameApiClient` replace `alias` parameters with `profileId` in all game methods. URL segments change accordingly. |
-| FR-17 | `IPlayerManager` gains `GetCurrentProfileIdAsync()`. Pages pass `profileId` (not `alias`) to all game service calls. |
-| FR-18 | `CreateProfileCommandHandler` changes `request.Alias.Trim().ToLowerInvariant()` to `request.Alias.Trim()` only. |
-| FR-19 | `GetProfileByAliasQueryHandler` likewise removes `.ToLowerInvariant()`. Lookup is now case-sensitive against whatever casing was stored. |
+| ID    | Requirement                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| FR-1  | `SudokuGame` gains a `ProfileId ProfileId` property. The `PlayerAlias PlayerAlias` property is renamed to `PlayerAlias DisplayName`. Both `Create()` and `Reconstitute()` factory methods accept `ProfileId` as a required parameter.                                                                                                                                                                              |
+| FR-2  | `CreateGameCommand` carries `string ProfileId` and `string DisplayName` (renamed from `string PlayerAlias`). `string Difficulty` is unchanged.                                                                                                                                                                                                                                                                     |
+| FR-3  | `DeletePlayerGamesCommand` carries `string ProfileId` (renamed from `string PlayerAlias`).                                                                                                                                                                                                                                                                                                                         |
+| FR-4  | `GetPlayerGamesQuery` carries `string ProfileId` (renamed from `string PlayerAlias`).                                                                                                                                                                                                                                                                                                                              |
+| FR-5  | `GetPlayerGamesByStatusQuery` carries `string ProfileId` (renamed from `string PlayerAlias`).                                                                                                                                                                                                                                                                                                                      |
+| FR-6  | `IGameRepository` replaces `GetByPlayerAsync(PlayerAlias)` with `GetByProfileIdAsync(ProfileId)` and `GetByPlayerAndStatusAsync(PlayerAlias, ...)` with `GetByProfileIdAndStatusAsync(ProfileId, ...)`. The optional `PlayerAlias?` parameters on `GetCompletedGamesAsync`, `GetTotalGamesCountAsync`, `GetCompletedGamesCountAsync`, and `GetAverageCompletionTimeAsync` are replaced with optional `ProfileId?`. |
+| FR-7  | `SudokuGameDocument` gains `string ProfileId` (JSON: `"profileId"`) and `string DisplayName` (JSON: `"displayName"`). The `string PlayerAlias` C# property is renamed to `string DisplayName`.                                                                                                                                                                                                                     |
+| FR-8  | `SudokuGameMapper.ToDocument()` writes `game.ProfileId.ToString()` and `game.DisplayName.Value`. `ToDomain()` reads `document.ProfileId` (null-guarded: use `ProfileId.From(Guid.Empty)` for legacy docs) and `document.DisplayName` (null-guarded: fall back to `PlayerAlias.Create("Unknown")`).                                                                                                                 |
+| FR-9  | `CosmosDbGameRepository` SQL queries filter on `c.profileId` instead of `c.playerAlias`.                                                                                                                                                                                                                                                                                                                           |
+| FR-10 | `GameSpecifications` replaces `GameByPlayerSpecification` → `GameByProfileIdSpecification`, `GameByPlayerAndStatusSpecification` → `GameByProfileIdAndStatusSpecification`, and updates `CompletedGamesSpecification` and `GameByPlayerAndDifficultySpecification` to accept `ProfileId?`.                                                                                                                         |
+| FR-11 | `GameDto` adds `string ProfileId` and renames `string PlayerAlias` to `string DisplayName`. `FromGame()` maps `game.ProfileId.ToString()` and `game.DisplayName.Value`.                                                                                                                                                                                                                                            |
+| FR-12 | A new `GetProfileByIdQuery(string ProfileId)` and its handler are added to resolve the player's display name in `GamesController.CreateGameAsync`.                                                                                                                                                                                                                                                                 |
+| FR-13 | API route prefix changes from `api/players/{alias}/games` to `api/players/{profileId}/games` across all four game controllers.                                                                                                                                                                                                                                                                                     |
+| FR-14 | `BaseGameController.GetAuthorizedGameAsync` compares `game.ProfileId == profileId` (using the new `GameDto.ProfileId` field). Parameter is renamed from `alias` to `profileId`.                                                                                                                                                                                                                                    |
+| FR-15 | React `GameModel` interface adds `profileId: string` and renames `playerAlias` to `displayName`. All game API calls in `apiClient` and `useGameService` use `profileId`.                                                                                                                                                                                                                                           |
+| FR-16 | Blazor `GameModel` adds `ProfileId` property and renames `PlayerAlias` to `DisplayName`. `IGameApiClient` / `GameApiClient` replace `alias` parameters with `profileId` in all game methods. URL segments change accordingly.                                                                                                                                                                                      |
+| FR-17 | `IPlayerManager` gains `GetCurrentProfileIdAsync()`. Pages pass `profileId` (not `alias`) to all game service calls.                                                                                                                                                                                                                                                                                               |
+| FR-18 | `CreateProfileCommandHandler` changes `request.Alias.Trim().ToLowerInvariant()` to `request.Alias.Trim()` only.                                                                                                                                                                                                                                                                                                    |
+| FR-19 | `GetProfileByAliasQueryHandler` likewise removes `.ToLowerInvariant()`. Lookup is now case-sensitive against whatever casing was stored.                                                                                                                                                                                                                                                                           |
 
 ---
 
@@ -69,6 +71,7 @@ Additionally, `CreateProfileCommandHandler` currently lowercases aliases via `.T
 ## 4. Architecture Overview
 
 **Affected Projects:**
+
 - `Sudoku.Domain` — entity field rename, new `ProfileId` property
 - `Sudoku.Application` — commands, queries, handlers, DTOs, specifications, repository interface
 - `Sudoku.Infrastructure` — document model, mapper, repository implementation
@@ -120,10 +123,10 @@ sequenceDiagram
 
 ### Domain Changes — `SudokuGame`
 
-| Before | After |
-|--------|-------|
-| `public PlayerAlias PlayerAlias { get; private set; }` | `public ProfileId ProfileId { get; private set; }` (new) |
-| — | `public PlayerAlias DisplayName { get; private set; }` (renamed from `PlayerAlias`) |
+| Before                                                 | After                                                                               |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `public PlayerAlias PlayerAlias { get; private set; }` | `public ProfileId ProfileId { get; private set; }` (new)                            |
+| —                                                      | `public PlayerAlias DisplayName { get; private set; }` (renamed from `PlayerAlias`) |
 
 Factory method changes:
 
@@ -149,13 +152,13 @@ record GameCreatedEvent(GameId GameId, ProfileId ProfileId, PlayerAlias DisplayN
 
 ### Application Commands / Queries
 
-| Type | Before | After |
-|------|--------|-------|
-| `CreateGameCommand` | `(string PlayerAlias, string Difficulty)` | `(string ProfileId, string DisplayName, string Difficulty)` |
-| `DeletePlayerGamesCommand` | `(string PlayerAlias)` | `(string ProfileId)` |
-| `GetPlayerGamesQuery` | `(string PlayerAlias)` | `(string ProfileId)` |
-| `GetPlayerGamesByStatusQuery` | `(string PlayerAlias, string Status)` | `(string ProfileId, string Status)` |
-| `GetProfileByIdQuery` | *(new)* | `(string ProfileId)` |
+| Type                          | Before                                    | After                                                       |
+| ----------------------------- | ----------------------------------------- | ----------------------------------------------------------- |
+| `CreateGameCommand`           | `(string PlayerAlias, string Difficulty)` | `(string ProfileId, string DisplayName, string Difficulty)` |
+| `DeletePlayerGamesCommand`    | `(string PlayerAlias)`                    | `(string ProfileId)`                                        |
+| `GetPlayerGamesQuery`         | `(string PlayerAlias)`                    | `(string ProfileId)`                                        |
+| `GetPlayerGamesByStatusQuery` | `(string PlayerAlias, string Status)`     | `(string ProfileId, string Status)`                         |
+| `GetProfileByIdQuery`         | _(new)_                                   | `(string ProfileId)`                                        |
 
 ### `GameDto`
 
@@ -179,22 +182,22 @@ JSON response shape:
 
 ### `IGameRepository` Interface Changes
 
-| Before | After |
-|--------|-------|
-| `GetByPlayerAsync(PlayerAlias)` | `GetByProfileIdAsync(ProfileId)` |
+| Before                                                   | After                                                     |
+| -------------------------------------------------------- | --------------------------------------------------------- |
+| `GetByPlayerAsync(PlayerAlias)`                          | `GetByProfileIdAsync(ProfileId)`                          |
 | `GetByPlayerAndStatusAsync(PlayerAlias, GameStatusEnum)` | `GetByProfileIdAndStatusAsync(ProfileId, GameStatusEnum)` |
-| `GetCompletedGamesAsync(PlayerAlias? = null)` | `GetCompletedGamesAsync(ProfileId? = null)` |
-| `GetTotalGamesCountAsync(PlayerAlias? = null)` | `GetTotalGamesCountAsync(ProfileId? = null)` |
-| `GetCompletedGamesCountAsync(PlayerAlias? = null)` | `GetCompletedGamesCountAsync(ProfileId? = null)` |
-| `GetAverageCompletionTimeAsync(PlayerAlias? = null)` | `GetAverageCompletionTimeAsync(ProfileId? = null)` |
+| `GetCompletedGamesAsync(PlayerAlias? = null)`            | `GetCompletedGamesAsync(ProfileId? = null)`               |
+| `GetTotalGamesCountAsync(PlayerAlias? = null)`           | `GetTotalGamesCountAsync(ProfileId? = null)`              |
+| `GetCompletedGamesCountAsync(PlayerAlias? = null)`       | `GetCompletedGamesCountAsync(ProfileId? = null)`          |
+| `GetAverageCompletionTimeAsync(PlayerAlias? = null)`     | `GetAverageCompletionTimeAsync(ProfileId? = null)`        |
 
 ### `SudokuGameDocument` Changes
 
-| Before | After |
-|--------|-------|
-| `[JsonProperty("playerAlias")] string PlayerAlias` | *(removed; legacy `"playerAlias"` key silently ignored by deserializer)* |
-| — | `[JsonProperty("profileId")] string ProfileId` |
-| — | `[JsonProperty("displayName")] string DisplayName` |
+| Before                                             | After                                                                    |
+| -------------------------------------------------- | ------------------------------------------------------------------------ |
+| `[JsonProperty("playerAlias")] string PlayerAlias` | _(removed; legacy `"playerAlias"` key silently ignored by deserializer)_ |
+| —                                                  | `[JsonProperty("profileId")] string ProfileId`                           |
+| —                                                  | `[JsonProperty("displayName")] string DisplayName`                       |
 
 ### `SudokuGameMapper` Changes
 
@@ -209,11 +212,13 @@ JSON response shape:
 ### Commands
 
 **`CreateGameCommand`**
+
 - Inputs: `ProfileId`, `DisplayName`, `Difficulty`
 - Handler resolves `ProfileId.From(...)` and `PlayerAlias.Create(displayName)`, calls `SudokuGame.Create()`
 - Side effects: raises `GameCreatedEvent(GameId, ProfileId, DisplayName, Difficulty)`
 
 **`DeletePlayerGamesCommand`**
+
 - Input: `ProfileId`
 - Handler calls `GetByProfileIdAsync(profileId)` to enumerate games, deletes each
 
@@ -223,7 +228,7 @@ JSON response shape:
 
 **`GetPlayerGamesByStatusQuery`** — input `ProfileId`, `Status` → calls `GetByProfileIdAndStatusAsync()`
 
-**`GetProfileByIdQuery`** *(new)* — input `ProfileId` → calls `profileRepository.GetByIdAsync(ProfileId.From(...))` → returns `ProfileDto?`
+**`GetProfileByIdQuery`** _(new)_ — input `ProfileId` → calls `profileRepository.GetByIdAsync(ProfileId.From(...))` → returns `ProfileDto?`
 
 ### Handlers
 
@@ -235,8 +240,8 @@ JSON response shape:
 
 ## 7. Domain Events
 
-| Event | Trigger | Payload Change | Action Required |
-|-------|---------|----------------|-----------------|
+| Event              | Trigger               | Payload Change                                        | Action Required                                                                        |
+| ------------------ | --------------------- | ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | `GameCreatedEvent` | `SudokuGame.Create()` | Add `ProfileId`; rename `PlayerAlias` → `DisplayName` | Grep `INotificationHandler<GameCreatedEvent>` — update all consumer handler signatures |
 
 All other events (`GameStartedEvent`, `MoveMadeEvent`, etc.) are unchanged.
@@ -280,18 +285,18 @@ displayName: string;
 
 ## 9. API Endpoints
 
-| Controller | Method | Before | After |
-|------------|--------|--------|-------|
-| `GamesController` | POST | `POST /api/players/{alias}/games/{difficulty}` | `POST /api/players/{profileId}/games/{difficulty}` |
-| `GamesController` | DELETE | `DELETE /api/players/{alias}/games` | `DELETE /api/players/{profileId}/games` |
-| `GamesController` | DELETE | `DELETE /api/players/{alias}/games/{gameId}` | `DELETE /api/players/{profileId}/games/{gameId}` |
-| `GamesController` | GET | `GET /api/players/{alias}/games` | `GET /api/players/{profileId}/games` |
-| `GamesController` | GET | `GET /api/players/{alias}/games/{gameId}` | `GET /api/players/{profileId}/games/{gameId}` |
-| `GameActionsController` | PUT | `PUT /api/players/{alias}/games/{gameId}/actions` | `PUT /api/players/{profileId}/games/{gameId}/actions` |
-| `GameActionsController` | POST | `POST /api/players/{alias}/games/{gameId}/actions/reset` | `POST /api/players/{profileId}/games/{gameId}/actions/reset` |
-| `GameActionsController` | POST | `POST /api/players/{alias}/games/{gameId}/actions/undo` | `POST /api/players/{profileId}/games/{gameId}/actions/undo` |
-| `GameStatusController` | POST | `POST /api/players/{alias}/games/{gameId}/status/*` | `POST /api/players/{profileId}/games/{gameId}/status/*` |
-| `PossibleValuesController` | POST/DELETE | `/api/players/{alias}/games/{gameId}/possible-values*` | `/api/players/{profileId}/games/{gameId}/possible-values*` |
+| Controller                 | Method      | Before                                                   | After                                                        |
+| -------------------------- | ----------- | -------------------------------------------------------- | ------------------------------------------------------------ |
+| `GamesController`          | POST        | `POST /api/players/{alias}/games/{difficulty}`           | `POST /api/players/{profileId}/games/{difficulty}`           |
+| `GamesController`          | DELETE      | `DELETE /api/players/{alias}/games`                      | `DELETE /api/players/{profileId}/games`                      |
+| `GamesController`          | DELETE      | `DELETE /api/players/{alias}/games/{gameId}`             | `DELETE /api/players/{profileId}/games/{gameId}`             |
+| `GamesController`          | GET         | `GET /api/players/{alias}/games`                         | `GET /api/players/{profileId}/games`                         |
+| `GamesController`          | GET         | `GET /api/players/{alias}/games/{gameId}`                | `GET /api/players/{profileId}/games/{gameId}`                |
+| `GameActionsController`    | PUT         | `PUT /api/players/{alias}/games/{gameId}/actions`        | `PUT /api/players/{profileId}/games/{gameId}/actions`        |
+| `GameActionsController`    | POST        | `POST /api/players/{alias}/games/{gameId}/actions/reset` | `POST /api/players/{profileId}/games/{gameId}/actions/reset` |
+| `GameActionsController`    | POST        | `POST /api/players/{alias}/games/{gameId}/actions/undo`  | `POST /api/players/{profileId}/games/{gameId}/actions/undo`  |
+| `GameStatusController`     | POST        | `POST /api/players/{alias}/games/{gameId}/status/*`      | `POST /api/players/{profileId}/games/{gameId}/status/*`      |
+| `PossibleValuesController` | POST/DELETE | `/api/players/{alias}/games/{gameId}/possible-values*`   | `/api/players/{profileId}/games/{gameId}/possible-values*`   |
 
 **`ProfilesController` is unchanged.** `/api/profiles/{alias}` stays as-is.
 
@@ -321,15 +326,18 @@ var result = await Mediator.Send(new CreateGameCommand(profileId, profileResult.
 ## 10. Testing Strategy
 
 ### Unit Tests — Domain (`SudokuGameTests.cs`)
+
 - Update all `SudokuGame.Create(playerAlias, ...)` calls to `Create(profileId, displayName, ...)`
 - Add: `Create_SetsProfileIdProperty`, `Create_SetsDisplayNameProperty`, `Create_RaisesGameCreatedEvent_WithProfileId`
 - Update `GameFactory` helper to default `ProfileId.New()` and `PlayerAlias.Create("DefaultPlayer")`
 
 ### Unit Tests — Application DTOs
+
 - `GameDtoTests`: rename `PlayerAlias` → `DisplayName` in all assertions; add `ProfileId` assertions
 - Add: `FromGame_MapsProfileId_Correctly`
 
 ### Unit Tests — Application Handlers
+
 - `CreateGameCommandHandlerTests`: update command constructor; verify `ProfileId` passed to domain
 - `GetPlayerGamesQueryHandlerTests`: verify `GetByProfileIdAsync` called (not `GetByPlayerAsync`)
 - `DeletePlayerGamesCommandHandlerTests`: update to use `ProfileId`
@@ -337,23 +345,28 @@ var result = await Mediator.Send(new CreateGameCommand(profileId, profileResult.
 - `CreateProfileCommandHandlerTests`: add test verifying original casing is preserved (not lowercased)
 
 ### Unit Tests — Infrastructure
+
 - `CosmosDbGameRepositoryTests`: verify SQL contains `c.profileId = @profileId`
 - `SudokuGameMapperTests`: verify `ToDocument()` writes `profileId`/`displayName`; verify `ToDomain()` handles null `ProfileId` gracefully (uses `Guid.Empty` sentinel)
 
 ### Unit Tests — API Controllers
+
 - Update `BaseGameControllerTests.CreateTestGameDto` helper to include `ProfileId` parameter
 - Add: `CreateGameAsync_WithUnknownProfileId_Returns404`
 - Add: `GetAllGamesAsync_WithValidProfileId_CallsGetPlayerGamesQuery`
 
 ### Unit Tests — React
+
 - `useGameService.test.ts`: all calls pass `profileId`; verify URL construction uses `/api/players/${profileId}/`
 - TypeScript strict mode will surface remaining `playerAlias` references at compile time
 
 ### Unit Tests — Blazor
+
 - `GameManagerTests`: update to pass `profileId`; add `CreateGameAsync_PassesProfileIdToApiClient`
 - Update page tests to reflect `profileId` in game service calls
 
 ### Integration Tests
+
 - End-to-end round-trip: save game with `ProfileId` → query by same `ProfileId` → correct game returned
 
 ---
