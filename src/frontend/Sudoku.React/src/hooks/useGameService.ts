@@ -108,30 +108,31 @@ export function useGameService(): UseGameServiceReturn {
     try {
       // Delete from API
       await apiClient.deleteGame(playerAlias, gameId);
-
-      // Update local state
-      setSavedGames(games => games.filter(g => g.id !== gameId));
-
-      // Clear current game if it's the one being deleted
-      setCurrentGame(current => current?.id === gameId ? null : current);
-
-      // Update localStorage cache
-      const cachedGames = localStorage.getItem('savedGames');
-      if (cachedGames) {
-        try {
-          const parsedGames: GameModel[] = JSON.parse(cachedGames);
-          const updatedGames = parsedGames.filter(g => g.id !== gameId);
-          localStorage.setItem('savedGames', JSON.stringify(updatedGames));
-        } catch {
-          // If cache is corrupted, just remove it
-          localStorage.removeItem('savedGames');
-        }
-      }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete game';
-      setError(errorMessage);
-      console.error('Failed to delete game:', err);
-      throw err; // Re-throw so calling component can handle it
+      if (!(err instanceof Error) || !err.message.startsWith('HTTP 404')) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to delete game';
+        setError(errorMessage);
+        console.error('Failed to delete game:', err);
+        throw err;
+      }
+    }
+
+    // Update local state (runs on success or 404 — game is gone either way)
+    setSavedGames(games => games.filter(g => g.id !== gameId));
+
+    // Clear current game if it's the one being deleted
+    setCurrentGame(current => current?.id === gameId ? null : current);
+
+    // Update localStorage cache
+    const cachedGames = localStorage.getItem('savedGames');
+    if (cachedGames) {
+      try {
+        const parsedGames: GameModel[] = JSON.parse(cachedGames);
+        const updatedGames = parsedGames.filter(g => g.id !== gameId);
+        localStorage.setItem('savedGames', JSON.stringify(updatedGames));
+      } catch {
+        localStorage.removeItem('savedGames');
+      }
     }
   }, [isLoading]);
 

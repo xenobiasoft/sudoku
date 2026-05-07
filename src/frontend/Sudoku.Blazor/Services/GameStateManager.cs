@@ -58,7 +58,7 @@ public partial class GameManager : IGameStateManager
             throw new ArgumentException("Game ID not set.");
         }
         var result = await gameApiClient.DeleteGameAsync(alias, gameId);
-        if (!result.IsSuccess)
+        if (!result.IsSuccess && result.StatusCode != 404)
         {
             throw new Exception("Failed to delete game from server.");
         }
