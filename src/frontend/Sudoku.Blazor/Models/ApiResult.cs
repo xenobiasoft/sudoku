@@ -10,6 +10,6 @@ public class ApiResult<T>
     public static ApiResult<T> Success(T value) =>
         new ApiResult<T> { IsSuccess = true, Value = value, StatusCode = 200 };
 
-    public static ApiResult<T> Failure(string error) =>
-        new ApiResult<T> { IsSuccess = false, Error = error };
+    public static ApiResult<T> Failure(string error, int statusCode = 0) =>
+        new ApiResult<T> { IsSuccess = false, Error = error, StatusCode = statusCode };
 }

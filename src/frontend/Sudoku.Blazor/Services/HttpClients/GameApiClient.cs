@@ -216,7 +216,7 @@ public class GameApiClient(HttpClient httpClient, ILogger<GameApiClient> logger)
             {
                 var error = await response.Content.ReadAsStringAsync();
                 _logger.LogWarning("Failed to delete game. Status: {StatusCode}, Error: {Error}", response.StatusCode, error);
-                return ApiResult<bool>.Failure($"Failed to delete game: {error}");
+                return ApiResult<bool>.Failure($"Failed to delete game: {error}", (int)response.StatusCode);
             }
         }
         catch (Exception ex)
