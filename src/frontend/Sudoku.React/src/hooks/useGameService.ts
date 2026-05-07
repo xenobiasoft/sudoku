@@ -8,25 +8,25 @@ export interface UseGameServiceReturn {
   isLoading: boolean;
   error: string | null;
   isLoaded: boolean;
-  loadGames: (playerAlias: string, forceRefresh?: boolean) => Promise<void>;
-  deleteGame: (playerAlias: string, gameId: string) => Promise<void>;
-  createGame: (playerAlias: string, difficulty: string) => Promise<GameModel>;
+  loadGames: (profileId: string, forceRefresh?: boolean) => Promise<void>;
+  deleteGame: (profileId: string, gameId: string) => Promise<void>;
+  createGame: (profileId: string, difficulty: string) => Promise<GameModel>;
   clearCache: () => void;
-  refreshGames: (playerAlias: string) => Promise<void>;
-  
+  refreshGames: (profileId: string) => Promise<void>;
+
   // Single game management
   currentGame: GameModel | null;
   isGameLoading: boolean;
   gameError: string | null;
-  getGame: (playerAlias: string, gameId: string) => Promise<GameModel>;
-  pauseGame: (playerAlias: string, gameId: string) => Promise<void>;
-  resumeGame: (playerAlias: string, gameId: string) => Promise<void>;
-  makeMove: (playerAlias: string, gameId: string, row: number, column: number, value: number | null, duration: string) => Promise<GameModel>;
-  undoMove: (playerAlias: string, gameId: string) => Promise<GameModel>;
-  resetGame: (playerAlias: string, gameId: string) => Promise<GameModel>;
-  addPossibleValue: (playerAlias: string, gameId: string, row: number, column: number, value: number) => Promise<GameModel>;
-  removePossibleValue: (playerAlias: string, gameId: string, row: number, column: number, value: number) => Promise<GameModel>;
-  clearPossibleValues: (playerAlias: string, gameId: string, row: number, column: number) => Promise<GameModel>;
+  getGame: (profileId: string, gameId: string) => Promise<GameModel>;
+  pauseGame: (profileId: string, gameId: string) => Promise<void>;
+  resumeGame: (profileId: string, gameId: string) => Promise<void>;
+  makeMove: (profileId: string, gameId: string, row: number, column: number, value: number | null, duration: string) => Promise<GameModel>;
+  undoMove: (profileId: string, gameId: string) => Promise<GameModel>;
+  resetGame: (profileId: string, gameId: string) => Promise<GameModel>;
+  addPossibleValue: (profileId: string, gameId: string, row: number, column: number, value: number) => Promise<GameModel>;
+  removePossibleValue: (profileId: string, gameId: string, row: number, column: number, value: number) => Promise<GameModel>;
+  clearPossibleValues: (profileId: string, gameId: string, row: number, column: number) => Promise<GameModel>;
   clearCurrentGame: () => void;
 }
 
@@ -50,12 +50,12 @@ export function useGameService(): UseGameServiceReturn {
     setError(null);
   }, []);
 
-  const loadGames = useCallback(async (playerAlias: string, forceRefresh = false) => {
-    if (!playerAlias) return;
-    
+  const loadGames = useCallback(async (profileId: string, forceRefresh = false) => {
+    if (!profileId) return;
+
     // Use ref to prevent concurrent calls since state updates are async
     if (loadingRef.current) return;
-    
+
     loadingRef.current = true;
     setIsLoading(true);
     setError(null);
@@ -81,12 +81,12 @@ export function useGameService(): UseGameServiceReturn {
       }
 
       // Fetch from API
-      const games = await apiClient.getGames(playerAlias);
+      const games = await apiClient.getGames(profileId);
       const availableGames = games.filter(g => g.status !== 'Completed');
-      
+
       // Cache the full games array (including completed games for future use)
       localStorage.setItem('savedGames', JSON.stringify(games));
-      
+
       setSavedGames(availableGames);
       setIsLoaded(true);
     } catch (err) {
@@ -100,14 +100,14 @@ export function useGameService(): UseGameServiceReturn {
     }
   }, []);
 
-  const deleteGame = useCallback(async (playerAlias: string, gameId: string) => {
-    if (!playerAlias || loadingRef.current) return;
+  const deleteGame = useCallback(async (profileId: string, gameId: string) => {
+    if (!profileId || loadingRef.current) return;
 
     setError(null);
 
     try {
       // Delete from API
-      await apiClient.deleteGame(playerAlias, gameId);
+      await apiClient.deleteGame(profileId, gameId);
     } catch (err) {
       if (!(err instanceof Error) || !err.message.startsWith('HTTP 404')) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to delete game';
@@ -136,25 +136,25 @@ export function useGameService(): UseGameServiceReturn {
     }
   }, [isLoading]);
 
-  const refreshGames = useCallback(async (playerAlias: string) => {
-    await loadGames(playerAlias, true);
+  const refreshGames = useCallback(async (profileId: string) => {
+    await loadGames(profileId, true);
   }, [loadGames]);
 
-  const createGame = useCallback(async (playerAlias: string, difficulty: string): Promise<GameModel> => {
-    if (!playerAlias) {
-      throw new Error('Player alias is required');
+  const createGame = useCallback(async (profileId: string, difficulty: string): Promise<GameModel> => {
+    if (!profileId) {
+      throw new Error('Profile ID is required');
     }
 
     setError(null);
 
     try {
       // Create the game via API
-      const newGame = await apiClient.createGame(playerAlias, difficulty);
+      const newGame = await apiClient.createGame(profileId, difficulty);
 
       // Update localStorage cache with the new game
       const cachedGames = localStorage.getItem('savedGames');
       let updatedGames: GameModel[];
-      
+
       if (cachedGames) {
         try {
           const parsedGames: GameModel[] = JSON.parse(cachedGames);
@@ -189,16 +189,16 @@ export function useGameService(): UseGameServiceReturn {
     setGameError(null);
   }, []);
 
-  const getGame = useCallback(async (playerAlias: string, gameId: string): Promise<GameModel> => {
-    if (!playerAlias || !gameId) {
-      throw new Error('Player alias and game ID are required');
+  const getGame = useCallback(async (profileId: string, gameId: string): Promise<GameModel> => {
+    if (!profileId || !gameId) {
+      throw new Error('Profile ID and game ID are required');
     }
 
     setIsGameLoading(true);
     setGameError(null);
 
     try {
-      const game = await apiClient.getGame(playerAlias, gameId);
+      const game = await apiClient.getGame(profileId, gameId);
       setCurrentGame(game);
       return game;
     } catch (err) {
@@ -211,33 +211,33 @@ export function useGameService(): UseGameServiceReturn {
     }
   }, []);
 
-  const pauseGame = useCallback(async (playerAlias: string, gameId: string): Promise<void> => {
-    if (!playerAlias || !gameId) return;
+  const pauseGame = useCallback(async (profileId: string, gameId: string): Promise<void> => {
+    if (!profileId || !gameId) return;
     try {
-      await apiClient.pauseGame(playerAlias, gameId);
+      await apiClient.pauseGame(profileId, gameId);
     } catch (err) {
       console.error('Failed to pause game:', err);
     }
   }, []);
 
-  const resumeGame = useCallback(async (playerAlias: string, gameId: string): Promise<void> => {
-    if (!playerAlias || !gameId) return;
+  const resumeGame = useCallback(async (profileId: string, gameId: string): Promise<void> => {
+    if (!profileId || !gameId) return;
     try {
-      await apiClient.resumeGame(playerAlias, gameId);
+      await apiClient.resumeGame(profileId, gameId);
     } catch (err) {
       console.error('Failed to resume game:', err);
     }
   }, []);
 
-  const makeMove = useCallback(async (playerAlias: string, gameId: string, row: number, column: number, value: number | null, duration: string): Promise<GameModel> => {
-    if (!playerAlias || !gameId) {
-      throw new Error('Player alias and game ID are required');
+  const makeMove = useCallback(async (profileId: string, gameId: string, row: number, column: number, value: number | null, duration: string): Promise<GameModel> => {
+    if (!profileId || !gameId) {
+      throw new Error('Profile ID and game ID are required');
     }
 
     setGameError(null);
 
     try {
-      const updatedGame = await apiClient.makeMove(playerAlias, gameId, row, column, value, duration);
+      const updatedGame = await apiClient.makeMove(profileId, gameId, row, column, value, duration);
       setCurrentGame(updatedGame);
       return updatedGame;
     } catch (err) {
@@ -248,15 +248,15 @@ export function useGameService(): UseGameServiceReturn {
     }
   }, []);
 
-  const undoMove = useCallback(async (playerAlias: string, gameId: string): Promise<GameModel> => {
-    if (!playerAlias || !gameId) {
-      throw new Error('Player alias and game ID are required');
+  const undoMove = useCallback(async (profileId: string, gameId: string): Promise<GameModel> => {
+    if (!profileId || !gameId) {
+      throw new Error('Profile ID and game ID are required');
     }
 
     setGameError(null);
 
     try {
-      const updatedGame = await apiClient.undoMove(playerAlias, gameId);
+      const updatedGame = await apiClient.undoMove(profileId, gameId);
       setCurrentGame(updatedGame);
       return updatedGame;
     } catch (err) {
@@ -267,15 +267,15 @@ export function useGameService(): UseGameServiceReturn {
     }
   }, []);
 
-  const resetGame = useCallback(async (playerAlias: string, gameId: string): Promise<GameModel> => {
-    if (!playerAlias || !gameId) {
-      throw new Error('Player alias and game ID are required');
+  const resetGame = useCallback(async (profileId: string, gameId: string): Promise<GameModel> => {
+    if (!profileId || !gameId) {
+      throw new Error('Profile ID and game ID are required');
     }
 
     setGameError(null);
 
     try {
-      const updatedGame = await apiClient.resetGame(playerAlias, gameId);
+      const updatedGame = await apiClient.resetGame(profileId, gameId);
       setCurrentGame(updatedGame);
       return updatedGame;
     } catch (err) {
@@ -286,15 +286,15 @@ export function useGameService(): UseGameServiceReturn {
     }
   }, []);
 
-  const addPossibleValue = useCallback(async (playerAlias: string, gameId: string, row: number, column: number, value: number): Promise<GameModel> => {
-    if (!playerAlias || !gameId) {
-      throw new Error('Player alias and game ID are required');
+  const addPossibleValue = useCallback(async (profileId: string, gameId: string, row: number, column: number, value: number): Promise<GameModel> => {
+    if (!profileId || !gameId) {
+      throw new Error('Profile ID and game ID are required');
     }
 
     setGameError(null);
 
     try {
-      const updatedGame = await apiClient.addPossibleValue(playerAlias, gameId, row, column, value);
+      const updatedGame = await apiClient.addPossibleValue(profileId, gameId, row, column, value);
       setCurrentGame(updatedGame);
       return updatedGame;
     } catch (err) {
@@ -305,15 +305,15 @@ export function useGameService(): UseGameServiceReturn {
     }
   }, []);
 
-  const removePossibleValue = useCallback(async (playerAlias: string, gameId: string, row: number, column: number, value: number): Promise<GameModel> => {
-    if (!playerAlias || !gameId) {
-      throw new Error('Player alias and game ID are required');
+  const removePossibleValue = useCallback(async (profileId: string, gameId: string, row: number, column: number, value: number): Promise<GameModel> => {
+    if (!profileId || !gameId) {
+      throw new Error('Profile ID and game ID are required');
     }
 
     setGameError(null);
 
     try {
-      const updatedGame = await apiClient.removePossibleValue(playerAlias, gameId, row, column, value);
+      const updatedGame = await apiClient.removePossibleValue(profileId, gameId, row, column, value);
       setCurrentGame(updatedGame);
       return updatedGame;
     } catch (err) {
@@ -324,15 +324,15 @@ export function useGameService(): UseGameServiceReturn {
     }
   }, []);
 
-  const clearPossibleValues = useCallback(async (playerAlias: string, gameId: string, row: number, column: number): Promise<GameModel> => {
-    if (!playerAlias || !gameId) {
-      throw new Error('Player alias and game ID are required');
+  const clearPossibleValues = useCallback(async (profileId: string, gameId: string, row: number, column: number): Promise<GameModel> => {
+    if (!profileId || !gameId) {
+      throw new Error('Profile ID and game ID are required');
     }
 
     setGameError(null);
 
     try {
-      const updatedGame = await apiClient.clearPossibleValues(playerAlias, gameId, row, column);
+      const updatedGame = await apiClient.clearPossibleValues(profileId, gameId, row, column);
       setCurrentGame(updatedGame);
       return updatedGame;
     } catch (err) {
@@ -354,7 +354,7 @@ export function useGameService(): UseGameServiceReturn {
     createGame,
     clearCache,
     refreshGames,
-    
+
     // Single game management
     currentGame,
     isGameLoading,

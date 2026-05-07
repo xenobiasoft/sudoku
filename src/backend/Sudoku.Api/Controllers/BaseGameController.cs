@@ -10,11 +10,11 @@ public abstract class BaseGameController(IMediator mediator) : ControllerBase
 {
     protected IMediator Mediator => mediator;
 
-    protected async Task<(GameDto? game, ActionResult? error)> GetAuthorizedGameAsync(string alias, string gameId)
+    protected async Task<(GameDto? game, ActionResult? error)> GetAuthorizedGameAsync(string profileId, string gameId)
     {
-        if (string.IsNullOrWhiteSpace(alias) || string.IsNullOrWhiteSpace(gameId))
+        if (string.IsNullOrWhiteSpace(profileId) || string.IsNullOrWhiteSpace(gameId))
         {
-            return (null, BadRequest("Player alias and game id cannot be null or empty."));
+            return (null, BadRequest("Profile ID and game id cannot be null or empty."));
         }
 
         var gameResult = await mediator.Send(new GetGameQuery(gameId));
@@ -23,7 +23,7 @@ public abstract class BaseGameController(IMediator mediator) : ControllerBase
             return (null, NotFound(gameResult.Error));
         }
 
-        if (gameResult.Value.PlayerAlias != alias)
+        if (gameResult.Value.ProfileId != profileId)
         {
             return (null, NotFound());
         }

@@ -5,7 +5,8 @@ namespace Sudoku.Application.DTOs;
 
 public record GameDto(
     string Id,
-    string PlayerAlias,
+    string ProfileId,
+    string DisplayName,
     string Difficulty,
     string Status,
     GameStatisticsDto Statistics,
@@ -20,7 +21,8 @@ public record GameDto(
     {
         return new GameDto(
             game.Id.Value.ToString(),
-            game.PlayerAlias.Value,
+            game.ProfileId.ToString(),
+            game.DisplayName.Value,
             game.Difficulty.Name,
             game.Status.ToString(),
             GameStatisticsDto.FromGameStatistics(game.Statistics),

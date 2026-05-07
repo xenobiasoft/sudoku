@@ -41,21 +41,70 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
     public void Create_WithValidParameters_CreatesGameWithCorrectProperties()
     {
         // Arrange
-        var playerAlias = PlayerAlias.Create("TestPlayer");
+        var profileId = ProfileId.New();
+        var displayName = PlayerAlias.Create("TestPlayer");
         var difficulty = GameDifficulty.Medium;
         var cells = GenerateEmptyCells();
 
         // Act
-        var sut = SudokuGame.Create(playerAlias, difficulty, cells);
+        var sut = SudokuGame.Create(profileId, displayName, difficulty, cells);
 
         // Assert
         sut.Id.Should().NotBeNull();
-        sut.PlayerAlias.Should().Be(playerAlias);
+        sut.ProfileId.Should().Be(profileId);
+        sut.DisplayName.Should().Be(displayName);
         sut.Difficulty.Should().Be(difficulty);
         sut.Status.Should().Be(GameStatusEnum.NotStarted);
         sut.CreatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(1));
         sut.GetCells().Count.Should().Be(81);
         sut.DomainEvents.Should().ContainSingle(e => e is GameCreatedEvent);
+    }
+
+    [Fact]
+    public void Create_SetsProfileIdProperty()
+    {
+        // Arrange
+        var profileId = ProfileId.New();
+        var displayName = PlayerAlias.Create("TestPlayer");
+        var cells = GenerateEmptyCells();
+
+        // Act
+        var sut = SudokuGame.Create(profileId, displayName, GameDifficulty.Easy, cells);
+
+        // Assert
+        sut.ProfileId.Should().Be(profileId);
+    }
+
+    [Fact]
+    public void Create_SetsDisplayNameProperty()
+    {
+        // Arrange
+        var profileId = ProfileId.New();
+        var displayName = PlayerAlias.Create("TestPlayer");
+        var cells = GenerateEmptyCells();
+
+        // Act
+        var sut = SudokuGame.Create(profileId, displayName, GameDifficulty.Easy, cells);
+
+        // Assert
+        sut.DisplayName.Should().Be(displayName);
+    }
+
+    [Fact]
+    public void Create_RaisesGameCreatedEvent_WithProfileId()
+    {
+        // Arrange
+        var profileId = ProfileId.New();
+        var displayName = PlayerAlias.Create("TestPlayer");
+        var cells = GenerateEmptyCells();
+
+        // Act
+        var sut = SudokuGame.Create(profileId, displayName, GameDifficulty.Easy, cells);
+
+        // Assert
+        var evt = sut.DomainEvents.OfType<GameCreatedEvent>().Single();
+        evt.ProfileId.Should().Be(profileId);
+        evt.DisplayName.Should().Be(displayName);
     }
 
     [Fact]
@@ -334,11 +383,12 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
 
     private SudokuGame CreateGameWithCells(IEnumerable<Cell> specificCells)
     {
-        var playerAlias = PlayerAlias.Create("TestPlayer");
+        var profileId = ProfileId.New();
+        var displayName = PlayerAlias.Create("TestPlayer");
         var difficulty = GameDifficulty.Medium;
-        
+
         var cells = GenerateEmptyCells().ToList();
-        
+
         foreach (var cell in specificCells)
         {
             var index = cells.FindIndex(c => c.Row == cell.Row && c.Column == cell.Column);
@@ -347,8 +397,8 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
                 cells[index] = cell;
             }
         }
-        
-        return SudokuGame.Create(playerAlias, difficulty, cells);
+
+        return SudokuGame.Create(profileId, displayName, difficulty, cells);
     }
 
     private IEnumerable<Cell> GenerateEmptyCells()

@@ -6,7 +6,8 @@ namespace Sudoku.Blazor.Models;
 public class GameModel
 {
     public string Id { get; set; } = string.Empty;
-    public string PlayerAlias { get; set; } = string.Empty;
+    public string ProfileId { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
     public string Difficulty { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public GameStatisticsModel Statistics { get; set; } = new();

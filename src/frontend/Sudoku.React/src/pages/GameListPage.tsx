@@ -9,20 +9,20 @@ import styles from './GameListPage.module.css';
 
 export default function GameListPage() {
   const navigate = useNavigate();
-  const { isNewPlayer, playerAlias } = usePlayerService();
+  const { isNewPlayer, profileId } = usePlayerService();
   const { savedGames, isLoaded, isLoading, error, loadGames, deleteGame } = useGameService();
 
   useEffect(() => {
     if (isNewPlayer) { navigate('/'); return; }
-    if (playerAlias) loadGames(playerAlias);
-  }, [isNewPlayer, playerAlias, loadGames, navigate]);
+    if (profileId) loadGames(profileId);
+  }, [isNewPlayer, profileId, loadGames, navigate]);
 
   const handleSelect = (game: GameModel) => navigate(`/game/${game.id}`);
 
   const handleDelete = async (game: GameModel) => {
-    if (!playerAlias) return;
+    if (!profileId) return;
     try {
-      await deleteGame(playerAlias, game.id);
+      await deleteGame(profileId, game.id);
     } catch (e) {
       console.error('Failed to delete game', e);
     }

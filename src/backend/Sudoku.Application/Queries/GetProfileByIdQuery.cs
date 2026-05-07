@@ -3,4 +3,4 @@ using Sudoku.Application.DTOs;
 
 namespace Sudoku.Application.Queries;
 
-public record GetPlayerGamesQuery(string ProfileId) : IQuery<List<GameDto>>;
+public record GetProfileByIdQuery(string ProfileId) : IQuery<ProfileDto?>;

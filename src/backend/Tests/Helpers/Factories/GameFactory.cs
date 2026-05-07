@@ -1,4 +1,4 @@
-﻿using Sudoku.Domain.Entities;
+using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
 
 namespace UnitTests.Helpers.Factories;
@@ -16,11 +16,9 @@ public static class GameFactory
         return game;
     }
 
-    public static SudokuGame CreateGameForPlayer(PlayerAlias playerAlias)
+    public static SudokuGame CreateGameForPlayer(ProfileId profileId, PlayerAlias displayName)
     {
-        var game = CreateGame(CellsFactory.CreateIncompleteCells(), playerAlias: playerAlias);
-
-        return game;
+        return CreateGame(CellsFactory.CreateIncompleteCells(), profileId: profileId, displayName: displayName);
     }
 
     public static SudokuGame CreateEmptyGame()
@@ -72,12 +70,14 @@ public static class GameFactory
         return game;
     }
 
-    private static SudokuGame CreateGame(IEnumerable<Cell> cells, PlayerAlias? playerAlias = null, GameDifficulty? difficulty = null)
+    private static SudokuGame CreateGame(IEnumerable<Cell> cells, ProfileId? profileId = null, PlayerAlias? displayName = null, GameDifficulty? difficulty = null)
     {
         var withDifficulty = difficulty ?? GameDifficulty.Easy;
-        var withPlayerAlias = playerAlias ?? PlayerAlias.Create("DefaultPlayer");
+        var withProfileId = profileId ?? ProfileId.New();
+        var withDisplayName = displayName ?? PlayerAlias.Create("DefaultPlayer");
         var game = SudokuGame.Create(
-            withPlayerAlias,
+            withProfileId,
+            withDisplayName,
             withDifficulty,
             cells);
 

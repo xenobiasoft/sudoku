@@ -20,13 +20,13 @@ public partial class New
 
     private async Task GenerateNewGameAsync()
     {
-        var alias = await PlayerManager.GetCurrentPlayerAsync();
+        var profileId = await PlayerManager.GetCurrentProfileIdAsync();
 
-        Logger.LogInformation("Generating new game with difficulty {Difficulty} for player {PlayerAlias}", Difficulty, alias);
+        Logger.LogInformation("Generating new game with difficulty {Difficulty} for profile {ProfileId}", Difficulty, profileId);
 
-        var gameState = await GameManager.CreateGameAsync(alias, Difficulty);
+        var gameState = await GameManager.CreateGameAsync(profileId, Difficulty);
 
-        Logger.LogInformation("Successfully created game {GameId} for player {PlayerAlias}", gameState.Id, alias);
+        Logger.LogInformation("Successfully created game {GameId} for profile {ProfileId}", gameState.Id, profileId);
 
         Navigation.NavigateTo($"/game/{gameState.Id}");
     }

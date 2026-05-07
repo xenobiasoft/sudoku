@@ -17,24 +17,24 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
     {
         try
         {
-            // We need to find the game by ID, but we don't know the player alias yet
+            // We need to find the game by ID, but we don't know the profile ID yet
             // so we need to search through all blobs to find it
             var gamePrefix = $"*/{id.Value}/";
             SudokuGame? game = null;
-            
+
             await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName, gamePrefix))
             {
-                // The blobName will be in the format "{playerAlias}/{gameId}/{revisionId}.json"
+                // The blobName will be in the format "{profileId}/{gameId}/{revisionId}.json"
                 // We need to get the latest revision
                 var parts = blobName.Split('/');
                 if (parts.Length < 3) continue;
-                
-                var playerAlias = parts[0];
+
+                var profileId = parts[0];
                 var gameId = parts[1];
-                
+
                 if (gameId == id.Value.ToString())
                 {
-                    var latestBlobName = await GetLatestRevisionAsync(playerAlias, id);
+                    var latestBlobName = await GetLatestRevisionAsync(profileId, id);
                     if (latestBlobName != null)
                     {
                         game = await storageService.LoadAsync<SudokuGame>(ContainerName, latestBlobName);
@@ -59,12 +59,12 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
         }
     }
 
-    public async Task<IEnumerable<SudokuGame>> GetByPlayerAsync(PlayerAlias playerAlias)
+    public async Task<IEnumerable<SudokuGame>> GetByProfileIdAsync(ProfileId profileId)
     {
         try
         {
             var games = new List<SudokuGame>();
-            var prefix = $"{playerAlias.Value}/";
+            var prefix = $"{profileId}/";
             var gameIdSet = new HashSet<string>();
 
             await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName, prefix))
@@ -74,11 +74,11 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
                 if (parts.Length < 3) continue;
 
                 var gameId = parts[1];
-                
+
                 // Only process each game ID once
                 if (gameIdSet.Add(gameId))
                 {
-                    var latestBlobName = await GetLatestRevisionAsync(playerAlias.Value, GameId.Create(gameId));
+                    var latestBlobName = await GetLatestRevisionAsync(profileId.ToString(), GameId.Create(gameId));
                     if (latestBlobName != null)
                     {
                         var game = await storageService.LoadAsync<SudokuGame>(ContainerName, latestBlobName);
@@ -90,19 +90,19 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
                 }
             }
 
-            logger.LogDebug("Retrieved {Count} games for player {PlayerAlias}", games.Count, playerAlias.Value);
+            logger.LogDebug("Retrieved {Count} games for profile {ProfileId}", games.Count, profileId);
             return games.OrderByDescending(g => g.CreatedAt);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error retrieving games for player {PlayerAlias}", playerAlias.Value);
+            logger.LogError(ex, "Error retrieving games for profile {ProfileId}", profileId);
             throw;
         }
     }
 
-    public async Task<IEnumerable<SudokuGame>> GetByPlayerAndStatusAsync(PlayerAlias playerAlias, GameStatusEnum statusEnum)
+    public async Task<IEnumerable<SudokuGame>> GetByProfileIdAndStatusAsync(ProfileId profileId, GameStatusEnum statusEnum)
     {
-        var specification = new GameByPlayerAndStatusSpecification(playerAlias, statusEnum);
+        var specification = new GameByProfileIdAndStatusSpecification(profileId, statusEnum);
         return await GetBySpecificationAsync(specification);
     }
 
@@ -114,7 +114,7 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
 
             try
             {
-                var nextBlobName = await GetNextRevisionBlobNameAsync(game.PlayerAlias.Value, game.Id);
+                var nextBlobName = await GetNextRevisionBlobNameAsync(game.ProfileId.ToString(), game.Id);
                 await storageService.SaveAsync(ContainerName, nextBlobName, game);
 
                 logger.LogDebug("Saved game {GameId} to Azure Blob Storage at {BlobName}", game.Id.Value, nextBlobName);
@@ -137,13 +137,13 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
         {
             // Find all revisions for this game
             var gamePrefix = $"*/{id.Value}/";
-            
+
             await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName, gamePrefix))
             {
                 await storageService.DeleteAsync(ContainerName, blobName);
                 logger.LogDebug("Deleted game revision {BlobName} from Azure Blob Storage", blobName);
             }
-            
+
             logger.LogDebug("Deleted all revisions of game {GameId} from Azure Blob Storage", id.Value);
         }
         catch (Exception ex)
@@ -159,12 +159,12 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
         {
             // Check if any blob exists with this game ID
             var gamePrefix = $"*/{id.Value}/";
-            
+
             await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName, gamePrefix))
             {
                 return true;
             }
-            
+
             return false;
         }
         catch (Exception ex)
@@ -247,9 +247,9 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
         return await GetBySpecificationAsync(specification);
     }
 
-    public async Task<IEnumerable<SudokuGame>> GetCompletedGamesAsync(PlayerAlias? playerAlias = null)
+    public async Task<IEnumerable<SudokuGame>> GetCompletedGamesAsync(ProfileId? profileId = null)
     {
-        var specification = new CompletedGamesSpecification(playerAlias);
+        var specification = new CompletedGamesSpecification(profileId);
         return await GetBySpecificationAsync(specification);
     }
 
@@ -265,38 +265,38 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
         return await GetBySpecificationAsync(specification);
     }
 
-    public async Task<int> GetTotalGamesCountAsync(PlayerAlias? playerAlias = null)
+    public async Task<int> GetTotalGamesCountAsync(ProfileId? profileId = null)
     {
         try
         {
             var allGames = await GetAllGamesAsync();
             var query = allGames.AsQueryable();
 
-            if (playerAlias != null)
+            if (profileId != null)
             {
-                query = query.Where(g => g.PlayerAlias == playerAlias);
+                query = query.Where(g => g.ProfileId == profileId);
             }
 
             return query.Count();
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error getting total games count for player {PlayerAlias}", playerAlias?.Value);
+            logger.LogError(ex, "Error getting total games count for profile {ProfileId}", profileId);
             throw;
         }
     }
 
-    public async Task<int> GetCompletedGamesCountAsync(PlayerAlias? playerAlias = null)
+    public async Task<int> GetCompletedGamesCountAsync(ProfileId? profileId = null)
     {
-        var specification = new CompletedGamesSpecification(playerAlias);
+        var specification = new CompletedGamesSpecification(profileId);
         return await CountBySpecificationAsync(specification);
     }
 
-    public async Task<TimeSpan> GetAverageCompletionTimeAsync(PlayerAlias? playerAlias = null)
+    public async Task<TimeSpan> GetAverageCompletionTimeAsync(ProfileId? profileId = null)
     {
         try
         {
-            var completedGames = await GetCompletedGamesAsync(playerAlias);
+            var completedGames = await GetCompletedGamesAsync(profileId);
             var gamesWithCompletionTime = completedGames
                 .Where(g => g.CompletedAt.HasValue && g.StartedAt.HasValue)
                 .ToList();
@@ -313,7 +313,7 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error calculating average completion time for player {PlayerAlias}", playerAlias?.Value);
+            logger.LogError(ex, "Error calculating average completion time for profile {ProfileId}", profileId);
             throw;
         }
     }
@@ -328,14 +328,14 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
             var parts = blobName.Split('/');
             if (parts.Length < 3) continue;
 
-            var playerAlias = parts[0];
+            var profileId = parts[0];
             var gameId = parts[1];
-            
+
             // Only process each game ID once to get the latest revision
             var gameIdString = gameId.ToString();
             if (processedGameIds.Add(gameIdString))
             {
-                var latestBlobName = await GetLatestRevisionAsync(playerAlias, GameId.Create(gameId));
+                var latestBlobName = await GetLatestRevisionAsync(profileId, GameId.Create(gameId));
                 if (latestBlobName != null)
                 {
                     var game = await storageService.LoadAsync<SudokuGame>(ContainerName, latestBlobName);
@@ -350,23 +350,23 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
         return games;
     }
 
-    private async Task<string?> GetLatestRevisionAsync(string playerAlias, GameId gameId)
+    private async Task<string?> GetLatestRevisionAsync(string profileId, GameId gameId)
     {
-        var prefix = $"{playerAlias}/{gameId.Value}/";
+        var prefix = $"{profileId}/{gameId.Value}/";
         var revisions = new List<string>();
-        
+
         await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName, prefix))
         {
             revisions.Add(blobName);
         }
-        
+
         if (revisions.Count == 0)
         {
             return null;
         }
-        
+
         // Sort by revision number (last part of the path, excluding .json)
-        return revisions.OrderByDescending(r => 
+        return revisions.OrderByDescending(r =>
         {
             var parts = r.Split('/');
             var fileName = parts[^1];
@@ -374,12 +374,12 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
             return int.Parse(revNumber);
         }).First();
     }
-    
-    private async Task<string> GetNextRevisionBlobNameAsync(string playerAlias, GameId gameId)
+
+    private async Task<string> GetNextRevisionBlobNameAsync(string profileId, GameId gameId)
     {
-        var prefix = $"{playerAlias}/{gameId.Value}/";
+        var prefix = $"{profileId}/{gameId.Value}/";
         var revisions = new List<int>();
-        
+
         await foreach (var blobName in storageService.GetBlobNamesAsync(ContainerName, prefix))
         {
             var parts = blobName.Split('/');
@@ -390,9 +390,9 @@ public class AzureBlobGameRepository(IAzureStorageService storageService, ILogge
                 revisions.Add(revNumber);
             }
         }
-        
+
         var nextRevision = revisions.Count > 0 ? revisions.Max() + 1 : 1;
-        return $"{playerAlias}/{gameId.Value}/{nextRevision:D5}.json";
+        return $"{profileId}/{gameId.Value}/{nextRevision:D5}.json";
     }
 
     public void Dispose()

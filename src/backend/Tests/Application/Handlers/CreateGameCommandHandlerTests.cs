@@ -28,10 +28,11 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
     public async Task Handle_WithValidCommand_ReturnsSuccessResult()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
+        var profileId = Guid.NewGuid().ToString();
+        var displayName = "TestPlayer";
         var difficulty = "Medium";
         var puzzle = CreateTestPuzzle();
-        var command = new CreateGameCommand(playerAlias, difficulty);
+        var command = new CreateGameCommand(profileId, displayName, difficulty);
 
         _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
             .ReturnsAsync(puzzle);
@@ -55,9 +56,9 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
     public async Task Handle_WhenNoPuzzleAvailable_ReturnsFailureResult()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
+        var profileId = Guid.NewGuid().ToString();
         var difficulty = "Medium";
-        var command = new CreateGameCommand(playerAlias, difficulty);
+        var command = new CreateGameCommand(profileId, "TestPlayer", difficulty);
 
         _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
             .ReturnsAsync((SudokuPuzzle?)null);
@@ -74,12 +75,13 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
     }
 
     [Fact]
-    public async Task Handle_WithInvalidPlayerAlias_ReturnsFailureResult()
+    public async Task Handle_WithInvalidDisplayName_ReturnsFailureResult()
     {
         // Arrange
-        var playerAlias = ""; // Invalid player alias
+        var profileId = Guid.NewGuid().ToString();
+        var displayName = ""; // Invalid display name
         var difficulty = "Medium";
-        var command = new CreateGameCommand(playerAlias, difficulty);
+        var command = new CreateGameCommand(profileId, displayName, difficulty);
 
         var sut = ResolveSut();
 
@@ -97,9 +99,9 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
     public async Task Handle_WithInvalidDifficulty_ReturnsFailureResult()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
+        var profileId = Guid.NewGuid().ToString();
         var difficulty = "InvalidDifficulty";
-        var command = new CreateGameCommand(playerAlias, difficulty);
+        var command = new CreateGameCommand(profileId, "TestPlayer", difficulty);
 
         var sut = ResolveSut();
 
@@ -117,10 +119,9 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
     public async Task Handle_WhenRepositoryThrowsException_ReturnsFailureResult()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
-        var difficulty = "Medium";
+        var profileId = Guid.NewGuid().ToString();
         var puzzle = CreateTestPuzzle();
-        var command = new CreateGameCommand(playerAlias, difficulty);
+        var command = new CreateGameCommand(profileId, "TestPlayer", "Medium");
         var exceptionMessage = "Database error";
 
         _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
@@ -143,9 +144,8 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
     public async Task Handle_WhenDomainExceptionThrown_ReturnsFailureWithDomainMessage()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
-        var difficulty = "Medium";
-        var command = new CreateGameCommand(playerAlias, difficulty);
+        var profileId = Guid.NewGuid().ToString();
+        var command = new CreateGameCommand(profileId, "TestPlayer", "Medium");
         var domainException = new InvalidPlayerAliasException("Invalid player alias");
 
         _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
@@ -165,10 +165,10 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
     public async Task Handle_CallsRepositoryWithCorrectParameters()
     {
         // Arrange
-        var playerAlias = "TestPlayer";
+        var profileId = Guid.NewGuid().ToString();
         var difficulty = "Medium";
         var puzzle = CreateTestPuzzle();
-        var command = new CreateGameCommand(playerAlias, difficulty);
+        var command = new CreateGameCommand(profileId, "TestPlayer", difficulty);
         var expectedDifficulty = GameDifficulty.FromName(difficulty);
 
         _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))

@@ -36,7 +36,7 @@ public class CreateProfileCommandHandlerTests : MoqBaseTestByAbstraction<CreateP
     }
 
     [Fact]
-    public async Task Handle_NormalizesAliasToLowercase()
+    public async Task Handle_PreservesOriginalAliasCase()
     {
         _mockProfileRepository.Setup(x => x.AliasExistsAsync(It.IsAny<PlayerAlias>())).ReturnsAsync(false);
         _mockProfileRepository.Setup(x => x.SaveAsync(It.IsAny<Sudoku.Domain.Entities.UserProfile>())).Returns(Task.CompletedTask);
@@ -45,7 +45,7 @@ public class CreateProfileCommandHandlerTests : MoqBaseTestByAbstraction<CreateP
         var result = await sut.Handle(new CreateProfileCommand("MixedCase"), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value!.Alias.Should().Be("mixedcase");
+        result.Value!.Alias.Should().Be("MixedCase");
     }
 
     [Fact]

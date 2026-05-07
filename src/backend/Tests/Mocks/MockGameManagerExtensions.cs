@@ -7,12 +7,13 @@ public static class MockGameManagerExtensions
 {
     extension(Mock<IGameManager> mock)
     {
-        public void SetupCreateGameAsync(string alias, string difficulty)
+        public void SetupCreateGameAsync(string profileId, string difficulty)
         {
             var game = new GameModel
             {
                 Id = Guid.NewGuid().ToString(),
-                PlayerAlias = alias,
+                ProfileId = profileId,
+                DisplayName = profileId,
                 Difficulty = difficulty,
                 Status = "New",
                 Statistics = new(),
@@ -23,14 +24,14 @@ public static class MockGameManagerExtensions
                 Cells = []
             };
             mock
-                .Setup(x => x.CreateGameAsync(alias, difficulty))
+                .Setup(x => x.CreateGameAsync(profileId, difficulty))
                 .ReturnsAsync(game);
         }
 
         public void SetupLoadGameAsync(GameModel game)
         {
             mock
-                .Setup(x => x.LoadGameAsync(game.PlayerAlias, It.IsAny<string>()))
+                .Setup(x => x.LoadGameAsync(game.ProfileId, It.IsAny<string>()))
                 .ReturnsAsync(game);
         }
 

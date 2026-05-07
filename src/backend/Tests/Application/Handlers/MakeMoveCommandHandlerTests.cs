@@ -236,21 +236,23 @@ public class MakeMoveCommandHandlerTests : MoqBaseTestByAbstraction<MakeMoveComm
 
     private static SudokuGame CreateTestGameInProgress()
     {
-        var playerAlias = PlayerAlias.Create("TestPlayer");
+        var profileId = ProfileId.New();
+        var displayName = PlayerAlias.Create("TestPlayer");
         var difficulty = GameDifficulty.Medium;
         var cells = InitializeCells((i, j) => Cell.CreateEmpty(i, j));
 
-        var game = SudokuGame.Create(playerAlias, difficulty, cells);
+        var game = SudokuGame.Create(profileId, displayName, difficulty, cells);
         game.StartGame();
         return game;
     }
 
     private static SudokuGame CreateTestGameWithDuplicateValue()
     {
-        var playerAlias = PlayerAlias.Create("TestPlayer");
+        var profileId = ProfileId.New();
+        var displayName = PlayerAlias.Create("TestPlayer");
         var difficulty = GameDifficulty.Medium;
         var cells = new List<Cell>();
-        
+
         for (int i = 0; i < 9; i++)
         {
             for (int j = 0; j < 9; j++)
@@ -261,7 +263,7 @@ public class MakeMoveCommandHandlerTests : MoqBaseTestByAbstraction<MakeMoveComm
             }
         }
 
-        var game = SudokuGame.Create(playerAlias, difficulty, cells);
+        var game = SudokuGame.Create(profileId, displayName, difficulty, cells);
         game.StartGame();
         return game;
     }

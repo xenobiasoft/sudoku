@@ -1,4 +1,4 @@
-﻿using Sudoku.Blazor.Models;
+using Sudoku.Blazor.Models;
 using Sudoku.Blazor.Services.Abstractions;
 
 namespace Sudoku.Blazor.Services;
@@ -7,26 +7,19 @@ namespace Sudoku.Blazor.Services;
 /// Manages the lifecycle and state of a game, including creation, loading, saving, deletion, and other game-related
 /// operations.
 /// </summary>
-/// <remarks>This class provides methods to interact with both local storage and a remote game API to manage game
-/// data.  It ensures that game state is synchronized between the client and server, and offers functionality for
-/// creating,  loading, saving, deleting, resetting, and undoing game actions. The class maintains the current game
-/// state  through the <see cref="Game"/> property.</remarks>
-/// <param name="localStorageService"></param>
-/// <param name="gameApiClient"></param>
-/// <param name="gameTimer"></param>
 public partial class GameManager : IGameStateManager
 {
-    public async Task<GameModel> CreateGameAsync(string alias, string difficulty)
+    public async Task<GameModel> CreateGameAsync(string profileId, string difficulty)
     {
-        if (string.IsNullOrEmpty(alias))
+        if (string.IsNullOrEmpty(profileId))
         {
-            throw new ArgumentException("Alias not set.");
+            throw new ArgumentException("Profile ID not set.");
         }
         if (string.IsNullOrEmpty(difficulty))
         {
             throw new ArgumentException("Difficulty not set.");
         }
-        var response = await gameApiClient.CreateGameAsync(alias, difficulty);
+        var response = await gameApiClient.CreateGameAsync(profileId, difficulty);
         if (!response.IsSuccess || response.Value == null)
         {
             throw new Exception("Failed to create game.");
@@ -43,21 +36,21 @@ public partial class GameManager : IGameStateManager
             throw new Exception("No game loaded.");
         }
 
-        await DeleteGameAsync(Game.PlayerAlias, Game.Id);
+        await DeleteGameAsync(Game.ProfileId, Game.Id);
         Game = null;
     }
 
-    public async Task DeleteGameAsync(string alias, string gameId)
+    public async Task DeleteGameAsync(string profileId, string gameId)
     {
-        if (string.IsNullOrEmpty(alias))
+        if (string.IsNullOrEmpty(profileId))
         {
-            throw new ArgumentException("Alias not set.");
+            throw new ArgumentException("Profile ID not set.");
         }
         if (string.IsNullOrEmpty(gameId))
         {
             throw new ArgumentException("Game ID not set.");
         }
-        var result = await gameApiClient.DeleteGameAsync(alias, gameId);
+        var result = await gameApiClient.DeleteGameAsync(profileId, gameId);
         if (!result.IsSuccess && result.StatusCode != 404)
         {
             throw new Exception("Failed to delete game from server.");
@@ -65,18 +58,18 @@ public partial class GameManager : IGameStateManager
         await localStorageService.DeleteGameAsync(gameId);
     }
 
-    public async Task<GameModel> LoadGameAsync(string alias, string gameId)
+    public async Task<GameModel> LoadGameAsync(string profileId, string gameId)
     {
-        if (string.IsNullOrEmpty(alias))
+        if (string.IsNullOrEmpty(profileId))
         {
-            throw new ArgumentException("Alias not set.");
+            throw new ArgumentException("Profile ID not set.");
         }
         if (string.IsNullOrEmpty(gameId))
         {
             throw new ArgumentException("Game ID not set.");
         }
 
-        var response = await gameApiClient.GetGameAsync(alias, gameId);
+        var response = await gameApiClient.GetGameAsync(profileId, gameId);
         if (!response.IsSuccess || response.Value == null)
         {
             throw new Exception("Failed to load game.");
@@ -88,11 +81,11 @@ public partial class GameManager : IGameStateManager
         return Game;
     }
 
-    public async Task<List<GameModel>> LoadGamesAsync(string alias)
+    public async Task<List<GameModel>> LoadGamesAsync(string profileId)
     {
-        if (string.IsNullOrEmpty(alias))
+        if (string.IsNullOrEmpty(profileId))
         {
-            throw new ArgumentException("Alias not set.");
+            throw new ArgumentException("Profile ID not set.");
         }
 
         var games = await localStorageService.LoadGameStatesAsync();
@@ -100,7 +93,7 @@ public partial class GameManager : IGameStateManager
         {
             return games;
         }
-        var response = await gameApiClient.GetAllGamesAsync(alias);
+        var response = await gameApiClient.GetAllGamesAsync(profileId);
         if (!response.IsSuccess || response.Value == null)
         {
             throw new Exception("Failed to load games.");
@@ -114,13 +107,13 @@ public partial class GameManager : IGameStateManager
 
     public async Task<GameModel> ResetGameAsync()
     {
-        var resetResponse = await gameApiClient.ResetGameAsync(Game.PlayerAlias, Game.Id);
+        var resetResponse = await gameApiClient.ResetGameAsync(Game.ProfileId, Game.Id);
         if (!resetResponse.IsSuccess)
         {
             throw new Exception("Failed to reset game.");
         }
 
-        Game = await LoadGameAsync(Game.PlayerAlias, Game.Id);
+        Game = await LoadGameAsync(Game.ProfileId, Game.Id);
 
         return Game;
     }
@@ -133,20 +126,20 @@ public partial class GameManager : IGameStateManager
 
     public async Task SaveGameAsync(int row, int column, int? value)
     {
-        var response = await gameApiClient.MakeMoveAsync(Game.PlayerAlias, Game.Id, row, column, value, CurrentStatistics.PlayDuration);
+        var response = await gameApiClient.MakeMoveAsync(Game.ProfileId, Game.Id, row, column, value, CurrentStatistics.PlayDuration);
         if (!response.IsSuccess)
         {
             throw new Exception("Failed to save move.");
         }
-        Game = await LoadGameAsync(Game.PlayerAlias, Game.Id);
+        Game = await LoadGameAsync(Game.ProfileId, Game.Id);
     }
 
     public Task SaveGameStatusAsync()
     {
-        if (Game.Status == GameStatus.InProgress) return gameApiClient.ResumeGameAsync(Game.PlayerAlias, Game.Id);
-        if (Game.Status == GameStatus.Paused)     return gameApiClient.PauseGameAsync(Game.PlayerAlias, Game.Id);
-        if (Game.Status == GameStatus.Completed)  return gameApiClient.CompleteGameAsync(Game.PlayerAlias, Game.Id);
-        if (Game.Status == GameStatus.Abandoned)  return gameApiClient.AbandonGameAsync(Game.PlayerAlias, Game.Id);
+        if (Game.Status == GameStatus.InProgress) return gameApiClient.ResumeGameAsync(Game.ProfileId, Game.Id);
+        if (Game.Status == GameStatus.Paused)     return gameApiClient.PauseGameAsync(Game.ProfileId, Game.Id);
+        if (Game.Status == GameStatus.Completed)  return gameApiClient.CompleteGameAsync(Game.ProfileId, Game.Id);
+        if (Game.Status == GameStatus.Abandoned)  return gameApiClient.AbandonGameAsync(Game.ProfileId, Game.Id);
         return Task.CompletedTask;
     }
 
@@ -157,20 +150,20 @@ public partial class GameManager : IGameStateManager
             return Game;
         }
 
-        var response = await gameApiClient.UndoMoveAsync(Game.PlayerAlias, Game.Id);
+        var response = await gameApiClient.UndoMoveAsync(Game.ProfileId, Game.Id);
         if (!response.IsSuccess)
         {
             throw new Exception("Failed to undo move.");
         }
 
-        Game = await LoadGameAsync(Game.PlayerAlias, Game.Id);
+        Game = await LoadGameAsync(Game.ProfileId, Game.Id);
 
         return Game;
     }
 
     public async Task AddPossibleValueAsync(int row, int column, int value)
     {
-        var response = await gameApiClient.AddPossibleValueAsync(Game.PlayerAlias, Game.Id, row, column, value);
+        var response = await gameApiClient.AddPossibleValueAsync(Game.ProfileId, Game.Id, row, column, value);
         if (!response.IsSuccess)
         {
             throw new Exception("Failed to add possible value.");
@@ -187,7 +180,7 @@ public partial class GameManager : IGameStateManager
 
     public async Task RemovePossibleValueAsync(int row, int column, int value)
     {
-        var response = await gameApiClient.RemovePossibleValueAsync(Game.PlayerAlias, Game.Id, row, column, value);
+        var response = await gameApiClient.RemovePossibleValueAsync(Game.ProfileId, Game.Id, row, column, value);
         if (!response.IsSuccess)
         {
             throw new Exception("Failed to remove possible value.");
@@ -204,7 +197,7 @@ public partial class GameManager : IGameStateManager
 
     public async Task ClearPossibleValuesAsync(int row, int column)
     {
-        var response = await gameApiClient.ClearPossibleValuesAsync(Game.PlayerAlias, Game.Id, row, column);
+        var response = await gameApiClient.ClearPossibleValuesAsync(Game.ProfileId, Game.Id, row, column);
         if (!response.IsSuccess)
         {
             throw new Exception("Failed to clear possible values.");

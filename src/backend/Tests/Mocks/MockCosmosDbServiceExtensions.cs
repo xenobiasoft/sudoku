@@ -1,4 +1,4 @@
-﻿using Sudoku.Infrastructure.Models;
+using Sudoku.Infrastructure.Models;
 using Sudoku.Infrastructure.Services;
 
 namespace UnitTests.Mocks;
@@ -28,7 +28,7 @@ public static class MockCosmosDbServiceExtensions
                 .ReturnsAsync((SudokuGameDocument?)null);
         }
 
-        public void GetByPlayerAsyncReturnsDocuments(string gameId, IEnumerable<SudokuGameDocument> documents)
+        public void GetByProfileIdAsyncReturnsDocuments(string profileId, IEnumerable<SudokuGameDocument> documents)
         {
             mock
                 .Setup(x => x.QueryItemsAsync<SudokuGameDocument>(It.IsAny<string>(), It.IsAny<IDictionary<string, string>>()))
@@ -42,12 +42,12 @@ public static class MockCosmosDbServiceExtensions
                 It.IsAny<string>()), times);
         }
 
-        public void VerifyUpsertItemAsync(string gameId, string playerAlias, string difficulty, Func<Times> times)
+        public void VerifyUpsertItemAsync(string gameId, string displayName, string difficulty, Func<Times> times)
         {
             mock.Verify(x => x.UpsertItemAsync(
-                    It.Is<SudokuGameDocument>(doc => 
-                        doc.GameId == gameId && 
-                        doc.PlayerAlias == playerAlias && 
+                    It.Is<SudokuGameDocument>(doc =>
+                        doc.GameId == gameId &&
+                        doc.DisplayName == displayName &&
                         doc.Difficulty == difficulty),
                     It.IsAny<string?>()),
                 times);

@@ -14,7 +14,7 @@ import styles from './GamePage.module.css';
 export default function GamePage() {
   const { puzzleId } = useParams<{ puzzleId: string }>();
   const navigate = useNavigate();
-  const { playerAlias, isInitialized, isNewPlayer, isLoading: playerLoading, error: playerError } = usePlayerService();
+  const { profileId, isInitialized, isNewPlayer, isLoading: playerLoading, error: playerError } = usePlayerService();
   const {
     currentGame,
     isGameLoading,
@@ -80,23 +80,23 @@ export default function GamePage() {
   };
 
   const pauseGameStatus = useCallback(async () => {
-    if (!game || solvedRef.current || !playerAlias) return;
+    if (!game || solvedRef.current || !profileId) return;
     stopTimer();
     try {
-      await pauseGame(playerAlias, game.id);
+      await pauseGame(profileId, game.id);
     } catch {
       // ignore
     }
-  }, [game, playerAlias, stopTimer, pauseGame]);
+  }, [game, profileId, stopTimer, pauseGame]);
 
   useEffect(() => {
-    if (!puzzleId || !playerAlias || !isInitialized) return;
+    if (!puzzleId || !profileId || !isInitialized) return;
     const load = async () => {
       try {
-        const g = await getGame(playerAlias, puzzleId);
+        const g = await getGame(profileId, puzzleId);
         const duration = g.statistics?.playDuration ?? '00:00:00';
         startTimer(duration);
-        await resumeGame(playerAlias, g.id);
+        await resumeGame(profileId, g.id);
       } catch (e) {
         console.error('Failed to load game', e);
         navigate('/');
@@ -107,7 +107,7 @@ export default function GamePage() {
       stopTimer();
       clearCurrentGame();
     };
-  }, [puzzleId, playerAlias, isInitialized, getGame, resumeGame, startTimer, stopTimer, navigate, clearCurrentGame]);
+  }, [puzzleId, profileId, isInitialized, getGame, resumeGame, startTimer, stopTimer, navigate, clearCurrentGame]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -131,9 +131,9 @@ export default function GamePage() {
         solvedRef.current = true;
         stopTimer();
         setSolved(true);
-        if (playerAlias) {
+        if (profileId) {
           try {
-            await deleteGame(playerAlias, game.id);
+            await deleteGame(profileId, game.id);
           } catch {
             // ignore
           }
@@ -145,49 +145,49 @@ export default function GamePage() {
   };
 
   const handleNumberInput = async (value: number) => {
-    if (!game || !selectedCell || !playerAlias) return;
+    if (!game || !selectedCell || !profileId) return;
     const cell = game.cells.find(c => c.row === selectedCell.row && c.column === selectedCell.column);
     if (!cell || cell.isFixed) return;
 
     if (pencilMode) {
       await handleCellAction(game.cells, async () => {
         if (cell.possibleValues.includes(value)) {
-          return removePossibleValue(playerAlias, game.id, selectedCell.row, selectedCell.column, value);
+          return removePossibleValue(profileId, game.id, selectedCell.row, selectedCell.column, value);
         } else {
-          return addPossibleValue(playerAlias, game.id, selectedCell.row, selectedCell.column, value);
+          return addPossibleValue(profileId, game.id, selectedCell.row, selectedCell.column, value);
         }
       });
     } else {
       await handleCellAction(game.cells, () =>
-        makeMove(playerAlias, game.id, selectedCell.row, selectedCell.column, value, formatDuration(elapsedRef.current))
+        makeMove(profileId, game.id, selectedCell.row, selectedCell.column, value, formatDuration(elapsedRef.current))
       );
     }
   };
 
   const handleErase = async () => {
-    if (!game || !selectedCell || !playerAlias) return;
+    if (!game || !selectedCell || !profileId) return;
     const cell = game.cells.find(c => c.row === selectedCell.row && c.column === selectedCell.column);
     if (!cell || cell.isFixed) return;
 
     if (pencilMode && cell.possibleValues.length > 0) {
       await handleCellAction(game.cells, () =>
-        clearPossibleValues(playerAlias, game.id, selectedCell.row, selectedCell.column)
+        clearPossibleValues(profileId, game.id, selectedCell.row, selectedCell.column)
       );
     } else if (!pencilMode && cell.hasValue) {
       await handleCellAction(game.cells, () =>
-        makeMove(playerAlias, game.id, selectedCell.row, selectedCell.column, null, formatDuration(elapsedRef.current))
+        makeMove(profileId, game.id, selectedCell.row, selectedCell.column, null, formatDuration(elapsedRef.current))
       );
     }
   };
 
   const handleUndo = async () => {
-    if (!game || !playerAlias) return;
-    await handleCellAction(game.cells, () => undoMove(playerAlias, game.id));
+    if (!game || !profileId) return;
+    await handleCellAction(game.cells, () => undoMove(profileId, game.id));
   };
 
   const handleReset = async () => {
-    if (!game || !playerAlias) return;
-    await handleCellAction(game.cells, () => resetGame(playerAlias, game.id));
+    if (!game || !profileId) return;
+    await handleCellAction(game.cells, () => resetGame(profileId, game.id));
   };
 
   const handleHome = async () => {

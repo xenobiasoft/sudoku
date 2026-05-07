@@ -16,8 +16,7 @@ public class GetProfileByAliasQueryHandler(
     {
         try
         {
-            var normalizedAlias = request.Alias.Trim().ToLowerInvariant();
-            var playerAlias = PlayerAlias.Create(normalizedAlias);
+            var playerAlias = PlayerAlias.Create(request.Alias.Trim());
             var profile = await profileRepository.GetByAliasAsync(playerAlias);
 
             if (profile == null)

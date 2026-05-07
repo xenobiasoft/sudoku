@@ -15,6 +15,12 @@ public class PlayerManager(IPlayerApiClient playerApiClient, ILocalStorageServic
         return await localStorageService.GetAliasAsync();
     }
 
+    public async Task<string?> GetCurrentProfileIdAsync()
+    {
+        var profile = await localStorageService.GetProfileAsync();
+        return profile?.ProfileId;
+    }
+
     public async Task SetCurrentPlayerAsync(string alias)
     {
         if (string.IsNullOrEmpty(alias))

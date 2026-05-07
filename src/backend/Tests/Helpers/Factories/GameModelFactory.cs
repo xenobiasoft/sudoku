@@ -9,7 +9,8 @@ public class GameModelFactory
     private static readonly GameModelFactory Instance = null!;
 
     private string _id = Guid.NewGuid().ToString();
-    private string _playerAlias = string.Empty;
+    private string _profileId = string.Empty;
+    private string _displayName = string.Empty;
     private GameDifficulty _difficulty = GameDifficulty.Easy;
     private string _gameStatus = GameStatus.NotStarted;
     private List<CellModel> _cells = GenerateCellModels(GameDifficulty.Easy, true);
@@ -66,9 +67,15 @@ public class GameModelFactory
         return this;
     }
 
-    public GameModelFactory WithPlayerAlias(string playerAlias)
+    public GameModelFactory WithProfileId(string profileId)
     {
-        _playerAlias = playerAlias;
+        _profileId = profileId;
+        return this;
+    }
+
+    public GameModelFactory WithDisplayName(string displayName)
+    {
+        _displayName = displayName;
         return this;
     }
 
@@ -98,7 +105,8 @@ public class GameModelFactory
         CreatedAt = _createdAt,
         Difficulty = _difficulty,
         PausedAt = _pausedAt,
-        PlayerAlias = _playerAlias,
+        ProfileId = _profileId,
+        DisplayName = _displayName,
         StartedAt = _startedAt,
         Statistics = _statistics,
         Status = _gameStatus,

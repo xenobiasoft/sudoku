@@ -49,10 +49,11 @@ public class DeleteGameCommandHandlerTests : MoqBaseTestByAbstraction<Handler, I
 
     private static SudokuGame CreateTestGame()
     {
-        var playerAlias = PlayerAlias.Create("TestPlayer");
+        var profileId = ProfileId.New();
+        var displayName = PlayerAlias.Create("TestPlayer");
         var difficulty = GameDifficulty.Medium;
         var cells = new List<Cell>();
-        
+
         for (int i = 0; i < 9; i++)
         {
             for (int j = 0; j < 9; j++)
@@ -61,6 +62,6 @@ public class DeleteGameCommandHandlerTests : MoqBaseTestByAbstraction<Handler, I
             }
         }
 
-        return SudokuGame.Create(playerAlias, difficulty, cells);
+        return SudokuGame.Create(profileId, displayName, difficulty, cells);
     }
 }

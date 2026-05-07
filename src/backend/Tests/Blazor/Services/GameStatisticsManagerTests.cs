@@ -26,7 +26,7 @@ public class GameStatisticsManagerTests : MoqBaseTestByAbstraction<GameManager, 
         _testGame = GameModelFactory
             .Build()
             .WithStatus(GameStatus.NotStarted)
-            .WithPlayerAlias(_testAlias)
+            .WithProfileId(_testAlias)
             .WithId(_testGameId)
             .Create();
 
@@ -90,7 +90,7 @@ public class GameStatisticsManagerTests : MoqBaseTestByAbstraction<GameManager, 
         await sut.EndSession();
 
         // Assert
-        _mockGameApiClient.VerifySavesGameStatus(game.PlayerAlias, game.Id, GameStatus.Completed, Times.Once);
+        _mockGameApiClient.VerifySavesGameStatus(game.ProfileId, game.Id, GameStatus.Completed, Times.Once);
     }
 
     [Fact]

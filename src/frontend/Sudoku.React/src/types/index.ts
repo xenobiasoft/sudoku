@@ -34,7 +34,8 @@ export interface ProfileInfo {
 
 export interface GameModel {
   id: string;
-  playerAlias: string;
+  profileId: string;
+  displayName: string;
   difficulty: string;
   status: string;
   statistics: GameStatisticsModel;

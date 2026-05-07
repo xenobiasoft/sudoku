@@ -13,16 +13,16 @@ public class DeletePlayerGamesCommandHandler(IGameRepository gameRepository, ILo
     {
         try
         {
-            var playerAlias = PlayerAlias.Create(cmd.PlayerAlias);
-            
-            var games = await gameRepository.GetByPlayerAsync(playerAlias);
-            
+            var profileId = ProfileId.From(cmd.ProfileId);
+
+            var games = await gameRepository.GetByProfileIdAsync(profileId);
+
             foreach (var game in games)
             {
                 await gameRepository.DeleteAsync(game.Id);
             }
-            
-            logger.LogInformation("Deleted {Count} games for player {PlayerAlias}", games.Count(), playerAlias.Value);
+
+            logger.LogInformation("Deleted {Count} games for profile {ProfileId}", games.Count(), profileId.Value);
             return Result.Success();
         }
         catch (DomainException ex)

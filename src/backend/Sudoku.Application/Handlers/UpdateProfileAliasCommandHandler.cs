@@ -17,8 +17,7 @@ public class UpdateProfileAliasCommandHandler(
     {
         try
         {
-            var normalizedAlias = request.NewAlias.Trim().ToLowerInvariant();
-            var newAlias = PlayerAlias.Create(normalizedAlias);
+            var newAlias = PlayerAlias.Create(request.NewAlias.Trim());
 
             var profile = await profileRepository.GetByIdAsync(ProfileId.From(request.ProfileId));
             if (profile == null)

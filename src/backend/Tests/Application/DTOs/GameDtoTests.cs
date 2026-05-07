@@ -17,7 +17,8 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
 
         // Assert
         dto.Id.Should().Be(game.Id.Value.ToString());
-        dto.PlayerAlias.Should().Be(game.PlayerAlias.Value);
+        dto.ProfileId.Should().Be(game.ProfileId.ToString());
+        dto.DisplayName.Should().Be(game.DisplayName.Value);
         dto.Difficulty.Should().Be(game.Difficulty.Name);
         dto.Status.Should().Be(game.Status.ToString());
         dto.CreatedAt.Should().Be(game.CreatedAt);
@@ -28,6 +29,20 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
         dto.Cells.Should().NotBeNull();
         dto.Cells.Count.Should().Be(game.GetCells().Count);
         dto.MoveHistory.Should().BeEquivalentTo(game.MoveHistory);
+    }
+
+    [Fact]
+    public void FromGame_MapsProfileId_Correctly()
+    {
+        // Arrange
+        var profileId = ProfileId.New();
+        var game = CreateTestGame(profileId: profileId);
+
+        // Act
+        var dto = GameDto.FromGame(game);
+
+        // Assert
+        dto.ProfileId.Should().Be(profileId.ToString());
     }
 
     [Fact]
@@ -74,12 +89,12 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
         // Assert
         dto.Cells.Should().NotBeNull();
         dto.Cells.Count.Should().Be(expectedCellCount);
-        
+
         for (int i = 0; i < expectedCellCount; i++)
         {
             var originalCell = game.GetCells()[i];
             var dtoCell = dto.Cells[i];
-            
+
             dtoCell.Row.Should().Be(originalCell.Row);
             dtoCell.Column.Should().Be(originalCell.Column);
             dtoCell.Value.Should().Be(originalCell.Value);
@@ -128,7 +143,8 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
     {
         // Arrange
         var id = Guid.NewGuid().ToString();
-        var playerAlias = "TestPlayer";
+        var profileId = Guid.NewGuid().ToString();
+        var displayName = "TestPlayer";
         var difficulty = "Medium";
         var status = "InProgress";
         var statistics = new GameStatisticsDto(10, 8, 2, TimeSpan.FromMinutes(5), 80.0);
@@ -140,11 +156,12 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
         var moveHistory = new List<MoveHistoryDto>();
 
         // Act
-        var dto = new GameDto(id, playerAlias, difficulty, status, statistics, createdAt, startedAt, completedAt, pausedAt, cells, moveHistory);
+        var dto = new GameDto(id, profileId, displayName, difficulty, status, statistics, createdAt, startedAt, completedAt, pausedAt, cells, moveHistory);
 
         // Assert
         dto.Id.Should().Be(id);
-        dto.PlayerAlias.Should().Be(playerAlias);
+        dto.ProfileId.Should().Be(profileId);
+        dto.DisplayName.Should().Be(displayName);
         dto.Difficulty.Should().Be(difficulty);
         dto.Status.Should().Be(status);
         dto.Statistics.Should().Be(statistics);
@@ -156,12 +173,13 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
         dto.MoveHistory.Should().BeEquivalentTo(moveHistory);
     }
 
-    private static SudokuGame CreateTestGame()
+    private static SudokuGame CreateTestGame(ProfileId? profileId = null)
     {
-        var playerAlias = PlayerAlias.Create("TestPlayer");
+        var withProfileId = profileId ?? ProfileId.New();
+        var displayName = PlayerAlias.Create("TestPlayer");
         var difficulty = GameDifficulty.Medium;
         var cells = new List<Cell>();
-        
+
         for (int i = 0; i < 9; i++)
         {
             for (int j = 0; j < 9; j++)
@@ -170,6 +188,6 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
             }
         }
 
-        return SudokuGame.Create(playerAlias, difficulty, cells);
+        return SudokuGame.Create(withProfileId, displayName, difficulty, cells);
     }
 }

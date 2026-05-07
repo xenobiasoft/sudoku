@@ -9,8 +9,8 @@ public interface IGameRepository
 {
     // Basic CRUD operations
     Task<SudokuGame?> GetByIdAsync(GameId id);
-    Task<IEnumerable<SudokuGame>> GetByPlayerAsync(PlayerAlias playerAlias);
-    Task<IEnumerable<SudokuGame>> GetByPlayerAndStatusAsync(PlayerAlias playerAlias, GameStatusEnum statusEnum);
+    Task<IEnumerable<SudokuGame>> GetByProfileIdAsync(ProfileId profileId);
+    Task<IEnumerable<SudokuGame>> GetByProfileIdAndStatusAsync(ProfileId profileId, GameStatusEnum statusEnum);
     Task SaveAsync(SudokuGame game);
     Task DeleteAsync(GameId id);
     Task<bool> ExistsAsync(GameId id);
@@ -22,12 +22,12 @@ public interface IGameRepository
 
     // Additional query methods
     Task<IEnumerable<SudokuGame>> GetRecentGamesAsync(int count = 10);
-    Task<IEnumerable<SudokuGame>> GetCompletedGamesAsync(PlayerAlias? playerAlias = null);
+    Task<IEnumerable<SudokuGame>> GetCompletedGamesAsync(ProfileId? profileId = null);
     Task<IEnumerable<SudokuGame>> GetGamesByDifficultyAsync(GameDifficulty difficulty);
     Task<IEnumerable<SudokuGame>> GetGamesByStatusAsync(GameStatusEnum statusEnum);
 
     // Statistics and analytics
-    Task<int> GetTotalGamesCountAsync(PlayerAlias? playerAlias = null);
-    Task<int> GetCompletedGamesCountAsync(PlayerAlias? playerAlias = null);
-    Task<TimeSpan> GetAverageCompletionTimeAsync(PlayerAlias? playerAlias = null);
+    Task<int> GetTotalGamesCountAsync(ProfileId? profileId = null);
+    Task<int> GetCompletedGamesCountAsync(ProfileId? profileId = null);
+    Task<TimeSpan> GetAverageCompletionTimeAsync(ProfileId? profileId = null);
 }

@@ -86,6 +86,7 @@ public class SudokuGameMoveHistoryTests : MoqBaseTestByType<SudokuGame>
         // Act
         var sut = SudokuGame.Reconstitute(
             GameId.New(),
+            ProfileId.New(),
             PlayerAlias.Create("TestPlayer"),
             GameDifficulty.Easy,
             GameStatusEnum.InProgress,
@@ -108,6 +109,7 @@ public class SudokuGameMoveHistoryTests : MoqBaseTestByType<SudokuGame>
     {
         var cells = CellsFactory.CreateEmptyCells();
         return SudokuGame.Create(
+            ProfileId.New(),
             PlayerAlias.Create("TestPlayer"),
             GameDifficulty.Easy,
             cells

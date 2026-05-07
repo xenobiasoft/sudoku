@@ -10,61 +10,61 @@ public interface IGameApiClient
     /// <summary>
     /// Adds a possible value to a cell
     /// </summary>
-    /// <param name="alias">The player's alias</param>
+    /// <param name="profileId">The player's profile ID</param>
     /// <param name="gameId">The game id</param>
     /// <param name="row">The row of the cell</param>
     /// <param name="column">The column of the cell</param>
     /// <param name="value">The possible value to add</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult<bool>> AddPossibleValueAsync(string alias, string gameId, int row, int column, int value);
+    Task<ApiResult<bool>> AddPossibleValueAsync(string profileId, string gameId, int row, int column, int value);
 
     /// <summary>
     /// Clears all possible values from a cell
     /// </summary>
-    /// <param name="alias">The player's alias</param>
+    /// <param name="profileId">The player's profile ID</param>
     /// <param name="gameId">The game id</param>
     /// <param name="row">The row of the cell</param>
     /// <param name="column">The column of the cell</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult<bool>> ClearPossibleValuesAsync(string alias, string gameId, int row, int column);
+    Task<ApiResult<bool>> ClearPossibleValuesAsync(string profileId, string gameId, int row, int column);
 
     /// <summary>
     /// Creates a new game for the specified player with the given difficulty
     /// </summary>
-    /// <param name="alias">The alias of the player</param>
+    /// <param name="profileId">The player's profile ID</param>
     /// <param name="difficulty">The difficulty level of the game</param>
     /// <returns>The created game</returns>
-    Task<ApiResult<GameModel>> CreateGameAsync(string alias, string difficulty);
+    Task<ApiResult<GameModel>> CreateGameAsync(string profileId, string difficulty);
 
     /// <summary>
     /// Deletes all games for a player
     /// </summary>
-    /// <param name="alias">The player's alias</param>
+    /// <param name="profileId">The player's profile ID</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult<bool>> DeleteAllGamesAsync(string alias);
+    Task<ApiResult<bool>> DeleteAllGamesAsync(string profileId);
 
     /// <summary>
     /// Deletes a specific game for a player
     /// </summary>
-    /// <param name="alias">The player's alias</param>
+    /// <param name="profileId">The player's profile ID</param>
     /// <param name="gameId">The game id to delete</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult<bool>> DeleteGameAsync(string alias, string gameId);
+    Task<ApiResult<bool>> DeleteGameAsync(string profileId, string gameId);
 
     /// <summary>
     /// Gets all games for a specific player
     /// </summary>
-    /// <param name="alias">The player's alias</param>
+    /// <param name="profileId">The player's profile ID</param>
     /// <returns>A list of games for the player</returns>
-    Task<ApiResult<List<GameModel>>> GetAllGamesAsync(string alias);
+    Task<ApiResult<List<GameModel>>> GetAllGamesAsync(string profileId);
 
     /// <summary>
     /// Gets a specific game by id for a player
     /// </summary>
-    /// <param name="alias">The player's alias</param>
+    /// <param name="profileId">The player's profile ID</param>
     /// <param name="gameId">The game id</param>
     /// <returns>The game if found</returns>
-    Task<ApiResult<GameModel>> GetGameAsync(string alias, string gameId);
+    Task<ApiResult<GameModel>> GetGameAsync(string profileId, string gameId);
 
     /// <summary>
     /// Attempts to make a move in the specified game for the given player alias asynchronously.
@@ -80,26 +80,26 @@ public interface IGameApiClient
     /// <param name="playDuration">The duration of the player's turn.</param>
     /// <returns>A task that represents the asynchronous operation. The result contains an ApiResult indicating whether the move
     /// was successful (<see langword="true"/> if the move was made; otherwise, <see langword="false"/>).</returns>
-    Task<ApiResult<bool>> MakeMoveAsync(string alias, string gameId, int row, int column, int? value, TimeSpan playDuration);
+    Task<ApiResult<bool>> MakeMoveAsync(string profileId, string gameId, int row, int column, int? value, TimeSpan playDuration);
 
     /// <summary>
     /// Removes a possible value from a cell
     /// </summary>
-    /// <param name="alias">The player's alias</param>
+    /// <param name="profileId">The player's profile ID</param>
     /// <param name="gameId">The game id</param>
     /// <param name="row">The row of the cell</param>
     /// <param name="column">The column of the cell</param>
     /// <param name="value">The possible value to remove</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult<bool>> RemovePossibleValueAsync(string alias, string gameId, int row, int column, int value);
+    Task<ApiResult<bool>> RemovePossibleValueAsync(string profileId, string gameId, int row, int column, int value);
 
     /// <summary>
     /// Resets a game to its initial state
     /// </summary>
-    /// <param name="alias">The player's alias</param>
+    /// <param name="profileId">The player's profile ID</param>
     /// <param name="gameId">The game id</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult<bool>> ResetGameAsync(string alias, string gameId);
+    Task<ApiResult<bool>> ResetGameAsync(string profileId, string gameId);
 
     /// <summary>
     /// Saves the specified game asynchronously.
@@ -110,30 +110,30 @@ public interface IGameApiClient
     Task<ApiResult<bool>> SaveGameAsync(GameModel game);
 
     /// <summary>Abandons an in-progress or paused game.</summary>
-    Task<ApiResult<bool>> AbandonGameAsync(string alias, string gameId);
+    Task<ApiResult<bool>> AbandonGameAsync(string profileId, string gameId);
 
     /// <summary>Marks a game as complete.</summary>
-    Task<ApiResult<bool>> CompleteGameAsync(string alias, string gameId);
+    Task<ApiResult<bool>> CompleteGameAsync(string profileId, string gameId);
 
     /// <summary>Pauses an in-progress game.</summary>
-    Task<ApiResult<bool>> PauseGameAsync(string alias, string gameId);
+    Task<ApiResult<bool>> PauseGameAsync(string profileId, string gameId);
 
     /// <summary>Resumes a paused or not-started game.</summary>
-    Task<ApiResult<bool>> ResumeGameAsync(string alias, string gameId);
+    Task<ApiResult<bool>> ResumeGameAsync(string profileId, string gameId);
 
     /// <summary>
     /// Undoes the last move in a game
     /// </summary>
-    /// <param name="alias">The player's alias</param>
+    /// <param name="profileId">The player's profile ID</param>
     /// <param name="gameId">The game id</param>
     /// <returns>Success or failure result</returns>
-    Task<ApiResult<bool>> UndoMoveAsync(string alias, string gameId);
+    Task<ApiResult<bool>> UndoMoveAsync(string profileId, string gameId);
 
     /// <summary>
     /// Validates a game to check if it's completed correctly
     /// </summary>
-    /// <param name="alias">The player's alias</param>
+    /// <param name="profileId">The player's profile ID</param>
     /// <param name="gameId">The game id</param>
     /// <returns>Result of the validation</returns>
-    Task<ApiResult<ValidationResultModel>> ValidateGameAsync(string alias, string gameId);
+    Task<ApiResult<ValidationResultModel>> ValidateGameAsync(string profileId, string gameId);
 }

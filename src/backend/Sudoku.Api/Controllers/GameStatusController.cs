@@ -6,7 +6,7 @@ using Sudoku.Application.Queries;
 
 namespace Sudoku.Api.Controllers
 {
-    [Route("api/players/{alias}/games/{gameId}/status")]
+    [Route("api/players/{profileId}/games/{gameId}/status")]
     [ApiController]
     public class GameStatusController(IMediator mediator) : BaseGameController(mediator)
     {
@@ -17,9 +17,9 @@ namespace Sudoku.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> PauseGameAsync(string alias, string gameId)
+        public async Task<ActionResult> PauseGameAsync(string profileId, string gameId)
         {
-            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(profileId, gameId);
             if (error != null) return error;
 
             return HandleUnitResult(await Mediator.Send(new PauseGameCommand(gameId)));
@@ -32,9 +32,9 @@ namespace Sudoku.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> ResumeGameAsync(string alias, string gameId)
+        public async Task<ActionResult> ResumeGameAsync(string profileId, string gameId)
         {
-            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(profileId, gameId);
             if (error != null) return error;
 
             return HandleUnitResult(await Mediator.Send(new ResumeGameCommand(gameId)));
@@ -47,9 +47,9 @@ namespace Sudoku.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> AbandonGameAsync(string alias, string gameId)
+        public async Task<ActionResult> AbandonGameAsync(string profileId, string gameId)
         {
-            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(profileId, gameId);
             if (error != null) return error;
 
             return HandleUnitResult(await Mediator.Send(new AbandonGameCommand(gameId)));
@@ -62,9 +62,9 @@ namespace Sudoku.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> CompleteGameAsync(string alias, string gameId)
+        public async Task<ActionResult> CompleteGameAsync(string profileId, string gameId)
         {
-            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(profileId, gameId);
             if (error != null) return error;
 
             return HandleUnitResult(await Mediator.Send(new CompleteGameCommand(gameId)));
@@ -77,9 +77,9 @@ namespace Sudoku.Api.Controllers
         [ProducesResponseType(typeof(ValidationResultDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ValidationResultDto>> ValidateGameAsync(string alias, string gameId)
+        public async Task<ActionResult<ValidationResultDto>> ValidateGameAsync(string profileId, string gameId)
         {
-            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(profileId, gameId);
             if (error != null) return error;
 
             var result = await Mediator.Send(new ValidateGameQuery(gameId));

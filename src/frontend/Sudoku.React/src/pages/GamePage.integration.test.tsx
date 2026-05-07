@@ -42,7 +42,7 @@ beforeEach(() => {
   // Mock usePlayerService to return successful initialization
   vi.mocked(usePlayerService).mockReturnValue({
     playerAlias: 'test-player',
-    profileId: null,
+    profileId: 'test-player',
     isInitialized: true,
     isNewPlayer: false,
     isLoading: false,

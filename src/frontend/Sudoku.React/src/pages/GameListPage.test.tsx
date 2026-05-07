@@ -27,7 +27,7 @@ function renderPage() {
 
 beforeEach(() => {
   mockNavigate.mockClear();
-  mockUsePlayerService.mockReturnValue({ isNewPlayer: false, isInitialized: true, playerAlias: 'test-user' });
+  mockUsePlayerService.mockReturnValue({ isNewPlayer: false, isInitialized: true, playerAlias: 'test-user', profileId: 'profile-test-user' });
   mockUseGameService.mockReturnValue({ savedGames: [], isLoaded: true, isLoading: false, error: null, loadGames: vi.fn(), deleteGame: vi.fn(), clearCache: vi.fn(), refreshGames: vi.fn() });
 });
 
@@ -60,7 +60,7 @@ describe('GameListPage', () => {
     const mockLoadGames = vi.fn();
     mockUseGameService.mockReturnValue({ savedGames: [], isLoaded: true, isLoading: false, error: null, loadGames: mockLoadGames, deleteGame: vi.fn() });
     renderPage();
-    await waitFor(() => { expect(mockLoadGames).toHaveBeenCalledWith('test-user'); });
+    await waitFor(() => { expect(mockLoadGames).toHaveBeenCalledWith('profile-test-user'); });
   });
 
   it('navigates to /game/:id when a game is selected', async () => {
@@ -79,11 +79,11 @@ describe('GameListPage', () => {
     mockUseGameService.mockReturnValue({ savedGames: [game], isLoaded: true, isLoading: false, error: null, loadGames: vi.fn(), deleteGame: mockDeleteGame });
     renderPage();
     await user.click(screen.getByTitle('Delete game'));
-    await waitFor(() => { expect(mockDeleteGame).toHaveBeenCalledWith('test-user', 'del123'); });
+    await waitFor(() => { expect(mockDeleteGame).toHaveBeenCalledWith('profile-test-user', 'del123'); });
   });
 
   it('redirects to / when new player visits', () => {
-    mockUsePlayerService.mockReturnValue({ isNewPlayer: true, isInitialized: false, playerAlias: null });
+    mockUsePlayerService.mockReturnValue({ isNewPlayer: true, isInitialized: false, playerAlias: null, profileId: null });
     renderPage();
     expect(mockNavigate).toHaveBeenCalledWith('/');
   });

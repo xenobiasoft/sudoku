@@ -14,7 +14,8 @@ public class CreateGameCommandHandler(IGameRepository gameRepository, IPuzzleGen
     {
         try
         {
-            var playerAlias = PlayerAlias.Create(request.PlayerAlias);
+            var profileId = ProfileId.From(request.ProfileId);
+            var displayName = PlayerAlias.Create(request.DisplayName);
             var difficulty = GameDifficulty.FromName(request.Difficulty);
             var puzzle = await puzzleGenerator.GeneratePuzzleAsync(difficulty);
 
@@ -23,22 +24,22 @@ public class CreateGameCommandHandler(IGameRepository gameRepository, IPuzzleGen
                 return Result<string>.Failure($"No puzzle available for difficulty: {difficulty.Name}");
             }
 
-            var game = SudokuGame.Create(playerAlias, difficulty, puzzle.Cells);
+            var game = SudokuGame.Create(profileId, displayName, difficulty, puzzle.Cells);
 
             await gameRepository.SaveAsync(game);
 
-            logger.LogInformation("Created game {GameId} for player {PlayerAlias} with difficulty {Difficulty}",
-                game.Id.Value, playerAlias.Value, difficulty.Name);
+            logger.LogInformation("Created game {GameId} for profile {ProfileId} with difficulty {Difficulty}",
+                game.Id.Value, profileId.Value, difficulty.Name);
             return Result<string>.Success(game.Id.Value.ToString());
         }
         catch (DomainException ex)
         {
-            logger.LogWarning("Failed to create game for player {PlayerAlias}: {Error}", request.PlayerAlias, ex.Message);
+            logger.LogWarning("Failed to create game for profile {ProfileId}: {Error}", request.ProfileId, ex.Message);
             return Result<string>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An unexpected error occurred creating game for player {PlayerAlias}", request.PlayerAlias);
+            logger.LogError(ex, "An unexpected error occurred creating game for profile {ProfileId}", request.ProfileId);
             return Result<string>.Failure($"An unexpected error occurred: {ex.Message}");
         }
     }

@@ -35,7 +35,8 @@ export function make81Cells(overrides: Partial<CellModel>[] = []): CellModel[] {
 export function makeGame(overrides: Partial<GameModel> = {}): GameModel {
   return {
     id: 'game-1',
-    playerAlias: 'player1',
+    profileId: 'profile-1',
+    displayName: 'player1',
     difficulty: 'Easy',
     status: 'InProgress',
     statistics: makeStats(),
