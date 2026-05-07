@@ -64,7 +64,7 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     }
 
     [Fact]
-    public async Task AddPossibleValueAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
+    public async Task AddPossibleValueAsync_WhenGameNotFound_ReturnsNotFound()
     {
         // Arrange
         var request = new PossibleValueRequest(1, 1, 5);
@@ -78,8 +78,8 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
         var result = await Sut.AddPossibleValueAsync("TestPlayer", Guid.NewGuid().ToString(), request);
 
         // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
+        var notFoundResult = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+        notFoundResult.Value.Should().Be(errorMessage);
     }
 
     [Fact]
@@ -182,7 +182,7 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     }
 
     [Fact]
-    public async Task ClearPossibleValuesAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
+    public async Task ClearPossibleValuesAsync_WhenGameNotFound_ReturnsNotFound()
     {
         // Arrange
         var request = new CellRequest(1, 1);
@@ -196,8 +196,8 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
         var result = await Sut.ClearPossibleValuesAsync("TestPlayer", Guid.NewGuid().ToString(), request);
 
         // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
+        var notFoundResult = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+        notFoundResult.Value.Should().Be(errorMessage);
     }
 
     [Fact]
@@ -300,7 +300,7 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
     }
 
     [Fact]
-    public async Task RemovePossibleValueAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
+    public async Task RemovePossibleValueAsync_WhenGameNotFound_ReturnsNotFound()
     {
         // Arrange
         var request = new PossibleValueRequest(1, 1, 5);
@@ -314,8 +314,8 @@ public class PossibleValuesControllerTests : BaseGameControllerTests<PossibleVal
         var result = await Sut.RemovePossibleValueAsync("TestPlayer", Guid.NewGuid().ToString(), request);
 
         // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
+        var notFoundResult = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+        notFoundResult.Value.Should().Be(errorMessage);
     }
 
     [Fact]

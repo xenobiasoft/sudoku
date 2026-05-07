@@ -20,7 +20,7 @@ public abstract class BaseGameController(IMediator mediator) : ControllerBase
         var gameResult = await mediator.Send(new GetGameQuery(gameId));
         if (!gameResult.IsSuccess)
         {
-            return (null, BadRequest(gameResult.Error));
+            return (null, NotFound(gameResult.Error));
         }
 
         if (gameResult.Value.PlayerAlias != alias)
