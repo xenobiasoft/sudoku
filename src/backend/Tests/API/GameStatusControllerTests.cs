@@ -56,7 +56,7 @@ public class GameStatusControllerTests : BaseGameControllerTests<GameStatusContr
     }
 
     [Fact]
-    public async Task PauseGameAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
+    public async Task PauseGameAsync_WhenGameNotFound_ReturnsNotFound()
     {
         // Arrange
         var errorMessage = "Failed to get game";
@@ -69,8 +69,8 @@ public class GameStatusControllerTests : BaseGameControllerTests<GameStatusContr
         var result = await Sut.PauseGameAsync("TestPlayer", Guid.NewGuid().ToString());
 
         // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
+        var notFoundResult = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+        notFoundResult.Value.Should().Be(errorMessage);
     }
 
     [Fact]
@@ -164,7 +164,7 @@ public class GameStatusControllerTests : BaseGameControllerTests<GameStatusContr
     }
 
     [Fact]
-    public async Task ResumeGameAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
+    public async Task ResumeGameAsync_WhenGameNotFound_ReturnsNotFound()
     {
         // Arrange
         var errorMessage = "Failed to get game";
@@ -177,8 +177,8 @@ public class GameStatusControllerTests : BaseGameControllerTests<GameStatusContr
         var result = await Sut.ResumeGameAsync("TestPlayer", Guid.NewGuid().ToString());
 
         // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
+        var notFoundResult = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+        notFoundResult.Value.Should().Be(errorMessage);
     }
 
     [Fact]
@@ -272,7 +272,7 @@ public class GameStatusControllerTests : BaseGameControllerTests<GameStatusContr
     }
 
     [Fact]
-    public async Task AbandonGameAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
+    public async Task AbandonGameAsync_WhenGameNotFound_ReturnsNotFound()
     {
         // Arrange
         var errorMessage = "Failed to get game";
@@ -285,8 +285,8 @@ public class GameStatusControllerTests : BaseGameControllerTests<GameStatusContr
         var result = await Sut.AbandonGameAsync("TestPlayer", Guid.NewGuid().ToString());
 
         // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
+        var notFoundResult = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+        notFoundResult.Value.Should().Be(errorMessage);
     }
 
     [Fact]
@@ -380,7 +380,7 @@ public class GameStatusControllerTests : BaseGameControllerTests<GameStatusContr
     }
 
     [Fact]
-    public async Task CompleteGameAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
+    public async Task CompleteGameAsync_WhenGameNotFound_ReturnsNotFound()
     {
         // Arrange
         var errorMessage = "Failed to get game";
@@ -393,8 +393,8 @@ public class GameStatusControllerTests : BaseGameControllerTests<GameStatusContr
         var result = await Sut.CompleteGameAsync("TestPlayer", Guid.NewGuid().ToString());
 
         // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
+        var notFoundResult = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+        notFoundResult.Value.Should().Be(errorMessage);
     }
 
     [Fact]
@@ -491,7 +491,7 @@ public class GameStatusControllerTests : BaseGameControllerTests<GameStatusContr
     }
 
     [Fact]
-    public async Task ValidateGameAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
+    public async Task ValidateGameAsync_WhenGameNotFound_ReturnsNotFound()
     {
         // Arrange
         var errorMessage = "Failed to get game";
@@ -504,8 +504,8 @@ public class GameStatusControllerTests : BaseGameControllerTests<GameStatusContr
         var result = await Sut.ValidateGameAsync("TestPlayer", Guid.NewGuid().ToString());
 
         // Assert
-        var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
+        var notFoundResult = result.Result.Should().BeOfType<NotFoundObjectResult>().Subject;
+        notFoundResult.Value.Should().Be(errorMessage);
     }
 
     [Fact]

@@ -64,7 +64,7 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
     }
 
     [Fact]
-    public async Task MakeMoveAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
+    public async Task MakeMoveAsync_WhenGameNotFound_ReturnsNotFound()
     {
         // Arrange
         var playerAlias = "TestPlayer";
@@ -80,8 +80,8 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         var result = await Sut.MakeMoveAsync(playerAlias, gameId, move);
 
         // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
+        var notFoundResult = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+        notFoundResult.Value.Should().Be(errorMessage);
     }
 
     [Fact]
@@ -178,7 +178,7 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
     }
 
     [Fact]
-    public async Task ResetGameAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
+    public async Task ResetGameAsync_WhenGameNotFound_ReturnsNotFound()
     {
         // Arrange
         var playerAlias = "TestPlayer";
@@ -193,8 +193,8 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         var result = await Sut.ResetGameAsync(playerAlias, gameId);
 
         // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
+        var notFoundResult = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+        notFoundResult.Value.Should().Be(errorMessage);
     }
 
     [Fact]
@@ -289,7 +289,7 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
     }
 
     [Fact]
-    public async Task UndoMoveAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
+    public async Task UndoMoveAsync_WhenGameNotFound_ReturnsNotFound()
     {
         // Arrange
         var playerAlias = "TestPlayer";
@@ -304,8 +304,8 @@ public class GameActionsControllerTests : BaseGameControllerTests<GameActionsCon
         var result = await Sut.UndoMoveAsync(playerAlias, gameId);
 
         // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
+        var notFoundResult = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+        notFoundResult.Value.Should().Be(errorMessage);
     }
 
     [Fact]

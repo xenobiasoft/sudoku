@@ -110,12 +110,12 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
     }
 
     [Fact]
-    public async Task GetGameAsync_WhenServiceReturnsFailed_ReturnsBadRequest()
+    public async Task GetGameAsync_WhenGameNotFound_ReturnsNotFound()
     {
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var errorMessage = "Failed to get game";
+        var errorMessage = "Game not found with ID: " + gameId;
 
         MockMediator
             .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
@@ -125,8 +125,8 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
         var result = await Sut.GetGameAsync(playerAlias, gameId);
 
         // Assert
-        var badRequestResult = result.Result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
+        var notFoundResult = result.Result.Should().BeOfType<NotFoundObjectResult>().Subject;
+        notFoundResult.Value.Should().Be(errorMessage);
     }
 
     [Fact]
@@ -259,12 +259,12 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
     }
 
     [Fact]
-    public async Task DeleteGameAsync_WhenGetGameReturnsFailed_ReturnsBadRequest()
+    public async Task DeleteGameAsync_WhenGameNotFound_ReturnsNotFound()
     {
         // Arrange
         var playerAlias = "TestPlayer";
         var gameId = Guid.NewGuid().ToString();
-        var errorMessage = "Failed to get game";
+        var errorMessage = "Game not found with ID: " + gameId;
 
         MockMediator
             .Setup(x => x.Send(It.IsAny<GetGameQuery>(), It.IsAny<CancellationToken>()))
@@ -274,8 +274,8 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
         var result = await Sut.DeleteGameAsync(playerAlias, gameId);
 
         // Assert
-        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
-        badRequestResult.Value.Should().Be(errorMessage);
+        var notFoundResult = result.Should().BeOfType<NotFoundObjectResult>().Subject;
+        notFoundResult.Value.Should().Be(errorMessage);
     }
 
     [Fact]
