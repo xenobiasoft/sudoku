@@ -38,6 +38,22 @@ public static class GameFactory
         return CreateGame(CellsFactory.CreateEmptyCells());
     }
 
+    public static SudokuGame CreatePausedGame()
+    {
+        var game = CreateGame(CellsFactory.CreateIncompleteCells());
+        game.StartGame();
+        game.PauseGame();
+        return game;
+    }
+
+    public static SudokuGame CreateGameWithPossibleValue(int row, int column, int value)
+    {
+        var game = CreateGame(CellsFactory.CreateEmptyCells());
+        game.StartGame();
+        game.AddPossibleValue(row, column, value);
+        return game;
+    }
+
     public static SudokuGame CreateGameWithCells(IEnumerable<Cell> cells)
     {
         return CreateGame(cells);
