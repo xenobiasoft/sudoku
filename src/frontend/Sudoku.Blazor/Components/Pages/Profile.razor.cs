@@ -72,12 +72,12 @@ public partial class Profile
         _editError = null;
         if (_alias == null) return;
 
-        var normalizedAlias = _editModel.NewAlias.Trim().ToLowerInvariant();
+        var aliasName = _editModel.NewAlias.Trim();
         _isSaving = true;
 
         try
         {
-            var result = await PlayerApiClient.UpdateProfileAliasAsync(_alias, normalizedAlias);
+            var result = await PlayerApiClient.UpdateProfileAliasAsync(_alias, aliasName);
 
             if (result.IsSuccess && result.Value != null)
             {

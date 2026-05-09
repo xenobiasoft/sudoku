@@ -16,7 +16,7 @@ public class NewPageTests : BunitContext
         var alias = "game-alias";
         _mockGameManager = new Mock<IGameManager>();
         var playerManager = new Mock<IPlayerManager>();
-        playerManager.SetupGetCurrentPlayerAsync(alias);
+        playerManager.SetupGetCurrentProfileIdAsync(alias);
 
         _mockGameManager.SetupCreateGameAsync(alias, "Medium");
 

@@ -16,29 +16,29 @@ public class GetPlayerGamesByStatusQueryHandler(IGameRepository gameRepository, 
     {
         try
         {
-            var playerAlias = PlayerAlias.Create(request.PlayerAlias);
+            var profileId = ProfileId.From(request.ProfileId);
 
             if (!Enum.TryParse<GameStatusEnum>(request.Status, true, out var gameStatus))
             {
                 return Result<List<GameDto>>.Failure($"Invalid game statusEnum: {request.Status}");
             }
 
-            var games = await gameRepository.GetByPlayerAndStatusAsync(playerAlias, gameStatus);
+            var games = await gameRepository.GetByProfileIdAndStatusAsync(profileId, gameStatus);
 
             var gameDtos = games.Select(GameDto.FromGame).ToList();
 
-            logger.LogInformation("Retrieved {Count} games with status {Status} for player {PlayerAlias}", 
-                gameDtos.Count, gameStatus, playerAlias.Value);
+            logger.LogInformation("Retrieved {Count} games with status {Status} for profile {ProfileId}",
+                gameDtos.Count, gameStatus, profileId.Value);
             return Result<List<GameDto>>.Success(gameDtos);
         }
         catch (DomainException ex)
         {
-            logger.LogWarning("Failed to get games by status for player {PlayerAlias}: {Error}", request.PlayerAlias, ex.Message);
+            logger.LogWarning("Failed to get games by status for profile {ProfileId}: {Error}", request.ProfileId, ex.Message);
             return Result<List<GameDto>>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An unexpected error occurred getting games by status for player {PlayerAlias}", request.PlayerAlias);
+            logger.LogError(ex, "An unexpected error occurred getting games by status for profile {ProfileId}", request.ProfileId);
             return Result<List<GameDto>>.Failure($"An unexpected error occurred: {ex.Message}");
         }
     }

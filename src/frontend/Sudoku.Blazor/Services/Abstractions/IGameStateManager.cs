@@ -9,11 +9,11 @@ public interface IGameStateManager : IGameProvider
 {
     Task AddPossibleValueAsync(int row, int column, int value);
     Task ClearPossibleValuesAsync(int row, int column);
-    Task<GameModel> CreateGameAsync(string alias, string difficulty);
+    Task<GameModel> CreateGameAsync(string profileId, string difficulty);
     Task DeleteGameAsync();
-    Task DeleteGameAsync(string alias, string gameId);
-    Task<GameModel> LoadGameAsync(string alias, string gameId);
-    Task<List<GameModel>> LoadGamesAsync(string alias);
+    Task DeleteGameAsync(string profileId, string gameId);
+    Task<GameModel> LoadGameAsync(string profileId, string gameId);
+    Task<List<GameModel>> LoadGamesAsync(string profileId);
     Task RemovePossibleValueAsync(int row, int column, int value);
     Task<GameModel> ResetGameAsync();
     Task SaveGameAsync();

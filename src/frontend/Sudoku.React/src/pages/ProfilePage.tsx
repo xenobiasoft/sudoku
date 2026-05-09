@@ -40,7 +40,7 @@ export default function ProfilePage() {
   }, [isInitialized, playerAlias]);
 
   const validateAlias = (value: string): string | null => {
-    const trimmed = value.trim().toLowerCase();
+    const trimmed = value.trim();
     if (trimmed.length < 2) return 'Alias must be at least 2 characters.';
     if (trimmed.length > 50) return 'Alias cannot exceed 50 characters.';
     if (!/^[a-z0-9 ]+$/.test(trimmed)) return 'Alias can only contain letters, numbers, and spaces.';
@@ -72,7 +72,7 @@ export default function ProfilePage() {
 
     setIsSaving(true);
     try {
-      const result = await apiClient.updateProfileAlias(playerAlias, newAlias.trim().toLowerCase());
+      const result = await apiClient.updateProfileAlias(playerAlias, newAlias.trim());
 
       if (result.status === 200 && result.data) {
         const stored = localStorage.getItem(PROFILE_KEY);

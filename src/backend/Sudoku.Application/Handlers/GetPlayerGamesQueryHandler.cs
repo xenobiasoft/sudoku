@@ -14,21 +14,21 @@ public class GetPlayerGamesQueryHandler(IGameRepository gameRepository, ILogger<
     {
         try
         {
-            var playerAlias = PlayerAlias.Create(request.PlayerAlias);
-            var games = await gameRepository.GetByPlayerAsync(playerAlias);
+            var profileId = ProfileId.From(request.ProfileId);
+            var games = await gameRepository.GetByProfileIdAsync(profileId);
             var gameDtos = games.Select(GameDto.FromGame).ToList();
 
-            logger.LogInformation("Retrieved {Count} games for player {PlayerAlias}", gameDtos.Count, playerAlias.Value);
+            logger.LogInformation("Retrieved {Count} games for profile {ProfileId}", gameDtos.Count, profileId.Value);
             return Result<List<GameDto>>.Success(gameDtos);
         }
         catch (DomainException ex)
         {
-            logger.LogWarning("Failed to get games for player {PlayerAlias}: {Error}", request.PlayerAlias, ex.Message);
+            logger.LogWarning("Failed to get games for profile {ProfileId}: {Error}", request.ProfileId, ex.Message);
             return Result<List<GameDto>>.Failure(ex.Message);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An unexpected error occurred getting games for player {PlayerAlias}", request.PlayerAlias);
+            logger.LogError(ex, "An unexpected error occurred getting games for profile {ProfileId}", request.ProfileId);
             return Result<List<GameDto>>.Failure($"An unexpected error occurred: {ex.Message}");
         }
     }

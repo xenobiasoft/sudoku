@@ -33,7 +33,6 @@ public class UpdateProfileAliasCommandHandlerTests : MoqBaseTestByAbstraction<Up
         _mockProfileRepository.Setup(x => x.GetByIdAsync(It.IsAny<ProfileId>())).ReturnsAsync(profile);
         _mockProfileRepository.Setup(x => x.AliasExistsAsync(It.IsAny<PlayerAlias>())).ReturnsAsync(false);
         _mockProfileRepository.Setup(x => x.SaveAsync(It.IsAny<UserProfile>())).Returns(Task.CompletedTask);
-        _mockGameRepository.Setup(x => x.GetByPlayerAsync(It.IsAny<PlayerAlias>())).ReturnsAsync([]);
 
         var sut = ResolveSut();
 
@@ -86,7 +85,7 @@ public class UpdateProfileAliasCommandHandlerTests : MoqBaseTestByAbstraction<Up
     }
 
     [Fact]
-    public async Task Handle_NormalizesNewAliasToLowercase()
+    public async Task Handle_PreservesOriginalAliasCase()
     {
         var existingAlias = PlayerAlias.Create("oldalias");
         var profile = UserProfile.Create(existingAlias);
@@ -94,14 +93,13 @@ public class UpdateProfileAliasCommandHandlerTests : MoqBaseTestByAbstraction<Up
         _mockProfileRepository.Setup(x => x.GetByIdAsync(It.IsAny<ProfileId>())).ReturnsAsync(profile);
         _mockProfileRepository.Setup(x => x.AliasExistsAsync(It.IsAny<PlayerAlias>())).ReturnsAsync(false);
         _mockProfileRepository.Setup(x => x.SaveAsync(It.IsAny<UserProfile>())).Returns(Task.CompletedTask);
-        _mockGameRepository.Setup(x => x.GetByPlayerAsync(It.IsAny<PlayerAlias>())).ReturnsAsync([]);
 
         var sut = ResolveSut();
 
         var result = await sut.Handle(new UpdateProfileAliasCommand(profile.Id.ToString(), "NewAlias"), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value!.Alias.Should().Be("newalias");
+        result.Value!.Alias.Should().Be("NewAlias");
     }
 
     [Fact]
@@ -114,7 +112,6 @@ public class UpdateProfileAliasCommandHandlerTests : MoqBaseTestByAbstraction<Up
         _mockProfileRepository.Setup(x => x.AliasExistsAsync(It.IsAny<PlayerAlias>())).ReturnsAsync(false);
         _mockProfileRepository.Setup(x => x.SaveAsync(It.IsAny<UserProfile>()))
             .ThrowsAsync(new Exception("Storage failure"));
-        _mockGameRepository.Setup(x => x.GetByPlayerAsync(It.IsAny<PlayerAlias>())).ReturnsAsync([]);
 
         var sut = ResolveSut();
 
@@ -133,7 +130,6 @@ public class UpdateProfileAliasCommandHandlerTests : MoqBaseTestByAbstraction<Up
         _mockProfileRepository.Setup(x => x.GetByIdAsync(It.IsAny<ProfileId>())).ReturnsAsync(profile);
         _mockProfileRepository.Setup(x => x.AliasExistsAsync(It.IsAny<PlayerAlias>())).ReturnsAsync(false);
         _mockProfileRepository.Setup(x => x.SaveAsync(It.IsAny<UserProfile>())).Returns(Task.CompletedTask);
-        _mockGameRepository.Setup(x => x.GetByPlayerAsync(It.IsAny<PlayerAlias>())).ReturnsAsync([]);
 
         var sut = ResolveSut();
 

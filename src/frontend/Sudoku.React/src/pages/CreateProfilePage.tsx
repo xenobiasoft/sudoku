@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/apiClient';
 import type { ProfileInfo } from '../types';
@@ -13,14 +13,14 @@ export default function CreateProfilePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validate = (value: string): string | null => {
-    const trimmed = value.trim().toLowerCase();
+    const trimmed = value.trim();
     if (trimmed.length < 2) return 'Alias must be at least 2 characters.';
     if (trimmed.length > 50) return 'Alias cannot exceed 50 characters.';
-    if (!/^[a-z0-9 ]+$/.test(trimmed)) return 'Alias can only contain letters, numbers, and spaces.';
+    if (!/^[a-z0-9 ]+$/i.test(trimmed)) return 'Alias can only contain letters, numbers, and spaces.';
     return null;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
 
@@ -32,7 +32,7 @@ export default function CreateProfilePage() {
 
     setIsSubmitting(true);
     try {
-      const result = await apiClient.createProfile(alias.trim().toLowerCase());
+      const result = await apiClient.createProfile(alias.trim());
 
       if (result.status === 201 && result.data) {
         const info: ProfileInfo = { profileId: result.data.profileId, alias: result.data.alias };

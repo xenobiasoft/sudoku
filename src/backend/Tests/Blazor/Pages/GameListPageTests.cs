@@ -37,8 +37,8 @@ public class GameListPageTests : BunitContext
         SetupReturningPlayer();
         var games = new List<GameModel>
         {
-            new() { Id = Guid.NewGuid().ToString(), PlayerAlias = Alias },
-            new() { Id = Guid.NewGuid().ToString(), PlayerAlias = Alias },
+            new() { Id = Guid.NewGuid().ToString(), ProfileId = Alias },
+            new() { Id = Guid.NewGuid().ToString(), ProfileId = Alias },
         };
         _mockGameManager.SetupLoadGamesAsync(games);
 
@@ -64,8 +64,8 @@ public class GameListPageTests : BunitContext
         SetupReturningPlayer();
         var games = new List<GameModel>
         {
-            new() { Id = Guid.NewGuid().ToString(), PlayerAlias = Alias },
-            new() { Id = Guid.NewGuid().ToString(), PlayerAlias = Alias },
+            new() { Id = Guid.NewGuid().ToString(), ProfileId = Alias },
+            new() { Id = Guid.NewGuid().ToString(), ProfileId = Alias },
         };
         _mockGameManager.SetupLoadGamesAsync(games);
 
@@ -81,7 +81,7 @@ public class GameListPageTests : BunitContext
         SetupReturningPlayer();
         var games = new List<GameModel>
         {
-            new() { Id = Guid.NewGuid().ToString(), PlayerAlias = Alias },
+            new() { Id = Guid.NewGuid().ToString(), ProfileId = Alias },
         };
         _mockGameManager.SetupLoadGamesAsync(games);
 

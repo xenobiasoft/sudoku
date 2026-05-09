@@ -4,20 +4,20 @@ using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Application.Specifications;
 
-public class GameByPlayerSpecification : BaseSpecification<SudokuGame>
+public class GameByProfileIdSpecification : BaseSpecification<SudokuGame>
 {
-    public GameByPlayerSpecification(PlayerAlias playerAlias)
+    public GameByProfileIdSpecification(ProfileId profileId)
     {
-        AddCriteria(game => game.PlayerAlias == playerAlias);
+        AddCriteria(game => game.ProfileId == profileId);
         AddOrderByDescending(game => game.CreatedAt);
     }
 }
 
-public class GameByPlayerAndStatusSpecification : BaseSpecification<SudokuGame>
+public class GameByProfileIdAndStatusSpecification : BaseSpecification<SudokuGame>
 {
-    public GameByPlayerAndStatusSpecification(PlayerAlias playerAlias, GameStatusEnum statusEnum)
+    public GameByProfileIdAndStatusSpecification(ProfileId profileId, GameStatusEnum statusEnum)
     {
-        AddCriteria(game => game.PlayerAlias == playerAlias && game.Status == statusEnum);
+        AddCriteria(game => game.ProfileId == profileId && game.Status == statusEnum);
         AddOrderByDescending(game => game.CreatedAt);
     }
 }
@@ -40,11 +40,11 @@ public class GameByDifficultySpecification : BaseSpecification<SudokuGame>
     }
 }
 
-public class GameByPlayerAndDifficultySpecification : BaseSpecification<SudokuGame>
+public class GameByProfileIdAndDifficultySpecification : BaseSpecification<SudokuGame>
 {
-    public GameByPlayerAndDifficultySpecification(PlayerAlias playerAlias, GameDifficulty difficulty)
+    public GameByProfileIdAndDifficultySpecification(ProfileId profileId, GameDifficulty difficulty)
     {
-        AddCriteria(game => game.PlayerAlias == playerAlias && game.Difficulty == difficulty);
+        AddCriteria(game => game.ProfileId == profileId && game.Difficulty == difficulty);
         AddOrderByDescending(game => game.CreatedAt);
     }
 }
@@ -60,11 +60,11 @@ public class RecentGamesSpecification : BaseSpecification<SudokuGame>
 
 public class CompletedGamesSpecification : BaseSpecification<SudokuGame>
 {
-    public CompletedGamesSpecification(PlayerAlias? playerAlias = null)
+    public CompletedGamesSpecification(ProfileId? profileId = null)
     {
-        if (playerAlias != null)
+        if (profileId != null)
         {
-            AddCriteria(game => game.Status == GameStatusEnum.Completed && game.PlayerAlias == playerAlias);
+            AddCriteria(game => game.Status == GameStatusEnum.Completed && game.ProfileId == profileId);
         }
         else
         {

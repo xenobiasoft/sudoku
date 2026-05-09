@@ -12,7 +12,8 @@ public static class SudokuGameMapper
         {
             Id = game.Id.Value.ToString(),
             GameId = game.Id.Value.ToString(),
-            PlayerAlias = game.PlayerAlias.Value,
+            ProfileId = game.ProfileId.ToString(),
+            DisplayName = game.DisplayName.Value,
             Difficulty = game.Difficulty,
             Status = game.Status,
             Cells = game.GetCells().Select(ToDocument).ToList(),
@@ -36,9 +37,17 @@ public static class SudokuGameMapper
 
     public static SudokuGame ToDomain(SudokuGameDocument document)
     {
+        var profileIdStr = string.IsNullOrEmpty(document.ProfileId) ? Guid.Empty.ToString() : document.ProfileId;
+        var profileId = Guid.TryParse(profileIdStr, out var guid)
+            ? ProfileId.From(guid)
+            : ProfileId.From(Guid.Empty);
+
+        var displayName = PlayerAlias.Create(string.IsNullOrEmpty(document.DisplayName) ? "Unknown" : document.DisplayName);
+
         var sudokuGame = SudokuGame.Reconstitute(
             GameId.Create(document.GameId),
-            PlayerAlias.Create(document.PlayerAlias),
+            profileId,
+            displayName,
             document.Difficulty,
             document.Status,
             document.Statistics.ToDomain(),
@@ -69,12 +78,12 @@ public static class SudokuGameMapper
     private static Cell ToDomain(this CellDocument document)
     {
         var cell = Cell.Create(document.Row, document.Column, document.Value, document.IsFixed);
-        
+
         // Set possible values using reflection since there's no public setter
         var cellType = typeof(Cell);
         var possibleValuesField = cellType.GetField("<PossibleValues>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         possibleValuesField?.SetValue(cell, document.PossibleValues);
-        
+
         return cell;
     }
 
@@ -94,25 +103,25 @@ public static class SudokuGameMapper
     private static GameStatistics ToDomain(this GameStatisticsDocument document)
     {
         var statistics = GameStatistics.Create();
-        
+
         // Use reflection to restore the statistics state
         var statsType = typeof(GameStatistics);
-        
+
         var totalMovesField = statsType.GetField("<TotalMoves>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         totalMovesField?.SetValue(statistics, document.TotalMoves);
-        
+
         var validMovesField = statsType.GetField("<ValidMoves>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         validMovesField?.SetValue(statistics, document.ValidMoves);
-        
+
         var invalidMovesField = statsType.GetField("<InvalidMoves>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         invalidMovesField?.SetValue(statistics, document.InvalidMoves);
-        
+
         var playDurationField = statsType.GetField("<PlayDuration>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         playDurationField?.SetValue(statistics, document.PlayDuration);
-        
+
         var lastMoveAtField = statsType.GetField("<LastMoveAt>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         lastMoveAtField?.SetValue(statistics, document.LastMoveAt);
-        
+
         return statistics;
     }
 }

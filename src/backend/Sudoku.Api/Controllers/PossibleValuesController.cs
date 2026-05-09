@@ -5,7 +5,7 @@ using Sudoku.Application.Commands;
 
 namespace Sudoku.Api.Controllers
 {
-    [Route("api/players/{alias}/games/{gameId}/possible-values")]
+    [Route("api/players/{profileId}/games/{gameId}/possible-values")]
     [ApiController]
     public class PossibleValuesController(IMediator mediator) : BaseGameController(mediator)
     {
@@ -16,9 +16,9 @@ namespace Sudoku.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> AddPossibleValueAsync(string alias, string gameId, [FromBody] PossibleValueRequest request)
+        public async Task<ActionResult> AddPossibleValueAsync(string profileId, string gameId, [FromBody] PossibleValueRequest request)
         {
-            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(profileId, gameId);
             if (error != null) return error;
 
             var result = await Mediator.Send(new AddPossibleValueCommand(gameId, request.Row, request.Column, request.Value));
@@ -32,9 +32,9 @@ namespace Sudoku.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> ClearPossibleValuesAsync(string alias, string gameId, [FromBody] CellRequest request)
+        public async Task<ActionResult> ClearPossibleValuesAsync(string profileId, string gameId, [FromBody] CellRequest request)
         {
-            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(profileId, gameId);
             if (error != null) return error;
 
             var result = await Mediator.Send(new ClearPossibleValuesCommand(gameId, request.Row, request.Column));
@@ -48,9 +48,9 @@ namespace Sudoku.Api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> RemovePossibleValueAsync(string alias, string gameId, [FromBody] PossibleValueRequest request)
+        public async Task<ActionResult> RemovePossibleValueAsync(string profileId, string gameId, [FromBody] PossibleValueRequest request)
         {
-            var (_, error) = await GetAuthorizedGameAsync(alias, gameId);
+            var (_, error) = await GetAuthorizedGameAsync(profileId, gameId);
             if (error != null) return error;
 
             var result = await Mediator.Send(new RemovePossibleValueCommand(gameId, request.Row, request.Column, request.Value));

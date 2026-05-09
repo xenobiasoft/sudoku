@@ -8,16 +8,16 @@ import styles from './NewGamePage.module.css';
 export default function NewGamePage() {
   const { difficulty } = useParams<{ difficulty: string }>();
   const navigate = useNavigate();
-  const { playerAlias, isInitialized, isNewPlayer } = usePlayerService();
+  const { profileId, isInitialized, isNewPlayer } = usePlayerService();
   const { createGame } = useGameService();
 
   useEffect(() => {
     const create = async () => {
-      if (!isInitialized || !playerAlias || !difficulty) {
+      if (!isInitialized || !profileId || !difficulty) {
         return;
       }
       try {
-        const game = await createGame(playerAlias, difficulty);
+        const game = await createGame(profileId, difficulty);
         navigate(`/game/${game.id}`, { replace: true });
       } catch (e) {
         console.error('Failed to create game', e);
@@ -25,7 +25,7 @@ export default function NewGamePage() {
       }
     };
     create();
-  }, [difficulty, navigate, playerAlias, isInitialized, createGame]);
+  }, [difficulty, navigate, profileId, isInitialized, createGame]);
 
   useEffect(() => {
     if (isNewPlayer) navigate('/');

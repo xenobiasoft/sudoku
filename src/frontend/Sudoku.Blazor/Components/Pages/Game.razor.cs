@@ -20,7 +20,7 @@ public partial class Game
     private GameModel CurrentGame => GameManager.Game;
     public CellModel SelectedCell { get; private set; } = new();
     private bool IsPencilMode { get; set; }
-    private string Alias { get; set; } = string.Empty;
+    private string ProfileId { get; set; } = string.Empty;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -55,10 +55,10 @@ public partial class Game
 
     private async Task LoadGameStateAsync()
     {
-        Alias = await PlayerManager.GetCurrentPlayerAsync();
-        Logger.LogInformation("Loading game {PuzzleId} for player {Alias}", PuzzleId, Alias);
-        
-        await GameManager.LoadGameAsync(Alias!, PuzzleId!);
+        ProfileId = await PlayerManager.GetCurrentProfileIdAsync() ?? string.Empty;
+        Logger.LogInformation("Loading game {PuzzleId} for profile {ProfileId}", PuzzleId, ProfileId);
+
+        await GameManager.LoadGameAsync(ProfileId, PuzzleId!);
         await GameManager.StartGameAsync();
         
         Logger.LogInformation("Game state loaded and started for puzzle {PuzzleId}", PuzzleId);
@@ -145,7 +145,7 @@ public partial class Game
 
         if (CurrentGame.IsSolved())
         {
-            Logger.LogInformation("Game {PuzzleId} has been solved by player {Alias}", PuzzleId, Alias);
+            Logger.LogInformation("Game {PuzzleId} has been solved by profile {ProfileId}", PuzzleId, ProfileId);
             await HandleGameCompletion();
         }
 
@@ -154,9 +154,9 @@ public partial class Game
 
     private async Task HandleGameCompletion()
     {
-        Logger.LogInformation("Handling game completion for puzzle {PuzzleId}, player {Alias}", PuzzleId, Alias);
+        Logger.LogInformation("Handling game completion for puzzle {PuzzleId}, profile {ProfileId}", PuzzleId, ProfileId);
         await GameManager.EndSession();
-        await GameManager.DeleteGameAsync(Alias, PuzzleId!);
+        await GameManager.DeleteGameAsync(ProfileId, PuzzleId!);
         NotificationService.NotifyGameEnded();
         Logger.LogInformation("Game completion handled successfully for puzzle {PuzzleId}", PuzzleId);
     }

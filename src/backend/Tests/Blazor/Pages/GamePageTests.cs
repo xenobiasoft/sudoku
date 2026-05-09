@@ -27,14 +27,14 @@ public class GamePageTests : BunitContext
         var loadedGameState = GameModelFactory
             .Build()
             .WithDifficulty(GameDifficulty.Easy)
-            .WithPlayerAlias(Alias)
+            .WithProfileId(Alias)
             .WithId(PuzzleId)
             .Create();
         var mockGameTimer = new Mock<IGameTimer>();
         _mockGameManager.Setup(x => x.CurrentStatistics).Returns(gameStatistics);
         _mockGameManager.Setup(x => x.Game).Returns(loadedGameState);
         _mockGameManager.Setup(x => x.Timer).Returns(mockGameTimer.Object);
-        _mockPlayerManager.SetupGetCurrentPlayerAsync(Alias);
+        _mockPlayerManager.SetupGetCurrentProfileIdAsync(Alias);
         Services.AddSingleton(_mockNotificationService.Object);
         Services.AddSingleton(_mockGameManager.Object);
         Services.AddSingleton(_mockPlayerManager.Object);
@@ -83,7 +83,7 @@ public class GamePageTests : BunitContext
         // Arrange
         var gameState = new GameModel
         {
-            PlayerAlias = Alias,
+            ProfileId = Alias,
             Cells = GameModelFactory.GetSolvedPuzzle().Cells,
             Id = PuzzleId
         };
@@ -163,7 +163,7 @@ public class GamePageTests : BunitContext
         // Arrange
         var gameState = new GameModel
         {
-            PlayerAlias = Alias,
+            ProfileId = Alias,
             Cells = GameModelFactory.GetSolvedPuzzle().Cells,
             Id = PuzzleId
         };
@@ -177,7 +177,7 @@ public class GamePageTests : BunitContext
         await sut.InvokeAsync(() => buttonGroup.OnValueChanged.InvokeAsync(new CellValueChangedEventArgs(1)));
 
         // Assert
-        _mockGameManager.VerifyDeleteGameAsyncCalled(gameState.PlayerAlias, gameState.Id, Times.Once);
+        _mockGameManager.VerifyDeleteGameAsyncCalled(gameState.ProfileId, gameState.Id, Times.Once);
     }
 
     [Fact]
@@ -186,7 +186,7 @@ public class GamePageTests : BunitContext
         // Arrange
         var gameState = new GameModel
         {
-            PlayerAlias = Alias,
+            ProfileId = Alias,
             Cells = GameModelFactory.GetSolvedPuzzle().Cells,
             Id = PuzzleId
         };
@@ -210,7 +210,7 @@ public class GamePageTests : BunitContext
         // Arrange
         var gameState = new GameModel
         {
-            PlayerAlias = Alias,
+            ProfileId = Alias,
             Cells = GameModelFactory.GetSolvedPuzzle().Cells,
             Id = PuzzleId
         };

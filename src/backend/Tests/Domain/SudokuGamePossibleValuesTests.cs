@@ -8,6 +8,7 @@ namespace UnitTests.Domain;
 
 public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
 {
+    private readonly ProfileId _profileId = ProfileId.New();
     private readonly PlayerAlias _playerAlias = PlayerAlias.Create("TestPlayer");
     private readonly GameDifficulty _difficulty = GameDifficulty.Easy;
     private readonly List<Cell> _initialCells;
@@ -21,7 +22,7 @@ public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
     public void AddPossibleValue_ToEmptyCell_AddsPossibleValue()
     {
         // Arrange
-        var game = SudokuGame.Create(_playerAlias, _difficulty, _initialCells);
+        var game = SudokuGame.Create(_profileId, _playerAlias, _difficulty, _initialCells);
         game.StartGame();
         int row = 2, col = 2, value = 3;
 
@@ -45,7 +46,7 @@ public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
     public void AddPossibleValue_ToFixedCell_ThrowsCellIsFixedException()
     {
         // Arrange
-        var game = SudokuGame.Create(_playerAlias, _difficulty, _initialCells);
+        var game = SudokuGame.Create(_profileId, _playerAlias, _difficulty, _initialCells);
         game.StartGame();
         int row = 0, col = 0, value = 3; // Cell at (0,0) is fixed
 
@@ -61,7 +62,7 @@ public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
     public void AddPossibleValue_ToCellWithValue_ThrowsCellAlreadyHasValueException()
     {
         // Arrange
-        var game = SudokuGame.Create(_playerAlias, _difficulty, _initialCells);
+        var game = SudokuGame.Create(_profileId, _playerAlias, _difficulty, _initialCells);
         game.StartGame();
         int row = 1, col = 1, value = 3; // Cell at (1,1) has a value
 
@@ -77,7 +78,7 @@ public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
     public void AddPossibleValue_WhenGameNotInProgress_ThrowsGameNotInProgressException()
     {
         // Arrange
-        var game = SudokuGame.Create(_playerAlias, _difficulty, _initialCells);
+        var game = SudokuGame.Create(_profileId, _playerAlias, _difficulty, _initialCells);
         // Don't start the game
         int row = 2, col = 2, value = 3;
 
@@ -93,7 +94,7 @@ public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
     public void ClearPossibleValues_FromCellWithPossibleValues_ClearsPossibleValues()
     {
         // Arrange
-        var game = SudokuGame.Create(_playerAlias, _difficulty, _initialCells);
+        var game = SudokuGame.Create(_profileId, _playerAlias, _difficulty, _initialCells);
         game.StartGame();
         int row = 2, col = 2;
         game.AddPossibleValue(row, col, 3);
@@ -120,7 +121,7 @@ public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
     public void ClearPossibleValues_FromFixedCell_ThrowsCellIsFixedException()
     {
         // Arrange
-        var game = SudokuGame.Create(_playerAlias, _difficulty, _initialCells);
+        var game = SudokuGame.Create(_profileId, _playerAlias, _difficulty, _initialCells);
         game.StartGame();
         int row = 0, col = 0; // Cell at (0,0) is fixed
 
@@ -136,7 +137,7 @@ public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
     public void ClearPossibleValues_WhenGameNotInProgress_ThrowsGameNotInProgressException()
     {
         // Arrange
-        var game = SudokuGame.Create(_playerAlias, _difficulty, _initialCells);
+        var game = SudokuGame.Create(_profileId, _playerAlias, _difficulty, _initialCells);
         // Don't start the game
         int row = 2, col = 2;
 
@@ -152,7 +153,7 @@ public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
     public void MakeMove_ClearsPossibleValues()
     {
         // Arrange
-        var game = SudokuGame.Create(_playerAlias, _difficulty, _initialCells);
+        var game = SudokuGame.Create(_profileId, _playerAlias, _difficulty, _initialCells);
         game.StartGame();
         int row = 2, col = 2;
         game.AddPossibleValue(row, col, 3);
@@ -171,7 +172,7 @@ public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
     public void RemovePossibleValue_FromCellWithPossibleValue_RemovesPossibleValue()
     {
         // Arrange
-        var game = SudokuGame.Create(_playerAlias, _difficulty, _initialCells);
+        var game = SudokuGame.Create(_profileId, _playerAlias, _difficulty, _initialCells);
         game.StartGame();
         int row = 2, col = 2, value = 3;
         game.AddPossibleValue(row, col, value);
@@ -197,7 +198,7 @@ public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
     public void RemovePossibleValue_FromFixedCell_ThrowsCellIsFixedException()
     {
         // Arrange
-        var game = SudokuGame.Create(_playerAlias, _difficulty, _initialCells);
+        var game = SudokuGame.Create(_profileId, _playerAlias, _difficulty, _initialCells);
         game.StartGame();
         int row = 0, col = 0, value = 3; // Cell at (0,0) is fixed
 
@@ -213,7 +214,7 @@ public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
     public void RemovePossibleValue_WhenGameNotInProgress_ThrowsGameNotInProgressException()
     {
         // Arrange
-        var game = SudokuGame.Create(_playerAlias, _difficulty, _initialCells);
+        var game = SudokuGame.Create(_profileId, _playerAlias, _difficulty, _initialCells);
         // Don't start the game
         int row = 2, col = 2, value = 3;
 
@@ -229,7 +230,7 @@ public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
     public void ResetGame_ClearsPossibleValuesForAllNonFixedCells()
     {
         // Arrange
-        var game = SudokuGame.Create(_playerAlias, _difficulty, _initialCells);
+        var game = SudokuGame.Create(_profileId, _playerAlias, _difficulty, _initialCells);
         game.StartGame();
         game.AddPossibleValue(2, 2, 3);
         game.AddPossibleValue(2, 2, 5);

@@ -7,8 +7,8 @@ public class GameCreatedEventHandler(ILogger<GameCreatedEventHandler> logger) : 
 {
     public async Task HandleAsync(GameCreatedEvent domainEvent)
     {
-        logger.LogInformation("Game created: {GameId} for player {PlayerAlias} with difficulty {Difficulty}",
-            domainEvent.GameId.Value, domainEvent.PlayerAlias.Value, domainEvent.Difficulty);
+        logger.LogInformation("Game created: {GameId} for player {DisplayName} with difficulty {Difficulty}",
+            domainEvent.GameId.Value, domainEvent.DisplayName.Value, domainEvent.Difficulty);
 
         // Here you could:
         // - Send notifications

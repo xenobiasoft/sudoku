@@ -16,8 +16,7 @@ public class CreateProfileCommandHandler(
     {
         try
         {
-            var normalizedAlias = request.Alias.Trim().ToLowerInvariant();
-            var playerAlias = PlayerAlias.Create(normalizedAlias);
+            var playerAlias = PlayerAlias.Create(request.Alias.Trim());
 
             if (await profileRepository.AliasExistsAsync(playerAlias))
             {

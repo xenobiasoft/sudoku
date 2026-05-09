@@ -11,7 +11,7 @@ public partial class GameList
     [Inject] public required IGameManager GameManager { get; set; }
     [Inject] public required ILogger<GameList> Logger { get; set; }
 
-    private string _alias = string.Empty;
+    private string _profileId = string.Empty;
     private List<GameModel>? _games;
     private bool _isLoading;
     private bool _hasError;
@@ -28,7 +28,7 @@ public partial class GameList
             return;
         }
 
-        _alias = profile.Alias;
+        _profileId = profile.ProfileId;
         await LoadGamesAsync();
         StateHasChanged();
     }
@@ -40,12 +40,12 @@ public partial class GameList
 
         try
         {
-            _games = await GameManager.LoadGamesAsync(_alias) ?? [];
-            Logger.LogInformation("Loaded {Count} saved games for player {Alias}", _games.Count, _alias);
+            _games = await GameManager.LoadGamesAsync(_profileId) ?? [];
+            Logger.LogInformation("Loaded {Count} saved games for profile {ProfileId}", _games.Count, _profileId);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error loading games for player {Alias}", _alias);
+            Logger.LogError(ex, "Error loading games for profile {ProfileId}", _profileId);
             _hasError = true;
         }
         finally
@@ -62,8 +62,8 @@ public partial class GameList
 
     private async Task DeleteGameAsync(string gameId)
     {
-        Logger.LogInformation("Deleting game {GameId} for player {Alias}", gameId, _alias);
-        await GameManager.DeleteGameAsync(_alias, gameId);
+        Logger.LogInformation("Deleting game {GameId} for profile {ProfileId}", gameId, _profileId);
+        await GameManager.DeleteGameAsync(_profileId, gameId);
         _games = _games?.Where(g => g.Id != gameId).ToList();
         Logger.LogInformation("Successfully deleted game {GameId}", gameId);
         StateHasChanged();

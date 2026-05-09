@@ -33,12 +33,12 @@ public class DeletePlayerGamesCommandHandlerTests : MoqBaseTestByAbstraction<Del
     public async Task Handle_CallsDeleteAsyncForEachGame()
     {
         // Arrange
-        var playerAlias = Container.Create<PlayerAlias>();
-        var command = new DeletePlayerGamesCommand(playerAlias);
+        var profileId = Guid.NewGuid().ToString();
+        var command = new DeletePlayerGamesCommand(profileId);
         var games = Container.CreateMany<SudokuGame>(2);
 
         _mockGameRepository
-            .Setup(x => x.GetByPlayerAsync(It.IsAny<PlayerAlias>()))
+            .Setup(x => x.GetByProfileIdAsync(It.IsAny<ProfileId>()))
             .ReturnsAsync(games);
 
         var sut = ResolveSut();
@@ -54,12 +54,12 @@ public class DeletePlayerGamesCommandHandlerTests : MoqBaseTestByAbstraction<Del
     public async Task Handle_LogsInformationWithGameCount()
     {
         // Arrange
-        var playerAlias = Container.Create<PlayerAlias>();
-        var command = new DeletePlayerGamesCommand(playerAlias);
+        var profileId = Guid.NewGuid().ToString();
+        var command = new DeletePlayerGamesCommand(profileId);
         var games = Container.CreateMany<SudokuGame>(2);
 
         _mockGameRepository
-            .Setup(x => x.GetByPlayerAsync(It.IsAny<PlayerAlias>()))
+            .Setup(x => x.GetByProfileIdAsync(It.IsAny<ProfileId>()))
             .ReturnsAsync(games);
 
         var sut = ResolveSut();
@@ -68,19 +68,19 @@ public class DeletePlayerGamesCommandHandlerTests : MoqBaseTestByAbstraction<Del
         await sut.Handle(command, CancellationToken.None);
 
         // Assert
-        Logger.InformationLogs().ContainsMessage($"Deleted 2 games for player {playerAlias}");
+        Logger.InformationLogs().ContainsMessage("Deleted 2 games for profile");
     }
 
     [Fact]
-    public async Task Handle_WhenDomainExceptionThrown_ReturnsFailureResult()
+    public async Task Handle_WhenRepositoryThrowsException_ReturnsFailureResult()
     {
         // Arrange
-        var playerAlias = Container.Create<PlayerAlias>();
-        var command = new DeletePlayerGamesCommand(playerAlias);
-        var exceptionMessage = "Invalid player alias format";
+        var profileId = Guid.NewGuid().ToString();
+        var command = new DeletePlayerGamesCommand(profileId);
+        var exceptionMessage = "Database error";
 
         _mockGameRepository
-            .Setup(x => x.GetByPlayerAsync(It.IsAny<PlayerAlias>()))
+            .Setup(x => x.GetByProfileIdAsync(It.IsAny<ProfileId>()))
             .ThrowsAsync(new Exception(exceptionMessage));
 
         var sut = ResolveSut();
@@ -94,16 +94,16 @@ public class DeletePlayerGamesCommandHandlerTests : MoqBaseTestByAbstraction<Del
     }
 
     [Fact]
-    public async Task Handle_WhenRepositoryThrowsException_ReturnsFailureResult()
+    public async Task Handle_WhenDeleteThrowsException_ReturnsFailureResult()
     {
         // Arrange
-        var playerAlias = Container.Create<PlayerAlias>();
-        var command = new DeletePlayerGamesCommand(playerAlias);
+        var profileId = Guid.NewGuid().ToString();
+        var command = new DeletePlayerGamesCommand(profileId);
         var games = Container.CreateMany<SudokuGame>(1);
         var exceptionMessage = "Database error";
 
         _mockGameRepository
-            .Setup(x => x.GetByPlayerAsync(It.IsAny<PlayerAlias>()))
+            .Setup(x => x.GetByProfileIdAsync(It.IsAny<ProfileId>()))
             .ReturnsAsync(games);
 
         _mockGameRepository
@@ -124,12 +124,12 @@ public class DeletePlayerGamesCommandHandlerTests : MoqBaseTestByAbstraction<Del
     public async Task Handle_WithNoGames_ReturnsSuccessResult()
     {
         // Arrange
-        var playerAlias = Container.Create<PlayerAlias>();
-        var command = new DeletePlayerGamesCommand(playerAlias);
+        var profileId = Guid.NewGuid().ToString();
+        var command = new DeletePlayerGamesCommand(profileId);
         var games = new List<SudokuGame>();
 
         _mockGameRepository
-            .Setup(x => x.GetByPlayerAsync(It.IsAny<PlayerAlias>()))
+            .Setup(x => x.GetByProfileIdAsync(It.IsAny<ProfileId>()))
             .ReturnsAsync(games);
 
         var sut = ResolveSut();
@@ -142,15 +142,15 @@ public class DeletePlayerGamesCommandHandlerTests : MoqBaseTestByAbstraction<Del
     }
 
     [Fact]
-    public async Task Handle_WithValidPlayerAlias_ReturnsSuccessResult()
+    public async Task Handle_WithValidProfileId_ReturnsSuccessResult()
     {
         // Arrange
-        var playerAlias = Container.Create<PlayerAlias>();
-        var command = new DeletePlayerGamesCommand(playerAlias);
+        var profileId = Guid.NewGuid().ToString();
+        var command = new DeletePlayerGamesCommand(profileId);
         var games = Container.CreateMany<SudokuGame>(2);
 
         _mockGameRepository
-            .Setup(x => x.GetByPlayerAsync(It.IsAny<PlayerAlias>()))
+            .Setup(x => x.GetByProfileIdAsync(It.IsAny<ProfileId>()))
             .ReturnsAsync(games);
 
         var sut = ResolveSut();

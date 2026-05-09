@@ -43,7 +43,7 @@ beforeEach(() => {
   // Default mock implementations
   mockUsePlayerService.mockReturnValue({
     playerAlias: 'test-player',
-    profileId: null,
+    profileId: 'profile-123',
     isInitialized: true,
     isLoading: false,
     error: null,

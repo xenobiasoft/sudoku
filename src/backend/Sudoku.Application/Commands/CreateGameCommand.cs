@@ -3,5 +3,6 @@ using Sudoku.Application.Common;
 namespace Sudoku.Application.Commands;
 
 public record CreateGameCommand(
-    string PlayerAlias,
+    string ProfileId,
+    string DisplayName,
     string Difficulty) : ICommand<string>;

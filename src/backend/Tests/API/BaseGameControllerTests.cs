@@ -15,11 +15,12 @@ public abstract class BaseGameControllerTests<TControllerType> : MoqBaseTestByTy
         Sut = ResolveSut();
     }
 
-    protected static GameDto CreateTestGameDto(string playerAlias, string difficulty, string? gameId = null)
+    protected static GameDto CreateTestGameDto(string profileId, string difficulty, string? gameId = null)
     {
         return new GameDto(
             gameId ?? Guid.NewGuid().ToString(),
-            playerAlias,
+            profileId,
+            "TestPlayer",
             difficulty,
             "NotStarted",
             new GameStatisticsDto(0, 0, 0, TimeSpan.Zero, 0.0),

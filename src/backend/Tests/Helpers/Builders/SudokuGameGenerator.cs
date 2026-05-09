@@ -1,4 +1,4 @@
-﻿using AutoFixture.Kernel;
+using AutoFixture.Kernel;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
 using UnitTests.Helpers.Factories;
@@ -13,6 +13,7 @@ public class SudokuGameGenerator : ISpecimenBuilder
         {
             var cells = CellsFactory.CreateEmptyCells();
             return SudokuGame.Create(
+                ProfileId.New(),
                 context.Create<PlayerAlias>(),
                 context.Create<GameDifficulty>(),
                 cells

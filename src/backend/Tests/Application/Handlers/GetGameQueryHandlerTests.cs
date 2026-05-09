@@ -43,7 +43,7 @@ public class GetGameQueryHandlerTests : MoqBaseTestByAbstraction<GetGameQueryHan
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNull();
         result.Value!.Id.Should().Be(game.Id.Value.ToString());
-        result.Value.PlayerAlias.Should().Be(game.PlayerAlias.Value);
+        result.Value.DisplayName.Should().Be(game.DisplayName.Value);
         result.Value.Difficulty.Should().Be(game.Difficulty.Name);
         result.Value.Status.Should().Be(game.Status.ToString());
     }
@@ -170,7 +170,7 @@ public class GetGameQueryHandlerTests : MoqBaseTestByAbstraction<GetGameQueryHan
         
         var gameDto = result.Value!;
         gameDto.Id.Should().Be(game.Id.Value.ToString());
-        gameDto.PlayerAlias.Should().Be(game.PlayerAlias.Value);
+        gameDto.DisplayName.Should().Be(game.DisplayName.Value);
         gameDto.Difficulty.Should().Be(game.Difficulty.Name);
         gameDto.Status.Should().Be(game.Status.ToString());
         gameDto.CreatedAt.Should().Be(game.CreatedAt);
@@ -184,10 +184,11 @@ public class GetGameQueryHandlerTests : MoqBaseTestByAbstraction<GetGameQueryHan
 
     private static SudokuGame CreateTestGame()
     {
-        var playerAlias = PlayerAlias.Create("TestPlayer");
+        var profileId = ProfileId.New();
+        var displayName = PlayerAlias.Create("TestPlayer");
         var difficulty = GameDifficulty.Medium;
         var cells = new List<Cell>();
-        
+
         for (int i = 0; i < 9; i++)
         {
             for (int j = 0; j < 9; j++)
@@ -196,6 +197,6 @@ public class GetGameQueryHandlerTests : MoqBaseTestByAbstraction<GetGameQueryHan
             }
         }
 
-        return SudokuGame.Create(playerAlias, difficulty, cells);
+        return SudokuGame.Create(profileId, displayName, difficulty, cells);
     }
 }

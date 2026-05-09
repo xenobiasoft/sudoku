@@ -30,7 +30,8 @@ const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 const mockGames: GameModel[] = [
   {
     id: 'game-1',
-    playerAlias: 'test-player',
+    profileId: 'profile-test',
+    displayName: 'test-player',
     status: 'In Progress',
     difficulty: 'Easy',
     createdAt: '2024-01-01T00:00:00Z',
@@ -47,7 +48,8 @@ const mockGames: GameModel[] = [
   },
   {
     id: 'game-2',
-    playerAlias: 'test-player',
+    profileId: 'profile-test',
+    displayName: 'test-player',
     status: 'Completed',
     difficulty: 'Medium',
     createdAt: '2024-01-02T00:00:00Z',
@@ -64,7 +66,8 @@ const mockGames: GameModel[] = [
   },
   {
     id: 'game-3',
-    playerAlias: 'test-player',
+    profileId: 'profile-test',
+    displayName: 'test-player',
     status: 'In Progress',
     difficulty: 'Hard',
     createdAt: '2024-01-03T00:00:00Z',

@@ -6,7 +6,8 @@ public class SudokuGame : AggregateRoot
     private readonly List<MoveHistory> _moveHistory;
 
     public GameId Id { get; private set; }
-    public PlayerAlias PlayerAlias { get; private set; }
+    public ProfileId ProfileId { get; private set; }
+    public PlayerAlias DisplayName { get; private set; }
     public GameDifficulty Difficulty { get; private set; }
     public GameStatusEnum Status { get; private set; }
     public GameStatistics Statistics { get; private set; }
@@ -22,12 +23,13 @@ public class SudokuGame : AggregateRoot
         _moveHistory = [];
     }
 
-    public static SudokuGame Create(PlayerAlias playerAlias, GameDifficulty difficulty, IEnumerable<Cell> initialCells)
+    public static SudokuGame Create(ProfileId profileId, PlayerAlias displayName, GameDifficulty difficulty, IEnumerable<Cell> initialCells)
     {
         var game = new SudokuGame
         {
             Id = GameId.New(),
-            PlayerAlias = playerAlias,
+            ProfileId = profileId,
+            DisplayName = displayName,
             Difficulty = difficulty,
             Status = GameStatusEnum.NotStarted,
             Statistics = GameStatistics.Create(),
@@ -36,13 +38,14 @@ public class SudokuGame : AggregateRoot
 
         game._cells.AddRange(initialCells);
 
-        game.AddDomainEvent(new GameCreatedEvent(game.Id, playerAlias, difficulty));
+        game.AddDomainEvent(new GameCreatedEvent(game.Id, profileId, displayName, difficulty));
         return game;
     }
 
     public static SudokuGame Reconstitute(
         GameId id,
-        PlayerAlias playerAlias,
+        ProfileId profileId,
+        PlayerAlias displayName,
         GameDifficulty difficulty,
         GameStatusEnum statusEnum,
         GameStatistics statistics,
@@ -56,7 +59,8 @@ public class SudokuGame : AggregateRoot
         var game = new SudokuGame
         {
             Id = id,
-            PlayerAlias = playerAlias,
+            ProfileId = profileId,
+            DisplayName = displayName,
             Difficulty = difficulty,
             Status = statusEnum,
             Statistics = statistics,
@@ -237,7 +241,7 @@ public class SudokuGame : AggregateRoot
             var rowValues = _cells.Where(c => c.Row == row && c.HasValue)
                                  .Select(c => c.Value!.Value)
                                  .ToList();
-            
+
             if (rowValues.Count != rowValues.Distinct().Count())
             {
                 errors.Add($"Row {row + 1} contains duplicate values");
@@ -251,7 +255,7 @@ public class SudokuGame : AggregateRoot
             var columnValues = _cells.Where(c => c.Column == column && c.HasValue)
                                     .Select(c => c.Value!.Value)
                                     .ToList();
-            
+
             if (columnValues.Count != columnValues.Distinct().Count())
             {
                 errors.Add($"Column {column + 1} contains duplicate values");
@@ -269,7 +273,7 @@ public class SudokuGame : AggregateRoot
                                                  c.HasValue)
                                      .Select(c => c.Value!.Value)
                                      .ToList();
-                
+
                 if (boxValues.Count != boxValues.Distinct().Count())
                 {
                     errors.Add($"Box at position ({boxRow / 3 + 1}, {boxColumn / 3 + 1}) contains duplicate values");
