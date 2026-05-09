@@ -23,12 +23,12 @@ public partial class CreateProfile
         _errorMessage = null;
         _hasError = false;
 
-        var normalizedAlias = _model.Alias.Trim().ToLowerInvariant();
+        var trimmedAlias = _model.Alias.Trim();
         _isSubmitting = true;
 
         try
         {
-            var result = await PlayerApiClient.CreateProfileAsync(normalizedAlias);
+            var result = await PlayerApiClient.CreateProfileAsync(trimmedAlias);
 
             if (result.IsSuccess && result.Value != null)
             {

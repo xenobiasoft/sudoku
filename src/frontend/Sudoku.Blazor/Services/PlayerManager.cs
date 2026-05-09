@@ -80,10 +80,10 @@ public class PlayerManager(IPlayerApiClient playerApiClient, ILocalStorageServic
         var legacyAlias = await localStorageService.GetAliasAsync();
         if (!string.IsNullOrEmpty(legacyAlias))
         {
-            var normalizedAlias = legacyAlias.Trim().ToLowerInvariant();
-            var canRetry = normalizedAlias.Length < 50;
+            var aliasName = legacyAlias.Trim();
+            var canRetry = aliasName.Length < 50;
 
-            var createResult = await playerApiClient.CreateProfileAsync(normalizedAlias);
+            var createResult = await playerApiClient.CreateProfileAsync(aliasName);
             if (createResult.IsSuccess && createResult.Value != null)
             {
                 await localStorageService.SetProfileAsync(new ProfileInfo
@@ -98,7 +98,7 @@ public class PlayerManager(IPlayerApiClient playerApiClient, ILocalStorageServic
             if (createResult.StatusCode == 409 && canRetry)
             {
                 var suffix = Random.Shared.Next(10, 100).ToString();
-                var aliasWithSuffix = normalizedAlias[..Math.Min(normalizedAlias.Length, 48)] + suffix;
+                var aliasWithSuffix = aliasName[..Math.Min(aliasName.Length, 48)] + suffix;
                 var retryResult = await playerApiClient.CreateProfileAsync(aliasWithSuffix);
                 if (retryResult.IsSuccess && retryResult.Value != null)
                 {
