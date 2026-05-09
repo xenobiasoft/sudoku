@@ -41,15 +41,18 @@
     font-size: 1.1rem;
 }
 
-.btn-link {
-    font-size: 0.85rem;
-    color: #555;
+.back-button {
     background: transparent;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 0.2rem 0.6rem;
+    border: none;
+    color: #666;
+    font-size: 1rem;
     cursor: pointer;
-    text-decoration: none;
+    padding: 0;
+    margin-bottom: 1rem;
+}
+
+.back-button:hover {
+    color: #333;
 }
 
 .warning-note {
@@ -87,30 +90,9 @@
     margin-top: 0.25rem;
 }
 
-::deep .btn-primary {
-    padding: 0.45rem 1rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    background: #333;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
 ::deep .btn-primary:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-}
-
-::deep .btn-secondary {
-    padding: 0.45rem 1rem;
-    font-size: 0.9rem;
-    background: transparent;
-    color: #555;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    cursor: pointer;
 }
 
 ::deep .error-message {

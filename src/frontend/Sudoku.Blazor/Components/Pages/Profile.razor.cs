@@ -54,6 +54,8 @@ public partial class Profile
         }
     }
 
+    private void GoBack() => NavigationManager.NavigateTo("/");
+
     private void StartEdit()
     {
         _editModel = new EditAliasModel { NewAlias = _alias ?? string.Empty };
