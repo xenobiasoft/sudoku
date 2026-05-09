@@ -58,9 +58,9 @@ public void MakeMove_ValidMove_LogsInformation()
 
 ### DSL Helper Extensions
 
-When setting up or verifying mocks, check the `Helpers/` folder in the root of the test project for existing **DSL extensions**. Those extensions provide a fluent API for common mock setups and verifications, improving readability and maintainability.
+When setting up or verifying mocks, check the `Mocks/` folder in the root of the test project for existing **DSL extensions**. Those extensions provide a fluent API for common mock setups and verifications, improving readability and maintainability.
 
-- **Rule**: Always prefer existing DSL helpers over raw `.Setup()` and `Verify()` calls. If no helper exists for your scenario, create one and add it to the `Helpers/` folder for future reuse.
+- **Rule**: Always prefer existing DSL helpers over raw `.Setup()` and `Verify()` calls. If no helper exists for your scenario, create one and add it to the `Mocks/` folder for future reuse.
 - **Pattern**: Follow the naming convention `Mock[ClassName]Extensions` for the helper class and use descriptive method names that clearly indicate the behavior being set up or verified. Use `Setup[Behavior]` for setup methods and `Verify[Behavior]` for verification methods.
 - **Special Cases**: When setting up a mock to throw an exception, use the `SetupThrows[Behavior]` pattern for clarity. For example, `SetupThrowsWhenInvalidInput()` clearly indicates that the setup is configuring the mock to throw an exception when invalid input is provided.
 

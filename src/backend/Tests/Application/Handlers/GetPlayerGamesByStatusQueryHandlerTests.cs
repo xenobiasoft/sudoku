@@ -100,9 +100,7 @@ public class GetPlayerGamesByStatusQueryHandlerTests : MoqBaseTestByAbstraction<
         var profileId = Guid.NewGuid().ToString();
         var query = new GetPlayerGamesByStatusQuery(profileId, "inprogress");
 
-        _mockGameRepository
-            .Setup(x => x.GetByProfileIdAndStatusAsync(It.IsAny<ProfileId>(), GameStatusEnum.InProgress))
-            .ReturnsAsync([]);
+        _mockGameRepository.SetupGetByProfileIdAndStatus([]);
 
         var sut = ResolveSut();
 
