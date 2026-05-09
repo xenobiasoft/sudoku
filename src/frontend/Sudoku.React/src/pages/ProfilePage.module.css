@@ -75,13 +75,27 @@
   margin-top: 0.25rem;
 }
 
+.backButton {
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 1rem;
+}
+
+.backButton:hover {
+  color: #333;
+}
+
 .saveButton {
   padding: 0.45rem 1rem;
   font-size: 0.9rem;
   font-weight: 600;
-  background: #333;
+  background: #1b6ec2;
   color: white;
-  border: none;
+  border: 1px solid #1861ac;
   border-radius: 4px;
   cursor: pointer;
 }

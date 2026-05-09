@@ -70,9 +70,9 @@
   padding: 0.7rem 1.25rem;
   font-size: 1rem;
   font-weight: 600;
-  background: #333;
+  background: #1b6ec2;
   color: white;
-  border: none;
+  border: 1px solid #1861ac;
   border-radius: 4px;
   cursor: pointer;
 }

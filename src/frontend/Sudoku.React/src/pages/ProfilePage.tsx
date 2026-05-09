@@ -43,7 +43,7 @@ export default function ProfilePage() {
     const trimmed = value.trim();
     if (trimmed.length < 2) return 'Alias must be at least 2 characters.';
     if (trimmed.length > 50) return 'Alias cannot exceed 50 characters.';
-    if (!/^[a-z0-9 ]+$/.test(trimmed)) return 'Alias can only contain letters, numbers, and spaces.';
+    if (!/^[a-zA-Z0-9 ]+$/.test(trimmed)) return 'Alias can only contain letters, numbers, and spaces.';
     return null;
   };
 
@@ -107,6 +107,7 @@ export default function ProfilePage() {
     <Layout>
       <div className={styles.container}>
         <div className={styles.card}>
+          <button className={styles.backButton} onClick={() => navigate('/')}>← Back</button>
           <h1 className={styles.title}>Your Profile</h1>
 
           {isLoading ? (

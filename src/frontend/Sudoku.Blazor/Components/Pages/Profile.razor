@@ -4,6 +4,7 @@
 
 <div class="profile-container">
     <div class="profile-card">
+        <button class="back-button" @onclick="GoBack">← Back</button>
         <h1>Your Profile</h1>
 
         @if (_isLoading)
@@ -21,10 +22,10 @@
                         <div class="edit-row">
                             <InputText @bind-Value="_editModel.NewAlias" class="form-control" maxlength="50" />
                             <div class="edit-actions">
-                                <button type="submit" class="btn-primary" disabled="@_isSaving">
+                                <button type="submit" class="btn btn-primary" disabled="@_isSaving">
                                     @(_isSaving ? "Saving…" : "Save")
                                 </button>
-                                <button type="button" class="btn-secondary" @onclick="CancelEdit">Cancel</button>
+                                <button type="button" class="btn btn-outline-secondary" @onclick="CancelEdit">Cancel</button>
                             </div>
                         </div>
                         <ValidationMessage For="@(() => _editModel.NewAlias)" />
@@ -38,7 +39,7 @@
                 {
                     <div class="field-value-row">
                         <span>@_alias</span>
-                        <button class="btn-link" @onclick="StartEdit">Edit</button>
+                        <button class="btn btn-sm btn-outline-secondary" @onclick="StartEdit">Edit</button>
                     </div>
                 }
             </div>
