@@ -1,8 +1,6 @@
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Components;
 using Sudoku.Blazor.Models;
 using Sudoku.Blazor.Services.Abstractions;
-using Sudoku.Blazor.Services.HttpClients;
 
 namespace Sudoku.Blazor.Components.Pages;
 
@@ -10,9 +8,7 @@ public partial class Profile
 {
     [Inject] public required NavigationManager NavigationManager { get; set; }
     [Inject] public required IPlayerManager PlayerManager { get; set; }
-    [Inject] public required IPlayerApiClient PlayerApiClient { get; set; }
-    [Inject] public required ILocalStorageService LocalStorageService { get; set; }
-    [Inject] public required ILogger<Profile> Logger { get; set; }
+    [Inject] public required ILogger<EditProfileModel> Logger { get; set; }
 
     private string? _alias;
     private DateTime? _createdAt;
@@ -20,7 +16,7 @@ public partial class Profile
     private bool _isEditing;
     private bool _isSaving;
     private string? _editError;
-    private EditAliasModel _editModel = new();
+    private EditProfileModel _editModel = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -36,12 +32,7 @@ public partial class Profile
             }
 
             _alias = profile.Alias;
-
-            var getResult = await PlayerApiClient.GetProfileAsync(profile.Alias);
-            if (getResult.IsSuccess && getResult.Value != null)
-            {
-                _createdAt = getResult.Value.CreatedAt;
-            }
+            _createdAt = await PlayerManager.GetProfileCreatedAtAsync();
         }
         catch (Exception ex)
         {
@@ -58,7 +49,7 @@ public partial class Profile
 
     private void StartEdit()
     {
-        _editModel = new EditAliasModel { NewAlias = _alias ?? string.Empty };
+        _editModel = new EditProfileModel { DisplayName = _alias ?? string.Empty };
         _editError = null;
         _isEditing = true;
     }
@@ -72,25 +63,15 @@ public partial class Profile
     private async Task HandleSaveAliasAsync()
     {
         _editError = null;
-        if (_alias == null) return;
-
-        var aliasName = _editModel.NewAlias.Trim();
         _isSaving = true;
 
         try
         {
-            var result = await PlayerApiClient.UpdateProfileAliasAsync(_alias, aliasName);
+            var result = await PlayerManager.UpdateAliasAsync(_editModel.DisplayName.Trim());
 
-            if (result.IsSuccess && result.Value != null)
+            if (result.IsSuccess)
             {
-                var storedProfile = await LocalStorageService.GetProfileAsync();
-                if (storedProfile != null)
-                {
-                    storedProfile.Alias = result.Value.Alias;
-                    await LocalStorageService.SetProfileAsync(storedProfile);
-                }
-
-                _alias = result.Value.Alias;
+                _alias = result.Value!.Alias;
                 _isEditing = false;
                 StateHasChanged();
                 return;
@@ -119,14 +100,5 @@ public partial class Profile
         {
             _isSaving = false;
         }
-    }
-
-    private class EditAliasModel
-    {
-        [Required(ErrorMessage = "Alias is required.")]
-        [MinLength(2, ErrorMessage = "Alias must be at least 2 characters.")]
-        [MaxLength(50, ErrorMessage = "Alias cannot exceed 50 characters.")]
-        [RegularExpression(@"^[a-zA-Z0-9 ]+$", ErrorMessage = "Alias can only contain letters, numbers, and spaces.")]
-        public string NewAlias { get; set; } = string.Empty;
     }
 }

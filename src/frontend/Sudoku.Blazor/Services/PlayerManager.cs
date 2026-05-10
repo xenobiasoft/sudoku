@@ -46,6 +46,40 @@ public class PlayerManager(IPlayerApiClient playerApiClient, ILocalStorageServic
         return await localStorageService.GetProfileAsync();
     }
 
+    public async Task<ApiResult<ProfileInfo>> CreateProfileAsync(string alias)
+    {
+        var result = await playerApiClient.CreateProfileAsync(alias);
+        if (result.IsSuccess && result.Value != null)
+        {
+            var profile = new ProfileInfo { ProfileId = result.Value.ProfileId, Alias = result.Value.Alias };
+            await localStorageService.SetProfileAsync(profile);
+            return ApiResult<ProfileInfo>.Success(profile);
+        }
+        return ApiResult<ProfileInfo>.Failure(result.Error ?? "Failed to create profile", result.StatusCode);
+    }
+
+    public async Task<DateTime?> GetProfileCreatedAtAsync()
+    {
+        var profile = await localStorageService.GetProfileAsync();
+        if (profile == null) return null;
+        var result = await playerApiClient.GetProfileAsync(profile.Alias);
+        return result.IsSuccess ? result.Value?.CreatedAt : null;
+    }
+
+    public async Task<ApiResult<ProfileInfo>> UpdateAliasAsync(string newAlias)
+    {
+        var profile = await localStorageService.GetProfileAsync();
+        if (profile == null) return ApiResult<ProfileInfo>.Failure("Profile not found", 404);
+        var result = await playerApiClient.UpdateProfileAliasAsync(profile.Alias, newAlias);
+        if (result.IsSuccess && result.Value != null)
+        {
+            profile.Alias = result.Value.Alias;
+            await localStorageService.SetProfileAsync(profile);
+            return ApiResult<ProfileInfo>.Success(profile);
+        }
+        return ApiResult<ProfileInfo>.Failure(result.Error ?? "Failed to update alias", result.StatusCode);
+    }
+
     public async Task<bool> EnsureProfileInitializedAsync()
     {
         var profile = await localStorageService.GetProfileAsync();

@@ -20,7 +20,7 @@
                     <EditForm Model="@_editModel" OnValidSubmit="HandleSaveAliasAsync">
                         <DataAnnotationsValidator />
                         <div class="edit-row">
-                            <InputText @bind-Value="_editModel.NewAlias" class="form-control" maxlength="50" />
+                            <InputText @bind-Value="_editModel.DisplayName" class="form-control" maxlength="50" />
                             <div class="edit-actions">
                                 <button type="submit" class="btn btn-primary" disabled="@_isSaving">
                                     @(_isSaving ? "Saving…" : "Save")
@@ -28,7 +28,7 @@
                                 <button type="button" class="btn btn-outline-secondary" @onclick="CancelEdit">Cancel</button>
                             </div>
                         </div>
-                        <ValidationMessage For="@(() => _editModel.NewAlias)" />
+                        <ValidationMessage For="@(() => _editModel.DisplayName)" />
                         @if (!string.IsNullOrEmpty(_editError))
                         {
                             <div class="error-message" role="alert">@_editError</div>
