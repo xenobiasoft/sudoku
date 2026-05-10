@@ -4,13 +4,8 @@ namespace Sudoku.Blazor.Services.Abstractions;
 
 public interface IPlayerManager
 {
-    Task<string?> GetCurrentPlayerAsync();
-    Task<string?> GetCurrentProfileIdAsync();
-    Task SetCurrentPlayerAsync(string alias);
-    Task<string> TryGetPlayerAlias();
-    Task<ProfileInfo?> GetCurrentProfileAsync();
+    Task<ApiResult<ProfileInfo>> CreateProfileAsync(string displayName);
     Task<bool> EnsureProfileInitializedAsync();
-    Task<ApiResult<ProfileInfo>> CreateProfileAsync(string alias);
-    Task<DateTime?> GetProfileCreatedAtAsync();
+    Task<ProfileInfo?> GetCurrentProfileAsync();
     Task<ApiResult<ProfileInfo>> UpdateAliasAsync(string newAlias);
 }

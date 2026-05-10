@@ -11,7 +11,6 @@ public partial class Profile
     [Inject] public required ILogger<EditProfileModel> Logger { get; set; }
 
     private string? _alias;
-    private DateTime? _createdAt;
     private bool _isLoading = true;
     private bool _isEditing;
     private bool _isSaving;
@@ -32,7 +31,6 @@ public partial class Profile
             }
 
             _alias = profile.Alias;
-            _createdAt = await PlayerManager.GetProfileCreatedAtAsync();
         }
         catch (Exception ex)
         {

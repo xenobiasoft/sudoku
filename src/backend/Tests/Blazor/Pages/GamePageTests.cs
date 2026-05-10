@@ -14,8 +14,13 @@ namespace UnitTests.Blazor.Pages;
 
 public class GamePageTests : BunitContext
 {
-    private const string Alias = "test-alias";
     private const string PuzzleId = "test-puzzleId";
+
+    private readonly ProfileInfo _profile = new ProfileInfo
+    {
+        Alias = "test-alias",
+        ProfileId = Guid.NewGuid().ToString()
+    };
 
     private readonly Mock<INotificationService> _mockNotificationService = new();
     private readonly Mock<IGameManager> _mockGameManager = new();
@@ -27,14 +32,14 @@ public class GamePageTests : BunitContext
         var loadedGameState = GameModelFactory
             .Build()
             .WithDifficulty(GameDifficulty.Easy)
-            .WithProfileId(Alias)
+            .WithProfileId(_profile.ProfileId)
             .WithId(PuzzleId)
             .Create();
         var mockGameTimer = new Mock<IGameTimer>();
         _mockGameManager.Setup(x => x.CurrentStatistics).Returns(gameStatistics);
         _mockGameManager.Setup(x => x.Game).Returns(loadedGameState);
         _mockGameManager.Setup(x => x.Timer).Returns(mockGameTimer.Object);
-        _mockPlayerManager.SetupGetCurrentProfileIdAsync(Alias);
+        _mockPlayerManager.SetupCurrentProfile(_profile);
         Services.AddSingleton(_mockNotificationService.Object);
         Services.AddSingleton(_mockGameManager.Object);
         Services.AddSingleton(_mockPlayerManager.Object);
@@ -83,7 +88,7 @@ public class GamePageTests : BunitContext
         // Arrange
         var gameState = new GameModel
         {
-            ProfileId = Alias,
+            ProfileId = _profile.ProfileId,
             Cells = GameModelFactory.GetSolvedPuzzle().Cells,
             Id = PuzzleId
         };
@@ -163,7 +168,7 @@ public class GamePageTests : BunitContext
         // Arrange
         var gameState = new GameModel
         {
-            ProfileId = Alias,
+            ProfileId = _profile.ProfileId,
             Cells = GameModelFactory.GetSolvedPuzzle().Cells,
             Id = PuzzleId
         };
@@ -186,7 +191,7 @@ public class GamePageTests : BunitContext
         // Arrange
         var gameState = new GameModel
         {
-            ProfileId = Alias,
+            ProfileId = _profile.ProfileId,
             Cells = GameModelFactory.GetSolvedPuzzle().Cells,
             Id = PuzzleId
         };
@@ -210,7 +215,7 @@ public class GamePageTests : BunitContext
         // Arrange
         var gameState = new GameModel
         {
-            ProfileId = Alias,
+            ProfileId = _profile.ProfileId,
             Cells = GameModelFactory.GetSolvedPuzzle().Cells,
             Id = PuzzleId
         };
@@ -291,7 +296,7 @@ public class GamePageTests : BunitContext
         Render<Game>(parameters => parameters.Add(p => p.PuzzleId, PuzzleId));
 
         // Assert
-        _mockGameManager.VerifyLoadsAsyncCalled(Alias, PuzzleId, Times.Once);
+        _mockGameManager.VerifyLoadsAsyncCalled(_profile.ProfileId, PuzzleId, Times.Once);
     }
 
     [Fact]

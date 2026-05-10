@@ -55,7 +55,9 @@ public partial class Game
 
     private async Task LoadGameStateAsync()
     {
-        ProfileId = await PlayerManager.GetCurrentProfileIdAsync() ?? string.Empty;
+        var profile = await PlayerManager.GetCurrentProfileAsync();
+        ProfileId = profile!.ProfileId;
+
         Logger.LogInformation("Loading game {PuzzleId} for profile {ProfileId}", PuzzleId, ProfileId);
 
         await GameManager.LoadGameAsync(ProfileId, PuzzleId!);

@@ -20,7 +20,8 @@ public partial class New
 
     private async Task GenerateNewGameAsync()
     {
-        var profileId = await PlayerManager.GetCurrentProfileIdAsync();
+        var profile = await PlayerManager.GetCurrentProfileAsync();
+        var profileId = profile!.ProfileId;
 
         Logger.LogInformation("Generating new game with difficulty {Difficulty} for profile {ProfileId}", Difficulty, profileId);
 

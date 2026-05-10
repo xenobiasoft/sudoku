@@ -44,14 +44,6 @@
                 }
             </div>
 
-            @if (_createdAt.HasValue)
-            {
-                <div class="profile-field">
-                    <span class="field-label">Member since</span>
-                    <span>@_createdAt.Value.ToLocalTime().ToString("MMMM d, yyyy")</span>
-                </div>
-            }
-
             <p class="warning-note">
                 Your profile is stored in this browser. Clearing browser data will require you to create a new profile.
             </p>

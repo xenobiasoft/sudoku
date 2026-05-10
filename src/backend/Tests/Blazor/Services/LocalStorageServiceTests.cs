@@ -87,53 +87,6 @@ public class LocalStorageServiceTests : MoqBaseTestByAbstraction<LocalStorageSer
 
     #endregion
 
-    #region GetAliasAsync Tests
-
-    [Fact]
-    public async Task GetAliasAsync_WhenAliasExists_ReturnsAlias()
-    {
-        // Arrange
-        var expectedAlias = Container.Create<string>();
-        _mockJsRuntime.SetupAliasV2(expectedAlias);
-        var sut = ResolveSut();
-
-        // Act
-        var result = await sut.GetAliasAsync();
-
-        // Assert
-        result.Should().Be(expectedAlias);
-    }
-
-    [Fact]
-    public async Task GetAliasAsync_WhenAliasIsNull_ReturnsNull()
-    {
-        // Arrange
-        _mockJsRuntime.SetupAliasV2(null);
-        var sut = ResolveSut();
-
-        // Act
-        var result = await sut.GetAliasAsync();
-
-        // Assert
-        result.Should().BeEmpty();
-    }
-
-    [Fact]
-    public async Task GetAliasAsync_CallsJsRuntimeWithCorrectKey()
-    {
-        // Arrange
-        _mockJsRuntime.SetupAliasV2("test");
-        var sut = ResolveSut();
-
-        // Act
-        await sut.GetAliasAsync();
-
-        // Assert
-        _mockJsRuntime.VerifyGetsAliasV2(Times.Once);
-    }
-
-    #endregion
-
     #region LoadGameAsync Tests
 
     [Fact]
@@ -375,52 +328,6 @@ public class LocalStorageServiceTests : MoqBaseTestByAbstraction<LocalStorageSer
 
         // Assert
         _mockJsRuntime.VerifyLoadsSavedGamesV2(Times.Once);
-    }
-
-    #endregion
-
-    #region SetAliasAsync Tests
-
-    [Fact]
-    public async Task SetAliasAsync_CallsJsRuntimeWithCorrectParameters()
-    {
-        // Arrange
-        var alias = Container.Create<string>();
-        var sut = ResolveSut();
-
-        // Act
-        await sut.SetAliasAsync(alias);
-
-        // Assert
-        _mockJsRuntime.VerifySavesAliasV2(alias, Times.Once);
-    }
-
-    [Fact]
-    public async Task SetAliasAsync_WithEmptyAlias_StillCallsJsRuntime()
-    {
-        // Arrange
-        var emptyAlias = string.Empty;
-        var sut = ResolveSut();
-
-        // Act
-        await sut.SetAliasAsync(emptyAlias);
-
-        // Assert
-        _mockJsRuntime.VerifySavesAliasV2(emptyAlias, Times.Once);
-    }
-
-    [Fact]
-    public async Task SetAliasAsync_WithNullAlias_StillCallsJsRuntime()
-    {
-        // Arrange
-        string nullAlias = null!;
-        var sut = ResolveSut();
-
-        // Act
-        await sut.SetAliasAsync(nullAlias);
-
-        // Assert
-        _mockJsRuntime.VerifySavesAliasV2(nullAlias, Times.Once);
     }
 
     #endregion
