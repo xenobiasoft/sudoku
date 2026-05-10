@@ -17,7 +17,6 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 const PROFILE_KEY = 'sudoku-profile';
-const LEGACY_ALIAS_KEY = 'sudoku-alias';
 
 describe('usePlayerService', () => {
   beforeEach(() => {
@@ -59,45 +58,6 @@ describe('usePlayerService', () => {
     });
   });
 
-  describe('legacy migration', () => {
-    it('migrates sudoku-alias to sudoku-profile on init', () => {
-      store[LEGACY_ALIAS_KEY] = 'OldAlias';
-      const { result } = renderHook(() => usePlayerService());
-
-      expect(result.current.isInitialized).toBe(true);
-      expect(result.current.playerAlias).toBe('OldAlias');
-
-      const writeCall = mockLocalStorage.setItem.mock.calls.find(c => c[0] === PROFILE_KEY);
-      expect(writeCall).toBeDefined();
-      const written = JSON.parse(writeCall![1]);
-      expect(written.alias).toBe('OldAlias');
-      expect(written.profileId).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
-
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(LEGACY_ALIAS_KEY);
-    });
-
-    it('treats as new player when localStorage write fails during migration', () => {
-      store[LEGACY_ALIAS_KEY] = 'OldAlias';
-      mockLocalStorage.setItem.mockImplementationOnce(() => { throw new Error('Storage full'); });
-
-      const { result } = renderHook(() => usePlayerService());
-
-      expect(result.current.isNewPlayer).toBe(true);
-      expect(result.current.playerAlias).toBeNull();
-      expect(mockLocalStorage.removeItem).not.toHaveBeenCalledWith(LEGACY_ALIAS_KEY);
-    });
-
-    it('skips migration when sudoku-profile already exists', () => {
-      store[PROFILE_KEY] = JSON.stringify({ profileId: 'p1', alias: 'alice' });
-      store[LEGACY_ALIAS_KEY] = 'OldAlias';
-
-      renderHook(() => usePlayerService());
-
-      expect(mockLocalStorage.setItem).not.toHaveBeenCalled();
-      expect(mockLocalStorage.removeItem).not.toHaveBeenCalled();
-    });
-  });
-
   describe('clearPlayer', () => {
     it('clears profile and both localStorage keys', () => {
       store[PROFILE_KEY] = JSON.stringify({ profileId: 'p1', alias: 'alice' });
@@ -111,7 +71,6 @@ describe('usePlayerService', () => {
       expect(result.current.isInitialized).toBe(false);
       expect(result.current.isNewPlayer).toBe(true);
       expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(PROFILE_KEY);
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(LEGACY_ALIAS_KEY);
     });
   });
 
