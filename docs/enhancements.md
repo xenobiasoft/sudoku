@@ -37,15 +37,15 @@
 
 ## User Profiles & Identity
 
-- [ ] **[P1]** **Profile creation flow** — Replace the auto-generated alias with an explicit "create your profile" onboarding step when a user first visits the app. The user picks their own alias/display name.
+- [x] **[P1]** **Profile creation flow** — Replace the auto-generated alias with an explicit "create your profile" onboarding step when a user first visits the app. The user picks their own alias/display name.
 - [ ] **[P4]** **Passwordless profile locking** — Secure profiles without traditional passwords. Options to explore: a device-bound passkey (WebAuthn/FIDO2), a one-time magic link sent to email, or a PIN stored in a signed/encrypted browser token. Goal: prevent another user from claiming or hijacking an existing alias.
-- [ ] **[P1]** **User profile page** — A dedicated page where users can view and edit their alias/display name, see their profile info, and manage their identity across sessions.
+- [x] **[P1]** **User profile page** — A dedicated page where users can view and edit their alias/display name, see their profile info, and manage their identity across sessions.
 
 ---
 
 ## Navigation & UX
 
-- [ ] **[P1]** **New landing/home page** — Replace the current entry point with a proper home screen offering clear navigation to: Manage Profile, View Game Stats, Start a New Game, and Browse Game List.
+- [x] **[P1]** **New landing/home page** — Replace the current entry point with a proper home screen offering clear navigation to: Manage Profile, View Game Stats, Start a New Game, and Browse Game List.
 - [ ] **[P2]** **Game stats page** — Surface per-user statistics: games played, win rate, average solve time by difficulty, best times, streaks, etc.
 
 ---

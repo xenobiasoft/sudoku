@@ -64,7 +64,8 @@ public class SudokuGame : AggregateRoot
     private readonly List<DomainEvent> _domainEvents;
 
     public GameId Id { get; private set; }
-    public PlayerAlias PlayerAlias { get; private set; }
+    public ProfileId ProfileId { get; private set; }
+    public PlayerAlias DisplayName { get; private set; }
     public GameDifficulty Difficulty { get; private set; }
     public GameStatus Status { get; private set; }
 
@@ -72,7 +73,7 @@ public class SudokuGame : AggregateRoot
     private SudokuGame() { }
 
     // Public factory method
-    public static SudokuGame Create(PlayerAlias playerAlias, GameDifficulty difficulty)
+    public static SudokuGame Create(ProfileId profileId, PlayerAlias displayName, GameDifficulty difficulty, IEnumerable<Cell> initialCells)
     {
         // Validation and creation logic
     }
@@ -91,7 +92,7 @@ public class SudokuGame : AggregateRoot
 
 ```csharp
 // Use CQRS pattern
-public record CreateGameCommand(string PlayerAlias, GameDifficulty Difficulty);
+public record CreateGameCommand(string ProfileId, string DisplayName, string Difficulty);
 public record GetGameQuery(GameId GameId);
 
 // Command/Query handlers
@@ -309,23 +310,23 @@ If a client needs the updated resource after a command, it issues a separate GET
 
 ```csharp
 // COMMAND endpoint — mutates state, returns no data
-[HttpPost("{alias}/games/{difficulty}")]
+[HttpPost("{profileId}/games/{difficulty}")]
 [ProducesResponseType(StatusCodes.Status201Created)]
 [ProducesResponseType(StatusCodes.Status400BadRequest)]
-public async Task<ActionResult> CreateGame(string alias, string difficulty)
+public async Task<ActionResult> CreateGame(string profileId, string difficulty)
 {
-    var result = await _gameService.CreateGameAsync(alias, difficulty);
+    var result = await _gameService.CreateGameAsync(profileId, difficulty);
     if (!result.IsSuccess)
         return BadRequest(result.Error);
 
-    return Created($"/api/players/{alias}/games/{result.Value.Id}", null);
+    return Created($"/api/players/{profileId}/games/{result.Value.Id}", null);
 }
 
 // QUERY endpoint — reads state, returns data
-[HttpGet("{alias}/games/{gameId}")]
+[HttpGet("{profileId}/games/{gameId}")]
 [ProducesResponseType(typeof(GameDto), StatusCodes.Status200OK)]
 [ProducesResponseType(StatusCodes.Status404NotFound)]
-public async Task<ActionResult<GameDto>> GetGame(string alias, string gameId)
+public async Task<ActionResult<GameDto>> GetGame(string profileId, string gameId)
 {
     var result = await _gameService.GetGameAsync(gameId);
     if (!result.IsSuccess)
@@ -384,7 +385,7 @@ public record GameId(Guid Value)
 ### Domain Events
 
 ```csharp
-public record GameCreatedEvent(GameId GameId, PlayerAlias PlayerAlias, GameDifficulty Difficulty) : DomainEvent;
+public record GameCreatedEvent(GameId GameId, ProfileId ProfileId, PlayerAlias DisplayName, GameDifficulty Difficulty) : DomainEvent;
 public record MoveMadeEvent(GameId GameId, int Row, int Column, int Value) : DomainEvent;
 ```
 
@@ -398,13 +399,13 @@ public interface ISpecification<T>
 
 public class GameByPlayerSpecification : ISpecification<Game>
 {
-    private readonly PlayerAlias _playerAlias;
+    private readonly ProfileId _profileId;
 
     public Expression<Func<Game, bool>> Criteria
     {
         get
         {
-            return game => game.PlayerAlias == _playerAlias;
+            return game => game.ProfileId == _profileId;
         }
     }
 }

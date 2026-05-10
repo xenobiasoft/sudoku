@@ -6,7 +6,7 @@ This is a React TypeScript frontend for a Sudoku game that communicates with a s
 
 ### Core Data Flow
 
-- **Player Management**: Auto-creates anonymous players via `apiClient.createPlayer()` and stores alias in localStorage
+- **Player Management**: Manages player profiles via `apiClient.createProfile()`; stores profile object in localStorage under `sudoku-profile`
 - **Game State**: All game logic is server-side; frontend only handles presentation and input validation
 - **API Integration**: Centralized in `src/api/apiClient.ts` using environment-based URL configuration
 
@@ -33,7 +33,7 @@ export default function Component({ prop }: ComponentProps) {
 
 - **No Global State**: Uses React local state + localStorage for persistence
 - **API-Driven**: Game state lives on server; components receive via props from pages
-- **Player Session**: Player alias stored in localStorage, created automatically on first visit
+- **Player Session**: Player profile (`{ profileId, alias }`) stored under `sudoku-profile` in localStorage; new users are redirected to `/create-profile`
 
 ### Styling Conventions
 
@@ -89,7 +89,7 @@ npm run lint         # ESLint with TypeScript rules
 ### Backend API Expectations
 
 - RESTful endpoints under `/api/` namespace
-- Player alias-based routing: `/api/players/{alias}/games/{gameId}`
+- Profile-based routing: `/api/players/{profileId}/games/{gameId}`
 - Game state mutations via move API with duration tracking
 - Error responses use standard HTTP status codes
 
@@ -104,7 +104,7 @@ npm run lint         # ESLint with TypeScript rules
 ### Local Storage Schema
 
 ```js
-localStorage.playerAlias; // String: auto-generated player identifier
+localStorage['sudoku-profile']; // JSON: { profileId: string, alias: string }
 ```
 
 ## Testing & Validation Patterns
