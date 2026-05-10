@@ -1,15 +1,16 @@
-using System.Text.Json;
 using Sudoku.Blazor.Models;
 using Sudoku.Blazor.Services.Abstractions;
+using System.Text.Json;
 
 namespace Sudoku.Blazor.Services;
 
-using ILocalStorageService = Abstractions.ILocalStorageService;
-
 public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageService
 {
+    private readonly JsonSerializerOptions _serializerOptions = new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true
+    };
     private const string SavedGamesKey = "savedGames";
-    private const string AliasKey = "sudoku-alias";
     private const string ProfileKey = "sudoku-profile";
 
     public async Task DeleteGameAsync(string gameId)
@@ -24,11 +25,24 @@ public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageSer
         await SaveGameStateAsync(games);
     }
 
-    public async Task<string?> GetAliasAsync()
+    public async Task<ProfileInfo?> GetProfileAsync()
     {
-        var alias = await jsRuntime.GetAsync(AliasKey);
+        var json = await jsRuntime.GetAsync(ProfileKey);
+        if (string.IsNullOrWhiteSpace(json)) return null;
 
-        return alias;
+        try
+        {
+            var profile = JsonSerializer.Deserialize<ProfileInfo>(json, _serializerOptions);
+            if (profile == null || string.IsNullOrWhiteSpace(profile.ProfileId) || string.IsNullOrWhiteSpace(profile.Alias))
+            {
+                return null;
+            }
+            return profile;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     public async Task<GameModel?> LoadGameAsync(string gameId)
@@ -50,7 +64,7 @@ public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageSer
 
         try
         {
-            var games = JsonSerializer.Deserialize<List<GameModel>>(json) ?? [];
+            var games = JsonSerializer.Deserialize<List<GameModel>>(json, _serializerOptions) ?? [];
             return games.Where(x => !string.IsNullOrWhiteSpace(x.Id)).ToList();
         }
         catch (JsonException)
@@ -74,45 +88,16 @@ public class LocalStorageService(IJsRuntimeWrapper jsRuntime) : ILocalStorageSer
         await SaveGameStateAsync(games);
     }
 
-    public async Task SetAliasAsync(string alias)
+    private async Task SaveGameStateAsync(IEnumerable<GameModel> gameState)
     {
-        await jsRuntime.SetAsync(AliasKey, alias);
-    }
+        var json = JsonSerializer.Serialize(gameState);
 
-    public async Task RemoveAliasAsync()
-    {
-        await jsRuntime.RemoveAsync(AliasKey);
-    }
-
-    public async Task<ProfileInfo?> GetProfileAsync()
-    {
-        var json = await jsRuntime.GetAsync(ProfileKey);
-        if (string.IsNullOrWhiteSpace(json)) return null;
-
-        try
-        {
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var profile = JsonSerializer.Deserialize<ProfileInfo>(json, options);
-            if (profile == null || string.IsNullOrWhiteSpace(profile.ProfileId) || string.IsNullOrWhiteSpace(profile.Alias))
-                return null;
-            return profile;
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
+        await jsRuntime.SetAsync(SavedGamesKey, json);
     }
 
     public async Task SetProfileAsync(ProfileInfo profile)
     {
         var json = JsonSerializer.Serialize(profile);
         await jsRuntime.SetAsync(ProfileKey, json);
-    }
-
-    private async Task SaveGameStateAsync(IEnumerable<GameModel> gameState)
-    {
-        var json = JsonSerializer.Serialize(gameState);
-
-        await jsRuntime.SetAsync(SavedGamesKey, json);
     }
 }

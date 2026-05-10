@@ -7,46 +7,19 @@ public static class MockLocalStorageServiceV2Extensions
 {
     extension(Mock<ILocalStorageService> mock)
     {
-        public void SetupGetAliasAsync(string? alias)
+        public void SetupGetProfile(ProfileInfo profile)
         {
-            mock
-                .Setup(x => x.GetAliasAsync())
-                .ReturnsAsync(alias);
-            mock
-                .Setup(x => x.GetProfileAsync())
-                .ReturnsAsync((Sudoku.Blazor.Models.ProfileInfo?)null);
+            mock.Setup(x => x.GetProfileAsync()).ReturnsAsync(profile);
         }
 
-        public void SetupLoadGameAsync(GameModel? gameState)
+        public void SetupGetProfileReturnsNull()
         {
-            mock
-                .Setup(x => x.LoadGameAsync(It.IsAny<string>()))
-                .ReturnsAsync(gameState);
+            mock.Setup(x => x.GetProfileAsync()).ReturnsAsync((ProfileInfo?)null);
         }
 
-        public void VerifyDeleteGameAsyncCalled(Func<Times> times)
+        public void VerifySavesProfile(ProfileInfo profile)
         {
-            mock.Verify(x => x.DeleteGameAsync(It.IsAny<string>()), times);
-        }
-
-        public void VerifySaveGameAsyncCalled(Func<Times> times)
-        {
-            mock.Verify(x => x.SaveGameStateAsync(It.IsAny<GameModel>()), Times.Once);
-        }
-
-        public void VerifySetAliasAsyncCalled(Func<Times> times)
-        {
-            mock.Verify(x => x.SetAliasAsync(It.IsAny<string>()), times);
-        }
-
-        public void VerifyLoadGameAsyncCalled(Func<Times> times)
-        {
-            mock.Verify(x => x.LoadGameAsync(It.IsAny<string>()), times);
-        }
-
-        public void VerifyLoadGamesAsyncCalled(Func<Times> times)
-        {
-            mock.Verify(x => x.LoadGameStatesAsync(), times);
+            mock.Verify(x => x.SetProfileAsync(It.Is<ProfileInfo>(p => p.Alias == profile.Alias && p.ProfileId == profile.ProfileId)), Times.Once);
         }
     }
 }

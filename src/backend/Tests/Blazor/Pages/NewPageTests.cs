@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sudoku.Blazor.Components.Pages;
+using Sudoku.Blazor.Models;
 using Sudoku.Blazor.Services.Abstractions;
 
 namespace UnitTests.Blazor.Pages;
@@ -11,14 +12,19 @@ public class NewPageTests : BunitContext
 {
     private readonly Mock<IGameManager>? _mockGameManager;
 
+    private readonly ProfileInfo _profile = new ProfileInfo
+    {
+        Alias = "test-displayName",
+        ProfileId = Guid.NewGuid().ToString()
+    };
+
     public NewPageTests()
     {
-        var alias = "game-alias";
         _mockGameManager = new Mock<IGameManager>();
         var playerManager = new Mock<IPlayerManager>();
-        playerManager.SetupGetCurrentProfileIdAsync(alias);
+        playerManager.SetupCurrentProfile(_profile);
 
-        _mockGameManager.SetupCreateGameAsync(alias, "Medium");
+        _mockGameManager.SetupCreateGameAsync(_profile.ProfileId, "Medium");
 
         Services.AddSingleton(_mockGameManager.Object);
         Services.AddSingleton(playerManager.Object);
@@ -42,7 +48,7 @@ public class NewPageTests : BunitContext
         Render<New>(parameters => parameters.Add(p => p.Difficulty, "Medium"));
 
         // Assert
-        _mockGameManager!.VerifyCreateGameAsyncCalled("game-alias", "Medium", Times.Once);
+        _mockGameManager!.VerifyCreateGameAsyncCalled(_profile.ProfileId, "Medium", Times.Once);
     }
 
     [Fact]

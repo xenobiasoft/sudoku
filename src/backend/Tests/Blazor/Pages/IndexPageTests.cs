@@ -27,21 +27,11 @@ public class IndexPageTests : BunitContext
     {
         var profile = new ProfileInfo { ProfileId = Guid.NewGuid().ToString(), Alias = alias };
         _mockLocalStorage.Setup(x => x.GetProfileAsync()).ReturnsAsync(profile);
-        _mockLocalStorage.Setup(x => x.GetAliasAsync()).ReturnsAsync((string?)null);
     }
 
     private void SetupNewPlayer()
     {
         _mockLocalStorage.Setup(x => x.GetProfileAsync()).ReturnsAsync((ProfileInfo?)null);
-        _mockLocalStorage.Setup(x => x.GetAliasAsync()).ReturnsAsync((string?)null);
-    }
-
-    private void SetupLegacyPlayer(string alias)
-    {
-        _mockLocalStorage.Setup(x => x.GetProfileAsync()).ReturnsAsync((ProfileInfo?)null);
-        _mockLocalStorage.Setup(x => x.GetAliasAsync()).ReturnsAsync(alias);
-        _mockLocalStorage.Setup(x => x.SetProfileAsync(It.IsAny<ProfileInfo>())).Returns(Task.CompletedTask);
-        _mockLocalStorage.Setup(x => x.RemoveAliasAsync()).Returns(Task.CompletedTask);
     }
 
     [Fact]
@@ -115,14 +105,5 @@ public class IndexPageTests : BunitContext
         // LocalStorageService is the only service injected — no IPlayerApiClient or IGameManager
         // This test verifies no backend dependency is needed
         _mockLocalStorage.Verify(x => x.GetProfileAsync(), Times.AtLeastOnce);
-    }
-
-    [Fact]
-    public void LegacyMigration_WritesProfileAndRemovesAlias()
-    {
-        SetupLegacyPlayer("old-alias");
-        Render<IndexPage>();
-        _mockLocalStorage.Verify(x => x.SetProfileAsync(It.Is<ProfileInfo>(p => p.Alias == "old-alias")), Times.Once);
-        _mockLocalStorage.Verify(x => x.RemoveAliasAsync(), Times.Once);
     }
 }

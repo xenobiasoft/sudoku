@@ -1,4 +1,5 @@
-﻿using Sudoku.Blazor.Services.Abstractions;
+﻿using Sudoku.Blazor.Models;
+using Sudoku.Blazor.Services.Abstractions;
 
 namespace UnitTests.Mocks;
 
@@ -6,22 +7,10 @@ public static class MockPlayerManagerExtensions
 {
     extension(Mock<IPlayerManager> mock)
     {
-        public void SetupGetCurrentPlayerAsync(string alias)
+        public void SetupCurrentProfile(ProfileInfo profile)
         {
-            mock.Setup(x => x.GetCurrentPlayerAsync())
-                .ReturnsAsync(alias);
-            mock.Setup(x => x.EnsureProfileInitializedAsync())
-                .ReturnsAsync(true);
-            mock.Setup(x => x.TryGetPlayerAlias())
-                .ReturnsAsync(alias);
-        }
-
-        public void SetupGetCurrentProfileIdAsync(string profileId)
-        {
-            mock.Setup(x => x.GetCurrentProfileIdAsync())
-                .ReturnsAsync(profileId);
-            mock.Setup(x => x.EnsureProfileInitializedAsync())
-                .ReturnsAsync(true);
+            mock.Setup(x => x.GetCurrentProfileAsync())
+                .ReturnsAsync(profile);
         }
     }
 }
