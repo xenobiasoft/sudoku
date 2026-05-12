@@ -41,12 +41,6 @@ try
         .WithExternalHttpEndpoints()
         .WaitFor(cosmosDb);
 
-    logger.LogInformation("Configuring Sudoku Blazor Server project...");
-    builder.AddProject<Projects.Sudoku_Blazor>("sudoku-blazor")
-        .WithReference(api)
-        .WithExternalHttpEndpoints()
-        .WaitFor(api);
-
     logger.LogInformation("Configuring Sudoku React project...");
     builder.AddNpmApp("sudoku-react", "../../frontend/Sudoku.React", "dev")
         .WithReference(api)

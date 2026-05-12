@@ -7,11 +7,9 @@ on:
     branches: [main]
 
 env:
-  AZURE_WEBAPP_NAME: XenobiasoftSudoku-prod
   AZURE_API_NAME: XenobiasoftSudokuApi-prod
   AZURE_MCP_NAME: XenobiasoftSudokuMcp-prod
   AZURE_SWA_NAME: swa-sudoku-xenobiasoft-prod
-  CUSTOM_DOMAIN_NAME: "sudoku.xenobiasoft.com"
   DOTNET_VERSION: "10.x"
 
 permissions:
@@ -69,20 +67,11 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore --verbosity normal
 
-      - name: Publish Web Server
-        run: dotnet publish src/frontend/Sudoku.Blazor/Sudoku.Blazor.csproj --configuration Release --output ${{ github.workspace }}/publish-web --no-restore --no-build
-
       - name: Publish API
         run: dotnet publish src/backend/Sudoku.Api/Sudoku.Api.csproj --configuration Release --output ${{ github.workspace }}/publish-api --no-restore --no-build
 
       - name: Publish MCP Server
         run: dotnet publish src/backend/Sudoku.McpServer/Sudoku.McpServer.csproj --configuration Release --output ${{ github.workspace }}/publish-mcp --no-restore --no-build
-
-      - name: Upload publish-web artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: publish-web
-          path: ${{ github.workspace }}/publish-web
 
       - name: Upload publish-api artifact
         uses: actions/upload-artifact@v4
@@ -231,7 +220,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y dnsutils
 
-          for host in "${AZURE_WEBAPP_NAME}.scm.azurewebsites.net" "${AZURE_API_NAME}.azurewebsites.net" "${CUSTOM_DOMAIN_NAME}"; do
+          for host in "${AZURE_API_NAME}.azurewebsites.net"; do
             echo "Checking DNS for $host"
             for i in {1..10}; do
               if nslookup "$host"; then
@@ -272,23 +261,11 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Download publish-web artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: publish-web
-          path: ${{ github.workspace }}/publish-web
-
       - name: Download publish-api artifact
         uses: actions/download-artifact@v4
         with:
           name: publish-api
           path: ${{ github.workspace }}/publish-api
-
-      - name: Deploy Web
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          package: ${{ github.workspace }}/publish-web
 
       - name: Deploy API
         uses: azure/webapps-deploy@v3

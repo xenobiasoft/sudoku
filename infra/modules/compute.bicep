@@ -1,21 +1,17 @@
 param location string
 param environment string
 param appServicePlanName string
-param webAppName string
 param apiAppName string
 param appServicePlanSku string = 'B1'
-param customDomainName string = 'sudoku.xenobiasoft.com'
-param enableCustomDomain bool = false
+param swaCustomDomainName string = ''
+param enableSwaCustomDomain bool = false
 param appInsightsConnectionString string
 param keyVaultUri string
 param cosmosDbEndpoint string
 
-var corsAllowedOrigins = enableCustomDomain ? [
-  'https://${customDomainName}'
-  'https://${webAppName}.azurewebsites.net'
-] : [
-  'https://${webAppName}.azurewebsites.net'
-]
+var corsAllowedOrigins = enableSwaCustomDomain ? [
+  'https://${swaCustomDomainName}'
+] : []
 
 var tags = {
   environment: environment
@@ -48,74 +44,6 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
     isSpot: false
     zoneRedundant: false
     perSiteScaling: false
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Web App (Blazor)
-// ---------------------------------------------------------------------------
-
-resource webApp 'Microsoft.Web/sites@2023-12-01' = {
-  name: webAppName
-  location: location
-  kind: 'app,linux'
-  tags: tags
-  identity: {
-    type: 'SystemAssigned'
-  }
-  properties: {
-    serverFarmId: appServicePlan.id
-    httpsOnly: true
-    clientAffinityEnabled: false
-    reserved: true
-    keyVaultReferenceIdentity: 'SystemAssigned'
-    siteConfig: {
-      linuxFxVersion: 'DOTNETCORE|10.0'
-      alwaysOn: true
-      http20Enabled: true
-      numberOfWorkers: 1
-    }
-  }
-}
-
-resource webAppConfig 'Microsoft.Web/sites/config@2023-12-01' = {
-  parent: webApp
-  name: 'web'
-  properties: {
-    linuxFxVersion: 'DOTNETCORE|10.0'
-    appCommandLine: 'dotnet Sudoku.Blazor.dll'
-    alwaysOn: true
-    http20Enabled: true
-    minTlsVersion: '1.2'
-    scmMinTlsVersion: '1.2'
-    ftpsState: 'FtpsOnly'
-    healthCheckPath: '/health-check'
-    defaultDocuments: [
-      'Default.html'
-      'index.html'
-    ]
-    managedPipelineMode: 'Integrated'
-    loadBalancing: 'LeastRequests'
-    virtualApplications: [
-      {
-        virtualPath: '/'
-        physicalPath: 'site\\wwwroot'
-        preloadEnabled: true
-      }
-    ]
-    remoteDebuggingEnabled: false
-    webSocketsEnabled: false
-    use32BitWorkerProcess: true
-  }
-}
-
-resource webAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
-  parent: webApp
-  name: 'appsettings'
-  properties: {
-    APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
-    ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
-    ConnectionStrings__AzureKeyVault: keyVaultUri
   }
 }
 
@@ -201,8 +129,6 @@ resource apiAppAuthSettings 'Microsoft.Web/sites/config@2023-12-01' = {
   }
 }
 
-output webAppUrl string = webApp.properties.defaultHostName
 output apiAppUrl string = apiApp.properties.defaultHostName
 output apiAppId string = apiApp.id
-output webAppPrincipalId string = webApp.identity.principalId
 output apiAppPrincipalId string = apiApp.identity.principalId
