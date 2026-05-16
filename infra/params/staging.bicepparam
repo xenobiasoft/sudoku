@@ -6,10 +6,8 @@ param environment = 'staging'
 
 // Compute
 param appServicePlanName = 'XenobiasoftServicePlan-staging'
-param webAppName = 'XenobiasoftSudoku-staging'
 param apiAppName = 'XenobiasoftSudokuApi-staging'
 param appServicePlanSku = 'B1'
-param enableCustomDomain = false
 
 // Static Web App — uses the same prod SWA; staging environment slot uses
 // the auto-generated SWA URL (no custom domain needed for staging).

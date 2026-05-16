@@ -31,8 +31,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Blazor", "src\frontend\Sudoku.Blazor\Sudoku.Blazor.csproj", "{CAE5610D-341A-3FFE-0753-4FA851715908}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "infra", "infra", "{9A29756C-E327-47DF-B5A2-BF6956C21A74}"
 	ProjectSection(SolutionItems) = preProject
 		infra\main.bicep = infra\main.bicep
@@ -163,18 +161,6 @@ Global
 		{2CA9D2C9-FC4A-4DB3-A60A-2857E3A6AEFD}.Release|x64.Build.0 = Release|Any CPU
 		{2CA9D2C9-FC4A-4DB3-A60A-2857E3A6AEFD}.Release|x86.ActiveCfg = Release|Any CPU
 		{2CA9D2C9-FC4A-4DB3-A60A-2857E3A6AEFD}.Release|x86.Build.0 = Release|Any CPU
-		{CAE5610D-341A-3FFE-0753-4FA851715908}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CAE5610D-341A-3FFE-0753-4FA851715908}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CAE5610D-341A-3FFE-0753-4FA851715908}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CAE5610D-341A-3FFE-0753-4FA851715908}.Debug|x64.Build.0 = Debug|Any CPU
-		{CAE5610D-341A-3FFE-0753-4FA851715908}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CAE5610D-341A-3FFE-0753-4FA851715908}.Debug|x86.Build.0 = Debug|Any CPU
-		{CAE5610D-341A-3FFE-0753-4FA851715908}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CAE5610D-341A-3FFE-0753-4FA851715908}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CAE5610D-341A-3FFE-0753-4FA851715908}.Release|x64.ActiveCfg = Release|Any CPU
-		{CAE5610D-341A-3FFE-0753-4FA851715908}.Release|x64.Build.0 = Release|Any CPU
-		{CAE5610D-341A-3FFE-0753-4FA851715908}.Release|x86.ActiveCfg = Release|Any CPU
-		{CAE5610D-341A-3FFE-0753-4FA851715908}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,12 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * E2E tests for Sudoku Blazor and React applications.
+ * E2E tests for the Sudoku React application.
  *
  * STAGING ENVIRONMENT NOTICE:
  * These tests are designed to run against deployed staging environments.
  * The following environment variables must be configured before running:
- *   - BLAZOR_BASE_URL: URL of the deployed Blazor application
  *   - REACT_BASE_URL:  URL of the deployed React application
  *
  * ⚠️  BLOCKER: Until the staging environment is provisioned, these tests cannot
@@ -29,13 +28,6 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   projects: [
-    {
-      name: 'blazor',
-      use: {
-        ...devices['Desktop Chrome'],
-        baseURL: process.env.BLAZOR_BASE_URL ?? 'http://localhost:5000',
-      },
-    },
     {
       name: 'react',
       use: {

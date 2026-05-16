@@ -6,16 +6,13 @@ param environment = 'prod'
 
 // Compute
 param appServicePlanName = 'XenobiasoftServicePlan-prod'
-param webAppName = 'XenobiasoftSudoku-prod'
 param apiAppName = 'XenobiasoftSudokuApi-prod'
 param mcpAppName = 'XenobiasoftSudokuMcp-prod'
 param appServicePlanSku = 'B1'
-param customDomainName = 'sudoku.xenobiasoft.com'
-param enableCustomDomain = true
 
 // Static Web App
 param staticWebAppName = 'swa-sudoku-xenobiasoft-prod'
-param swaCustomDomainName = 'sudoku-beta.xenobiasoft.com'
+param swaCustomDomainName = 'sudoku.xenobiasoft.com'
 param enableSwaCustomDomain = true
 
 // Storage

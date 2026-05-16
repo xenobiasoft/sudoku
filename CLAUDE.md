@@ -9,9 +9,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Build entire solution
 dotnet build
 
-# Run Blazor Server UI
-dotnet run --project src/frontend/Sudoku.Blazor
-
 # Run REST API
 dotnet run --project src/backend/Sudoku.Api
 
@@ -48,11 +45,11 @@ npm run lint           # React frontend only
 
 ## Architecture
 
-This solution follows **Clean Architecture** with **DDD** and **CQRS** across six backend projects and two frontend projects.
+This solution follows **Clean Architecture** with **DDD** and **CQRS** across six backend projects and one frontend project.
 
 ### Layer Dependency Flow
 ```
-Presentation (API, Blazor, React)
+Presentation (API, React)
     ↓
 Application (CQRS: Commands, Queries, Handlers)
     ↓
@@ -81,7 +78,7 @@ Interfaces are defined in the **Application** layer; implementations live in **I
 - `InMemoryPuzzleRepository` — puzzle generation only (performance optimization, not persisted)
 
 ### Testing Patterns
-Tests use a container-based DI mocking framework (`DepenMock`). Test classes inherit from `BaseTestByAbstraction` or `BaseTestByType`. Resolve the SUT via `ResolveSut()` and mocks via `Container.ResolveMock<T>()`. Use AutoFixture for test data, FluentAssertions for assertions. Blazor components are tested with bunit. CI enforces **80% line coverage**.
+Tests use a container-based DI mocking framework (`DepenMock`). Test classes inherit from `BaseTestByAbstraction` or `BaseTestByType`. Resolve the SUT via `ResolveSut()` and mocks via `Container.ResolveMock<T>()`. Use AutoFixture for test data, FluentAssertions for assertions. CI enforces **80% line coverage**.
 
 ### CI/CD
 GitHub Actions (`.github/workflows/main.yml`) builds, tests (with coverage threshold enforcement), and deploys to Azure on every merge to `main`. Coverage reports are posted as PR annotations.

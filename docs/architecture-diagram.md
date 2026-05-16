@@ -2,7 +2,7 @@
 
 ## Solution Overview
 
-The solution is a multi-layered application following Clean Architecture with DDD and CQRS. It consists of 10 main projects:
+The solution is a multi-layered application following Clean Architecture with DDD and CQRS. It consists of 9 main projects:
 
 ```
 Sudoku.sln
@@ -10,13 +10,12 @@ Sudoku.sln
 │   ├── Sudoku.Domain/                # Core Domain Library (Clean Architecture)
 │   ├── Sudoku.Application/           # Application Layer (Clean Architecture)
 │   ├── Sudoku.Infrastructure/        # Infrastructure Layer (Clean Architecture)
-│   ├── Sudoku.Api/                   # REST API (.NET 9.0)
-│   ├── Sudoku.AppHost/               # Application Orchestration (.NET 9.0)
-│   ├── Sudoku.ServiceDefaults/       # Shared Service Configuration (.NET 9.0)
-│   ├── Sudoku.McpServer/             # MCP Server for AI tooling (.NET 9.0)
-│   └── Tests/                        # Unit & Integration Tests (.NET 9.0)
+│   ├── Sudoku.Api/                   # REST API (.NET 10.0)
+│   ├── Sudoku.AppHost/               # Application Orchestration (.NET 10.0)
+│   ├── Sudoku.ServiceDefaults/       # Shared Service Configuration (.NET 10.0)
+│   ├── Sudoku.McpServer/             # MCP Server for AI tooling (.NET 10.0)
+│   └── Tests/                        # Unit & Integration Tests (.NET 10.0)
 ├── src/frontend/
-│   ├── Sudoku.Blazor/                # Blazor Server Web Application (.NET 9.0)
 │   └── Sudoku.React/                 # React/Vite SPA (TypeScript)
 └── Tests/E2E/                        # Playwright E2E Tests
 ```
@@ -38,12 +37,6 @@ graph TB
     end
 
     %% Frontends
-    subgraph "Sudoku.Blazor (Blazor Server)"
-        BlazorApp[Blazor Application]
-        BlazorComponents[Blazor Components]
-        BlazorServices[Blazor Services]
-    end
-
     subgraph "Sudoku.React (React/Vite SPA)"
         ReactApp[React Application]
         ReactComponents[React Components]
@@ -102,15 +95,10 @@ graph TB
 
     %% Dependencies
     AppHost --> GamesController
-    AppHost --> BlazorApp
     AppHost --> ReactApp
     AppHost --> KeyVault
 
-    Browser --> BlazorApp
     Browser --> ReactApp
-
-    BlazorApp --> BlazorServices
-    BlazorServices --> ApplicationServices
 
     ReactApp --> GamesController
 
@@ -158,7 +146,7 @@ graph TB
     class DomainEntities,DomainValueObjects,DomainEvents,DomainServices,DomainExceptions,DomainRepositories domain
     class ApplicationCommands,ApplicationQueries,ApplicationHandlers,ApplicationServices,ApplicationDTOs application
     class CosmosDbGameRepo,CosmosDbProfileRepo,AzureBlobRepo,InMemoryPuzzleRepo,InfraServices,EventHandlers infrastructure
-    class GamesController,GameActionsController,GameStatusController,PossibleValuesController,ProfilesController,Swagger,BlazorApp,BlazorComponents,BlazorServices,ReactApp,ReactComponents,ReactHooks presentation
+    class GamesController,GameActionsController,GameStatusController,PossibleValuesController,ProfilesController,Swagger,ReactApp,ReactComponents,ReactHooks presentation
     class AppHost,ServiceDefaults,McpTools orchestration
     class UnitTests,E2ETests test
     class Azure,Browser,CosmosDB,KeyVault external
@@ -200,11 +188,6 @@ graph TB
 - **Controllers**: `GamesController`, `GameActionsController`, `GameStatusController`, `PossibleValuesController`, `ProfilesController`
 - **Swagger**: Full API documentation
 
-### **Sudoku.Blazor (Blazor Server)**
-
-- **Purpose**: Server-side Blazor web application
-- **Key Components**: Game board, cell input, game controls, stats display
-
 ### **Sudoku.React (React/Vite SPA)**
 
 - **Purpose**: React/TypeScript single-page application
@@ -224,7 +207,7 @@ graph TB
 
 ### API Request Flow
 
-1. **Client** (React or Blazor) → `Sudoku.Api` controllers
+1. **Client** (React) → `Sudoku.Api` controllers
 2. **Controllers** → Application services / MediatR handlers
 3. **Handlers** → Domain aggregates (business rules enforced)
 4. **Handlers** → Infrastructure repositories (persistence)
@@ -233,9 +216,8 @@ graph TB
 
 ## Technology Stack
 
-- **.NET 9.0**: All backend projects
+- **.NET 10.0**: All backend projects
 - **React/TypeScript + Vite**: SPA frontend
-- **Blazor Server**: Server-side UI frontend
 - **Azure CosmosDB**: Primary persistent store
 - **Azure Blob Storage**: Legacy game snapshot store
 - **Azure Key Vault**: Secure configuration management
@@ -245,14 +227,14 @@ graph TB
 - **Playwright**: E2E testing
 - **Swagger**: API documentation
 
-## Migration Status
+## Status
 
 - ✅ **Domain Layer**: Complete — `SudokuGame`, `SudokuPuzzle`, `UserProfile` aggregates
 - ✅ **Application Layer**: Complete — 16 commands, 5 queries, 22+ handlers
 - ✅ **Infrastructure Layer**: Complete — CosmosDB primary, blob as secondary
 - ✅ **REST API**: Complete — 5 controllers, full Swagger docs
 - ✅ **Application Orchestration**: Complete — Aspire AppHost with CosmosDB emulator
-- ✅ **Blazor Migration**: Complete — `Sudoku.Blazor` uses Application layer directly
 - ✅ **Storage Migration**: Complete — CosmosDB is primary; `AzureBlobGameRepository` retained as secondary
-- ✅ **React Frontend**: Complete — full SPA with E2E test coverage
+- ✅ **React Frontend**: Complete — sole frontend, full SPA with E2E test coverage
 - ✅ **MCP Server**: Complete — ApplicationInsights tooling exposed
+- ✅ **Blazor Retirement**: Complete — archived to `archive/Sudoku.Blazor`; React is the canonical UI

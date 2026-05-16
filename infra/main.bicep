@@ -17,9 +17,6 @@ param environment string = 'prod'
 @description('Name of the App Service Plan.')
 param appServicePlanName string
 
-@description('Name of the Blazor web app.')
-param webAppName string
-
 @description('Name of the API app.')
 param apiAppName string
 
@@ -28,12 +25,6 @@ param mcpAppName string
 
 @description('App Service Plan SKU.')
 param appServicePlanSku string = 'B1'
-
-@description('Custom domain name bound to the web app.')
-param customDomainName string = 'sudoku.xenobiasoft.com'
-
-@description('Whether to bind a custom domain and SSL certificate to the web app. Set to false for non-prod environments.')
-param enableCustomDomain bool = false
 
 // ---------------------------------------------------------------------------
 // Storage parameters
@@ -142,11 +133,10 @@ module compute 'modules/compute.bicep' = {
     location: location
     environment: environment
     appServicePlanName: appServicePlanName
-    webAppName: webAppName
     apiAppName: apiAppName
     appServicePlanSku: appServicePlanSku
-    customDomainName: customDomainName
-    enableCustomDomain: enableCustomDomain
+    swaCustomDomainName: swaCustomDomainName
+    enableSwaCustomDomain: enableSwaCustomDomain
     appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString
     keyVaultUri: keyvault.outputs.keyVaultUri
     cosmosDbEndpoint: storage.outputs.cosmosDbEndpoint
@@ -180,36 +170,12 @@ module staticwebapp 'modules/staticwebapp.bicep' = {
   }
 }
 
-// Step 1: Bind the custom hostname to the web app (no SSL yet).
-// The managed certificate cannot be created until the hostname is bound.
-module hostname 'modules/hostname.bicep' = if (enableCustomDomain) {
-  name: 'hostname'
-  dependsOn: [compute]
-  params: {
-    webAppName: webAppName
-    customDomainName: customDomainName
-  }
-}
-
-// Step 2: Create the managed certificate and enable SNI SSL on the binding.
-module ssl 'modules/ssl.bicep' = if (enableCustomDomain) {
-  name: 'ssl'
-  dependsOn: [hostname]
-  params: {
-    location: location
-    webAppName: webAppName
-    appServicePlanName: appServicePlanName
-    customDomainName: customDomainName
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Outputs
 // ---------------------------------------------------------------------------
 
 output staticWebAppUrl string = staticwebapp.outputs.staticWebAppUrl
 output resourceGroupName string = resourceGroup().name
-output webAppUrl string = compute.outputs.webAppUrl
 output apiAppUrl string = compute.outputs.apiAppUrl
 output mcpAppUrl string = mcp.outputs.mcpAppUrl
 output appInsightsConnectionString string = monitoring.outputs.appInsightsConnectionString

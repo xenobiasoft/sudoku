@@ -5,23 +5,19 @@ on:
   # pass reliably. Once staging is provisioned, add `push` / `pull_request`
   # triggers here and remove the workflow_dispatch block (or keep it for ad-hoc runs).
   #
-  # ⚠️  BLOCKER: Set BLAZOR_BASE_URL and REACT_BASE_URL as repository variables
+  # ⚠️  BLOCKER: Set REACT_BASE_URL as a repository variable
   # (Settings → Secrets and variables → Variables) before running this workflow
   # against a real environment.
   workflow_dispatch:
     inputs:
-      blazor_base_url:
-        description: 'Blazor app URL (overrides repo variable BLAZOR_BASE_URL)'
-        required: false
-        default: ''
       react_base_url:
         description: 'React app URL (overrides repo variable REACT_BASE_URL)'
         required: false
         default: ''
       project:
-        description: 'Which project to test (blazor | react | all)'
+        description: 'Which project to test (react)'
         required: false
-        default: 'all'
+        default: 'react'
 
 jobs:
   e2e:
@@ -50,21 +46,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      - name: Run E2E tests (all projects)
-        if: ${{ inputs.project == 'all' || inputs.project == '' }}
-        run: npx playwright test
-        env:
-          BLAZOR_BASE_URL: ${{ inputs.blazor_base_url || vars.BLAZOR_BASE_URL }}
-          REACT_BASE_URL: ${{ inputs.react_base_url || vars.REACT_BASE_URL }}
-
-      - name: Run E2E tests (blazor only)
-        if: ${{ inputs.project == 'blazor' }}
-        run: npx playwright test --project=blazor
-        env:
-          BLAZOR_BASE_URL: ${{ inputs.blazor_base_url || vars.BLAZOR_BASE_URL }}
-
-      - name: Run E2E tests (react only)
-        if: ${{ inputs.project == 'react' }}
+      - name: Run E2E tests
         run: npx playwright test --project=react
         env:
           REACT_BASE_URL: ${{ inputs.react_base_url || vars.REACT_BASE_URL }}
