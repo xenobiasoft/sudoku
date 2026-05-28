@@ -1,5 +1,5 @@
+using DepenMock.Attributes;
 using DepenMock.Moq;
-using DepenMock.XUnit.V3.Attributes;
 using MediatR;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
@@ -8,7 +8,6 @@ using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
 using UnitTests.Helpers.Builders;
-using LogOutput = DepenMock.XUnit.V3.Attributes.LogOutputAttribute;
 
 namespace UnitTests.Application.Handlers;
 
