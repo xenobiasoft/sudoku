@@ -54,5 +54,24 @@ public static class MockUserProfileRepositoryExtensions
         {
             mock.Verify(x => x.GetByIdAsync(It.IsAny<ProfileId>()), Times.Never);
         }
+
+        public void SetupDeleteAsync()
+        {
+            mock
+                .Setup(x => x.DeleteAsync(It.IsAny<ProfileId>()))
+                .Returns(Task.CompletedTask);
+        }
+
+        public void SetupThrowsOnDeleteAsync(Exception ex)
+        {
+            mock
+                .Setup(x => x.DeleteAsync(It.IsAny<ProfileId>()))
+                .ThrowsAsync(ex);
+        }
+
+        public void VerifyDeleteAsyncCalled(Times times)
+        {
+            mock.Verify(x => x.DeleteAsync(It.IsAny<ProfileId>()), times);
+        }
     }
 }

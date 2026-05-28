@@ -101,6 +101,26 @@ public class CosmosDbUserProfileRepository(
         }
     }
 
+    public async Task DeleteAsync(ProfileId id)
+    {
+        try
+        {
+            await EnsureContainerAsync();
+            var idStr = id.ToString();
+            await _container!.DeleteItemAsync<UserProfileDocument>(idStr, new PartitionKey(idStr));
+            logger.LogDebug("Deleted profile {ProfileId}", id);
+        }
+        catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+        {
+            logger.LogWarning("Profile {ProfileId} not found during delete", id);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error deleting profile {ProfileId}", id);
+            throw;
+        }
+    }
+
     private async Task EnsureContainerAsync()
     {
         if (_container != null) return;

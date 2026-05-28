@@ -47,6 +47,9 @@ export const apiClient = {
       body: JSON.stringify({ newAlias }),
     }),
 
+  deleteProfile: (alias: string): Promise<{ status: number; data: null }> =>
+    requestWithStatus<null>(`/api/profiles/${encodeURIComponent(alias)}`, { method: 'DELETE' }),
+
   createGame: async (profileId: string, difficulty: string): Promise<GameModel> => {
     const res = await fetch(`${BASE_URL}/api/players/${profileId}/games/${difficulty}`, {
       method: 'POST',

@@ -121,3 +121,51 @@
   font-size: 0.8rem;
   color: #888;
 }
+
+.deleteSection {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e5e5;
+}
+
+.deleteButton {
+  background: transparent;
+  color: #c0392b;
+  border: 1px solid #c0392b;
+  border-radius: 4px;
+  padding: 0.45rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.deleteButton:hover {
+  background: #c0392b;
+  color: white;
+}
+
+.deleteConfirmText {
+  font-size: 0.9rem;
+  color: #555;
+  margin: 0 0 0.75rem;
+}
+
+.deleteConfirmActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.deleteConfirmButton {
+  padding: 0.45rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: #c0392b;
+  color: white;
+  border: 1px solid #a93226;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.deleteConfirmButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
