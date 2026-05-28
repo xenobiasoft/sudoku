@@ -55,7 +55,7 @@ public class DeleteProfileCommandHandlerTests : MoqBaseTestByAbstraction<DeleteP
     {
         // Arrange
         var command = new DeleteProfileCommand("unknownplayer");
-        _mockProfileRepository.SetupGetByAlias(null!);
+        _mockProfileRepository.SetupGetByAliasNotFound();
 
         // Act
         var result = await _sut.Handle(command, CancellationToken.None);

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
 using Sudoku.Application.Interfaces;
+using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Application.Handlers;
@@ -35,6 +36,11 @@ public class DeleteProfileCommandHandler(
 
             logger.LogInformation("Deleted profile {ProfileId} with alias {Alias}", profile.Id, alias.Value);
             return Result.Success();
+        }
+        catch (DomainException ex)
+        {
+            logger.LogWarning("Domain error deleting profile with alias {Alias}: {Error}", request.Alias, ex.Message);
+            return Result.Failure(ex.Message);
         }
         catch (Exception ex)
         {
