@@ -1,16 +1,7 @@
 .container {
-  display: flex;
-  justify-content: center;
+  margin: 0 auto;
+  max-width: 430px;
   padding: 2rem 1rem;
-}
-
-.card {
-  background: white;
-  border-radius: 8px;
-  padding: 2rem;
-  max-width: 480px;
-  width: 100%;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
 .title {

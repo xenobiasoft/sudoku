@@ -106,69 +106,67 @@ export default function ProfilePage() {
   return (
     <Layout>
       <div className={styles.container}>
-        <div className={styles.card}>
-          <button className={styles.backButton} onClick={() => navigate('/')}>← Back</button>
-          <h1 className={styles.title}>Your Profile</h1>
+        <button className={styles.backButton} onClick={() => navigate('/')}>← Back</button>
+        <h1 className={styles.title}>Your Profile</h1>
 
-          {isLoading ? (
-            <p>Loading…</p>
-          ) : (
-            <>
-              <div className={styles.field}>
-                <span className={styles.fieldLabel}>Alias</span>
-                {isEditing ? (
-                  <form onSubmit={handleSaveAlias} className={styles.editForm}>
-                    <input
-                      type="text"
-                      value={newAlias}
-                      onChange={e => setNewAlias(e.target.value)}
-                      className={styles.input}
-                      maxLength={50}
-                      aria-invalid={!!editError}
-                      aria-describedby={editError ? 'alias-edit-error' : undefined}
-                      autoFocus
-                    />
-                    {editError && (
-                      <p id="alias-edit-error" className={styles.error} role="alert">{editError}</p>
-                    )}
-                    <div className={styles.editActions}>
-                      <button
-                        type="submit"
-                        className={styles.saveButton}
-                        disabled={isSaving || validateAlias(newAlias) !== null}
-                      >
-                        {isSaving ? 'Saving…' : 'Save'}
-                      </button>
-                      <button type="button" className={styles.cancelButton} onClick={handleEditCancel}>
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className={styles.fieldValue}>
-                    <span>{playerAlias}</span>
-                    <button className={styles.editButton} onClick={handleEditStart} aria-label="Edit alias">
-                      Edit
+        {isLoading ? (
+          <p>Loading…</p>
+        ) : (
+          <>
+            <div className={styles.field}>
+              <span className={styles.fieldLabel}>Alias</span>
+              {isEditing ? (
+                <form onSubmit={handleSaveAlias} className={styles.editForm}>
+                  <input
+                    type="text"
+                    value={newAlias}
+                    onChange={e => setNewAlias(e.target.value)}
+                    className={styles.input}
+                    maxLength={50}
+                    aria-invalid={!!editError}
+                    aria-describedby={editError ? 'alias-edit-error' : undefined}
+                    autoFocus
+                  />
+                  {editError && (
+                    <p id="alias-edit-error" className={styles.error} role="alert">{editError}</p>
+                  )}
+                  <div className={styles.editActions}>
+                    <button
+                      type="submit"
+                      className={styles.saveButton}
+                      disabled={isSaving || validateAlias(newAlias) !== null}
+                    >
+                      {isSaving ? 'Saving…' : 'Save'}
+                    </button>
+                    <button type="button" className={styles.cancelButton} onClick={handleEditCancel}>
+                      Cancel
                     </button>
                   </div>
-                )}
-              </div>
-
-              {createdAt && (
-                <div className={styles.field}>
-                  <span className={styles.fieldLabel}>Member since</span>
-                  <span className={styles.fieldValue}>
-                    {new Date(createdAt).toLocaleDateString()}
-                  </span>
+                </form>
+              ) : (
+                <div className={styles.fieldValue}>
+                  <span>{playerAlias}</span>
+                  <button className={styles.editButton} onClick={handleEditStart} aria-label="Edit alias">
+                    Edit
+                  </button>
                 </div>
               )}
+            </div>
 
-              <p className={styles.warning}>
-                Your profile is stored in this browser. Clearing browser data will require you to create a new profile.
-              </p>
-            </>
-          )}
-        </div>
+            {createdAt && (
+              <div className={styles.field}>
+                <span className={styles.fieldLabel}>Member since</span>
+                <span className={styles.fieldValue}>
+                  {new Date(createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            )}
+
+            <p className={styles.warning}>
+              Your profile is stored in this browser. Clearing browser data will require you to create a new profile.
+            </p>
+          </>
+        )}
       </div>
     </Layout>
   );
