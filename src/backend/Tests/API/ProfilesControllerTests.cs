@@ -280,6 +280,63 @@ public class ProfilesControllerTests : MoqBaseTestByType<ProfilesController>
 
     #endregion
 
+    #region DeleteProfileAsync Tests
+
+    [Fact]
+    public async Task DeleteProfileAsync_WhenProfileExists_Returns204NoContent()
+    {
+        // Arrange
+        var alias = "TestPlayer";
+
+        _mockMediator
+            .Setup(x => x.Send(It.IsAny<DeleteProfileCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
+
+        // Act
+        var result = await _sut.DeleteProfileAsync(alias);
+
+        // Assert
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task DeleteProfileAsync_WhenProfileNotFound_Returns404NotFound()
+    {
+        // Arrange
+        var alias = "UnknownPlayer";
+
+        _mockMediator
+            .Setup(x => x.Send(It.IsAny<DeleteProfileCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Failure("Profile not found", ProfileErrorCodes.NotFound));
+
+        // Act
+        var result = await _sut.DeleteProfileAsync(alias);
+
+        // Assert
+        result.Should().BeOfType<NotFoundResult>();
+    }
+
+    [Fact]
+    public async Task DeleteProfileAsync_WhenCommandFails_Returns400BadRequest()
+    {
+        // Arrange
+        var alias = "TestPlayer";
+        var errorMessage = "Delete failed unexpectedly";
+
+        _mockMediator
+            .Setup(x => x.Send(It.IsAny<DeleteProfileCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Failure(errorMessage));
+
+        // Act
+        var result = await _sut.DeleteProfileAsync(alias);
+
+        // Assert
+        var badRequest = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+        badRequest.Value.Should().Be(errorMessage);
+    }
+
+    #endregion
+
     private static ProfileDto CreateTestProfileDto(string alias = "TestPlayer")
     {
         return new ProfileDto(Guid.NewGuid().ToString(), alias, DateTime.UtcNow, DateTime.UtcNow);

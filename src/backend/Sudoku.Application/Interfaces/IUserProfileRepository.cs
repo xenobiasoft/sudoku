@@ -9,4 +9,5 @@ public interface IUserProfileRepository
     Task<UserProfile?> GetByIdAsync(ProfileId id);
     Task<bool> AliasExistsAsync(PlayerAlias alias);
     Task SaveAsync(UserProfile profile);
+    Task DeleteAsync(ProfileId id);
 }

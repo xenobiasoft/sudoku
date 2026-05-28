@@ -9,13 +9,16 @@ const PROFILE_KEY = 'sudoku-profile';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { playerAlias, isInitialized, isNewPlayer } = usePlayerService();
+  const { playerAlias, isInitialized, isNewPlayer, clearPlayer } = usePlayerService();
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [newAlias, setNewAlias] = useState('');
   const [editError, setEditError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isNewPlayer) navigate('/');
@@ -103,72 +106,129 @@ export default function ProfilePage() {
     }
   };
 
+  const handleDeleteProfile = async () => {
+    if (!playerAlias) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      const result = await apiClient.deleteProfile(playerAlias);
+      if (result.status === 204) {
+        clearPlayer();
+        navigate('/');
+        return;
+      }
+      if (result.status === 404) {
+        setDeleteError('Profile not found. It may have already been deleted.');
+        return;
+      }
+      setDeleteError('Something went wrong. Please try again.');
+    } catch {
+      setDeleteError('Failed to delete profile. Please check your connection and try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Layout>
       <div className={styles.container}>
-        <div className={styles.card}>
-          <button className={styles.backButton} onClick={() => navigate('/')}>← Back</button>
-          <h1 className={styles.title}>Your Profile</h1>
+        <button className={styles.backButton} onClick={() => navigate('/')}>← Back</button>
+        <h1 className={styles.title}>Your Profile</h1>
 
-          {isLoading ? (
-            <p>Loading…</p>
-          ) : (
-            <>
-              <div className={styles.field}>
-                <span className={styles.fieldLabel}>Alias</span>
-                {isEditing ? (
-                  <form onSubmit={handleSaveAlias} className={styles.editForm}>
-                    <input
-                      type="text"
-                      value={newAlias}
-                      onChange={e => setNewAlias(e.target.value)}
-                      className={styles.input}
-                      maxLength={50}
-                      aria-invalid={!!editError}
-                      aria-describedby={editError ? 'alias-edit-error' : undefined}
-                      autoFocus
-                    />
-                    {editError && (
-                      <p id="alias-edit-error" className={styles.error} role="alert">{editError}</p>
-                    )}
-                    <div className={styles.editActions}>
-                      <button
-                        type="submit"
-                        className={styles.saveButton}
-                        disabled={isSaving || validateAlias(newAlias) !== null}
-                      >
-                        {isSaving ? 'Saving…' : 'Save'}
-                      </button>
-                      <button type="button" className={styles.cancelButton} onClick={handleEditCancel}>
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <div className={styles.fieldValue}>
-                    <span>{playerAlias}</span>
-                    <button className={styles.editButton} onClick={handleEditStart} aria-label="Edit alias">
-                      Edit
+        {isLoading ? (
+          <p>Loading…</p>
+        ) : (
+          <>
+            <div className={styles.field}>
+              <span className={styles.fieldLabel}>Alias</span>
+              {isEditing ? (
+                <form onSubmit={handleSaveAlias} className={styles.editForm}>
+                  <input
+                    type="text"
+                    value={newAlias}
+                    onChange={e => setNewAlias(e.target.value)}
+                    className={styles.input}
+                    maxLength={50}
+                    aria-invalid={!!editError}
+                    aria-describedby={editError ? 'alias-edit-error' : undefined}
+                    autoFocus
+                  />
+                  {editError && (
+                    <p id="alias-edit-error" className={styles.error} role="alert">{editError}</p>
+                  )}
+                  <div className={styles.editActions}>
+                    <button
+                      type="submit"
+                      className={styles.saveButton}
+                      disabled={isSaving || validateAlias(newAlias) !== null}
+                    >
+                      {isSaving ? 'Saving…' : 'Save'}
+                    </button>
+                    <button type="button" className={styles.cancelButton} onClick={handleEditCancel}>
+                      Cancel
                     </button>
                   </div>
-                )}
-              </div>
-
-              {createdAt && (
-                <div className={styles.field}>
-                  <span className={styles.fieldLabel}>Member since</span>
-                  <span className={styles.fieldValue}>
-                    {new Date(createdAt).toLocaleDateString()}
-                  </span>
+                </form>
+              ) : (
+                <div className={styles.fieldValue}>
+                  <span>{playerAlias}</span>
+                  <button className={styles.editButton} onClick={handleEditStart} aria-label="Edit alias">
+                    Edit
+                  </button>
                 </div>
               )}
+            </div>
 
-              <p className={styles.warning}>
-                Your profile is stored in this browser. Clearing browser data will require you to create a new profile.
-              </p>
-            </>
-          )}
-        </div>
+            {createdAt && (
+              <div className={styles.field}>
+                <span className={styles.fieldLabel}>Member since</span>
+                <span className={styles.fieldValue}>
+                  {new Date(createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            )}
+
+            <p className={styles.warning}>
+              Your profile is stored in this browser. Clearing browser data will require you to create a new profile.
+            </p>
+
+            <div className={styles.deleteSection}>
+              {isConfirmingDelete ? (
+                <>
+                  <p className={styles.deleteConfirmText}>
+                    This will permanently delete your profile and all associated games. This cannot be undone.
+                  </p>
+                  {deleteError && (
+                    <p className={styles.error} role="alert">{deleteError}</p>
+                  )}
+                  <div className={styles.deleteConfirmActions}>
+                    <button
+                      className={styles.deleteConfirmButton}
+                      onClick={handleDeleteProfile}
+                      disabled={isDeleting}
+                    >
+                      {isDeleting ? 'Deleting…' : 'Yes, delete my profile'}
+                    </button>
+                    <button
+                      className={styles.cancelButton}
+                      onClick={() => { setIsConfirmingDelete(false); setDeleteError(null); }}
+                      disabled={isDeleting}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <button
+                  className={styles.deleteButton}
+                  onClick={() => setIsConfirmingDelete(true)}
+                >
+                  Delete Profile
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </Layout>
   );

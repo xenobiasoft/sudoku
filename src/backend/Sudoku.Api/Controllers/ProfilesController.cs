@@ -46,6 +46,24 @@ public class ProfilesController(IMediator mediator) : ControllerBase
         return Ok(result.Value);
     }
 
+    [HttpDelete("{alias}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteProfileAsync(string alias)
+    {
+        var result = await mediator.Send(new DeleteProfileCommand(alias));
+
+        if (!result.IsSuccess)
+        {
+            if (result.ErrorCode == ProfileErrorCodes.NotFound)
+                return NotFound();
+            return BadRequest(result.Error);
+        }
+
+        return NoContent();
+    }
+
     [HttpPatch("{alias}")]
     [ProducesResponseType(typeof(ProfileDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
