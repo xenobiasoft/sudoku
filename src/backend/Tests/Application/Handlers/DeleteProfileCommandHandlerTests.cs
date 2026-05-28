@@ -17,10 +17,14 @@ public class DeleteProfileCommandHandlerTests : MoqBaseTestByAbstraction<DeleteP
     private readonly Mock<IUserProfileRepository> _mockProfileRepository;
     private readonly Mock<IMediator> _mockMediator;
 
+    private readonly ICommandHandler<DeleteProfileCommand> _sut;
+
     public DeleteProfileCommandHandlerTests()
     {
         _mockProfileRepository = Container.ResolveMock<IUserProfileRepository>().AsMoq();
         _mockMediator = Container.ResolveMock<IMediator>().AsMoq();
+
+        _sut = ResolveSut();
     }
 
     protected override void AddContainerCustomizations(Container container)
@@ -28,88 +32,80 @@ public class DeleteProfileCommandHandlerTests : MoqBaseTestByAbstraction<DeleteP
         container.AddCustomizations(new PlayerAliasGenerator());
     }
 
-    private static UserProfile CreateProfile(string alias = "testplayer") =>
-        UserProfile.Create(PlayerAlias.Create(alias));
-
-    private void SetupDeleteGamesSuccess() =>
-        _mockMediator
-            .Setup(x => x.Send(It.IsAny<DeletePlayerGamesCommand>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(Result.Success());
-
     [Fact]
     public async Task Handle_WithValidAlias_DeletesGamesAndProfileAndReturnsSuccess()
     {
         // Arrange
+        var command = new DeleteProfileCommand("validplayer");
         var profile = CreateProfile("validplayer");
-        _mockProfileRepository.Setup(x => x.GetByAliasAsync(It.IsAny<PlayerAlias>())).ReturnsAsync(profile);
-        _mockProfileRepository.Setup(x => x.DeleteAsync(It.IsAny<ProfileId>())).Returns(Task.CompletedTask);
+        _mockProfileRepository.SetupGetByAlias(profile);
         SetupDeleteGamesSuccess();
 
-        var sut = ResolveSut();
-
         // Act
-        var result = await sut.Handle(new DeleteProfileCommand("validplayer"), CancellationToken.None);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeTrue();
         _mockMediator.Verify(x => x.Send(It.IsAny<DeletePlayerGamesCommand>(), It.IsAny<CancellationToken>()), Times.Once);
-        _mockProfileRepository.Verify(x => x.DeleteAsync(It.IsAny<ProfileId>()), Times.Once);
+        _mockProfileRepository.VerifyDeleteAsyncCalled(Times.Once());
     }
 
     [Fact]
     public async Task Handle_WhenProfileNotFound_ReturnsFailureWithNotFoundErrorCode()
     {
         // Arrange
-        _mockProfileRepository.Setup(x => x.GetByAliasAsync(It.IsAny<PlayerAlias>())).ReturnsAsync((UserProfile?)null);
-
-        var sut = ResolveSut();
+        var command = new DeleteProfileCommand("unknownplayer");
+        _mockProfileRepository.SetupGetByAlias(null!);
 
         // Act
-        var result = await sut.Handle(new DeleteProfileCommand("unknownplayer"), CancellationToken.None);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.ErrorCode.Should().Be(ProfileErrorCodes.NotFound);
         _mockMediator.Verify(x => x.Send(It.IsAny<DeletePlayerGamesCommand>(), It.IsAny<CancellationToken>()), Times.Never);
-        _mockProfileRepository.Verify(x => x.DeleteAsync(It.IsAny<ProfileId>()), Times.Never);
+        _mockProfileRepository.VerifyDeleteAsyncCalled(Times.Never());
     }
 
     [Fact]
     public async Task Handle_WhenDeleteGamesFails_ReturnsFailureAndSkipsProfileDelete()
     {
         // Arrange
+        var command = new DeleteProfileCommand("validplayer");
         var profile = CreateProfile("validplayer");
-        _mockProfileRepository.Setup(x => x.GetByAliasAsync(It.IsAny<PlayerAlias>())).ReturnsAsync(profile);
+        _mockProfileRepository.SetupGetByAlias(profile);
         _mockMediator
             .Setup(x => x.Send(It.IsAny<DeletePlayerGamesCommand>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure("game delete failed"));
 
-        var sut = ResolveSut();
-
         // Act
-        var result = await sut.Handle(new DeleteProfileCommand("validplayer"), CancellationToken.None);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeFalse();
-        _mockProfileRepository.Verify(x => x.DeleteAsync(It.IsAny<ProfileId>()), Times.Never);
+        _mockProfileRepository.VerifyDeleteAsyncCalled(Times.Never());
     }
 
     [Fact]
     public async Task Handle_WhenRepositoryThrows_ReturnsFailure()
     {
         // Arrange
+        var command = new DeleteProfileCommand("testplayer");
         var exceptionMessage = "Database connection failed";
-        _mockProfileRepository
-            .Setup(x => x.GetByAliasAsync(It.IsAny<PlayerAlias>()))
-            .ThrowsAsync(new Exception(exceptionMessage));
-
-        var sut = ResolveSut();
+        _mockProfileRepository.SetupThrowsOnGetByAlias(new Exception(exceptionMessage));
 
         // Act
-        var result = await sut.Handle(new DeleteProfileCommand("testplayer"), CancellationToken.None);
+        var result = await _sut.Handle(command, CancellationToken.None);
 
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Contain(exceptionMessage);
     }
+
+    private static UserProfile CreateProfile(string alias = "testplayer") => UserProfile.Create(PlayerAlias.Create(alias));
+
+    private void SetupDeleteGamesSuccess() =>
+        _mockMediator
+            .Setup(x => x.Send(It.IsAny<DeletePlayerGamesCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result.Success());
 }
