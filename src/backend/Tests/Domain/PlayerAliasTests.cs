@@ -7,10 +7,13 @@ public class PlayerAliasTests : MoqBaseTestByType<PlayerAlias>
 {
     [Theory]
     [InlineData("John")]
-    [InlineData("Jane Doe")]
+    [InlineData("Jane-Doe")]
+    [InlineData("player_one")]
     [InlineData("Player123")]
+    [InlineData("Hyphenated-Name")]
     [InlineData("AB")]  // Minimum length (2)
-    [InlineData("A very long player name with exactly 50 characters")] // Exactly 50 chars
+    [InlineData("A-very-long-player-name-with-exactly-50-chars12345")] // Exactly 50 chars
+    [InlineData("  A-very-long-player-name-with-exactly-50-chars12345  ")] // Padded to >50 but trimmed = 50
     public void Create_WithValidAlias_CreatesPlayerAlias(string aliasValue)
     {
         // Act
@@ -66,7 +69,7 @@ public class PlayerAliasTests : MoqBaseTestByType<PlayerAlias>
     [InlineData("John@Doe")]
     [InlineData("Player#1")]
     [InlineData("Hello!")]
-    [InlineData("No-Hyphens")]
+    [InlineData("Jane Doe")]
     public void Create_WithInvalidCharacters_ThrowsInvalidPlayerAliasException(string aliasValue)
     {
         // Act
@@ -74,45 +77,45 @@ public class PlayerAliasTests : MoqBaseTestByType<PlayerAlias>
 
         // Assert
         act.Should().Throw<InvalidPlayerAliasException>()
-            .WithMessage("Player alias can only contain letters, numbers, and spaces");
+            .WithMessage("Player alias can only contain letters, numbers, dashes, and underscores");
     }
 
     [Fact]
     public void Create_TrimsSpaces_FromBeginningAndEnd()
     {
         // Arrange
-        var aliasWithSpaces = "  John Doe  ";
+        var aliasWithSpaces = "  JohnDoe  ";
 
         // Act
         var alias = PlayerAlias.Create(aliasWithSpaces);
 
         // Assert
-        alias.Value.Should().Be("John Doe");
+        alias.Value.Should().Be("JohnDoe");
     }
 
     [Fact]
     public void ImplicitConversion_ToString_ReturnsValue()
     {
         // Arrange
-        var alias = PlayerAlias.Create("John Doe");
+        var alias = PlayerAlias.Create("John-Doe");
 
         // Act
         string aliasValue = alias;
 
         // Assert
-        aliasValue.Should().Be("John Doe");
+        aliasValue.Should().Be("John-Doe");
     }
 
     [Fact]
     public void ToString_ReturnsValue()
     {
         // Arrange
-        var alias = PlayerAlias.Create("John Doe");
+        var alias = PlayerAlias.Create("John-Doe");
 
         // Act
         var result = alias.ToString();
 
         // Assert
-        result.Should().Be("John Doe");
+        result.Should().Be("John-Doe");
     }
 }

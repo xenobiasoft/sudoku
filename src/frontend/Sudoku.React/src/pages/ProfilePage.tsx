@@ -48,7 +48,7 @@ export default function ProfilePage() {
     const trimmed = value.trim();
     if (trimmed.length < 2) return 'Alias must be at least 2 characters.';
     if (trimmed.length > 50) return 'Alias cannot exceed 50 characters.';
-    if (!/^[a-zA-Z0-9 ]+$/.test(trimmed)) return 'Alias can only contain letters, numbers, and spaces.';
+    if (!/^[a-z0-9_-]+$/i.test(trimmed)) return 'Alias can only contain letters, numbers, dashes, and underscores.';
     return null;
   };
 
