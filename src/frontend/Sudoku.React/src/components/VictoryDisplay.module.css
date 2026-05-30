@@ -35,6 +35,7 @@
 
 .victoryButton {
   padding: 0.6rem 1.2rem;
+  min-height: 44px;
   background-color: #6c757d;
   color: white;
   border: none;
@@ -46,6 +47,16 @@
 
 .victoryButton:hover {
   background-color: #5a6268;
+}
+
+@media (max-width: 479px) {
+  .victoryModal {
+    padding: 1.25rem;
+  }
+
+  .victoryTitle {
+    font-size: 1.5rem;
+  }
 }
 
 @keyframes fadeIn {

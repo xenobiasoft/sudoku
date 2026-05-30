@@ -6,6 +6,12 @@
   margin-top: 2rem;
 }
 
+@media (max-width: 479px) {
+  .btnToolbar {
+    margin-top: 1rem;
+  }
+}
+
 .numberPanel {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -34,6 +40,7 @@
 
 .btn {
   padding: 0.5rem 1rem;
+  min-height: 44px;
   color: #fff;
   background-color: #1b6ec2;
   border: 1px solid #1861ac;

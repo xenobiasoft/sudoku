@@ -2,7 +2,14 @@
   align-items: center;
   display: flex;
   justify-content: center;
+  overflow-x: auto;
   padding-top: 2rem;
+}
+
+@media (max-width: 479px) {
+  .gameBoardContainer {
+    padding-top: 1rem;
+  }
 }
 
 .gameBoard {

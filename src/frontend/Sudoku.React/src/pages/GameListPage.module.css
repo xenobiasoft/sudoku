@@ -41,6 +41,10 @@
   font-size: 1rem;
   cursor: pointer;
   margin-top: 1rem;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.25rem;
 }
 
 .backButton:hover {
