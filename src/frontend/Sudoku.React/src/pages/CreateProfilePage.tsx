@@ -17,7 +17,7 @@ export default function CreateProfilePage() {
     const trimmed = value.trim();
     if (trimmed.length < 2) return 'Alias must be at least 2 characters.';
     if (trimmed.length > 50) return 'Alias cannot exceed 50 characters.';
-    if (!/^[a-z0-9 ]+$/i.test(trimmed)) return 'Alias can only contain letters, numbers, and spaces.';
+    if (!/^[a-z0-9_-]+$/i.test(trimmed)) return 'Alias can only contain letters, numbers, dashes, and underscores.';
     return null;
   };
 
@@ -71,7 +71,7 @@ export default function CreateProfilePage() {
             type="text"
             value={alias}
             onChange={e => setAlias(e.target.value)}
-            placeholder="e.g. sudoku master"
+            placeholder="e.g. sudoku-master"
             className={styles.input}
             maxLength={50}
             aria-describedby={error ? 'alias-error' : undefined}
@@ -82,7 +82,7 @@ export default function CreateProfilePage() {
             <p id="alias-error" className={styles.error} role="alert">{error}</p>
           )}
           <p className={styles.hint}>
-            2–50 characters · letters, numbers, and spaces only · case-insensitive
+            2–50 characters · letters, numbers, dashes, and underscores only · case-insensitive
           </p>
           <button
             type="submit"
