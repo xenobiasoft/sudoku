@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiClient } from '../api/apiClient';
 import { usePlayerService } from '../hooks/usePlayerService';
+import { useGameService } from '../hooks/useGameService';
 import Layout from '../components/Layout';
 import styles from './ProfilePage.module.css';
 
@@ -10,6 +11,7 @@ const PROFILE_KEY = 'sudoku-profile';
 export default function ProfilePage() {
   const navigate = useNavigate();
   const { playerAlias, isInitialized, isNewPlayer, clearPlayer } = usePlayerService();
+  const { clearCache } = useGameService();
   const [createdAt, setCreatedAt] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [newAlias, setNewAlias] = useState('');
@@ -113,12 +115,15 @@ export default function ProfilePage() {
     try {
       const result = await apiClient.deleteProfile(playerAlias);
       if (result.status === 204) {
+        clearCache();
         clearPlayer();
         navigate('/');
         return;
       }
       if (result.status === 404) {
-        setDeleteError('Profile not found. It may have already been deleted.');
+        clearCache();
+        clearPlayer();
+        navigate('/');
         return;
       }
       setDeleteError('Something went wrong. Please try again.');
