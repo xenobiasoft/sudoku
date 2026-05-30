@@ -26,11 +26,11 @@ Puzzle generation is performed synchronously on-demand inside `CreateGameCommand
 | ID | Requirement |
 |----|-------------|
 | FR-1 | `AzureBlobPuzzleRepository` shall implement `IPuzzleRepository` backed by a `sudoku-puzzles` blob container, with blobs named `{difficulty-name}/{puzzleId}.json` |
-| FR-2 | `CreateAsync(alias, difficulty)` on `AzureBlobPuzzleRepository` shall call `IPuzzleGenerator`, persist the result as a blob, and return the puzzle |
+| FR-2 | `AzureBlobPuzzleRepository` shall expose an overloaded `CreateAsync(GameDifficulty difficulty)` method (without alias) that calls `IPuzzleGenerator`, persists the result as a blob, and returns the puzzle; `PuzzlePoolService` calls this overload directly |
 | FR-3 | `IPuzzlePoolService.DequeueAsync(difficulty)` shall select a random available puzzle, load it, delete the blob (exclusive assignment), and return the puzzle |
 | FR-4 | `CreateGameCommandHandler` shall call `IPuzzlePoolService.DequeueAsync(difficulty)` first; if the result is null it shall fall back to `IPuzzleGenerator.GeneratePuzzleAsync(difficulty)` |
-| FR-5 | A `PuzzlePoolSeedFunction` (Timer trigger, `0 0 2 * * *`) shall call `IPuzzlePoolService.SeedAsync` for each difficulty to top the pool up to 10 |
-| FR-6 | A `PuzzleReplenishFunction` (Event Grid trigger on `BlobDeleted`) shall replace the consumed puzzle by calling `IPuzzlePoolService.SeedAsync(difficulty, 1)` — this is the primary replenishment path |
+| FR-5 | A `PuzzlePoolSeedFunction` (Timer trigger, `0 0 2 * * *`) shall call `IPuzzlePoolService.SeedAsync(difficulty, count)` for each difficulty, where `count = targetSize - GetAvailableCountAsync(difficulty)`, generating only the missing puzzles |
+| FR-6 | A `PuzzleReplenishFunction` (Event Grid trigger on `BlobDeleted`) shall replace the consumed puzzle by calling `IPuzzlePoolService.SeedAsync(difficulty, 1)` — this is the primary replenishment path; `SeedAsync`'s `count` parameter means "number of puzzles to generate", not a target ceiling |
 | FR-7 | An Event Grid System Topic and subscription for `BlobDeleted` events on the `sudoku-puzzles` container shall be defined in Bicep and deployed as part of this feature |
 | FR-8 | If the pool is empty (e.g., first deploy before seed function runs), FR-4's on-demand fallback ensures game creation never fails |
 
@@ -122,8 +122,8 @@ sequenceDiagram
     Blob->>EG: BlobDeleted (easy/{puzzleId}.json)
     EG->>Fn: Event Grid trigger
     Fn->>Fn: parse difficulty from blob path ("easy" → GameDifficulty.Easy)
-    Fn->>PoolSvc: SeedAsync(Easy, targetCount: 1)
-    PoolSvc->>Repo: CreateAsync("easy", Easy)
+    Fn->>PoolSvc: SeedAsync(Easy, count: 1)
+    PoolSvc->>Repo: CreateAsync(Easy)
     Repo->>Gen: GeneratePuzzleAsync(Easy)
     Gen-->>Repo: SudokuPuzzle
     Repo->>Blob: SaveAsync("sudoku-puzzles", "easy/{newPuzzleId}.json", document)
@@ -142,7 +142,7 @@ sequenceDiagram
         Fn->>PoolSvc: GetAvailableCountAsync(difficulty)
         PoolSvc-->>Fn: current count
         alt count < 10
-            Fn->>PoolSvc: SeedAsync(difficulty, targetCount: 10)
+            Fn->>PoolSvc: SeedAsync(difficulty, count: 10 - count)
         end
     end
 ```
@@ -170,7 +170,7 @@ public class SudokuPuzzleDocument
 |------|-------|
 | Container | `sudoku-puzzles` |
 | Blob name | `{difficulty-name}/{puzzleId}.json` — e.g., `easy/3fa2c1....json` |
-| Difficulty names | `easy`, `medium`, `hard`, `expert` (lowercase `GameDifficulty` string representation) |
+| Difficulty names | `easy`, `medium`, `hard`, `expert` — derived via `difficulty.Name.ToLowerInvariant()` (not `ToString()`, which returns the capitalized form e.g. `"Easy"`) |
 
 **Persistence Changes**
 - New Azure Blob Storage container: `sudoku-puzzles` (auto-created by `IAzureStorageService.SaveAsync` on first write)
@@ -192,7 +192,7 @@ public class SudokuPuzzleDocument
 | Aspect | Detail |
 |--------|--------|
 | New dependency | `IPuzzlePoolService _puzzlePoolService` |
-| Updated logic | `var puzzle = await _puzzlePoolService.DequeueAsync(difficulty); puzzle ??= await _puzzleGenerator.GeneratePuzzleAsync(difficulty);` |
+| Updated logic | `var puzzle = await _puzzlePoolService.DequeueAsync(difficulty);` then `puzzle ??= await _puzzleGenerator.GeneratePuzzleAsync(difficulty);` |
 | Logging | `LogWarning` when the fallback path is taken |
 
 ---
@@ -222,10 +222,10 @@ No new or changed endpoints. `POST /api/players/{profileId}/games/{difficulty}` 
 | Test Class | Scenarios |
 |------------|-----------|
 | `CreateGameCommandHandlerTests` | Pool returns puzzle → handler uses it, generator not called; pool returns null → handler calls generator (fallback path) |
-| `PuzzlePoolServiceTests` | `DequeueAsync` — puzzles available, random one returned and deleted; no puzzles → returns null. `SeedAsync` — calls `CreateAsync` for each missing puzzle. `GetAvailableCountAsync` — returns correct count. |
-| `AzureBlobPuzzleRepositoryTests` | `CreateAsync` — calls generator, saves blob, returns puzzle. `LoadAllAsync` — deserializes blobs correctly. `DeleteAsync` — calls storage delete with correct path. |
-| `PuzzleReplenishFunctionTests` | Parses difficulty from blob path; calls `SeedAsync` with correct difficulty and count 1; handles unknown difficulty name gracefully |
-| `PuzzlePoolSeedFunctionTests` | Calls `SeedAsync` for all 4 difficulties; skips difficulties already at target |
+| `PuzzlePoolServiceTests` | `DequeueAsync` — puzzles available, random one returned and deleted; no puzzles → returns null. `SeedAsync(difficulty, count)` — calls `CreateAsync(difficulty)` exactly `count` times. `GetAvailableCountAsync` — returns correct count. |
+| `AzureBlobPuzzleRepositoryTests` | `CreateAsync(difficulty)` overload — calls generator, saves blob at `{difficulty.Name.ToLowerInvariant()}/{id}.json`, returns puzzle. `LoadAllAsync` — deserializes blobs correctly. `DeleteAsync` — calls storage delete with correct path. |
+| `PuzzleReplenishFunctionTests` | Parses difficulty from blob path using `ToLowerInvariant()`; calls `SeedAsync(difficulty, 1)` (generates exactly 1 puzzle); handles unknown difficulty name gracefully |
+| `PuzzlePoolSeedFunctionTests` | Calls `SeedAsync(difficulty, 10 - currentCount)` for each difficulty; passes 0 when already at target (no generation) |
 
 **Integration Tests**
 
@@ -252,13 +252,13 @@ Reuse `PuzzleFactory.GetPuzzle(difficulty)` from `Tests/Helpers/Factories/Puzzle
 ## 12. Implementation Plan
 
 1. **Add `SudokuPuzzleDocument`** — `Infrastructure/Models/SudokuPuzzleDocument.cs`; reuse existing `CellDocument`
-2. **Implement `AzureBlobPuzzleRepository`** — `Infrastructure/Repositories/AzureBlobPuzzleRepository.cs`; implement `IPuzzleRepository` using `IAzureStorageService` and the `sudoku-puzzles` container
-3. **Add `IPuzzlePoolService`** — `Application/Interfaces/IPuzzlePoolService.cs` with `GetAvailableCountAsync`, `SeedAsync`, `DequeueAsync`
-4. **Implement `PuzzlePoolService`** — `Infrastructure/Services/PuzzlePoolService.cs`; depends on `AzureBlobPuzzleRepository` (injected as a keyed/named service) and `IPuzzleGenerator`
+2. **Implement `AzureBlobPuzzleRepository`** — `Infrastructure/Repositories/AzureBlobPuzzleRepository.cs`; implement `IPuzzleRepository` using `IAzureStorageService` and the `sudoku-puzzles` container; add an overloaded `public Task<SudokuPuzzle> CreateAsync(GameDifficulty difficulty)` method (without alias) that derives the blob prefix via `difficulty.Name.ToLowerInvariant()`
+3. **Add `IPuzzlePoolService`** — `Application/Interfaces/IPuzzlePoolService.cs` with `GetAvailableCountAsync(difficulty)`, `SeedAsync(difficulty, count)` (count = number to generate), `DequeueAsync(difficulty)`
+4. **Implement `PuzzlePoolService`** — `Infrastructure/Services/PuzzlePoolService.cs`; depends directly on `AzureBlobPuzzleRepository` (not `IPuzzleRepository`) to access the alias-free `CreateAsync(difficulty)` overload
 5. **Update `CreateGameCommandHandler`** — inject `IPuzzlePoolService`, apply dequeue-then-fallback logic, add fallback warning log
 6. **Create `Sudoku.Functions` project** — isolated worker .NET 8; add project references to `Sudoku.Application` and `Sudoku.Infrastructure`; configure DI to share `IPuzzlePoolService` and its dependencies
-7. **Implement `PuzzlePoolSeedFunction`** — Timer trigger `0 0 2 * * *`; iterate all 4 difficulties, call `GetAvailableCountAsync` then `SeedAsync` if below 10
-8. **Implement `PuzzleReplenishFunction`** — Event Grid trigger; parse difficulty name from the deleted blob path; call `SeedAsync(difficulty, 1)`
+7. **Implement `PuzzlePoolSeedFunction`** — Timer trigger `0 0 2 * * *`; iterate all 4 difficulties, call `GetAvailableCountAsync(difficulty)` and then `SeedAsync(difficulty, 10 - count)` when count < 10
+8. **Implement `PuzzleReplenishFunction`** — Event Grid trigger; parse difficulty name from the deleted blob path using `ToLowerInvariant()`; call `SeedAsync(difficulty, 1)` to generate exactly one replacement puzzle
 9. **Wire DI** in `InfrastructureServiceCollectionExtensions.cs` — register `AzureBlobPuzzleRepository` as a keyed service for the pool (distinct from the `InMemoryPuzzleRepository` used by the solver); register `IPuzzlePoolService → PuzzlePoolService`
 10. **Update `Sudoku.AppHost`** — add `Sudoku.Functions` as an Aspire resource for local development
 11. **Add Event Grid Bicep** — in `infra/`: create System Topic on the storage account, add event subscription filtering `Microsoft.Storage.BlobDeleted` on the `sudoku-puzzles` container, routing to the `PuzzleReplenishFunction` endpoint
