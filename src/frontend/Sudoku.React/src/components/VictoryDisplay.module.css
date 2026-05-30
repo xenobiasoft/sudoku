@@ -48,6 +48,16 @@
   background-color: #5a6268;
 }
 
+@media (max-width: 479px) {
+  .victoryModal {
+    padding: 1.25rem;
+  }
+
+  .victoryTitle {
+    font-size: 1.5rem;
+  }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

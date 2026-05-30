@@ -42,6 +42,10 @@
   color: #666;
   font-size: 1rem;
   cursor: pointer;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.25rem;
 }
 
 .backButton:hover {
