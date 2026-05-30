@@ -19,7 +19,8 @@ public static class ApiServiceCollectionExtensions
                 {
                     builder.AllowAnyOrigin()
                            .AllowAnyMethod()
-                           .AllowAnyHeader();
+                           .AllowAnyHeader()
+                           .WithExposedHeaders("Location");
                 }
                 else
                 {
@@ -27,7 +28,8 @@ public static class ApiServiceCollectionExtensions
                     var allowedOrigins = config.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
                     builder.WithOrigins(allowedOrigins)
                            .AllowAnyMethod()
-                           .AllowAnyHeader();
+                           .AllowAnyHeader()
+                           .WithExposedHeaders("Location");
                 }
             });
         });
