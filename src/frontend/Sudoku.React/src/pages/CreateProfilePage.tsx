@@ -82,7 +82,7 @@ export default function CreateProfilePage() {
             <p id="alias-error" className={styles.error} role="alert">{error}</p>
           )}
           <p className={styles.hint}>
-            2–50 characters · letters, numbers, dashes, and underscores only · case-insensitive
+            2–50 characters · letters, numbers, dashes, and underscores only
           </p>
           <button
             type="submit"

@@ -10,9 +10,10 @@ public class PlayerAliasTests : MoqBaseTestByType<PlayerAlias>
     [InlineData("Jane-Doe")]
     [InlineData("player_one")]
     [InlineData("Player123")]
-    [InlineData("No-Hyphens")]
+    [InlineData("Hyphenated-Name")]
     [InlineData("AB")]  // Minimum length (2)
     [InlineData("A-very-long-player-name-with-exactly-50-chars12345")] // Exactly 50 chars
+    [InlineData("  A-very-long-player-name-with-exactly-50-chars12345  ")] // Padded to >50 but trimmed = 50
     public void Create_WithValidAlias_CreatesPlayerAlias(string aliasValue)
     {
         // Act
