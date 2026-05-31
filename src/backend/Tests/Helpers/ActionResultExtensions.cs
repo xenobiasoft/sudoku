@@ -3,87 +3,64 @@ using System.Net;
 
 namespace UnitTests.Helpers;
 
-/// <summary>
-/// Extension methods for testing ASP.NET Core ActionResult responses.
-/// </summary>
 public static class ActionResultExtensions
 {
-    /// <summary>
-    /// Asserts that the action result value is equivalent to the expected value.
-    /// </summary>
-    /// <typeparam name="TResponseType">The type of the response.</typeparam>
-    /// <param name="actionResult">The action result to verify.</param>
-    /// <param name="expected">The expected value.</param>
-    /// <exception cref="ArgumentNullException">Thrown when actionResult is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the response value is null or of unsupported type.</exception>
-    public static void AssertResponseReturnEquals<TResponseType>(this ActionResult<TResponseType> actionResult, TResponseType expected)
+    extension<TResponseType>(ActionResult<TResponseType> actionResult)
     {
-        if (actionResult == null)
+        public void AssertResponseReturnEquals(TResponseType expected)
         {
-            throw new ArgumentNullException(nameof(actionResult), "ActionResult cannot be null");
-        }
+            if (actionResult == null)
+            {
+                throw new ArgumentNullException(nameof(actionResult), "ActionResult cannot be null");
+            }
         
-        var returnValue = DetermineResponseReturnValue<TResponseType>(actionResult);
+            var returnValue = DetermineResponseReturnValue<TResponseType>(actionResult);
         
-        if (returnValue == null)
-        {
-            throw new InvalidOperationException("The response return value is null");
+            if (returnValue == null)
+            {
+                throw new InvalidOperationException("The response return value is null");
+            }
+
+            returnValue.Should().BeEquivalentTo(expected, options => options.ExcludingMissingMembers());
         }
 
-        returnValue.Should().BeEquivalentTo(expected, options => options.ExcludingMissingMembers());
-    }
+        public void AssertResponseStatusCode(HttpStatusCode expectedStatusCode)
+        {
+            if (actionResult == null)
+            {
+                throw new ArgumentNullException(nameof(actionResult), "ActionResult cannot be null");
+            }
+        
+            var innerResult = actionResult.Result;
+        
+            if (innerResult == null)
+            {
+                throw new ArgumentNullException(nameof(actionResult.Result), "ActionResult.Result cannot be null");
+            }
 
-    /// <summary>
-    /// Asserts that the action result has the expected HTTP statusEnum code.
-    /// </summary>
-    /// <param name="actionResult">The action result to verify.</param>
-    /// <param name="expectedStatusCode">The expected HTTP statusEnum code.</param>
-    /// <exception cref="ArgumentNullException">Thrown when actionResult is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the statusEnum code doesn't match.</exception>
-    public static void AssertResponseStatusCode(this ActionResult actionResult, HttpStatusCode expectedStatusCode)
-    {
-        if (actionResult == null)
-        {
-            throw new ArgumentNullException(nameof(actionResult), "ActionResult cannot be null");
-        }
-        
-        int expectedStatusCodeValue = (int)expectedStatusCode;
-        int actualStatusCode = GetStatusCodeFromActionResult(actionResult);
-        
-        if (expectedStatusCodeValue != actualStatusCode)
-        {
-            throw new InvalidOperationException($"Expected statusEnum code {expectedStatusCodeValue} ({expectedStatusCode}), but got {actualStatusCode}");
+            AssertResponseStatusCode(innerResult, expectedStatusCode);
         }
     }
 
-    /// <summary>
-    /// Asserts that the generic action result has the expected HTTP statusEnum code.
-    /// </summary>
-    /// <typeparam name="TResponseType">The type of the response.</typeparam>
-    /// <param name="actionResult">The action result to verify.</param>
-    /// <param name="expectedStatusCode">The expected HTTP statusEnum code.</param>
-    /// <exception cref="ArgumentNullException">Thrown when actionResult or its Result property is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the statusEnum code doesn't match.</exception>
-    public static void AssertResponseStatusCode<TResponseType>(this ActionResult<TResponseType> actionResult, HttpStatusCode expectedStatusCode)
+    extension(ActionResult actionResult)
     {
-        if (actionResult == null)
+        public void AssertResponseStatusCode(HttpStatusCode expectedStatusCode)
         {
-            throw new ArgumentNullException(nameof(actionResult), "ActionResult cannot be null");
-        }
+            if (actionResult == null)
+            {
+                throw new ArgumentNullException(nameof(actionResult), "ActionResult cannot be null");
+            }
         
-        var innerResult = actionResult.Result;
+            int expectedStatusCodeValue = (int)expectedStatusCode;
+            int actualStatusCode = GetStatusCodeFromActionResult(actionResult);
         
-        if (innerResult == null)
-        {
-            throw new ArgumentNullException(nameof(actionResult.Result), "ActionResult.Result cannot be null");
+            if (expectedStatusCodeValue != actualStatusCode)
+            {
+                throw new InvalidOperationException($"Expected statusEnum code {expectedStatusCodeValue} ({expectedStatusCode}), but got {actualStatusCode}");
+            }
         }
-
-        AssertResponseStatusCode(innerResult, expectedStatusCode);
     }
 
-    /// <summary>
-    /// Extracts the response value from the action result.
-    /// </summary>
     private static TResponseType DetermineResponseReturnValue<TResponseType>(ActionResult<TResponseType> result)
     {
         return result.Result switch
@@ -95,9 +72,6 @@ public static class ActionResultExtensions
         };
     }
 
-    /// <summary>
-    /// Gets the HTTP statusEnum code from an action result.
-    /// </summary>
     private static int GetStatusCodeFromActionResult(ActionResult actionResult)
     {
         if (actionResult is ObjectResult objectResult)
@@ -113,9 +87,6 @@ public static class ActionResultExtensions
         return DetermineStatusCode(actionResult);
     }
 
-    /// <summary>
-    /// Maps specific ActionResult types to their corresponding HTTP statusEnum codes.
-    /// </summary>
     private static int DetermineStatusCode(ActionResult actionResult)
     {
         return actionResult switch

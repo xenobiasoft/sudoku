@@ -4,7 +4,7 @@ using Sudoku.Application.Interfaces;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Functions.Functions;
 
-namespace UnitTests.Infrastructure.Functions;
+namespace UnitTests.Functions;
 
 public class PuzzleReplenishFunctionTests : MoqBaseTestByType<PuzzleReplenishFunction>
 {

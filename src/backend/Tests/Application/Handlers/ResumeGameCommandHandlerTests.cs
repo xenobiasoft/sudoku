@@ -79,7 +79,7 @@ public class ResumeGameCommandHandlerTests : MoqBaseTestByAbstraction<ResumeGame
         var command = new ResumeGameCommand(gameId);
         var domainException = new GameNotPausedException("Cannot resume game in InProgress state");
 
-        _mockGameRepository.SetupThrowsOnGetById(domainException);
+        _mockGameRepository.SetupGetByIdThrows(domainException);
 
         var sut = ResolveSut();
 
@@ -99,7 +99,7 @@ public class ResumeGameCommandHandlerTests : MoqBaseTestByAbstraction<ResumeGame
         var command = new ResumeGameCommand(gameId);
         var exceptionMessage = "Database connection failed";
 
-        _mockGameRepository.SetupThrowsOnGetById(new Exception(exceptionMessage));
+        _mockGameRepository.SetupGetByIdThrows(new Exception(exceptionMessage));
 
         var sut = ResolveSut();
 

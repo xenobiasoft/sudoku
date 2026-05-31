@@ -82,7 +82,7 @@ public class GetPlayerGamesQueryHandlerTests : MoqBaseTestByAbstraction<GetPlaye
         var query = new GetPlayerGamesQuery(profileId);
         var domainException = new InvalidPlayerAliasException("Invalid profile");
 
-        _mockGameRepository.SetupThrowsOnGetByProfileId(domainException);
+        _mockGameRepository.SetupGetByProfileIdThrows(domainException);
 
         var sut = ResolveSut();
 
@@ -102,7 +102,7 @@ public class GetPlayerGamesQueryHandlerTests : MoqBaseTestByAbstraction<GetPlaye
         var query = new GetPlayerGamesQuery(profileId);
         var exceptionMessage = "Database connection failed";
 
-        _mockGameRepository.SetupThrowsOnGetByProfileId(new Exception(exceptionMessage));
+        _mockGameRepository.SetupGetByProfileIdThrows(new Exception(exceptionMessage));
 
         var sut = ResolveSut();
 

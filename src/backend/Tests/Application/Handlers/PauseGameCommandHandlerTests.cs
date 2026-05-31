@@ -79,7 +79,7 @@ public class PauseGameCommandHandlerTests : MoqBaseTestByAbstraction<PauseGameCo
         var command = new PauseGameCommand(gameId);
         var domainException = new GameNotInProgressException("Cannot pause game in NotStarted state");
 
-        _mockGameRepository.SetupThrowsOnGetById(domainException);
+        _mockGameRepository.SetupGetByIdThrows(domainException);
 
         var sut = ResolveSut();
 
@@ -99,7 +99,7 @@ public class PauseGameCommandHandlerTests : MoqBaseTestByAbstraction<PauseGameCo
         var command = new PauseGameCommand(gameId);
         var exceptionMessage = "Database connection failed";
 
-        _mockGameRepository.SetupThrowsOnGetById(new Exception(exceptionMessage));
+        _mockGameRepository.SetupGetByIdThrows(new Exception(exceptionMessage));
 
         var sut = ResolveSut();
 

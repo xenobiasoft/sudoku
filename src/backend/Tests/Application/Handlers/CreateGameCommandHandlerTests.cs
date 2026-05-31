@@ -44,19 +44,19 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         // Assert
         result.IsSuccess.Should().BeTrue();
         _mockPuzzlePoolService.VerifyDequeueCalledOnce();
-        _mockPuzzleGenerator.Verify(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()), Times.Never);
+        _mockPuzzleGenerator.VerifyGeneratePuzzleAsyncNeverCalled();
     }
 
     [Fact]
     public async Task Handle_WhenPoolEmpty_FallsBackToGeneratorAndLogsWarning()
     {
         // Arrange
+        var difficulty = GameDifficulty.Medium;
         var puzzle = CreateTestPuzzle();
         var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Medium");
 
         _mockPuzzlePoolService.SetupDequeueReturnsEmpty();
-        _mockPuzzleGenerator.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>())).ReturnsAsync(puzzle);
-        _mockGameRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>())).Returns(Task.CompletedTask);
+        _mockPuzzleGenerator.SetupGeneratePuzzleAsyncReturns(puzzle);
 
         var sut = ResolveSut();
 
@@ -66,7 +66,7 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         // Assert
         result.IsSuccess.Should().BeTrue();
         _mockPuzzlePoolService.VerifyDequeueCalledOnce();
-        _mockPuzzleGenerator.Verify(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()), Times.Once);
+        _mockPuzzleGenerator.VerifyGeneratePuzzleAsyncCalledOnce(difficulty);
         Logger.WarningLogs().AssertContains("Puzzle pool empty");
     }
 
@@ -77,8 +77,7 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Medium");
 
         _mockPuzzlePoolService.SetupDequeueReturnsEmpty();
-        _mockPuzzleGenerator.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
-            .ReturnsAsync((SudokuPuzzle?)null);
+        _mockPuzzleGenerator.SetupGeneratePuzzleAsyncReturnsNull();
 
         var sut = ResolveSut();
 
@@ -88,7 +87,7 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be("No puzzle available for difficulty: Medium");
-        _mockGameRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Never);
+        _mockGameRepository.VerifySaveNeverCalled();
     }
 
     [Fact]
@@ -99,7 +98,6 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Medium");
 
         _mockPuzzlePoolService.SetupDequeueReturns(puzzle);
-        _mockGameRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>())).Returns(Task.CompletedTask);
 
         var sut = ResolveSut();
 
@@ -109,7 +107,7 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         // Assert
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().NotBeNullOrEmpty();
-        _mockGameRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Once);
+        _mockGameRepository.VerifySaveCalledOnce();
     }
 
     [Fact]
@@ -127,7 +125,7 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().NotBeNullOrEmpty();
         _mockPuzzlePoolService.VerifyDequeueNotCalled();
-        _mockGameRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Never);
+        _mockGameRepository.VerifySaveNeverCalled();
     }
 
     [Fact]
@@ -145,7 +143,7 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().NotBeNullOrEmpty();
         _mockPuzzlePoolService.VerifyDequeueNotCalled();
-        _mockGameRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Never);
+        _mockGameRepository.VerifySaveNeverCalled();
     }
 
     [Fact]
@@ -157,8 +155,7 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         var exceptionMessage = "Database error";
 
         _mockPuzzlePoolService.SetupDequeueReturns(puzzle);
-        _mockGameRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>()))
-            .ThrowsAsync(new Exception(exceptionMessage));
+        _mockGameRepository.SetupSaveThrows(new Exception(exceptionMessage));
 
         var sut = ResolveSut();
 
@@ -177,8 +174,7 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Medium");
         var domainException = new InvalidPlayerAliasException("Invalid player alias");
 
-        _mockPuzzlePoolService.Setup(x => x.DequeueAsync(It.IsAny<GameDifficulty>()))
-            .ThrowsAsync(domainException);
+        _mockPuzzlePoolService.SetupDequeueThrows(domainException);
 
         var sut = ResolveSut();
 
@@ -193,9 +189,9 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
     private static SudokuPuzzle CreateTestPuzzle()
     {
         var cells = new List<Cell>();
-        for (int i = 0; i < 9; i++)
+        for (var i = 0; i < 9; i++)
         {
-            for (int j = 0; j < 9; j++)
+            for (var j = 0; j < 9; j++)
             {
                 cells.Add(Cell.CreateEmpty(i, j));
             }

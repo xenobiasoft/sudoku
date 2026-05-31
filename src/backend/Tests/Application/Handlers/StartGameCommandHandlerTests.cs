@@ -79,7 +79,7 @@ public class StartGameCommandHandlerTests : MoqBaseTestByAbstraction<StartGameCo
         var command = new StartGameCommand(gameId);
         var domainException = new GameNotInStartStateException("Game is already in progress");
 
-        _mockGameRepository.SetupThrowsOnGetById(domainException);
+        _mockGameRepository.SetupGetByIdThrows(domainException);
 
         var sut = ResolveSut();
 
@@ -99,7 +99,7 @@ public class StartGameCommandHandlerTests : MoqBaseTestByAbstraction<StartGameCo
         var command = new StartGameCommand(gameId);
         var exceptionMessage = "Database connection failed";
 
-        _mockGameRepository.SetupThrowsOnGetById(new Exception(exceptionMessage));
+        _mockGameRepository.SetupGetByIdThrows(new Exception(exceptionMessage));
 
         var sut = ResolveSut();
 

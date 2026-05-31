@@ -22,6 +22,18 @@ public static class MockPuzzlePoolServiceExtensions
                 .ReturnsAsync((SudokuPuzzle?)null);
         }
 
+        public void SetupDequeueThrows(Exception ex)
+        {
+            mock.Setup(x => x.DequeueAsync(It.IsAny<GameDifficulty>()))
+                .ThrowsAsync(ex);
+        }
+
+        public void SetupGetAvailableCountReturns(int count)
+        {
+            mock.Setup(x => x.GetAvailableCountAsync(It.IsAny<GameDifficulty>()))
+                .ReturnsAsync(count);
+        }
+
         public void VerifyDequeueCalledOnce()
         {
             mock.Verify(x => x.DequeueAsync(It.IsAny<GameDifficulty>()), Times.Once);
@@ -30,6 +42,21 @@ public static class MockPuzzlePoolServiceExtensions
         public void VerifyDequeueNotCalled()
         {
             mock.Verify(x => x.DequeueAsync(It.IsAny<GameDifficulty>()), Times.Never);
+        }
+
+        public void VerifyGetAvailableCountCalledOnce(GameDifficulty difficulty)
+        {
+            mock.Verify(x => x.GetAvailableCountAsync(difficulty), Times.Once);
+        }
+
+        public void VerifySeedCalledOnce(GameDifficulty difficulty, int expectedCount)
+        {
+            mock.Verify(x => x.SeedAsync(difficulty, expectedCount), Times.Once);
+        }
+
+        public void VerifySeedNeverCalled()
+        {
+            mock.Verify(x => x.SeedAsync(It.IsAny<GameDifficulty>(), It.IsAny<int>()), Times.Never);
         }
     }
 }
