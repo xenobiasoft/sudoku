@@ -21,15 +21,10 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
     {
         // Arrange
         var difficulty = GameDifficulty.Easy;
-        var puzzles = new[]
-        {
-            PuzzleFactory.GetPuzzle(difficulty),
-            PuzzleFactory.GetPuzzle(difficulty)
-        };
 
         _mockBlobStorage
-            .Setup(x => x.LoadAllAsync(difficulty.Name.ToLowerInvariant()))
-            .ReturnsAsync(puzzles);
+            .Setup(x => x.GetPuzzleIdsAsync(difficulty.Name.ToLowerInvariant()))
+            .Returns(new[] { "id1", "id2" }.ToAsyncEnumerable());
 
         var sut = ResolveSut();
 
@@ -47,8 +42,8 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
         var difficulty = GameDifficulty.Medium;
 
         _mockBlobStorage
-            .Setup(x => x.LoadAllAsync(difficulty.Name.ToLowerInvariant()))
-            .ReturnsAsync([]);
+            .Setup(x => x.GetPuzzleIdsAsync(difficulty.Name.ToLowerInvariant()))
+            .Returns(Array.Empty<string>().ToAsyncEnumerable());
 
         var sut = ResolveSut();
 
@@ -95,19 +90,24 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
     }
 
     [Fact]
-    public async Task DequeueAsync_WithPuzzlesAvailable_ReturnsRandomPuzzleAndDeletesIt()
+    public async Task DequeueAsync_WithPuzzleAvailable_LoadsOnlySelectedPuzzleAndDeletesIt()
     {
         // Arrange
         var difficulty = GameDifficulty.Easy;
+        var puzzleId = Guid.NewGuid().ToString();
+        var prefix = difficulty.Name.ToLowerInvariant();
         var puzzle = PuzzleFactory.GetPuzzle(difficulty);
-        var puzzles = new[] { puzzle };
 
         _mockBlobStorage
-            .Setup(x => x.LoadAllAsync(difficulty.Name.ToLowerInvariant()))
-            .ReturnsAsync(puzzles);
+            .Setup(x => x.GetPuzzleIdsAsync(prefix))
+            .Returns(new[] { puzzleId }.ToAsyncEnumerable());
 
         _mockBlobStorage
-            .Setup(x => x.DeleteAsync(difficulty.Name.ToLowerInvariant(), puzzle.PuzzleId))
+            .Setup(x => x.LoadAsync(prefix, puzzleId))
+            .ReturnsAsync(puzzle);
+
+        _mockBlobStorage
+            .Setup(x => x.DeleteAsync(prefix, puzzleId))
             .Returns(Task.CompletedTask);
 
         var sut = ResolveSut();
@@ -118,20 +118,19 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
         // Assert
         result.Should().NotBeNull();
         result!.PuzzleId.Should().Be(puzzle.PuzzleId);
-        _mockBlobStorage.Verify(
-            x => x.DeleteAsync(difficulty.Name.ToLowerInvariant(), puzzle.PuzzleId),
-            Times.Once);
+        _mockBlobStorage.Verify(x => x.LoadAsync(prefix, puzzleId), Times.Once);
+        _mockBlobStorage.Verify(x => x.DeleteAsync(prefix, puzzleId), Times.Once);
     }
 
     [Fact]
-    public async Task DequeueAsync_WithEmptyPool_ReturnsNull()
+    public async Task DequeueAsync_WithEmptyPool_ReturnsNullWithoutLoadOrDelete()
     {
         // Arrange
         var difficulty = GameDifficulty.Medium;
 
         _mockBlobStorage
-            .Setup(x => x.LoadAllAsync(difficulty.Name.ToLowerInvariant()))
-            .ReturnsAsync([]);
+            .Setup(x => x.GetPuzzleIdsAsync(difficulty.Name.ToLowerInvariant()))
+            .Returns(Array.Empty<string>().ToAsyncEnumerable());
 
         var sut = ResolveSut();
 
@@ -140,8 +139,33 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
 
         // Assert
         result.Should().BeNull();
-        _mockBlobStorage.Verify(
-            x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()),
-            Times.Never);
+        _mockBlobStorage.Verify(x => x.LoadAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _mockBlobStorage.Verify(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DequeueAsync_WhenBlobVanishedBeforeLoad_ReturnsNull()
+    {
+        // Arrange
+        var difficulty = GameDifficulty.Hard;
+        var puzzleId = Guid.NewGuid().ToString();
+        var prefix = difficulty.Name.ToLowerInvariant();
+
+        _mockBlobStorage
+            .Setup(x => x.GetPuzzleIdsAsync(prefix))
+            .Returns(new[] { puzzleId }.ToAsyncEnumerable());
+
+        _mockBlobStorage
+            .Setup(x => x.LoadAsync(prefix, puzzleId))
+            .ReturnsAsync((SudokuPuzzle?)null);
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.DequeueAsync(difficulty);
+
+        // Assert
+        result.Should().BeNull();
+        _mockBlobStorage.Verify(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
     }
 }

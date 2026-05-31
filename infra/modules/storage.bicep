@@ -3,7 +3,8 @@ param environment string
 param storageAccountName string
 param cosmosDbAccountName string
 
-@description('URL of the PuzzleReplenishFunction endpoint (e.g. https://<funcapp>.azurewebsites.net/runtime/webhooks/eventgrid?functionName=PuzzleReplenishFunction&code=<key>). Leave empty to skip Event Grid subscription creation.')
+@description('URL of the PuzzleReplenishFunction endpoint. Leave empty to skip Event Grid subscription creation.')
+@secure()
 param puzzleReplenishFunctionUrl string = ''
 
 @description('Enable the Cosmos DB free tier. Only one account per subscription may use this. Set to false if another account in the subscription already uses it.')

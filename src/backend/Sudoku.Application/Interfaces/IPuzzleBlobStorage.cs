@@ -7,5 +7,6 @@ public interface IPuzzleBlobStorage
 {
     Task<SudokuPuzzle> CreateAsync(GameDifficulty difficulty);
     Task DeleteAsync(string prefix, string puzzleId);
-    Task<IEnumerable<SudokuPuzzle>> LoadAllAsync(string prefix);
+    IAsyncEnumerable<string> GetPuzzleIdsAsync(string prefix);
+    Task<SudokuPuzzle?> LoadAsync(string prefix, string puzzleId);
 }

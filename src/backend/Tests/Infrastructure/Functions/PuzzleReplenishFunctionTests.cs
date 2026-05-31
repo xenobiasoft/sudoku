@@ -57,7 +57,7 @@ public class PuzzleReplenishFunctionTests : MoqBaseTestByType<PuzzleReplenishFun
         _mockPuzzlePoolService.Verify(
             x => x.SeedAsync(It.IsAny<GameDifficulty>(), It.IsAny<int>()),
             Times.Never);
-        Logger.WarningLogs().ContainsMessage("Unknown difficulty");
+        Logger.WarningLogs().AssertContains("Unknown difficulty");
     }
 
     [Fact]

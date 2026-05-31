@@ -67,7 +67,7 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         result.IsSuccess.Should().BeTrue();
         _mockPuzzlePoolService.VerifyDequeueCalledOnce();
         _mockPuzzleGenerator.Verify(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()), Times.Once);
-        Logger.WarningLogs().ContainsMessage("Puzzle pool empty");
+        Logger.WarningLogs().AssertContains("Puzzle pool empty");
     }
 
     [Fact]

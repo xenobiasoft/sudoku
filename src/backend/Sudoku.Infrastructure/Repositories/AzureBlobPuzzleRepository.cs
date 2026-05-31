@@ -27,31 +27,32 @@ public class AzureBlobPuzzleRepository(
     Task<SudokuPuzzle> IPuzzleRepository.CreateAsync(string alias, GameDifficulty difficulty) =>
         throw new NotSupportedException();
 
-    public async Task DeleteAsync(string alias, string puzzleId)
+    public async Task DeleteAsync(string prefix, string puzzleId)
     {
-        var blobName = $"{alias}/{puzzleId}.json";
+        var blobName = $"{prefix}/{puzzleId}.json";
         await storageService.DeleteAsync(Container, blobName);
     }
 
-    public Task<SudokuPuzzle> LoadAsync(string alias, string puzzleId) =>
+    public async IAsyncEnumerable<string> GetPuzzleIdsAsync(string prefix)
+    {
+        await foreach (var blobName in storageService.GetBlobNamesAsync(Container, $"{prefix}/"))
+        {
+            yield return Path.GetFileNameWithoutExtension(blobName);
+        }
+    }
+
+    public async Task<SudokuPuzzle?> LoadAsync(string prefix, string puzzleId)
+    {
+        var blobName = $"{prefix}/{puzzleId}.json";
+        var document = await storageService.LoadAsync<SudokuPuzzleDocument>(Container, blobName);
+        return document is null ? null : MapToPuzzle(document);
+    }
+
+    Task<SudokuPuzzle> IPuzzleRepository.LoadAsync(string alias, string puzzleId) =>
         throw new NotSupportedException();
 
-    public async Task<IEnumerable<SudokuPuzzle>> LoadAllAsync(string alias)
-    {
-        var puzzles = new List<SudokuPuzzle>();
-
-        await foreach (var blobName in storageService.GetBlobNamesAsync(Container, $"{alias}/"))
-        {
-            var document = await storageService.LoadAsync<SudokuPuzzleDocument>(Container, blobName);
-            if (document is not null)
-            {
-                puzzles.Add(MapToPuzzle(document));
-            }
-        }
-
-        logger.LogDebug("Loaded {Count} puzzles for prefix '{Alias}'", puzzles.Count, alias);
-        return puzzles;
-    }
+    Task<IEnumerable<SudokuPuzzle>> IPuzzleRepository.LoadAllAsync(string alias) =>
+        throw new NotSupportedException();
 
     public Task<SudokuPuzzle> ResetAsync(string alias, string puzzleId) =>
         throw new NotSupportedException();

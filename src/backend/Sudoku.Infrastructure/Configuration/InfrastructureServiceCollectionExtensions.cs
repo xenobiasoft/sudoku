@@ -2,7 +2,9 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Application.Interfaces;
+using Sudoku.Domain.Entities;
 using Sudoku.Domain.Events;
+using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.EventHandling;
 using Sudoku.Infrastructure.Repositories;
 using Sudoku.Infrastructure.Services;
@@ -19,9 +21,6 @@ public static class InfrastructureServiceCollectionExtensions
             services.Configure<AzureStorageOptions>(configuration.GetSection(AzureStorageOptions.SectionName));
             services.Configure<CosmosDbOptions>(configuration.GetSection(CosmosDbOptions.SectionName));
 
-            // Always register blob storage client — the puzzle pool uses it regardless of game store choice
-            services.AddBlobStorageClient(configuration);
-
             var useCosmosDb = configuration.GetValue<bool>("UseCosmosDb");
 
             if (useCosmosDb)
@@ -30,14 +29,37 @@ public static class InfrastructureServiceCollectionExtensions
             }
             else
             {
-                services.AddAzureBlobGameServices();
+                services.AddAzureStorageServices(configuration);
+            }
+
+            // Register blob storage client for puzzle pool if configured; otherwise use no-op fallback
+            // so the app starts cleanly even without blob storage (on-demand generation is the fallback).
+            if (IsBlobStorageConfigured(configuration))
+            {
+                if (useCosmosDb)
+                {
+                    services.AddBlobStorageClient(configuration);
+                }
+
+                services.AddPuzzlePoolServices();
+            }
+            else
+            {
+                services.AddScoped<IPuzzlePoolService, NullPuzzlePoolService>();
             }
 
             services.AddDomainEventHandling();
             services.AddPuzzleServices();
-            services.AddPuzzlePoolServices();
 
             return services;
+        }
+
+        private static bool IsBlobStorageConfigured(IConfiguration configuration)
+        {
+            var storageOptions = configuration.GetSection(AzureStorageOptions.SectionName).Get<AzureStorageOptions>();
+            return (storageOptions?.UseManagedIdentity == true && !string.IsNullOrEmpty(storageOptions.AccountName))
+                || !string.IsNullOrEmpty(storageOptions?.ConnectionString)
+                || !string.IsNullOrEmpty(configuration.GetConnectionString("AzureStorage"));
         }
 
         private IServiceCollection AddBlobStorageClient(IConfiguration configuration)
@@ -74,8 +96,9 @@ public static class InfrastructureServiceCollectionExtensions
             return services;
         }
 
-        private IServiceCollection AddAzureBlobGameServices()
+        private IServiceCollection AddAzureStorageServices(IConfiguration configuration)
         {
+            services.AddBlobStorageClient(configuration);
             services.AddScoped<IGameRepository, AzureBlobGameRepository>();
             services.AddScoped<IPuzzleRepository, InMemoryPuzzleRepository>();
 
@@ -119,4 +142,11 @@ public static class InfrastructureServiceCollectionExtensions
             return services;
         }
     }
+}
+
+file sealed class NullPuzzlePoolService : IPuzzlePoolService
+{
+    public Task<int> GetAvailableCountAsync(GameDifficulty difficulty) => Task.FromResult(0);
+    public Task SeedAsync(GameDifficulty difficulty, int count) => Task.CompletedTask;
+    public Task<SudokuPuzzle?> DequeueAsync(GameDifficulty difficulty) => Task.FromResult<SudokuPuzzle?>(null);
 }
