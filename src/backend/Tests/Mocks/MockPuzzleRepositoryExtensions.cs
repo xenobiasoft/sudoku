@@ -26,5 +26,10 @@ public static class MockPuzzleRepositoryExtensions
         {
             mock.Verify(x => x.SaveAsync(It.IsAny<SudokuPuzzle>()), times);
         }
+
+        public void VerifyUndoAsyncCalled(string alias, string puzzleId)
+        {
+            mock.Verify(x => x.UndoAsync(alias, puzzleId), Times.AtLeastOnce);
+        }
     }
 }

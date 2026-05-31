@@ -1,6 +1,5 @@
 using DepenMock.Moq;
 using Sudoku.Application.Interfaces;
-using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Services;
 using UnitTests.Helpers.Factories;
@@ -22,9 +21,7 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
         // Arrange
         var difficulty = GameDifficulty.Easy;
 
-        _mockBlobStorage
-            .Setup(x => x.GetPuzzleIdsAsync(difficulty.Name.ToLowerInvariant()))
-            .Returns(new[] { "id1", "id2" }.ToAsyncEnumerable());
+        _mockBlobStorage.SetupGetPuzzleIdsAsyncReturns(["id1", "id2"]);
 
         var sut = ResolveSut();
 
@@ -41,9 +38,7 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
         // Arrange
         var difficulty = GameDifficulty.Medium;
 
-        _mockBlobStorage
-            .Setup(x => x.GetPuzzleIdsAsync(difficulty.Name.ToLowerInvariant()))
-            .Returns(Array.Empty<string>().ToAsyncEnumerable());
+        _mockBlobStorage.SetupGetPuzzleIdsAsyncReturnsEmpty();
 
         var sut = ResolveSut();
 
@@ -62,9 +57,7 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
         var count = 3;
         var puzzle = PuzzleFactory.GetPuzzle(difficulty);
 
-        _mockBlobStorage
-            .Setup(x => x.CreateAsync(difficulty))
-            .ReturnsAsync(puzzle);
+        _mockBlobStorage.SetupCreateAsyncReturns(puzzle);
 
         var sut = ResolveSut();
 
@@ -72,7 +65,7 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
         await sut.SeedAsync(difficulty, count);
 
         // Assert
-        _mockBlobStorage.Verify(x => x.CreateAsync(difficulty), Times.Exactly(count));
+        _mockBlobStorage.VerifyCreateAsyncCalledExactly(difficulty, count);
     }
 
     [Fact]
@@ -86,7 +79,7 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
         await sut.SeedAsync(difficulty, 0);
 
         // Assert
-        _mockBlobStorage.Verify(x => x.CreateAsync(It.IsAny<GameDifficulty>()), Times.Never);
+        _mockBlobStorage.VerifyCreateAsyncNeverCalled();
     }
 
     [Fact]
@@ -98,17 +91,8 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
         var prefix = difficulty.Name.ToLowerInvariant();
         var puzzle = PuzzleFactory.GetPuzzle(difficulty);
 
-        _mockBlobStorage
-            .Setup(x => x.GetPuzzleIdsAsync(prefix))
-            .Returns(new[] { puzzleId }.ToAsyncEnumerable());
-
-        _mockBlobStorage
-            .Setup(x => x.LoadAsync(prefix, puzzleId))
-            .ReturnsAsync(puzzle);
-
-        _mockBlobStorage
-            .Setup(x => x.DeleteAsync(prefix, puzzleId))
-            .Returns(Task.CompletedTask);
+        _mockBlobStorage.SetupGetPuzzleIdsAsyncReturns([puzzleId]);
+        _mockBlobStorage.SetupLoadAsyncReturns(puzzle);
 
         var sut = ResolveSut();
 
@@ -118,8 +102,8 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
         // Assert
         result.Should().NotBeNull();
         result!.PuzzleId.Should().Be(puzzle.PuzzleId);
-        _mockBlobStorage.Verify(x => x.LoadAsync(prefix, puzzleId), Times.Once);
-        _mockBlobStorage.Verify(x => x.DeleteAsync(prefix, puzzleId), Times.Once);
+        _mockBlobStorage.VerifyLoadAsyncCalledOnce(prefix, puzzleId);
+        _mockBlobStorage.VerifyDeleteAsyncCalledOnce(prefix, puzzleId);
     }
 
     [Fact]
@@ -128,9 +112,7 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
         // Arrange
         var difficulty = GameDifficulty.Medium;
 
-        _mockBlobStorage
-            .Setup(x => x.GetPuzzleIdsAsync(difficulty.Name.ToLowerInvariant()))
-            .Returns(Array.Empty<string>().ToAsyncEnumerable());
+        _mockBlobStorage.SetupGetPuzzleIdsAsyncReturnsEmpty();
 
         var sut = ResolveSut();
 
@@ -139,8 +121,8 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
 
         // Assert
         result.Should().BeNull();
-        _mockBlobStorage.Verify(x => x.LoadAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
-        _mockBlobStorage.Verify(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _mockBlobStorage.VerifyLoadAsyncNeverCalled();
+        _mockBlobStorage.VerifyDeleteAsyncNeverCalled();
     }
 
     [Fact]
@@ -151,13 +133,8 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
         var puzzleId = Guid.NewGuid().ToString();
         var prefix = difficulty.Name.ToLowerInvariant();
 
-        _mockBlobStorage
-            .Setup(x => x.GetPuzzleIdsAsync(prefix))
-            .Returns(new[] { puzzleId }.ToAsyncEnumerable());
-
-        _mockBlobStorage
-            .Setup(x => x.LoadAsync(prefix, puzzleId))
-            .ReturnsAsync((SudokuPuzzle?)null);
+        _mockBlobStorage.SetupGetPuzzleIdsAsyncReturns([puzzleId]);
+        _mockBlobStorage.SetupLoadAsyncReturnsNull();
 
         var sut = ResolveSut();
 
@@ -166,6 +143,6 @@ public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService
 
         // Assert
         result.Should().BeNull();
-        _mockBlobStorage.Verify(x => x.DeleteAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        _mockBlobStorage.VerifyDeleteAsyncNeverCalled();
     }
 }
