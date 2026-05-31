@@ -39,9 +39,11 @@ try
             logger.LogInformation("Configured HTTP Swagger endpoint for Sudoku API");
         })
         .WithReference(cosmosDb)
+        .WithReference(puzzleBlobs)
         .WithEnvironment("UseCosmosDb", "true")
         .WithExternalHttpEndpoints()
-        .WaitFor(cosmosDb);
+        .WaitFor(cosmosDb)
+        .WaitFor(storage);
 
     logger.LogInformation("Configuring Sudoku Functions project...");
     builder.AddAzureFunctionsProject<Projects.Sudoku_Functions>("sudoku-functions")
