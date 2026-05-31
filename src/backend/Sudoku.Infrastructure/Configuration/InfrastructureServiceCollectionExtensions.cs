@@ -59,7 +59,9 @@ public static class InfrastructureServiceCollectionExtensions
             var storageOptions = configuration.GetSection(AzureStorageOptions.SectionName).Get<AzureStorageOptions>();
             return (storageOptions?.UseManagedIdentity == true && !string.IsNullOrEmpty(storageOptions.AccountName))
                 || !string.IsNullOrEmpty(storageOptions?.ConnectionString)
-                || !string.IsNullOrEmpty(configuration.GetConnectionString("AzureStorage"));
+                || !string.IsNullOrEmpty(configuration.GetConnectionString("AzureStorage"))
+                || !string.IsNullOrEmpty(configuration.GetConnectionString("blobs"))
+                || !string.IsNullOrEmpty(configuration["AzureWebJobsStorage"]);
         }
 
         private IServiceCollection AddBlobStorageClient(IConfiguration configuration)
@@ -75,10 +77,14 @@ public static class InfrastructureServiceCollectionExtensions
             }
             else
             {
+                var connectionString = storageOptions?.ConnectionString
+                    ?? configuration.GetConnectionString("AzureStorage")
+                    ?? configuration.GetConnectionString("blobs")
+                    ?? configuration["AzureWebJobsStorage"];
+
                 services.AddAzureClients(builder =>
                 {
-                    builder.AddBlobServiceClient(storageOptions?.ConnectionString ??
-                                                 configuration.GetConnectionString("AzureStorage"));
+                    builder.AddBlobServiceClient(connectionString);
                 });
             }
 
