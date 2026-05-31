@@ -8,7 +8,11 @@ using Sudoku.Domain.ValueObjects;
 
 namespace Sudoku.Application.Handlers;
 
-public class CreateGameCommandHandler(IGameRepository gameRepository, IPuzzleGenerator puzzleGenerator, ILogger<CreateGameCommandHandler> logger) : ICommandHandler<CreateGameCommand, string>
+public class CreateGameCommandHandler(
+    IGameRepository gameRepository,
+    IPuzzleGenerator puzzleGenerator,
+    IPuzzlePoolService puzzlePoolService,
+    ILogger<CreateGameCommandHandler> logger) : ICommandHandler<CreateGameCommand, string>
 {
     public async Task<Result<string>> Handle(CreateGameCommand request, CancellationToken cancellationToken)
     {
@@ -17,9 +21,16 @@ public class CreateGameCommandHandler(IGameRepository gameRepository, IPuzzleGen
             var profileId = ProfileId.From(request.ProfileId);
             var displayName = PlayerAlias.Create(request.DisplayName);
             var difficulty = GameDifficulty.FromName(request.Difficulty);
-            var puzzle = await puzzleGenerator.GeneratePuzzleAsync(difficulty);
 
-            if (puzzle == null)
+            var puzzle = await puzzlePoolService.DequeueAsync(difficulty);
+
+            if (puzzle is null)
+            {
+                logger.LogWarning("Puzzle pool empty for {Difficulty}, falling back to on-demand generation", difficulty.Name);
+                puzzle = await puzzleGenerator.GeneratePuzzleAsync(difficulty);
+            }
+
+            if (puzzle is null)
             {
                 return Result<string>.Failure($"No puzzle available for difficulty: {difficulty.Name}");
             }

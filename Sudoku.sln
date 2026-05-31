@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Application", "src\b
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Infrastructure", "src\backend\Sudoku.Infrastructure\Sudoku.Infrastructure.csproj", "{2CA9D2C9-FC4A-4DB3-A60A-2857E3A6AEFD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Functions", "src\backend\Sudoku.Functions\Sudoku.Functions.csproj", "{D3B1C2A4-F5E6-7890-BCDE-F01234567891}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
 		agents.md = agents.md
@@ -42,10 +44,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "modules", "modules", "{F2DF
 		infra\modules\compute.bicep = infra\modules\compute.bicep
 		infra\modules\hostname.bicep = infra\modules\hostname.bicep
 		infra\modules\keyvault.bicep = infra\modules\keyvault.bicep
+		infra\modules\mcp.bicep = infra\modules\mcp.bicep
 		infra\modules\monitoring.bicep = infra\modules\monitoring.bicep
 		infra\modules\ssl.bicep = infra\modules\ssl.bicep
 		infra\modules\staticwebapp.bicep = infra\modules\staticwebapp.bicep
-		infra\modules\mcp.bicep = infra\modules\mcp.bicep
 		infra\modules\storage.bicep = infra\modules\storage.bicep
 	EndProjectSection
 EndProject
@@ -161,6 +163,18 @@ Global
 		{2CA9D2C9-FC4A-4DB3-A60A-2857E3A6AEFD}.Release|x64.Build.0 = Release|Any CPU
 		{2CA9D2C9-FC4A-4DB3-A60A-2857E3A6AEFD}.Release|x86.ActiveCfg = Release|Any CPU
 		{2CA9D2C9-FC4A-4DB3-A60A-2857E3A6AEFD}.Release|x86.Build.0 = Release|Any CPU
+		{D3B1C2A4-F5E6-7890-BCDE-F01234567891}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3B1C2A4-F5E6-7890-BCDE-F01234567891}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3B1C2A4-F5E6-7890-BCDE-F01234567891}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D3B1C2A4-F5E6-7890-BCDE-F01234567891}.Debug|x64.Build.0 = Debug|Any CPU
+		{D3B1C2A4-F5E6-7890-BCDE-F01234567891}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D3B1C2A4-F5E6-7890-BCDE-F01234567891}.Debug|x86.Build.0 = Debug|Any CPU
+		{D3B1C2A4-F5E6-7890-BCDE-F01234567891}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3B1C2A4-F5E6-7890-BCDE-F01234567891}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3B1C2A4-F5E6-7890-BCDE-F01234567891}.Release|x64.ActiveCfg = Release|Any CPU
+		{D3B1C2A4-F5E6-7890-BCDE-F01234567891}.Release|x64.Build.0 = Release|Any CPU
+		{D3B1C2A4-F5E6-7890-BCDE-F01234567891}.Release|x86.ActiveCfg = Release|Any CPU
+		{D3B1C2A4-F5E6-7890-BCDE-F01234567891}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

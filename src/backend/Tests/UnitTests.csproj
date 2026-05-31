@@ -36,6 +36,7 @@
     <ProjectReference Include="..\Sudoku.Api\Sudoku.Api.csproj" />
     <ProjectReference Include="..\Sudoku.Application\Sudoku.Application.csproj" />
     <ProjectReference Include="..\Sudoku.Domain\Sudoku.Domain.csproj" />
+    <ProjectReference Include="..\Sudoku.Functions\Sudoku.Functions.csproj" />
     <ProjectReference Include="..\Sudoku.Infrastructure\Sudoku.Infrastructure.csproj" />
   </ItemGroup>
 

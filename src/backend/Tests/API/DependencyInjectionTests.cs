@@ -170,7 +170,9 @@ public class DependencyInjectionTests
             typeof(IPuzzleRepository),
             typeof(IPuzzleGenerator),
             typeof(IPuzzleSolver),
-            typeof(IDomainEventDispatcher)
+            typeof(IDomainEventDispatcher),
+            typeof(IPuzzlePoolService),
+            typeof(IPuzzleBlobStorage)
         };
 
         // Act & Assert

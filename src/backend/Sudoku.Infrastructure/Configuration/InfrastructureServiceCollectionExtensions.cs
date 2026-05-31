@@ -19,20 +19,48 @@ public static class InfrastructureServiceCollectionExtensions
             services.Configure<AzureStorageOptions>(configuration.GetSection(AzureStorageOptions.SectionName));
             services.Configure<CosmosDbOptions>(configuration.GetSection(CosmosDbOptions.SectionName));
 
+            // Always register blob storage client — the puzzle pool uses it regardless of game store choice
+            services.AddBlobStorageClient(configuration);
+
             var useCosmosDb = configuration.GetValue<bool>("UseCosmosDb");
-        
+
             if (useCosmosDb)
             {
                 services.AddCosmosDbServices(configuration);
             }
             else
             {
-                services.AddAzureStorageServices(configuration);
+                services.AddAzureBlobGameServices();
             }
 
             services.AddDomainEventHandling();
             services.AddPuzzleServices();
+            services.AddPuzzlePoolServices();
 
+            return services;
+        }
+
+        private IServiceCollection AddBlobStorageClient(IConfiguration configuration)
+        {
+            var storageOptions = configuration.GetSection(AzureStorageOptions.SectionName).Get<AzureStorageOptions>();
+
+            if (storageOptions?.UseManagedIdentity == true)
+            {
+                services.AddAzureClients(builder =>
+                {
+                    builder.AddBlobServiceClient(new Uri($"https://{storageOptions.AccountName}.blob.core.windows.net/"));
+                });
+            }
+            else
+            {
+                services.AddAzureClients(builder =>
+                {
+                    builder.AddBlobServiceClient(storageOptions?.ConnectionString ??
+                                                 configuration.GetConnectionString("AzureStorage"));
+                });
+            }
+
+            services.AddScoped<IAzureStorageService, AzureStorageService>();
             return services;
         }
 
@@ -41,6 +69,14 @@ public static class InfrastructureServiceCollectionExtensions
             services.AddScoped<ICosmosDbService, CosmosDbService>();
             services.AddScoped<IGameRepository, CosmosDbGameRepository>();
             services.AddScoped<IUserProfileRepository, CosmosDbUserProfileRepository>();
+            services.AddScoped<IPuzzleRepository, InMemoryPuzzleRepository>();
+
+            return services;
+        }
+
+        private IServiceCollection AddAzureBlobGameServices()
+        {
+            services.AddScoped<IGameRepository, AzureBlobGameRepository>();
             services.AddScoped<IPuzzleRepository, InMemoryPuzzleRepository>();
 
             return services;
@@ -63,29 +99,11 @@ public static class InfrastructureServiceCollectionExtensions
             return services;
         }
 
-        private IServiceCollection AddAzureStorageServices(IConfiguration configuration)
+        private IServiceCollection AddPuzzlePoolServices()
         {
-            var storageOptions = configuration.GetSection(AzureStorageOptions.SectionName).Get<AzureStorageOptions>();
-
-            if (storageOptions?.UseManagedIdentity == true)
-            {
-                services.AddAzureClients(builder =>
-                {
-                    builder.AddBlobServiceClient(new Uri($"https://{storageOptions.AccountName}.blob.core.windows.net/"));
-                });
-            }
-            else
-            {
-                services.AddAzureClients(builder =>
-                {
-                    builder.AddBlobServiceClient(storageOptions?.ConnectionString ??
-                                                 configuration.GetConnectionString("AzureStorage"));
-                });
-            }
-
-            services.AddScoped<IAzureStorageService, AzureStorageService>();
-            services.AddScoped<IGameRepository, AzureBlobGameRepository>();
-            services.AddScoped<IPuzzleRepository, InMemoryPuzzleRepository>();
+            services.AddScoped<AzureBlobPuzzleRepository>();
+            services.AddScoped<IPuzzleBlobStorage>(sp => sp.GetRequiredService<AzureBlobPuzzleRepository>());
+            services.AddScoped<IPuzzlePoolService, PuzzlePoolService>();
 
             return services;
         }

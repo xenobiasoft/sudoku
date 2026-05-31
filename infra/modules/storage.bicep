@@ -3,6 +3,9 @@ param environment string
 param storageAccountName string
 param cosmosDbAccountName string
 
+@description('URL of the PuzzleReplenishFunction endpoint (e.g. https://<funcapp>.azurewebsites.net/runtime/webhooks/eventgrid?functionName=PuzzleReplenishFunction&code=<key>). Leave empty to skip Event Grid subscription creation.')
+param puzzleReplenishFunctionUrl string = ''
+
 @description('Enable the Cosmos DB free tier. Only one account per subscription may use this. Set to false if another account in the subscription already uses it.')
 param cosmosDbEnableFreeTier bool = true
 
@@ -263,6 +266,44 @@ resource profilesThroughput 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/
   properties: {
     resource: {
       throughput: 400
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Event Grid — BlobDeleted on sudoku-puzzles container → PuzzleReplenishFunction
+// ---------------------------------------------------------------------------
+
+resource puzzlePoolEventGridTopic 'Microsoft.EventGrid/systemTopics@2022-06-15' = {
+  name: 'sudoku-puzzle-pool-${environment}'
+  location: location
+  tags: tags
+  properties: {
+    source: storageAccount.id
+    topicType: 'Microsoft.Storage.StorageAccounts'
+  }
+}
+
+resource puzzleReplenishSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2022-06-15' = if (!empty(puzzleReplenishFunctionUrl)) {
+  name: 'puzzle-replenish-sub'
+  parent: puzzlePoolEventGridTopic
+  properties: {
+    destination: {
+      endpointType: 'WebHook'
+      properties: {
+        endpointUrl: puzzleReplenishFunctionUrl
+      }
+    }
+    filter: {
+      includedEventTypes: [
+        'Microsoft.Storage.BlobDeleted'
+      ]
+      subjectBeginsWith: '/blobServices/default/containers/sudoku-puzzles/'
+    }
+    eventDeliverySchema: 'EventGridSchema'
+    retryPolicy: {
+      maxDeliveryAttempts: 30
+      eventTimeToLiveInMinutes: 1440
     }
   }
 }

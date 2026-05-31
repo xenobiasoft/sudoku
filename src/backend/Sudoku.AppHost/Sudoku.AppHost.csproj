@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sudoku.Api\Sudoku.Api.csproj" />
+    <ProjectReference Include="..\Sudoku.Functions\Sudoku.Functions.csproj" />
   </ItemGroup>
 
 </Project>

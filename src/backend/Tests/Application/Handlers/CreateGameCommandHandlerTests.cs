@@ -16,29 +16,25 @@ namespace UnitTests.Application.Handlers;
 public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGameCommandHandler, ICommandHandler<CreateGameCommand, string>>
 {
     private readonly Mock<IGameRepository> _mockGameRepository;
-    private readonly Mock<IPuzzleGenerator> _mockPuzzleRepository;
+    private readonly Mock<IPuzzleGenerator> _mockPuzzleGenerator;
+    private readonly Mock<IPuzzlePoolService> _mockPuzzlePoolService;
 
     public CreateGameCommandHandlerTests()
     {
         _mockGameRepository = Container.ResolveMock<IGameRepository>().AsMoq();
-        _mockPuzzleRepository = Container.ResolveMock<IPuzzleGenerator>().AsMoq();
+        _mockPuzzleGenerator = Container.ResolveMock<IPuzzleGenerator>().AsMoq();
+        _mockPuzzlePoolService = Container.ResolveMock<IPuzzlePoolService>().AsMoq();
     }
 
     [Fact]
-    public async Task Handle_WithValidCommand_ReturnsSuccessResult()
+    public async Task Handle_WhenPoolHasPuzzle_UsesPuzzleFromPoolAndSkipsGenerator()
     {
         // Arrange
-        var profileId = Guid.NewGuid().ToString();
-        var displayName = "TestPlayer";
-        var difficulty = "Medium";
         var puzzle = CreateTestPuzzle();
-        var command = new CreateGameCommand(profileId, displayName, difficulty);
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Medium");
 
-        _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
-            .ReturnsAsync(puzzle);
-
-        _mockGameRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>()))
-            .Returns(Task.CompletedTask);
+        _mockPuzzlePoolService.SetupDequeueReturns(puzzle);
+        _mockGameRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>())).Returns(Task.CompletedTask);
 
         var sut = ResolveSut();
 
@@ -47,20 +43,41 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
 
         // Assert
         result.IsSuccess.Should().BeTrue();
-        result.Value.Should().NotBeNullOrEmpty();
-        _mockPuzzleRepository.Verify(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()), Times.Once);
-        _mockGameRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Once);
+        _mockPuzzlePoolService.VerifyDequeueCalledOnce();
+        _mockPuzzleGenerator.Verify(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()), Times.Never);
     }
 
     [Fact]
-    public async Task Handle_WhenNoPuzzleAvailable_ReturnsFailureResult()
+    public async Task Handle_WhenPoolEmpty_FallsBackToGeneratorAndLogsWarning()
     {
         // Arrange
-        var profileId = Guid.NewGuid().ToString();
-        var difficulty = "Medium";
-        var command = new CreateGameCommand(profileId, "TestPlayer", difficulty);
+        var puzzle = CreateTestPuzzle();
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Medium");
 
-        _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
+        _mockPuzzlePoolService.SetupDequeueReturnsEmpty();
+        _mockPuzzleGenerator.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>())).ReturnsAsync(puzzle);
+        _mockGameRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>())).Returns(Task.CompletedTask);
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        _mockPuzzlePoolService.VerifyDequeueCalledOnce();
+        _mockPuzzleGenerator.Verify(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()), Times.Once);
+        Logger.WarningLogs().ContainsMessage("Puzzle pool empty");
+    }
+
+    [Fact]
+    public async Task Handle_WhenPoolEmptyAndGeneratorReturnsNull_ReturnsFailure()
+    {
+        // Arrange
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Medium");
+
+        _mockPuzzlePoolService.SetupDequeueReturnsEmpty();
+        _mockPuzzleGenerator.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
             .ReturnsAsync((SudokuPuzzle?)null);
 
         var sut = ResolveSut();
@@ -75,13 +92,31 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
     }
 
     [Fact]
+    public async Task Handle_WithValidCommand_ReturnsSuccessResult()
+    {
+        // Arrange
+        var puzzle = CreateTestPuzzle();
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Medium");
+
+        _mockPuzzlePoolService.SetupDequeueReturns(puzzle);
+        _mockGameRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>())).Returns(Task.CompletedTask);
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        result.Value.Should().NotBeNullOrEmpty();
+        _mockGameRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Once);
+    }
+
+    [Fact]
     public async Task Handle_WithInvalidDisplayName_ReturnsFailureResult()
     {
         // Arrange
-        var profileId = Guid.NewGuid().ToString();
-        var displayName = ""; // Invalid display name
-        var difficulty = "Medium";
-        var command = new CreateGameCommand(profileId, displayName, difficulty);
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "", "Medium");
 
         var sut = ResolveSut();
 
@@ -91,7 +126,7 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().NotBeNullOrEmpty();
-        _mockPuzzleRepository.Verify(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()), Times.Never);
+        _mockPuzzlePoolService.VerifyDequeueNotCalled();
         _mockGameRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Never);
     }
 
@@ -99,9 +134,7 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
     public async Task Handle_WithInvalidDifficulty_ReturnsFailureResult()
     {
         // Arrange
-        var profileId = Guid.NewGuid().ToString();
-        var difficulty = "InvalidDifficulty";
-        var command = new CreateGameCommand(profileId, "TestPlayer", difficulty);
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "InvalidDifficulty");
 
         var sut = ResolveSut();
 
@@ -111,7 +144,7 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().NotBeNullOrEmpty();
-        _mockPuzzleRepository.Verify(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()), Times.Never);
+        _mockPuzzlePoolService.VerifyDequeueNotCalled();
         _mockGameRepository.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Never);
     }
 
@@ -119,14 +152,11 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
     public async Task Handle_WhenRepositoryThrowsException_ReturnsFailureResult()
     {
         // Arrange
-        var profileId = Guid.NewGuid().ToString();
         var puzzle = CreateTestPuzzle();
-        var command = new CreateGameCommand(profileId, "TestPlayer", "Medium");
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Medium");
         var exceptionMessage = "Database error";
 
-        _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
-            .ReturnsAsync(puzzle);
-
+        _mockPuzzlePoolService.SetupDequeueReturns(puzzle);
         _mockGameRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>()))
             .ThrowsAsync(new Exception(exceptionMessage));
 
@@ -144,11 +174,10 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
     public async Task Handle_WhenDomainExceptionThrown_ReturnsFailureWithDomainMessage()
     {
         // Arrange
-        var profileId = Guid.NewGuid().ToString();
-        var command = new CreateGameCommand(profileId, "TestPlayer", "Medium");
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Medium");
         var domainException = new InvalidPlayerAliasException("Invalid player alias");
 
-        _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
+        _mockPuzzlePoolService.Setup(x => x.DequeueAsync(It.IsAny<GameDifficulty>()))
             .ThrowsAsync(domainException);
 
         var sut = ResolveSut();
@@ -159,32 +188,6 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         // Assert
         result.IsSuccess.Should().BeFalse();
         result.Error.Should().Be(domainException.Message);
-    }
-
-    [Fact]
-    public async Task Handle_CallsRepositoryWithCorrectParameters()
-    {
-        // Arrange
-        var profileId = Guid.NewGuid().ToString();
-        var difficulty = "Medium";
-        var puzzle = CreateTestPuzzle();
-        var command = new CreateGameCommand(profileId, "TestPlayer", difficulty);
-        var expectedDifficulty = GameDifficulty.FromName(difficulty);
-
-        _mockPuzzleRepository.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
-            .ReturnsAsync(puzzle);
-
-        _mockGameRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>()))
-            .Returns(Task.CompletedTask);
-
-        var sut = ResolveSut();
-
-        // Act
-        await sut.Handle(command, CancellationToken.None);
-
-        // Assert
-        _mockPuzzleRepository.Verify(x => x.GeneratePuzzleAsync(
-            It.Is<GameDifficulty>(d => d.Name == expectedDifficulty.Name)), Times.Once);
     }
 
     private static SudokuPuzzle CreateTestPuzzle()

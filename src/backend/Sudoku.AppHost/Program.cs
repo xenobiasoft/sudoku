@@ -41,6 +41,12 @@ try
         .WithExternalHttpEndpoints()
         .WaitFor(cosmosDb);
 
+    logger.LogInformation("Configuring Sudoku Functions project...");
+    builder.AddProject<Projects.Sudoku_Functions>("sudoku-functions")
+        .WithReference(cosmosDb)
+        .WithEnvironment("UseCosmosDb", "true")
+        .WaitFor(cosmosDb);
+
     logger.LogInformation("Configuring Sudoku React project...");
     builder.AddNpmApp("sudoku-react", "../../frontend/Sudoku.React", "dev")
         .WithReference(api)
