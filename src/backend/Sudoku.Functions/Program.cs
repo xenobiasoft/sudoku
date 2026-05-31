@@ -1,12 +1,7 @@
+using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.Hosting;
 using Sudoku.Infrastructure.Configuration;
 
-var host = new HostBuilder()
-    .ConfigureFunctionsWorkerDefaults()
-    .ConfigureServices((context, services) =>
-    {
-        services.AddInfrastructureServices(context.Configuration);
-    })
-    .Build();
-
-host.Run();
+var builder = FunctionsApplication.CreateBuilder(args);
+builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Build().Run();
