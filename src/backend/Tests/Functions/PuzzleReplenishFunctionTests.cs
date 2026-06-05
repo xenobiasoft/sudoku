@@ -4,7 +4,6 @@ using DepenMock.Moq;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Functions.Functions;
-using LogOutputAttribute = DepenMock.XUnit.V3.Attributes.LogOutputAttribute;
 
 namespace UnitTests.Functions;
 
