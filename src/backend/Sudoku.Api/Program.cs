@@ -23,10 +23,7 @@ if (!builder.Environment.IsDevelopment())
     }
 }
 
-if (builder.Configuration.GetValue<bool>("UseCosmosDb"))
-{
-    builder.AddAzureCosmosClient("CosmosDb");
-}
+builder.AddAzureCosmosClient("CosmosDb");
 
 builder.Services.AddApiDefaults(builder.Configuration, builder.Environment);
 

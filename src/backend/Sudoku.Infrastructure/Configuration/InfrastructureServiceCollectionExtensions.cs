@@ -21,26 +21,11 @@ public static class InfrastructureServiceCollectionExtensions
             services.Configure<AzureStorageOptions>(configuration.GetSection(AzureStorageOptions.SectionName));
             services.Configure<CosmosDbOptions>(configuration.GetSection(CosmosDbOptions.SectionName));
 
-            var useCosmosDb = configuration.GetValue<bool>("UseCosmosDb");
+            services.AddCosmosDbServices();
 
-            if (useCosmosDb)
-            {
-                services.AddCosmosDbServices(configuration);
-            }
-            else
-            {
-                services.AddAzureStorageServices(configuration);
-            }
-
-            // Register blob storage client for puzzle pool if configured; otherwise use no-op fallback
-            // so the app starts cleanly even without blob storage (on-demand generation is the fallback).
             if (IsBlobStorageConfigured(configuration))
             {
-                if (useCosmosDb)
-                {
-                    services.AddBlobStorageClient(configuration);
-                }
-
+                services.AddBlobStorageClient(configuration);
                 services.AddPuzzlePoolServices();
             }
             else
@@ -68,7 +53,17 @@ public static class InfrastructureServiceCollectionExtensions
         {
             var storageOptions = configuration.GetSection(AzureStorageOptions.SectionName).Get<AzureStorageOptions>();
 
-            if (storageOptions?.UseManagedIdentity == true)
+            // Aspire-injected connection string takes priority (covers local emulator)
+            var aspireBlobsConnectionString = configuration.GetConnectionString("blobs");
+
+            if (!string.IsNullOrEmpty(aspireBlobsConnectionString))
+            {
+                services.AddAzureClients(builder =>
+                {
+                    builder.AddBlobServiceClient(aspireBlobsConnectionString);
+                });
+            }
+            else if (storageOptions?.UseManagedIdentity == true)
             {
                 services.AddAzureClients(builder =>
                 {
@@ -79,7 +74,6 @@ public static class InfrastructureServiceCollectionExtensions
             {
                 var connectionString = storageOptions?.ConnectionString
                     ?? configuration.GetConnectionString("AzureStorage")
-                    ?? configuration.GetConnectionString("blobs")
                     ?? configuration["AzureWebJobsStorage"];
 
                 services.AddAzureClients(builder =>
@@ -92,20 +86,11 @@ public static class InfrastructureServiceCollectionExtensions
             return services;
         }
 
-        private IServiceCollection AddCosmosDbServices(IConfiguration configuration)
+        private IServiceCollection AddCosmosDbServices()
         {
             services.AddScoped<ICosmosDbService, CosmosDbService>();
             services.AddScoped<IGameRepository, CosmosDbGameRepository>();
             services.AddScoped<IUserProfileRepository, CosmosDbUserProfileRepository>();
-            services.AddScoped<IPuzzleRepository, InMemoryPuzzleRepository>();
-
-            return services;
-        }
-
-        private IServiceCollection AddAzureStorageServices(IConfiguration configuration)
-        {
-            services.AddBlobStorageClient(configuration);
-            services.AddScoped<IGameRepository, AzureBlobGameRepository>();
             services.AddScoped<IPuzzleRepository, InMemoryPuzzleRepository>();
 
             return services;

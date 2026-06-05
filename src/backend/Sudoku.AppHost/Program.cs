@@ -40,7 +40,6 @@ try
         })
         .WithReference(cosmosDb)
         .WithReference(puzzleBlobs)
-        .WithEnvironment("UseCosmosDb", "true")
         .WithExternalHttpEndpoints()
         .WaitFor(cosmosDb)
         .WaitFor(storage);
@@ -50,7 +49,6 @@ try
         .WithHostStorage(storage)
         .WithReference(puzzleBlobs)
         .WithReference(cosmosDb)
-        .WithEnvironment("UseCosmosDb", "true")
         .WaitFor(cosmosDb)
         .WaitFor(storage);
 
