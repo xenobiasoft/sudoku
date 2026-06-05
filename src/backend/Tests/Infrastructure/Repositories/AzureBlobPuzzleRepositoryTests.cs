@@ -14,10 +14,14 @@ public class AzureBlobPuzzleRepositoryTests : MoqBaseTestByAbstraction<AzureBlob
     private readonly Mock<IPuzzleGenerator> _mockPuzzleGenerator;
     private const string PuzzleContainer = "sudoku-puzzles";
 
+    private readonly IPuzzleBlobStorage _sut;
+
     public AzureBlobPuzzleRepositoryTests()
     {
         _mockStorageService = Container.ResolveMock<IAzureStorageService>().AsMoq();
         _mockPuzzleGenerator = Container.ResolveMock<IPuzzleGenerator>().AsMoq();
+
+        _sut = ResolveSut();
     }
 
     [Fact]
@@ -26,26 +30,20 @@ public class AzureBlobPuzzleRepositoryTests : MoqBaseTestByAbstraction<AzureBlob
         // Arrange
         var difficulty = GameDifficulty.Easy;
         var puzzle = PuzzleFactory.GetPuzzle(difficulty);
+        var expectedBlobName = $"{difficulty.Name.ToLowerInvariant()}/{puzzle.PuzzleId}.json";
 
         _mockPuzzleGenerator
             .Setup(x => x.GeneratePuzzleAsync(difficulty))
             .ReturnsAsync(puzzle);
 
-        var sut = (AzureBlobPuzzleRepository)ResolveSut();
-
         // Act
-        var result = await sut.CreateAsync(difficulty);
+        var result = await _sut.CreateAsync(difficulty);
 
         // Assert
         result.Should().NotBeNull();
         result.PuzzleId.Should().Be(puzzle.PuzzleId);
-        _mockPuzzleGenerator.Verify(x => x.GeneratePuzzleAsync(difficulty), Times.Once);
-        _mockStorageService.Verify(
-            x => x.SaveAsync(
-                PuzzleContainer,
-                $"{difficulty.Name.ToLowerInvariant()}/{puzzle.PuzzleId}.json",
-                It.IsAny<SudokuPuzzleDocument>()),
-            Times.Once);
+        _mockPuzzleGenerator.VerifyGeneratePuzzleAsyncCalledOnce(difficulty);
+        _mockStorageService.VerifySavesBlob<SudokuPuzzleDocument>(PuzzleContainer, expectedBlobName);
     }
 
     [Fact]
@@ -54,67 +52,52 @@ public class AzureBlobPuzzleRepositoryTests : MoqBaseTestByAbstraction<AzureBlob
         // Arrange
         var difficulty = GameDifficulty.Expert;
         var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
-
-        _mockPuzzleGenerator
-            .Setup(x => x.GeneratePuzzleAsync(difficulty))
-            .ReturnsAsync(puzzle);
-
-        var sut = (AzureBlobPuzzleRepository)ResolveSut();
+        _mockPuzzleGenerator.SetupGeneratePuzzleAsyncReturns(puzzle);
 
         // Act
-        await sut.CreateAsync(difficulty);
+        await _sut.CreateAsync(difficulty);
 
         // Assert
-        _mockStorageService.Verify(
-            x => x.SaveAsync(
-                PuzzleContainer,
-                It.Is<string>(path => path.StartsWith("expert/")),
-                It.IsAny<SudokuPuzzleDocument>()),
-            Times.Once);
+        _mockStorageService.VerifySavesBlobCheckUsingPartialName<SudokuPuzzleDocument>(PuzzleContainer, "expert/");
     }
 
     [Fact]
     public async Task GetPuzzleIdsAsync_WithBlobsInContainer_ReturnsIdsWithoutExtension()
     {
         // Arrange
+        var expectedIds = new List<string>();
         var prefix = "easy";
         var puzzleId = Guid.NewGuid().ToString();
         var blobName = $"{prefix}/{puzzleId}.json";
 
-        _mockStorageService
-            .Setup(x => x.GetBlobNamesAsync(PuzzleContainer, $"{prefix}/"))
-            .Returns(new[] { blobName }.ToAsyncEnumerable());
-
-        var sut = ResolveSut();
+        _mockStorageService.SetupGetBlobNamesReturns([blobName]);
 
         // Act
-        var ids = new List<string>();
-        await foreach (var id in sut.GetPuzzleIdsAsync(prefix))
-            ids.Add(id);
+        await foreach (var id in _sut.GetPuzzleIdsAsync(prefix))
+        {
+            expectedIds.Add(id);
+        }
 
         // Assert
-        ids.Should().ContainSingle().Which.Should().Be(puzzleId);
+        expectedIds.Should().ContainSingle().Which.Should().Be(puzzleId);
     }
 
     [Fact]
     public async Task GetPuzzleIdsAsync_WithEmptyContainer_ReturnsEmpty()
     {
         // Arrange
+        var expectedIds = new List<string>();
         var prefix = "medium";
-
-        _mockStorageService
-            .Setup(x => x.GetBlobNamesAsync(PuzzleContainer, $"{prefix}/"))
-            .Returns(Array.Empty<string>().ToAsyncEnumerable());
-
-        var sut = ResolveSut();
+        _mockStorageService.SetupGetBlobNamesReturns([]);
 
         // Act
-        var ids = new List<string>();
-        await foreach (var id in sut.GetPuzzleIdsAsync(prefix))
-            ids.Add(id);
+        await foreach (var id in _sut.GetPuzzleIdsAsync(prefix))
+        {
+            expectedIds.Add(id);
+        }
 
         // Assert
-        ids.Should().BeEmpty();
+        expectedIds.Should().BeEmpty();
     }
 
     [Fact]
@@ -125,14 +108,10 @@ public class AzureBlobPuzzleRepositoryTests : MoqBaseTestByAbstraction<AzureBlob
         var puzzleId = Guid.NewGuid().ToString();
         var document = CreateEasyPuzzleDocument(puzzleId);
 
-        _mockStorageService
-            .Setup(x => x.LoadAsync<SudokuPuzzleDocument>(PuzzleContainer, $"{prefix}/{puzzleId}.json"))
-            .ReturnsAsync(document);
-
-        var sut = ResolveSut();
+        _mockStorageService.SetupLoadReturns(document);
 
         // Act
-        var result = await sut.LoadAsync(prefix, puzzleId);
+        var result = await _sut.LoadAsync(prefix, puzzleId);
 
         // Assert
         result.Should().NotBeNull();
@@ -145,15 +124,10 @@ public class AzureBlobPuzzleRepositoryTests : MoqBaseTestByAbstraction<AzureBlob
         // Arrange
         var prefix = "easy";
         var puzzleId = Guid.NewGuid().ToString();
-
-        _mockStorageService
-            .Setup(x => x.LoadAsync<SudokuPuzzleDocument>(PuzzleContainer, $"{prefix}/{puzzleId}.json"))
-            .ReturnsAsync((SudokuPuzzleDocument?)null);
-
-        var sut = ResolveSut();
+        _mockStorageService.SetupLoadReturns<SudokuPuzzleDocument>(null!);
 
         // Act
-        var result = await sut.LoadAsync(prefix, puzzleId);
+        var result = await _sut.LoadAsync(prefix, puzzleId);
 
         // Assert
         result.Should().BeNull();
@@ -167,23 +141,20 @@ public class AzureBlobPuzzleRepositoryTests : MoqBaseTestByAbstraction<AzureBlob
         var puzzleId = Guid.NewGuid().ToString();
         var expectedBlobName = $"{prefix}/{puzzleId}.json";
 
-        var sut = (AzureBlobPuzzleRepository)ResolveSut();
-
         // Act
-        await sut.DeleteAsync(prefix, puzzleId);
+        await _sut.DeleteAsync(prefix, puzzleId);
 
         // Assert
-        _mockStorageService.Verify(x => x.DeleteAsync(PuzzleContainer, expectedBlobName), Times.Once);
+        _mockStorageService.VerifyDeletesBlob(PuzzleContainer, expectedBlobName);
     }
 
     [Fact]
     public void CreateAsync_WithAlias_ThrowsNotSupportedException()
     {
         // Arrange
-        var sut = (AzureBlobPuzzleRepository)ResolveSut();
 
         // Act
-        var act = () => ((IPuzzleRepository)sut).CreateAsync("alias", GameDifficulty.Easy);
+        var act = () => ((IPuzzleRepository)_sut).CreateAsync("alias", GameDifficulty.Easy);
 
         // Assert
         act.Should().ThrowAsync<NotSupportedException>();
