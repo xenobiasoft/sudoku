@@ -168,7 +168,6 @@ module functions 'modules/functions.bicep' = {
     appServicePlanName: appServicePlanName
     functionAppName: functionAppName
     storageAccountName: storage.outputs.storageAccountName
-    eventGridTopicName: storage.outputs.eventGridTopicName
     keyVaultName: keyVaultName
     cosmosDbAccountName: cosmosDbAccountName
     appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString

@@ -307,6 +307,44 @@ jobs:
           app-name: ${{ env.AZURE_FUNCTIONS_NAME }}
           package: ${{ github.workspace }}/publish-functions
 
+      # Created here (not in Bicep) because Event Grid validates that the target
+      # function exists when the subscription is created. Infra is deployed
+      # before the function code, so this must run after the package is live.
+      # The command is an upsert, so it is safe to re-run on every deploy.
+      - name: Create Event Grid subscription (BlobDeleted -> PuzzleReplenishFunction)
+        shell: bash
+        run: |
+          set -euo pipefail
+          RG="rg-xenobiasoft-sudoku-prod-westus2"
+          TOPIC="sudoku-puzzle-pool-prod"
+          FUNC_ID=$(az functionapp show \
+            --name "${AZURE_FUNCTIONS_NAME}" \
+            --resource-group "$RG" \
+            --query id -o tsv)
+          ENDPOINT="${FUNC_ID}/functions/PuzzleReplenishFunction"
+
+          # The function may take a moment to be indexed after deployment, so
+          # retry until Event Grid can validate the endpoint.
+          for i in {1..12}; do
+            if az eventgrid system-topic event-subscription create \
+                --name puzzle-replenish-sub \
+                --system-topic-name "$TOPIC" \
+                --resource-group "$RG" \
+                --endpoint-type azurefunction \
+                --endpoint "$ENDPOINT" \
+                --included-event-types Microsoft.Storage.BlobDeleted \
+                --subject-begins-with "/blobServices/default/containers/sudoku-puzzles/" \
+                --max-delivery-attempts 30 \
+                --event-ttl 1440; then
+              echo "Event Grid subscription created/updated."
+              exit 0
+            fi
+            echo "Attempt $i failed (function may still be indexing). Retrying in 20s..."
+            sleep 20
+          done
+          echo "ERROR: Failed to create Event Grid subscription after retries." >&2
+          exit 1
+
   deploy-swa:
     needs: [deploy-infra, build-frontend, changes]
     if: needs.changes.outputs.code == 'true'
