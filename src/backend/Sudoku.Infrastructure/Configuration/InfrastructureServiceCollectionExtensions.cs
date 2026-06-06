@@ -2,9 +2,7 @@ using Microsoft.Extensions.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Application.Interfaces;
-using Sudoku.Domain.Entities;
 using Sudoku.Domain.Events;
-using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.EventHandling;
 using Sudoku.Infrastructure.Repositories;
 using Sudoku.Infrastructure.Services;
@@ -22,31 +20,12 @@ public static class InfrastructureServiceCollectionExtensions
             services.Configure<CosmosDbOptions>(configuration.GetSection(CosmosDbOptions.SectionName));
 
             services.AddCosmosDbServices();
-
-            if (IsBlobStorageConfigured(configuration))
-            {
-                services.AddBlobStorageClient(configuration);
-                services.AddPuzzlePoolServices();
-            }
-            else
-            {
-                services.AddScoped<IPuzzlePoolService, NullPuzzlePoolService>();
-            }
-
+            services.AddBlobStorageClient(configuration);
+            services.AddPuzzlePoolServices();
             services.AddDomainEventHandling();
             services.AddPuzzleServices();
 
             return services;
-        }
-
-        private static bool IsBlobStorageConfigured(IConfiguration configuration)
-        {
-            var storageOptions = configuration.GetSection(AzureStorageOptions.SectionName).Get<AzureStorageOptions>();
-            return (storageOptions?.UseManagedIdentity == true && !string.IsNullOrEmpty(storageOptions.AccountName))
-                || !string.IsNullOrEmpty(storageOptions?.ConnectionString)
-                || !string.IsNullOrEmpty(configuration.GetConnectionString("AzureStorage"))
-                || !string.IsNullOrEmpty(configuration.GetConnectionString("blobs"))
-                || !string.IsNullOrEmpty(configuration["AzureWebJobsStorage"]);
         }
 
         private IServiceCollection AddBlobStorageClient(IConfiguration configuration)
@@ -74,7 +53,11 @@ public static class InfrastructureServiceCollectionExtensions
             {
                 var connectionString = storageOptions?.ConnectionString
                     ?? configuration.GetConnectionString("AzureStorage")
-                    ?? configuration["AzureWebJobsStorage"];
+                    ?? configuration["AzureWebJobsStorage"]
+                    ?? throw new InvalidOperationException(
+                        "Blob storage is not configured. Provide one of: ConnectionStrings:blobs (Aspire), " +
+                        "AzureStorage:ConnectionString, AzureStorage:UseManagedIdentity + AzureStorage:AccountName, " +
+                        "ConnectionStrings:AzureStorage, or AzureWebJobsStorage.");
 
                 services.AddAzureClients(builder =>
                 {
@@ -133,11 +116,4 @@ public static class InfrastructureServiceCollectionExtensions
             return services;
         }
     }
-}
-
-file sealed class NullPuzzlePoolService : IPuzzlePoolService
-{
-    public Task<int> GetAvailableCountAsync(GameDifficulty difficulty) => Task.FromResult(0);
-    public Task SeedAsync(GameDifficulty difficulty, int count) => Task.CompletedTask;
-    public Task<SudokuPuzzle?> DequeueAsync(GameDifficulty difficulty) => Task.FromResult<SudokuPuzzle?>(null);
 }

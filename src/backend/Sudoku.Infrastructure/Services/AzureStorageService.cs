@@ -5,15 +5,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Sudoku.Infrastructure.Services;
 
-public interface IAzureStorageService
-{
-    Task<T?> LoadAsync<T>(string containerName, string blobName);
-    Task SaveAsync<T>(string containerName, string blobName, T data);
-    Task DeleteAsync(string containerName, string blobName);
-    Task<bool> ExistsAsync(string containerName, string blobName);
-    IAsyncEnumerable<string> GetBlobNamesAsync(string containerName, string? prefix = null);
-}
-
 public class AzureStorageService(BlobServiceClient blobServiceClient, ILogger<AzureStorageService> logger) : IAzureStorageService
 {
     private readonly JsonSerializerOptions _jsonOptions = new()
@@ -26,7 +17,7 @@ public class AzureStorageService(BlobServiceClient blobServiceClient, ILogger<Az
     {
         try
         {
-            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            var containerClient = await GetContainerClientAsync(containerName);
             var blobClient = containerClient.GetBlobClient(blobName);
 
             if (!await blobClient.ExistsAsync())
@@ -54,10 +45,9 @@ public class AzureStorageService(BlobServiceClient blobServiceClient, ILogger<Az
     {
         try
         {
-            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-            await containerClient.CreateIfNotExistsAsync();
-
+            var containerClient = await GetContainerClientAsync(containerName);
             var blobClient = containerClient.GetBlobClient(blobName);
+
             var json = JsonSerializer.Serialize(data, _jsonOptions);
             using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
 
@@ -76,7 +66,7 @@ public class AzureStorageService(BlobServiceClient blobServiceClient, ILogger<Az
     {
         try
         {
-            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            var containerClient = await GetContainerClientAsync(containerName);
             var blobClient = containerClient.GetBlobClient(blobName);
 
             if (await blobClient.ExistsAsync())
@@ -96,8 +86,9 @@ public class AzureStorageService(BlobServiceClient blobServiceClient, ILogger<Az
     {
         try
         {
-            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            var containerClient = await GetContainerClientAsync(containerName);
             var blobClient = containerClient.GetBlobClient(blobName);
+
             return await blobClient.ExistsAsync();
         }
         catch (Exception ex)
@@ -109,11 +100,19 @@ public class AzureStorageService(BlobServiceClient blobServiceClient, ILogger<Az
 
     public async IAsyncEnumerable<string> GetBlobNamesAsync(string containerName, string? prefix = null)
     {
-        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+        var containerClient = await GetContainerClientAsync(containerName);
 
         await foreach (var blobItem in containerClient.GetBlobsAsync(new GetBlobsOptions { Prefix = prefix }))
         {
             yield return blobItem.Name;
         }
+    }
+
+    private async Task<BlobContainerClient> GetContainerClientAsync(string containerName)
+    {
+        var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+        await containerClient.CreateIfNotExistsAsync();
+
+        return containerClient;
     }
 }
