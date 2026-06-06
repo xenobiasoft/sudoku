@@ -8,14 +8,17 @@ This solution is organized into several projects:
 
 ```
 Sudoku.sln
-├── Sudoku.Api/              # REST API
-├── Sudoku.AppHost/          # Application orchestration/hosting
-├── Sudoku.Application/      # Application use cases and orchestration
-├── Sudoku.React/            # React/Vite SPA frontend
-├── Sudoku.Domain/           # Core domain logic and business rules
-├── Sudoku.Infrastructure/   # Infrastructure (storage, external APIs)
-├── Sudoku.Functions/        # Azure Functions (puzzle pool seed & replenishment)
-└── Tests/                   # Unit and integration tests
+└── src/
+    ├── backend/
+    │   ├── Sudoku.Api/              # REST API
+    │   ├── Sudoku.AppHost/          # Application orchestration/hosting
+    │   ├── Sudoku.Application/      # Application use cases and orchestration
+    │   ├── Sudoku.Domain/           # Core domain logic and business rules
+    │   ├── Sudoku.Infrastructure/   # Infrastructure (storage, external APIs)
+    │   ├── Sudoku.Functions/        # Azure Functions (puzzle pool seed & replenishment)
+    │   └── Tests/                   # Unit and integration tests
+    └── frontend/
+        └── Sudoku.React/            # React/Vite SPA frontend
 ```
 
 ### Key Technologies & Patterns
