@@ -79,7 +79,7 @@ public class ClearPossibleValuesCommandHandlerTests : MoqBaseTestByAbstraction<C
         var command = new ClearPossibleValuesCommand(gameId, 0, 0);
         var domainException = new GameNotInProgressException("Cannot clear possible values in NotStarted state");
 
-        _mockGameRepository.SetupThrowsOnGetById(domainException);
+        _mockGameRepository.SetupGetByIdThrows(domainException);
 
         var sut = ResolveSut();
 
@@ -99,7 +99,7 @@ public class ClearPossibleValuesCommandHandlerTests : MoqBaseTestByAbstraction<C
         var command = new ClearPossibleValuesCommand(gameId, 0, 0);
         var exceptionMessage = "Database connection failed";
 
-        _mockGameRepository.SetupThrowsOnGetById(new Exception(exceptionMessage));
+        _mockGameRepository.SetupGetByIdThrows(new Exception(exceptionMessage));
 
         var sut = ResolveSut();
 

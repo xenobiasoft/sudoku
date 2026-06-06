@@ -1,5 +1,6 @@
 using MediatR;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sudoku.Api;
@@ -170,7 +171,8 @@ public class DependencyInjectionTests
             typeof(IPuzzleRepository),
             typeof(IPuzzleGenerator),
             typeof(IPuzzleSolver),
-            typeof(IDomainEventDispatcher)
+            typeof(IDomainEventDispatcher),
+            typeof(IPuzzlePoolService)
         };
 
         // Act & Assert
@@ -187,7 +189,8 @@ public class DependencyInjectionTests
             .AddInMemoryCollection(new Dictionary<string, string?>
             {
                 ["AzureStorage:ConnectionString"] = "DefaultEndpointsProtocol=https;AccountName=test;AccountKey=dGVzdA==;EndpointSuffix=core.windows.net",
-                ["AzureStorage:UseManagedIdentity"] = "false"
+                ["AzureStorage:UseManagedIdentity"] = "false",
+                ["CosmosDb:DatabaseName"] = "sudoku"
             })
             .Build();
         var mockEnvironment = new Mock<IWebHostEnvironment>();
@@ -195,6 +198,10 @@ public class DependencyInjectionTests
 
         services.AddLogging();
         services.AddControllers();
+
+        // CosmosClient is registered by AddAzureCosmosClient in Program.cs, not in AddApiDefaults
+        const string cosmosEmulatorConnectionString = "AccountEndpoint=https://localhost:8081/;AccountKey=C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==;";
+        services.AddSingleton(_ => new CosmosClient(cosmosEmulatorConnectionString));
 
         services.AddApiDefaults(configuration, mockEnvironment.Object);
 

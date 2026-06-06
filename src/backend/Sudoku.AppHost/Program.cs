@@ -21,6 +21,8 @@ try
     logger.LogInformation("Starting Sudoku Distributed Application...");
 
     var cosmosDb = builder.AddAzureCosmosDB("CosmosDb").RunAsEmulator();
+    var storage = builder.AddAzureStorage("storage").RunAsEmulator();
+    var puzzleBlobs = storage.AddBlobs("blobs");
 
     logger.LogInformation("Configuring Sudoku API project...");
     var api = builder.AddProject<Projects.Sudoku_Api>("sudoku-api")
@@ -37,9 +39,18 @@ try
             logger.LogInformation("Configured HTTP Swagger endpoint for Sudoku API");
         })
         .WithReference(cosmosDb)
-        .WithEnvironment("UseCosmosDb", "true")
+        .WithReference(puzzleBlobs)
         .WithExternalHttpEndpoints()
-        .WaitFor(cosmosDb);
+        .WaitFor(cosmosDb)
+        .WaitFor(storage);
+
+    logger.LogInformation("Configuring Sudoku Functions project...");
+    builder.AddAzureFunctionsProject<Projects.Sudoku_Functions>("sudoku-functions")
+        .WithHostStorage(storage)
+        .WithReference(puzzleBlobs)
+        .WithReference(cosmosDb)
+        .WaitFor(cosmosDb)
+        .WaitFor(storage);
 
     logger.LogInformation("Configuring Sudoku React project...");
     builder.AddNpmApp("sudoku-react", "../../frontend/Sudoku.React", "dev")

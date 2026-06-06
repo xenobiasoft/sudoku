@@ -79,7 +79,7 @@ public class CompleteGameCommandHandlerTests : MoqBaseTestByAbstraction<Complete
         var command = new CompleteGameCommand(gameId);
         var domainException = new GameNotInProgressException("Cannot complete game in NotStarted state");
 
-        _mockGameRepository.SetupThrowsOnGetById(domainException);
+        _mockGameRepository.SetupGetByIdThrows(domainException);
 
         var sut = ResolveSut();
 
@@ -99,7 +99,7 @@ public class CompleteGameCommandHandlerTests : MoqBaseTestByAbstraction<Complete
         var command = new CompleteGameCommand(gameId);
         var exceptionMessage = "Database connection failed";
 
-        _mockGameRepository.SetupThrowsOnGetById(new Exception(exceptionMessage));
+        _mockGameRepository.SetupGetByIdThrows(new Exception(exceptionMessage));
 
         var sut = ResolveSut();
 

@@ -19,24 +19,57 @@ public static class InfrastructureServiceCollectionExtensions
             services.Configure<AzureStorageOptions>(configuration.GetSection(AzureStorageOptions.SectionName));
             services.Configure<CosmosDbOptions>(configuration.GetSection(CosmosDbOptions.SectionName));
 
-            var useCosmosDb = configuration.GetValue<bool>("UseCosmosDb");
-        
-            if (useCosmosDb)
-            {
-                services.AddCosmosDbServices(configuration);
-            }
-            else
-            {
-                services.AddAzureStorageServices(configuration);
-            }
-
+            services.AddCosmosDbServices();
+            services.AddBlobStorageClient(configuration);
+            services.AddPuzzlePoolServices();
             services.AddDomainEventHandling();
             services.AddPuzzleServices();
 
             return services;
         }
 
-        private IServiceCollection AddCosmosDbServices(IConfiguration configuration)
+        private IServiceCollection AddBlobStorageClient(IConfiguration configuration)
+        {
+            var storageOptions = configuration.GetSection(AzureStorageOptions.SectionName).Get<AzureStorageOptions>();
+
+            // Aspire-injected connection string takes priority (covers local emulator)
+            var aspireBlobsConnectionString = configuration.GetConnectionString("blobs");
+
+            if (!string.IsNullOrEmpty(aspireBlobsConnectionString))
+            {
+                services.AddAzureClients(builder =>
+                {
+                    builder.AddBlobServiceClient(aspireBlobsConnectionString);
+                });
+            }
+            else if (storageOptions?.UseManagedIdentity == true)
+            {
+                services.AddAzureClients(builder =>
+                {
+                    builder.AddBlobServiceClient(new Uri($"https://{storageOptions.AccountName}.blob.core.windows.net/"));
+                });
+            }
+            else
+            {
+                var connectionString = storageOptions?.ConnectionString
+                    ?? configuration.GetConnectionString("AzureStorage")
+                    ?? configuration["AzureWebJobsStorage"]
+                    ?? throw new InvalidOperationException(
+                        "Blob storage is not configured. Provide one of: ConnectionStrings:blobs (Aspire), " +
+                        "AzureStorage:ConnectionString, AzureStorage:UseManagedIdentity + AzureStorage:AccountName, " +
+                        "ConnectionStrings:AzureStorage, or AzureWebJobsStorage.");
+
+                services.AddAzureClients(builder =>
+                {
+                    builder.AddBlobServiceClient(connectionString);
+                });
+            }
+
+            services.AddScoped<IAzureStorageService, AzureStorageService>();
+            return services;
+        }
+
+        private IServiceCollection AddCosmosDbServices()
         {
             services.AddScoped<ICosmosDbService, CosmosDbService>();
             services.AddScoped<IGameRepository, CosmosDbGameRepository>();
@@ -63,29 +96,11 @@ public static class InfrastructureServiceCollectionExtensions
             return services;
         }
 
-        private IServiceCollection AddAzureStorageServices(IConfiguration configuration)
+        private IServiceCollection AddPuzzlePoolServices()
         {
-            var storageOptions = configuration.GetSection(AzureStorageOptions.SectionName).Get<AzureStorageOptions>();
-
-            if (storageOptions?.UseManagedIdentity == true)
-            {
-                services.AddAzureClients(builder =>
-                {
-                    builder.AddBlobServiceClient(new Uri($"https://{storageOptions.AccountName}.blob.core.windows.net/"));
-                });
-            }
-            else
-            {
-                services.AddAzureClients(builder =>
-                {
-                    builder.AddBlobServiceClient(storageOptions?.ConnectionString ??
-                                                 configuration.GetConnectionString("AzureStorage"));
-                });
-            }
-
-            services.AddScoped<IAzureStorageService, AzureStorageService>();
-            services.AddScoped<IGameRepository, AzureBlobGameRepository>();
-            services.AddScoped<IPuzzleRepository, InMemoryPuzzleRepository>();
+            services.AddScoped<AzureBlobPuzzleRepository>();
+            services.AddScoped<IPuzzleBlobStorage>(sp => sp.GetRequiredService<AzureBlobPuzzleRepository>());
+            services.AddScoped<IPuzzlePoolService, PuzzlePoolService>();
 
             return services;
         }

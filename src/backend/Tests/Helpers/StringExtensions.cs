@@ -2,8 +2,11 @@
 
 public static class StringExtensions
 {
-    public static bool IsGuid(this string str)
+    extension(string str)
     {
-        return Guid.TryParse(str, out _);
+        public bool IsGuid()
+        {
+            return Guid.TryParse(str, out _);
+        }
     }
 }

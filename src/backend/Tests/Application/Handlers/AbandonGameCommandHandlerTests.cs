@@ -79,7 +79,7 @@ public class AbandonGameCommandHandlerTests : MoqBaseTestByAbstraction<AbandonGa
         var command = new AbandonGameCommand(gameId);
         var domainException = new GameAlreadyCompletedException("Cannot abandon completed game");
 
-        _mockGameRepository.SetupThrowsOnGetById(domainException);
+        _mockGameRepository.SetupGetByIdThrows(domainException);
 
         var sut = ResolveSut();
 
@@ -99,7 +99,7 @@ public class AbandonGameCommandHandlerTests : MoqBaseTestByAbstraction<AbandonGa
         var command = new AbandonGameCommand(gameId);
         var exceptionMessage = "Database connection failed";
 
-        _mockGameRepository.SetupThrowsOnGetById(new Exception(exceptionMessage));
+        _mockGameRepository.SetupGetByIdThrows(new Exception(exceptionMessage));
 
         var sut = ResolveSut();
 

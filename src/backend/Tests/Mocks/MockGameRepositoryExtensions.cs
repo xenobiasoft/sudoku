@@ -10,36 +10,25 @@ public static class MockGameRepositoryExtensions
 {
     extension(Mock<IGameRepository> mock)
     {
-        public void SetupGameStarted()
+        public void SetupGameInProgress()
         {
-            var game = GameFactory.CreateStartedGame();
+            var game = GameFactory.CreateGameInProgress();
 
             mock
                 .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
                 .ReturnsAsync(game);
         }
 
-        public void SetupInvalidGame()
+        public void SetupGameNotFound()
         {
-            var game = GameFactory.CreateInvalidGame();
-
             mock
                 .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
-                .ReturnsAsync(game);
+                .ReturnsAsync((SudokuGame?)null);
         }
 
         public void SetupGameNotStarted()
         {
             var game = GameFactory.CreateGameNotStarted();
-
-            mock
-                .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
-                .ReturnsAsync(game);
-        }
-
-        public void SetupGameInProgress()
-        {
-            var game = GameFactory.CreateGameInProgress();
 
             mock
                 .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
@@ -55,17 +44,64 @@ public static class MockGameRepositoryExtensions
                 .ReturnsAsync(game);
         }
 
-        public void SetupGameNotFound()
+        public void SetupGameStarted()
         {
+            var game = GameFactory.CreateStartedGame();
+
             mock
                 .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
-                .ReturnsAsync((SudokuGame?)null);
+                .ReturnsAsync(game);
         }
 
-        public void SetupThrowsOnGetById(Exception ex)
+        public void SetupGameWithPossibleValue(int row, int column, int value)
+        {
+            var game = GameFactory.CreateGameWithPossibleValue(row, column, value);
+
+            mock
+                .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
+                .ReturnsAsync(game);
+        }
+
+        public void SetupGetByIdThrows(Exception ex)
         {
             mock
                 .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
+                .ThrowsAsync(ex);
+        }
+
+        public void SetupGetByProfileIdAndStatus(IEnumerable<SudokuGame> games)
+        {
+            mock
+                .Setup(x => x.GetByProfileIdAndStatusAsync(It.IsAny<ProfileId>(), It.IsAny<GameStatusEnum>()))
+                .ReturnsAsync(games.ToList());
+        }
+
+        public void SetupGetByProfileId(IEnumerable<SudokuGame> games)
+        {
+            mock
+                .Setup(x => x.GetByProfileIdAsync(It.IsAny<ProfileId>()))
+                .ReturnsAsync(games.ToList());
+        }
+
+        public void SetupGetByProfileIdThrows(Exception ex)
+        {
+            mock
+                .Setup(x => x.GetByProfileIdAsync(It.IsAny<ProfileId>()))
+                .ThrowsAsync(ex);
+        }
+
+        public void SetupInvalidGame()
+        {
+            var game = GameFactory.CreateInvalidGame();
+
+            mock
+                .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
+                .ReturnsAsync(game);
+        }
+
+        public void SetupSaveThrows(Exception ex)
+        {
+            mock.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>()))
                 .ThrowsAsync(ex);
         }
 
@@ -77,36 +113,6 @@ public static class MockGameRepositoryExtensions
         public void VerifySaveNeverCalled()
         {
             mock.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Never);
-        }
-
-        public void SetupGetByProfileId(IEnumerable<SudokuGame> games)
-        {
-            mock
-                .Setup(x => x.GetByProfileIdAsync(It.IsAny<ProfileId>()))
-                .ReturnsAsync(games.ToList());
-        }
-
-        public void SetupThrowsOnGetByProfileId(Exception ex)
-        {
-            mock
-                .Setup(x => x.GetByProfileIdAsync(It.IsAny<ProfileId>()))
-                .ThrowsAsync(ex);
-        }
-
-        public void SetupGetByProfileIdAndStatus(IEnumerable<SudokuGame> games)
-        {
-            mock
-                .Setup(x => x.GetByProfileIdAndStatusAsync(It.IsAny<ProfileId>(), It.IsAny<GameStatusEnum>()))
-                .ReturnsAsync(games.ToList());
-        }
-
-        public void SetupGameWithPossibleValue(int row, int column, int value)
-        {
-            var game = GameFactory.CreateGameWithPossibleValue(row, column, value);
-
-            mock
-                .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
-                .ReturnsAsync(game);
         }
     }
 }

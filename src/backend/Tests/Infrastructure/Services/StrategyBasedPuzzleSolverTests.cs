@@ -30,7 +30,7 @@ public class StrategyBasedPuzzleSolverTests : MoqBaseTestByAbstraction<StrategyB
         await sut.SolvePuzzle(puzzle!);
 
         // Assert
-        _puzzleRepository.Verify(x => x.UndoAsync(Alias, puzzle!.PuzzleId), Times.AtLeastOnce);
+        _puzzleRepository.VerifyUndoAsyncCalled(Alias, puzzle!.PuzzleId);
     }
 
     [Fact]

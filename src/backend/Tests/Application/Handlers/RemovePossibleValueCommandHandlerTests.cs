@@ -79,7 +79,7 @@ public class RemovePossibleValueCommandHandlerTests : MoqBaseTestByAbstraction<R
         var command = new RemovePossibleValueCommand(gameId, 0, 0, 5);
         var domainException = new GameNotInProgressException("Cannot remove possible value in NotStarted state");
 
-        _mockGameRepository.SetupThrowsOnGetById(domainException);
+        _mockGameRepository.SetupGetByIdThrows(domainException);
 
         var sut = ResolveSut();
 
@@ -99,7 +99,7 @@ public class RemovePossibleValueCommandHandlerTests : MoqBaseTestByAbstraction<R
         var command = new RemovePossibleValueCommand(gameId, 0, 0, 5);
         var exceptionMessage = "Database connection failed";
 
-        _mockGameRepository.SetupThrowsOnGetById(new Exception(exceptionMessage));
+        _mockGameRepository.SetupGetByIdThrows(new Exception(exceptionMessage));
 
         var sut = ResolveSut();
 
