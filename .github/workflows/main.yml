@@ -307,9 +307,13 @@ jobs:
           app-name: ${{ env.AZURE_FUNCTIONS_NAME }}
           package: ${{ github.workspace }}/publish-functions
 
-      # Created here (not in Bicep) because Event Grid validates that the target
-      # function exists when the subscription is created. Infra is deployed
-      # before the function code, so this must run after the package is live.
+      # Created here (not in Bicep) because the subscription must point at a live
+      # function. We use the WebHook destination against the Functions Event Grid
+      # extension URL rather than the AzureFunction destination: the latter
+      # resolves the function through the ARM "list functions" API, which is not
+      # reliably populated for dotnet-isolated apps on a Linux plan and returns
+      # NotFound. The WebHook path uses the eventgrid_extension system key, and
+      # the Functions runtime auto-answers Event Grid's validation handshake.
       # The command is an upsert, so it is safe to re-run on every deploy.
       - name: Create Event Grid subscription (BlobDeleted -> PuzzleReplenishFunction)
         shell: bash
@@ -317,33 +321,43 @@ jobs:
           set -euo pipefail
           RG="rg-xenobiasoft-sudoku-prod-westus2"
           TOPIC="sudoku-puzzle-pool-prod"
-          FUNC_ID=$(az functionapp show \
-            --name "${AZURE_FUNCTIONS_NAME}" \
-            --resource-group "$RG" \
-            --query id -o tsv)
-          ENDPOINT="${FUNC_ID}/functions/PuzzleReplenishFunction"
+          FUNC_APP="${AZURE_FUNCTIONS_NAME}"
+          FUNC_NAME="PuzzleReplenishFunction"
 
-          # The function may take a moment to be indexed after deployment, so
-          # retry until Event Grid can validate the endpoint.
-          for i in {1..12}; do
-            if az eventgrid system-topic event-subscription create \
-                --name puzzle-replenish-sub \
-                --system-topic-name "$TOPIC" \
-                --resource-group "$RG" \
-                --endpoint-type azurefunction \
-                --endpoint "$ENDPOINT" \
-                --included-event-types Microsoft.Storage.BlobDeleted \
-                --subject-begins-with "/blobServices/default/containers/sudoku-puzzles/" \
-                --max-delivery-attempts 30 \
-                --event-ttl 1440; then
-              echo "Event Grid subscription created/updated."
-              exit 0
+          # The eventgrid_extension system key only exists once the host has
+          # loaded the Event Grid-triggered function, so polling for it also
+          # gates on the function being indexed and running.
+          SYSKEY=""
+          for i in {1..15}; do
+            SYSKEY=$(az functionapp keys list \
+              --name "$FUNC_APP" --resource-group "$RG" \
+              --query "systemKeys.eventgrid_extension" -o tsv 2>/dev/null || true)
+            if [ -n "$SYSKEY" ] && [ "$SYSKEY" != "null" ]; then
+              echo "eventgrid_extension system key is available."
+              break
             fi
-            echo "Attempt $i failed (function may still be indexing). Retrying in 20s..."
+            echo "Waiting for function to index / system key to appear ($i/15)..."
             sleep 20
           done
-          echo "ERROR: Failed to create Event Grid subscription after retries." >&2
-          exit 1
+          if [ -z "$SYSKEY" ] || [ "$SYSKEY" = "null" ]; then
+            echo "ERROR: eventgrid_extension system key never appeared; the function did not index." >&2
+            exit 1
+          fi
+          echo "::add-mask::$SYSKEY"
+
+          ENDPOINT="https://${FUNC_APP}.azurewebsites.net/runtime/webhooks/eventgrid?functionName=${FUNC_NAME}&code=${SYSKEY}"
+
+          az eventgrid system-topic event-subscription create \
+            --name puzzle-replenish-sub \
+            --system-topic-name "$TOPIC" \
+            --resource-group "$RG" \
+            --endpoint-type webhook \
+            --endpoint "$ENDPOINT" \
+            --included-event-types Microsoft.Storage.BlobDeleted \
+            --subject-begins-with "/blobServices/default/containers/sudoku-puzzles/" \
+            --max-delivery-attempts 30 \
+            --event-ttl 1440
+          echo "Event Grid subscription created/updated."
 
   deploy-swa:
     needs: [deploy-infra, build-frontend, changes]
