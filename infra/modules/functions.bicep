@@ -103,7 +103,14 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
     FUNCTIONS_EXTENSION_VERSION: '~4'
     FUNCTIONS_WORKER_RUNTIME: 'dotnet-isolated'
     AzureWebJobsStorage: storageConnectionString
-    WEBSITE_RUN_FROM_PACKAGE: '1'
+
+    // Deploy the pre-built publish artifact via zip-deploy to a writable
+    // wwwroot. WEBSITE_RUN_FROM_PACKAGE=1 must NOT be set: it makes wwwroot a
+    // read-only mount, so the Linux zip-deploy can't write the package and the
+    // host indexes zero functions. Disable Oryx/remote build since the artifact
+    // is already published.
+    SCM_DO_BUILD_DURING_DEPLOYMENT: 'false'
+    ENABLE_ORYX_BUILD: 'false'
 
     // Observability
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
