@@ -14,6 +14,7 @@ Sudoku.sln
 │   ├── Sudoku.AppHost/               # Application Orchestration (.NET 10.0)
 │   ├── Sudoku.ServiceDefaults/       # Shared Service Configuration (.NET 10.0)
 │   ├── Sudoku.McpServer/             # MCP Server for AI tooling (.NET 10.0)
+│   ├── Sudoku.Functions/             # Azure Functions — puzzle pool seed & replenishment (.NET 8)
 │   └── Tests/                        # Unit & Integration Tests (.NET 10.0)
 ├── src/frontend/
 │   └── Sudoku.React/                 # React/Vite SPA (TypeScript)
@@ -27,6 +28,8 @@ graph TB
     %% External
     Azure[Azure Cloud Services]
     CosmosDB[Azure CosmosDB]
+    BlobStorage[Azure Blob Storage]
+    EventGrid[Azure Event Grid]
     KeyVault[Azure Key Vault]
     Browser[Web Browser]
 
@@ -58,6 +61,12 @@ graph TB
         McpTools[ApplicationInsights Tools]
     end
 
+    %% Azure Functions
+    subgraph "Sudoku.Functions (Azure Functions)"
+        SeedFunction[PuzzlePoolSeedFunction - Timer]
+        ReplenishFunction[PuzzleReplenishFunction - Event Grid]
+    end
+
     %% Domain Layer
     subgraph "Sudoku.Domain (Domain Layer)"
         DomainEntities[Entities: SudokuGame, SudokuPuzzle, UserProfile]
@@ -75,6 +84,7 @@ graph TB
         ApplicationHandlers[Command/Query Handlers]
         ApplicationServices[Application Services]
         ApplicationDTOs[DTOs]
+        PuzzlePoolService[IPuzzlePoolService]
     end
 
     %% Infrastructure Layer
@@ -82,7 +92,9 @@ graph TB
         CosmosDbGameRepo[CosmosDbGameRepository]
         CosmosDbProfileRepo[CosmosDbUserProfileRepository]
         AzureBlobRepo[AzureBlobGameRepository]
+        AzureBlobPuzzleRepo[AzureBlobPuzzleRepository]
         InMemoryPuzzleRepo[InMemoryPuzzleRepository]
+        PuzzlePoolSvc[PuzzlePoolService]
         InfraServices[External Services]
         EventHandlers[Domain Event Handlers]
     end
@@ -97,6 +109,7 @@ graph TB
     AppHost --> GamesController
     AppHost --> ReactApp
     AppHost --> KeyVault
+    AppHost --> SeedFunction
 
     Browser --> ReactApp
 
@@ -112,6 +125,10 @@ graph TB
     ApplicationHandlers --> DomainEntities
     ApplicationHandlers --> CosmosDbGameRepo
     ApplicationHandlers --> CosmosDbProfileRepo
+    ApplicationHandlers --> PuzzlePoolService
+
+    PuzzlePoolService --> PuzzlePoolSvc
+    PuzzlePoolSvc --> AzureBlobPuzzleRepo
 
     DomainEntities --> DomainValueObjects
     DomainEntities --> DomainEvents
@@ -123,11 +140,17 @@ graph TB
     CosmosDbProfileRepo --> DomainRepositories
     CosmosDbProfileRepo --> CosmosDB
     AzureBlobRepo --> DomainRepositories
-    AzureBlobRepo --> Azure
+    AzureBlobRepo --> BlobStorage
+    AzureBlobPuzzleRepo --> BlobStorage
     InMemoryPuzzleRepo --> DomainRepositories
 
     InfraServices --> Azure
     EventHandlers --> DomainEvents
+
+    BlobStorage -->|BlobDeleted| EventGrid
+    EventGrid --> ReplenishFunction
+    ReplenishFunction --> PuzzlePoolSvc
+    SeedFunction --> PuzzlePoolSvc
 
     UnitTests --> DomainEntities
     UnitTests --> ApplicationServices
@@ -142,14 +165,16 @@ graph TB
     classDef orchestration fill:#6F42C1,stroke:#333,stroke-width:2px,color:#fff
     classDef test fill:#6C757D,stroke:#333,stroke-width:2px,color:#fff
     classDef external fill:#343A40,stroke:#333,stroke-width:2px,color:#fff
+    classDef functions fill:#E83E8C,stroke:#333,stroke-width:2px,color:#fff
 
     class DomainEntities,DomainValueObjects,DomainEvents,DomainServices,DomainExceptions,DomainRepositories domain
-    class ApplicationCommands,ApplicationQueries,ApplicationHandlers,ApplicationServices,ApplicationDTOs application
-    class CosmosDbGameRepo,CosmosDbProfileRepo,AzureBlobRepo,InMemoryPuzzleRepo,InfraServices,EventHandlers infrastructure
+    class ApplicationCommands,ApplicationQueries,ApplicationHandlers,ApplicationServices,ApplicationDTOs,PuzzlePoolService application
+    class CosmosDbGameRepo,CosmosDbProfileRepo,AzureBlobRepo,AzureBlobPuzzleRepo,InMemoryPuzzleRepo,PuzzlePoolSvc,InfraServices,EventHandlers infrastructure
     class GamesController,GameActionsController,GameStatusController,PossibleValuesController,ProfilesController,Swagger,ReactApp,ReactComponents,ReactHooks presentation
     class AppHost,ServiceDefaults,McpTools orchestration
+    class SeedFunction,ReplenishFunction functions
     class UnitTests,E2ETests test
-    class Azure,Browser,CosmosDB,KeyVault external
+    class Azure,Browser,CosmosDB,BlobStorage,EventGrid,KeyVault external
 ```
 
 ## Key Components
@@ -178,9 +203,17 @@ graph TB
   - `CosmosDbGameRepository` — primary game store
   - `CosmosDbUserProfileRepository` — primary profile store
   - `AzureBlobGameRepository` — legacy blob snapshot store
-  - `InMemoryPuzzleRepository` — puzzle caching (performance, not persisted)
-- **Services**: `CosmosDbService`, `AzureStorageService`, `PuzzleGenerator`, `StrategyBasedPuzzleSolver` (12+ strategies)
+  - `AzureBlobPuzzleRepository` — pre-generated puzzle pool store (`sudoku-puzzles` container)
+  - `InMemoryPuzzleRepository` — transient puzzle state during generation (not persisted)
+- **Services**: `CosmosDbService`, `AzureStorageService`, `PuzzleGenerator`, `StrategyBasedPuzzleSolver` (12+ strategies), `PuzzlePoolService`
 - **Event Handling**: `IDomainEventDispatcher` dispatches domain events after persistence
+
+### **Sudoku.Functions (Azure Functions)**
+
+- **Purpose**: Background puzzle pool maintenance via event-driven and timer-based triggers
+- **Functions**:
+  - `PuzzlePoolSeedFunction` — Timer trigger (`0 0 2 * * *`); fills each difficulty's pool to 10 pre-generated puzzles nightly
+  - `PuzzleReplenishFunction` — Event Grid trigger (`BlobDeleted`); replaces each consumed puzzle one-for-one in real time
 
 ### **Sudoku.Api (REST API)**
 
@@ -238,3 +271,4 @@ graph TB
 - ✅ **React Frontend**: Complete — sole frontend, full SPA with E2E test coverage
 - ✅ **MCP Server**: Complete — ApplicationInsights tooling exposed
 - ✅ **Blazor Retirement**: Complete — archived to `archive/Sudoku.Blazor`; React is the canonical UI
+- ✅ **Pre-Generated Puzzle Pool**: Complete — `AzureBlobPuzzleRepository`, `PuzzlePoolService`, `Sudoku.Functions` with event-driven (Event Grid) and nightly timer replenishment
