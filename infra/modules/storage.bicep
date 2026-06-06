@@ -3,10 +3,6 @@ param environment string
 param storageAccountName string
 param cosmosDbAccountName string
 
-@description('URL of the PuzzleReplenishFunction endpoint. Leave empty to skip Event Grid subscription creation.')
-@secure()
-param puzzleReplenishFunctionUrl string = ''
-
 @description('Enable the Cosmos DB free tier. Only one account per subscription may use this. Set to false if another account in the subscription already uses it.')
 param cosmosDbEnableFreeTier bool = true
 
@@ -272,7 +268,9 @@ resource profilesThroughput 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/
 }
 
 // ---------------------------------------------------------------------------
-// Event Grid — BlobDeleted on sudoku-puzzles container → PuzzleReplenishFunction
+// Event Grid system topic — source of BlobDeleted events on this account.
+// The eventSubscription that routes BlobDeleted → PuzzleReplenishFunction
+// lives in the functions module (it needs the Function App resource id).
 // ---------------------------------------------------------------------------
 
 resource puzzlePoolEventGridTopic 'Microsoft.EventGrid/systemTopics@2022-06-15' = {
@@ -285,31 +283,8 @@ resource puzzlePoolEventGridTopic 'Microsoft.EventGrid/systemTopics@2022-06-15' 
   }
 }
 
-resource puzzleReplenishSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2022-06-15' = if (!empty(puzzleReplenishFunctionUrl)) {
-  name: 'puzzle-replenish-sub'
-  parent: puzzlePoolEventGridTopic
-  properties: {
-    destination: {
-      endpointType: 'WebHook'
-      properties: {
-        endpointUrl: puzzleReplenishFunctionUrl
-      }
-    }
-    filter: {
-      includedEventTypes: [
-        'Microsoft.Storage.BlobDeleted'
-      ]
-      subjectBeginsWith: '/blobServices/default/containers/sudoku-puzzles/'
-    }
-    eventDeliverySchema: 'EventGridSchema'
-    retryPolicy: {
-      maxDeliveryAttempts: 30
-      eventTimeToLiveInMinutes: 1440
-    }
-  }
-}
-
 output storageAccountId string = storageAccount.id
 output storageAccountName string = storageAccount.name
 output cosmosDbAccountId string = cosmosDbAccount.id
 output cosmosDbEndpoint string = cosmosDbAccount.properties.documentEndpoint
+output eventGridTopicName string = puzzlePoolEventGridTopic.name

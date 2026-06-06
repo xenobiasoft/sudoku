@@ -23,6 +23,9 @@ param apiAppName string
 @description('Name of the MCP server app.')
 param mcpAppName string
 
+@description('Name of the Azure Functions app (puzzle-pool background jobs).')
+param functionAppName string
+
 @description('App Service Plan SKU.')
 param appServicePlanSku string = 'B1'
 
@@ -157,6 +160,26 @@ module mcp 'modules/mcp.bicep' = {
   }
 }
 
+module functions 'modules/functions.bicep' = {
+  name: 'functions'
+  params: {
+    location: location
+    environment: environment
+    appServicePlanName: appServicePlanName
+    functionAppName: functionAppName
+    storageAccountName: storage.outputs.storageAccountName
+    eventGridTopicName: storage.outputs.eventGridTopicName
+    keyVaultName: keyVaultName
+    cosmosDbAccountName: cosmosDbAccountName
+    appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString
+    keyVaultUri: keyvault.outputs.keyVaultUri
+    cosmosDbEndpoint: storage.outputs.cosmosDbEndpoint
+  }
+  dependsOn: [
+    compute
+  ]
+}
+
 module staticwebapp 'modules/staticwebapp.bicep' = {
   name: 'staticwebapp'
   params: {
@@ -178,6 +201,7 @@ output staticWebAppUrl string = staticwebapp.outputs.staticWebAppUrl
 output resourceGroupName string = resourceGroup().name
 output apiAppUrl string = compute.outputs.apiAppUrl
 output mcpAppUrl string = mcp.outputs.mcpAppUrl
+output functionAppUrl string = functions.outputs.functionAppUrl
 output appInsightsConnectionString string = monitoring.outputs.appInsightsConnectionString
 output cosmosDbEndpoint string = storage.outputs.cosmosDbEndpoint
 output keyVaultUri string = keyvault.outputs.keyVaultUri
