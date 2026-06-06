@@ -205,6 +205,9 @@ jobs:
           az account list --output table
           az group show -n rg-xenobiasoft-sudoku-prod-westus2 --output table
 
+      - name: Register required resource providers
+        run: az provider register --namespace Microsoft.EventGrid --wait
+
       - name: Deploy Bicep template
         id: deploy
         uses: azure/arm-deploy@v2
