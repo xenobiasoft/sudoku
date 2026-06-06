@@ -9,6 +9,7 @@ on:
 env:
   AZURE_API_NAME: XenobiasoftSudokuApi-prod
   AZURE_MCP_NAME: XenobiasoftSudokuMcp-prod
+  AZURE_FUNCTIONS_NAME: XenobiasoftSudokuFunctions-prod
   AZURE_SWA_NAME: swa-sudoku-xenobiasoft-prod
   DOTNET_VERSION: "10.x"
 
@@ -73,6 +74,9 @@ jobs:
       - name: Publish MCP Server
         run: dotnet publish src/backend/Sudoku.McpServer/Sudoku.McpServer.csproj --configuration Release --output ${{ github.workspace }}/publish-mcp --no-restore --no-build
 
+      - name: Publish Functions
+        run: dotnet publish src/backend/Sudoku.Functions/Sudoku.Functions.csproj --configuration Release --output ${{ github.workspace }}/publish-functions --no-restore --no-build
+
       - name: Upload publish-api artifact
         uses: actions/upload-artifact@v4
         with:
@@ -84,6 +88,12 @@ jobs:
         with:
           name: publish-mcp
           path: ${{ github.workspace }}/publish-mcp
+
+      - name: Upload publish-functions artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: publish-functions
+          path: ${{ github.workspace }}/publish-functions
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -284,6 +294,18 @@ jobs:
         with:
           app-name: ${{ env.AZURE_MCP_NAME }}
           package: ${{ github.workspace }}/publish-mcp
+
+      - name: Download publish-functions artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: publish-functions
+          path: ${{ github.workspace }}/publish-functions
+
+      - name: Deploy Functions
+        uses: Azure/functions-action@v1
+        with:
+          app-name: ${{ env.AZURE_FUNCTIONS_NAME }}
+          package: ${{ github.workspace }}/publish-functions
 
   deploy-swa:
     needs: [deploy-infra, build-frontend, changes]

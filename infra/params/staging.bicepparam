@@ -7,6 +7,7 @@ param environment = 'staging'
 // Compute
 param appServicePlanName = 'XenobiasoftServicePlan-staging'
 param apiAppName = 'XenobiasoftSudokuApi-staging'
+param functionAppName = 'XenobiasoftSudokuFunctions-staging'
 param appServicePlanSku = 'B1'
 
 // Static Web App — uses the same prod SWA; staging environment slot uses

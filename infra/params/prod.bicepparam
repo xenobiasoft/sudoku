@@ -8,6 +8,7 @@ param environment = 'prod'
 param appServicePlanName = 'XenobiasoftServicePlan-prod'
 param apiAppName = 'XenobiasoftSudokuApi-prod'
 param mcpAppName = 'XenobiasoftSudokuMcp-prod'
+param functionAppName = 'XenobiasoftSudokuFunctions-prod'
 param appServicePlanSku = 'B1'
 
 // Static Web App
