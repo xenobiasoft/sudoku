@@ -26,9 +26,6 @@ param functionAppName string
 @description('Name of the existing storage account reused for the Functions runtime and puzzle blobs.')
 param storageAccountName string
 
-@description('Name of the existing Event Grid system topic to subscribe to (created in the storage module).')
-param eventGridTopicName string
-
 @description('Name of the existing Key Vault (for the Key Vault Secrets User role assignment).')
 param keyVaultName string
 
@@ -55,10 +52,6 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' existing = {
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' existing = {
   name: storageAccountName
-}
-
-resource eventGridTopic 'Microsoft.EventGrid/systemTopics@2022-06-15' existing = {
-  name: eventGridTopicName
 }
 
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
@@ -122,39 +115,12 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Event Grid subscription — BlobDeleted on the sudoku-puzzles container
-//                           → PuzzleReplenishFunction
-//
-// Uses the AzureFunction destination so it binds directly to the function
-// resource (no host key / webhook URL required).
-// ---------------------------------------------------------------------------
-
-resource puzzleReplenishSubscription 'Microsoft.EventGrid/systemTopics/eventSubscriptions@2022-06-15' = {
-  name: 'puzzle-replenish-sub'
-  parent: eventGridTopic
-  properties: {
-    destination: {
-      endpointType: 'AzureFunction'
-      properties: {
-        resourceId: '${functionApp.id}/functions/PuzzleReplenishFunction'
-        maxEventsPerBatch: 1
-        preferredBatchSizeInKilobytes: 64
-      }
-    }
-    filter: {
-      includedEventTypes: [
-        'Microsoft.Storage.BlobDeleted'
-      ]
-      subjectBeginsWith: '/blobServices/default/containers/sudoku-puzzles/'
-    }
-    eventDeliverySchema: 'EventGridSchema'
-    retryPolicy: {
-      maxDeliveryAttempts: 30
-      eventTimeToLiveInMinutes: 1440
-    }
-  }
-}
+// NOTE: The Event Grid subscription (BlobDeleted → PuzzleReplenishFunction) is
+// NOT created here. Event Grid validates that the target function exists when
+// the subscription is created, but infra is deployed before the function code,
+// so on a fresh Function App the function doesn't exist yet and validation
+// fails with NotFound. The subscription is instead created in the deploy-apps
+// pipeline step, after the function package is published.
 
 // ---------------------------------------------------------------------------
 // RBAC — grant the Function App's managed identity the same data-plane access
