@@ -347,6 +347,19 @@ jobs:
 
           ENDPOINT="https://${FUNC_APP}.azurewebsites.net/runtime/webhooks/eventgrid?functionName=${FUNC_NAME}&code=${SYSKEY}"
 
+          # The system key persists in Azure Storage across deployments, so its
+          # presence doesn't mean the newly-deployed app is ready. Poll the
+          # webhook endpoint directly until the runtime answers (non-404/non-000).
+          for i in {1..10}; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$ENDPOINT" || echo "000")
+            if [ "$HTTP_STATUS" != "404" ] && [ "$HTTP_STATUS" != "000" ]; then
+              echo "Webhook endpoint is responding (HTTP $HTTP_STATUS)."
+              break
+            fi
+            echo "Waiting for webhook endpoint to be ready ($i/10)..."
+            sleep 15
+          done
+
           az eventgrid system-topic event-subscription create \
             --name puzzle-replenish-sub \
             --system-topic-name "$TOPIC" \
