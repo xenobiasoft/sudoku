@@ -13,7 +13,8 @@ builder.Host.UseSerilog((context, services, config) =>
         .Enrich.FromLogContext()
         .Enrich.WithMachineName()
         .Enrich.WithThreadId()
-        .Enrich.WithEnvironmentName());
+        .Enrich.WithEnvironmentName(),
+    writeToProviders: true);
 
 builder.AddServiceDefaults();
 
