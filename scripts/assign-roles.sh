@@ -20,36 +20,32 @@ RESOURCE_GROUP="rg-xenobiasoft-sudoku-prod-westus2"
 
 DEVELOPER_OID="79d81279-ad74-4496-a1bc-32636c40c0e3"
 
-WEB_APP_NAME="XenobiasoftSudoku-prod"
 API_APP_NAME="XenobiasoftSudokuApi-prod"
 
 KEY_VAULT_NAME="kv-xenobiasoft-prod"
 COSMOS_ACCOUNT_NAME="cosmos-sudoku-prod"
 APP_CONFIG_NAME="appcs-xenobiasoft-prod"
+STORAGE_ACCOUNT_NAME="stxenobiasoftprod"
 
 # Built-in role definition IDs
 KEY_VAULT_SECRETS_USER="4633458b-17de-408a-b874-0445c86b69e0"       # Read secret values only
 APP_CONFIG_DATA_READER="516239f1-63e1-4d78-a4de-a74fb236a071"       # Read App Configuration keys
 COSMOS_DATA_CONTRIBUTOR="00000000-0000-0000-0000-000000000002"      # Cosmos DB Built-in Data Contributor (SQL)
+STORAGE_BLOB_DATA_CONTRIBUTOR="ba92f5b4-2d11-453d-a403-e96b0029c9fe" # Read/write blob data
 
 echo "Fetching managed identity principal IDs..."
-WEB_APP_PRINCIPAL=$(az webapp identity show \
-  --name "$WEB_APP_NAME" \
-  --resource-group "$RESOURCE_GROUP" \
-  --query principalId --output tsv)
-
 API_APP_PRINCIPAL=$(az webapp identity show \
   --name "$API_APP_NAME" \
   --resource-group "$RESOURCE_GROUP" \
   --query principalId --output tsv)
 
-echo "  Blazor app principal: $WEB_APP_PRINCIPAL"
 echo "  API app principal:    $API_APP_PRINCIPAL"
 echo ""
 
 KEY_VAULT_ID="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.KeyVault/vaults/$KEY_VAULT_NAME"
 APP_CONFIG_ID="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.AppConfiguration/configurationStores/$APP_CONFIG_NAME"
 COSMOS_ID="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.DocumentDB/databaseAccounts/$COSMOS_ACCOUNT_NAME"
+STORAGE_ID="/subscriptions/$SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.Storage/storageAccounts/$STORAGE_ACCOUNT_NAME"
 
 assign_role() {
   local description=$1
@@ -102,6 +98,13 @@ echo "Cosmos DB — Built-in Data Contributor (API only)"
 echo "---------------------------------------------------------------------"
 assign_cosmos_role "API     → Cosmos DB" "$API_APP_PRINCIPAL"
 assign_cosmos_role "DevEng 	→ Cosmos DB" "$DEVELOPER_OID"
+
+echo ""
+echo "---------------------------------------------------------------------"
+echo "Storage — Blob Data Contributor (read/write game and puzzle blobs)"
+echo "---------------------------------------------------------------------"
+assign_role "API      → Storage Blob Data Contributor" "$API_APP_PRINCIPAL" "$STORAGE_BLOB_DATA_CONTRIBUTOR" "$STORAGE_ID"
+assign_role "DevEng   → Storage Blob Data Contributor" "$DEVELOPER_OID"    "$STORAGE_BLOB_DATA_CONTRIBUTOR" "$STORAGE_ID"
 
 echo ""
 echo "Done! All role assignments are in place for '$RESOURCE_GROUP'."
