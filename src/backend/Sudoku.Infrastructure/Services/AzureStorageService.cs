@@ -111,7 +111,13 @@ public class AzureStorageService(BlobServiceClient blobServiceClient, ILogger<Az
     private async Task<BlobContainerClient> GetContainerClientAsync(string containerName)
     {
         var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-        await containerClient.CreateIfNotExistsAsync();
+
+        try
+        {
+            await containerClient.CreateIfNotExistsAsync();
+        }
+        catch
+        { }
 
         return containerClient;
     }
