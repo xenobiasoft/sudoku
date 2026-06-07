@@ -307,6 +307,18 @@ jobs:
           app-name: ${{ env.AZURE_FUNCTIONS_NAME }}
           package: ${{ github.workspace }}/publish-functions
 
+  deploy-event-grid:
+    needs: deploy-apps
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
       # Created here (not in Bicep) because the subscription must point at a live
       # function. We use the WebHook destination against the Functions Event Grid
       # extension URL rather than the AzureFunction destination: the latter
