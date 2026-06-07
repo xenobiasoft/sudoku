@@ -58,13 +58,13 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
 
         foreach (var strategy in strategies.OrderBy(x => x.Order))
         {
-            logger.LogDebug($"Solving with {strategy.GetType().Name}");
+            logger.LogDebug("Solving with {StrategyName}", strategy.GetType().Name);
 
             changesMade = changesMade || strategy.SolvePuzzle(_puzzle);
 
             if (!_puzzle.IsValid())
             {
-                logger.LogWarning($"Failure in solving puzzle using {strategy.GetType().Name} strategy");
+                logger.LogWarning("Failure in solving puzzle using {StrategyName} strategy", strategy.GetType().Name);
                 await UndoAsync();
             }
 
@@ -101,7 +101,7 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
         }
 
         var value = cell.PossibleValues.ElementAt(rnd.Next(cell.PossibleValues.Count));
-        logger.LogDebug($"Setting cell at ({cell.Row}, {cell.Column}) to {value}");
+        logger.LogDebug("Setting cell at ({Row}, {Column}) to {Value}", cell.Row, cell.Column, value);
         cell.SetValue(value);
     }
 
