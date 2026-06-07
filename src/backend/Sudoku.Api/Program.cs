@@ -1,10 +1,19 @@
 using Azure.Identity;
-using Microsoft.AspNetCore.HttpLogging;
 using Microsoft.OpenApi;
+using Serilog;
 using Sudoku.Api;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, config) =>
+    config
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .Enrich.WithMachineName()
+        .Enrich.WithThreadId()
+        .Enrich.WithEnvironmentName());
 
 builder.AddServiceDefaults();
 
@@ -26,11 +35,6 @@ if (!builder.Environment.IsDevelopment())
 builder.AddAzureCosmosClient("CosmosDb");
 
 builder.Services.AddApiDefaults(builder.Configuration, builder.Environment);
-
-builder.Services.AddHttpLogging(logging =>
-{
-    logging.LoggingFields = HttpLoggingFields.All;
-});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -61,6 +65,8 @@ if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("EnableS
     });
 }
 
+app.UseSerilogRequestLogging();
+
 app.UseHttpsRedirection();
 
 app.UseCors("AllowAll");
@@ -68,8 +74,6 @@ app.UseCors("AllowAll");
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.UseHttpLogging();
 
 app.MapHealthChecks("/health-check");
 
