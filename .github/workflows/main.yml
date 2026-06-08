@@ -302,7 +302,7 @@ jobs:
           path: ${{ github.workspace }}/publish-functions
 
       - name: Deploy Functions
-        uses: Azure/functions-action@v1
+        uses: azure/webapps-deploy@v3
         with:
           app-name: ${{ env.AZURE_FUNCTIONS_NAME }}
           package: ${{ github.workspace }}/publish-functions
