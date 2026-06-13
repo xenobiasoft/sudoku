@@ -363,15 +363,15 @@ jobs:
           set -euo pipefail
           cd "${{ github.workspace }}/publish-functions"
           zip -r ../functions.zip .
-          # Flex Consumption uses OneDeploy (the package is uploaded to the
-          # configured deployment blob container) — the legacy Kudu config-zip
-          # path does not apply. No Oryx build runs against this pre-built
-          # publish output.
-          az functionapp deploy \
+          # Flex Consumption deploys the package to its configured deployment
+          # blob container via `az functionapp deployment source config-zip`
+          # (the documented Flex method). `az functionapp deploy --type zip`
+          # targets the OneDeploy endpoint and returns HTTP 415 on Flex apps.
+          # No --build-remote: the .NET isolated publish output is pre-built.
+          az functionapp deployment source config-zip \
             --name "${{ env.AZURE_FUNCTIONS_NAME }}" \
             --resource-group "rg-xenobiasoft-sudoku-prod-westus2" \
-            --src-path "${{ github.workspace }}/functions.zip" \
-            --type zip
+            --src "${{ github.workspace }}/functions.zip"
 
   deploy-event-grid:
     needs: deploy-apps
