@@ -26,9 +26,6 @@ param mcpAppName string
 @description('Name of the Azure Functions app (puzzle-pool background jobs).')
 param functionAppName string
 
-@description('Name of the Flex Consumption plan that hosts the Azure Functions app.')
-param functionPlanName string
-
 @description('App Service Plan SKU.')
 param appServicePlanSku string = 'B1'
 
@@ -168,7 +165,7 @@ module functions 'modules/functions.bicep' = {
   params: {
     location: location
     environment: environment
-    functionPlanName: functionPlanName
+    appServicePlanName: appServicePlanName
     functionAppName: functionAppName
     storageAccountName: storage.outputs.storageAccountName
     keyVaultName: keyVaultName
@@ -177,6 +174,9 @@ module functions 'modules/functions.bicep' = {
     keyVaultUri: keyvault.outputs.keyVaultUri
     cosmosDbEndpoint: storage.outputs.cosmosDbEndpoint
   }
+  dependsOn: [
+    compute
+  ]
 }
 
 module staticwebapp 'modules/staticwebapp.bicep' = {
