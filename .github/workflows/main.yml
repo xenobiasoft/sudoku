@@ -228,23 +228,47 @@ jobs:
           RG="rg-xenobiasoft-sudoku-prod-westus2"
           APP="${AZURE_FUNCTIONS_NAME}"
           FLEX_PLAN="XenobiasoftFunctionsPlan-prod"
+          COSMOS="cosmos-sudoku-prod"
 
-          # Detect via an RG-scoped list + client-side filter rather than
-          # `az functionapp show -n <app>`: the latter intermittently returned an
-          # empty appServicePlanId in CI, which silently routed an existing app
-          # down the "create fresh" path and let Bicep hit Conflict 59602 again.
-          # The list query returns an empty string (exit 0) when the app is
-          # absent, so `set -e` only trips on a genuine CLI/auth failure.
+          # Existence via an RG-scoped list + client-side filter (returns an
+          # empty string / exit 0 when absent, so `set -e` only trips on a real
+          # CLI/auth failure). The plan is then read from properties.serverFarmId
+          # via `az resource show`: `az functionapp [show|list] --query
+          # appServicePlanId` returns null for Flex Consumption apps (and was
+          # empty in CI for the B1 app too), which previously mis-routed an
+          # existing app down the delete-or-create-fresh paths.
           APP_ID=$(az functionapp list -g "$RG" --query "[?name=='$APP'].id | [0]" -o tsv)
-          PLAN_ID=$(az functionapp list -g "$RG" --query "[?name=='$APP'].appServicePlanId | [0]" -o tsv)
 
           if [ -z "$APP_ID" ]; then
             echo "No existing Functions app; Bicep will create it fresh on FC1."
-          elif [[ "$PLAN_ID" == */"$FLEX_PLAN" ]]; then
-            echo "App already on Flex plan ($FLEX_PLAN); no recreate needed."
           else
-            echo "Existing app is on a non-Flex plan ($PLAN_ID); deleting so Bicep can recreate it on FC1."
-            az functionapp delete --ids "$APP_ID"
+            PLAN_ID=$(az resource show --ids "$APP_ID" --query "properties.serverFarmId" -o tsv)
+            if [[ "$PLAN_ID" == */"$FLEX_PLAN" ]]; then
+              echo "App already on Flex plan ($FLEX_PLAN); no recreate needed."
+            else
+              echo "Existing app is on a non-Flex plan ($PLAN_ID); deleting so Bicep can recreate it on FC1."
+              # The recreated app gets a NEW system-assigned principal. Azure
+              # forbids updating an existing role assignment's principalId, so the
+              # assignments tied to the old principal must be removed first or
+              # Bicep fails with RoleAssignmentUpdateNotPermitted. Capture the old
+              # principal's assignment ids while it still resolves, then delete.
+              OLD_PRINCIPAL=$(az functionapp show --ids "$APP_ID" --query identity.principalId -o tsv 2>/dev/null || true)
+              STALE_RBAC=""
+              STALE_COSMOS=""
+              if [ -n "$OLD_PRINCIPAL" ] && [ "$OLD_PRINCIPAL" != "null" ]; then
+                STALE_RBAC=$(az role assignment list --all --assignee "$OLD_PRINCIPAL" --query "[].id" -o tsv 2>/dev/null || true)
+                STALE_COSMOS=$(az cosmosdb sql role assignment list --account-name "$COSMOS" -g "$RG" --query "[?principalId=='$OLD_PRINCIPAL'].id" -o tsv 2>/dev/null || true)
+              fi
+              az functionapp delete --ids "$APP_ID"
+              for id in $STALE_RBAC; do
+                echo "Removing stale Azure RBAC assignment $id"
+                az role assignment delete --ids "$id" 2>/dev/null || true
+              done
+              for raid in $STALE_COSMOS; do
+                echo "Removing stale Cosmos SQL role assignment $raid"
+                az cosmosdb sql role assignment delete --account-name "$COSMOS" -g "$RG" --role-assignment-id "$raid" --yes 2>/dev/null || true
+              done
+            fi
           fi
 
       - name: Deploy Bicep template
