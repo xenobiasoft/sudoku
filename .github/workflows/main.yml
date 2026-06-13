@@ -94,6 +94,12 @@ jobs:
         with:
           name: publish-functions
           path: ${{ github.workspace }}/publish-functions
+          # The .NET isolated publish output includes a hidden `.azurefunctions`
+          # directory with the worker metadata. upload-artifact@v4 excludes
+          # hidden files by default, which drops it from the package and makes
+          # Flex Consumption reject the deploy ("Cannot find required
+          # .azurefunctions directory at root level in the .zip package").
+          include-hidden-files: true
 
   build-frontend:
     runs-on: ubuntu-latest
