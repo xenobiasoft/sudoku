@@ -181,6 +181,15 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2024-04-01' = {
     ConnectionStrings__AzureKeyVault: keyVaultUri
     CosmosDb__UseManagedIdentity: 'true'
     CosmosDb__AccountEndpoint: cosmosDbEndpoint
+
+    // Application blob storage (Sudoku.Infrastructure AddBlobStorageClient).
+    // Distinct from AzureWebJobsStorage (the Functions host runtime store):
+    // the app's own BlobServiceClient binds the "AzureStorage" options section
+    // and connects to the puzzle-pool container via the managed identity
+    // (Storage Blob Data Owner is granted below). Without these the worker
+    // throws "Blob storage is not configured" at startup and crash-loops.
+    AzureStorage__UseManagedIdentity: 'true'
+    AzureStorage__AccountName: storageAccount.name
   }
 }
 
