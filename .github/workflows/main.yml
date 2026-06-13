@@ -227,17 +227,24 @@ jobs:
           set -euo pipefail
           RG="rg-xenobiasoft-sudoku-prod-westus2"
           APP="${AZURE_FUNCTIONS_NAME}"
-          PLAN_ID=$(az functionapp show -n "$APP" -g "$RG" --query appServicePlanId -o tsv 2>/dev/null || true)
-          if [ -n "$PLAN_ID" ]; then
-            TIER=$(az appservice plan show --ids "$PLAN_ID" --query sku.tier -o tsv 2>/dev/null || true)
-            if [ "$TIER" != "FlexConsumption" ]; then
-              echo "Existing app is on '$TIER' (not Flex); deleting so Bicep can recreate it on FC1."
-              az functionapp delete -n "$APP" -g "$RG"
-            else
-              echo "App already on FlexConsumption; no recreate needed."
-            fi
+          FLEX_PLAN="XenobiasoftFunctionsPlan-prod"
+
+          # Detect via an RG-scoped list + client-side filter rather than
+          # `az functionapp show -n <app>`: the latter intermittently returned an
+          # empty appServicePlanId in CI, which silently routed an existing app
+          # down the "create fresh" path and let Bicep hit Conflict 59602 again.
+          # The list query returns an empty string (exit 0) when the app is
+          # absent, so `set -e` only trips on a genuine CLI/auth failure.
+          APP_ID=$(az functionapp list -g "$RG" --query "[?name=='$APP'].id | [0]" -o tsv)
+          PLAN_ID=$(az functionapp list -g "$RG" --query "[?name=='$APP'].appServicePlanId | [0]" -o tsv)
+
+          if [ -z "$APP_ID" ]; then
+            echo "No existing Functions app; Bicep will create it fresh on FC1."
+          elif [[ "$PLAN_ID" == */"$FLEX_PLAN" ]]; then
+            echo "App already on Flex plan ($FLEX_PLAN); no recreate needed."
           else
-            echo "No existing Functions app; Bicep will create it fresh."
+            echo "Existing app is on a non-Flex plan ($PLAN_ID); deleting so Bicep can recreate it on FC1."
+            az functionapp delete --ids "$APP_ID"
           fi
 
       - name: Deploy Bicep template
