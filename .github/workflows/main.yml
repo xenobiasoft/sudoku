@@ -215,6 +215,31 @@ jobs:
           az account list --output table
           az group show -n rg-xenobiasoft-sudoku-prod-westus2 --output table
 
+      # Flex Consumption does not support in-place migration of an existing
+      # Function App from another plan (Azure returns Conflict 59602). If the
+      # app currently lives on a non-Flex plan, delete it so the Bicep deploy
+      # can recreate it fresh on the FC1 plan. Idempotent: once the app is on
+      # FlexConsumption this is a no-op. Does not touch the shared B1 plan that
+      # hosts the API and MCP apps.
+      - name: Recreate Functions app on Flex (delete if on a non-Flex plan)
+        shell: bash
+        run: |
+          set -euo pipefail
+          RG="rg-xenobiasoft-sudoku-prod-westus2"
+          APP="${AZURE_FUNCTIONS_NAME}"
+          PLAN_ID=$(az functionapp show -n "$APP" -g "$RG" --query appServicePlanId -o tsv 2>/dev/null || true)
+          if [ -n "$PLAN_ID" ]; then
+            TIER=$(az appservice plan show --ids "$PLAN_ID" --query sku.tier -o tsv 2>/dev/null || true)
+            if [ "$TIER" != "FlexConsumption" ]; then
+              echo "Existing app is on '$TIER' (not Flex); deleting so Bicep can recreate it on FC1."
+              az functionapp delete -n "$APP" -g "$RG"
+            else
+              echo "App already on FlexConsumption; no recreate needed."
+            fi
+          else
+            echo "No existing Functions app; Bicep will create it fresh."
+          fi
+
       - name: Deploy Bicep template
         id: deploy
         uses: azure/arm-deploy@v2
