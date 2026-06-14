@@ -286,7 +286,16 @@ jobs:
           parameters: ./infra/params/prod.bicepparam
           scope: resourcegroup
           failOnStdErr: false
-          
+
+      # Role assignments are not declared in Bicep (they go stale on resource
+      # recreate). They live in scripts/assign-roles.sh — the single source of
+      # truth — and are applied here, after Bicep has (re)created the managed
+      # identities. The script is idempotent and exits non-zero on real failure.
+      # See .claude/rules/rbac-role-assignments.md.
+      - name: Assign managed identity roles
+        shell: bash
+        run: bash scripts/assign-roles.sh
+
       - name: DNS check (scm endpoint)
         shell: bash
         run: |
