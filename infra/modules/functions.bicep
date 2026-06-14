@@ -43,12 +43,6 @@ param functionAppName string
 @description('Name of the existing storage account reused for the Functions runtime, deployment package and puzzle blobs.')
 param storageAccountName string
 
-@description('Name of the existing Key Vault (for the Key Vault Secrets User role assignment).')
-param keyVaultName string
-
-@description('Name of the existing Cosmos DB account (for the SQL data-plane role assignment).')
-param cosmosDbAccountName string
-
 param appInsightsConnectionString string
 param keyVaultUri string
 param cosmosDbEndpoint string
@@ -80,14 +74,6 @@ var deploymentContainerName = 'function-deployment'
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' existing = {
   name: storageAccountName
-}
-
-resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' existing = {
-  name: keyVaultName
-}
-
-resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' existing = {
-  name: cosmosDbAccountName
 }
 
 resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-01-01' existing = {
@@ -199,53 +185,11 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2024-04-01' = {
 // the Event Grid-triggered function.
 
 // ---------------------------------------------------------------------------
-// RBAC — grant the Function App's managed identity the data-plane access it
-// needs.
-//
-//   Storage Blob Data Owner        (b7e6dc6d-f1e8-4753-8033-0f276bb0955b)
-//     Host storage (AzureWebJobsStorage), the deployment container, and
-//     read/write of puzzle blobs in the sudoku-puzzles container. Owner (vs
-//     Contributor) is used because the Flex host and timer-singleton leases
-//     need full blob data-plane access.
-//   Key Vault Secrets User         (4633458b-17de-408a-b874-0445c86b69e6)
-//     Resolve Key Vault references / configuration secrets.
-//   Cosmos DB Built-in Data Contributor (00000000-...-000000000002)
-//     Cosmos data-plane access (SQL role assignment, not Azure RBAC).
+// RBAC NOTE: This Function App's managed identity needs Storage Blob Data Owner,
+// Key Vault Secrets User, and Cosmos DB data-plane access. Those grants are NOT
+// declared here — all role assignments live in scripts/assign-roles.sh (see
+// .claude/rules/rbac-role-assignments.md). Run that script after deploying.
 // ---------------------------------------------------------------------------
-
-var storageBlobDataOwnerRoleId = 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-var keyVaultSecretsUserRoleId  = '4633458b-17de-408a-b874-0445c86b69e6'
-var cosmosDataContributorRoleId = '00000000-0000-0000-0000-000000000002'
-
-resource blobDataOwnerAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: storageAccount
-  name: guid(storageAccount.id, functionApp.id, storageBlobDataOwnerRoleId)
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', storageBlobDataOwnerRoleId)
-    principalId: functionApp.identity.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource keyVaultSecretsUserAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: keyVault
-  name: guid(keyVault.id, functionApp.id, keyVaultSecretsUserRoleId)
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', keyVaultSecretsUserRoleId)
-    principalId: functionApp.identity.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource cosmosDataContributorAssignment 'Microsoft.DocumentDB/databaseAccounts/sqlRoleAssignments@2024-05-15' = {
-  parent: cosmosDbAccount
-  name: guid(cosmosDbAccount.id, functionApp.id, cosmosDataContributorRoleId)
-  properties: {
-    roleDefinitionId: '${cosmosDbAccount.id}/sqlRoleDefinitions/${cosmosDataContributorRoleId}'
-    principalId: functionApp.identity.principalId
-    scope: cosmosDbAccount.id
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Outputs
