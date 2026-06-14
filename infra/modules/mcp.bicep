@@ -15,9 +15,6 @@ param environment string
 param appServicePlanName string
 param mcpAppName string
 
-@description('Log Analytics workspace ARM resource ID (for the role assignment scope).')
-param logAnalyticsWorkspaceId string
-
 @description('Log Analytics workspace GUID (customerId) — passed to the app as AppInsights__WorkspaceId.')
 param logAnalyticsWorkspaceCustomerId string
 
@@ -104,38 +101,11 @@ resource mcpAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
 }
 
 // ---------------------------------------------------------------------------
-// RBAC — grant Managed Identity read access to Log Analytics
-//
-// Log Analytics Reader  (73c42c96-874c-492b-b04d-ab87d138a893)
-//   Allows QueryWorkspace calls against the workspace.
-//
-// Monitoring Reader     (43d0d8ad-25c7-4714-9337-8ba259a9fe05)
-//   Allows reading metrics from the Application Insights resource.
+// RBAC NOTE: This app's managed identity needs Log Analytics Reader and
+// Monitoring Reader (RG scope) to query Application Insights. Those grants are
+// NOT declared here — all role assignments live in scripts/assign-roles.sh
+// (see .claude/rules/rbac-role-assignments.md). Run that script after deploying.
 // ---------------------------------------------------------------------------
-
-var logAnalyticsReaderRoleId = '73c42c96-874c-492b-b04d-ab87d138a893'
-var monitoringReaderRoleId   = '43d0d8ad-25c7-4714-9337-8ba259a9fe05'
-
-resource logAnalyticsReaderAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  // Scope to the workspace so the identity can only query this workspace
-  scope: resourceGroup()
-  name: guid(logAnalyticsWorkspaceId, mcpApp.id, logAnalyticsReaderRoleId)
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', logAnalyticsReaderRoleId)
-    principalId: mcpApp.identity.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource monitoringReaderAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: resourceGroup()
-  name: guid(logAnalyticsWorkspaceId, mcpApp.id, monitoringReaderRoleId)
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', monitoringReaderRoleId)
-    principalId: mcpApp.identity.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Outputs

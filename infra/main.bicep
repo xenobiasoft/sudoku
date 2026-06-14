@@ -156,7 +156,6 @@ module mcp 'modules/mcp.bicep' = {
     environment: environment
     appServicePlanName: appServicePlanName
     mcpAppName: mcpAppName
-    logAnalyticsWorkspaceId: monitoring.outputs.logAnalyticsWorkspaceId
     logAnalyticsWorkspaceCustomerId: monitoring.outputs.logAnalyticsWorkspaceCustomerId
     appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString
     keyVaultUri: keyvault.outputs.keyVaultUri
@@ -171,8 +170,6 @@ module functions 'modules/functions.bicep' = {
     functionPlanName: functionPlanName
     functionAppName: functionAppName
     storageAccountName: storage.outputs.storageAccountName
-    keyVaultName: keyVaultName
-    cosmosDbAccountName: cosmosDbAccountName
     appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString
     keyVaultUri: keyvault.outputs.keyVaultUri
     cosmosDbEndpoint: storage.outputs.cosmosDbEndpoint
