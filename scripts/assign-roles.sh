@@ -3,8 +3,9 @@
 # Azure RBAC Role Assignments – Sudoku Production
 # =============================================================================
 # Run this script once per environment to grant the app service managed
-# identities the permissions they need. It is safe to re-run — Azure silently
-# skips assignments that already exist.
+# identities the permissions they need. It is safe to re-run — assignments that
+# already exist are detected and skipped. Genuine failures are printed and the
+# script exits non-zero.
 #
 # Usage:
 #   chmod +x assign-roles.sh
@@ -14,6 +15,16 @@
 #   - Azure CLI installed and logged in (az login)
 #   - Owner or User Access Administrator role on the resource group
 # =============================================================================
+
+# -u: fail on unset variables (catches typos / missing principals).
+# pipefail: a failing command in a pipeline fails the pipeline.
+# (Intentionally NOT -e: we attempt every assignment and report failures at the
+# end rather than aborting on the first error.)
+set -uo pipefail
+
+# Set to 1 by the helpers when an assignment genuinely fails, so the script can
+# exit non-zero at the end instead of silently reporting success.
+FAILED=0
 
 SUBSCRIPTION_ID="c0c21e76-a03c-4747-af34-0720b273ff00"
 RESOURCE_GROUP="rg-xenobiasoft-sudoku-prod-westus2"
@@ -71,28 +82,52 @@ assign_role() {
   local role=$3
   local scope=$4
   echo "Assigning: $description"
-  az role assignment create \
+  if [[ -z "$assignee" ]]; then
+    echo "  FAILED: empty principal ID — is the managed identity enabled on this app?"
+    FAILED=1
+    return
+  fi
+  local output
+  if output=$(az role assignment create \
     --assignee "$assignee" \
     --role "$role" \
     --scope "$scope" \
-    --output none 2>/dev/null \
-    && echo "  OK" \
-    || echo "  Already exists or skipped"
+    --output none 2>&1); then
+    echo "  OK"
+  elif grep -qiE 'already exists|RoleAssignmentExists' <<<"$output"; then
+    echo "  Already exists — skipped"
+  else
+    echo "  FAILED:"
+    sed 's/^/    /' <<<"$output"
+    FAILED=1
+  fi
 }
 
 assign_cosmos_role() {
   local description=$1
   local assignee=$2
   echo "Assigning: $description"
-  az cosmosdb sql role assignment create \
+  if [[ -z "$assignee" ]]; then
+    echo "  FAILED: empty principal ID — is the managed identity enabled on this app?"
+    FAILED=1
+    return
+  fi
+  local output
+  if output=$(az cosmosdb sql role assignment create \
     --account-name "$COSMOS_ACCOUNT_NAME" \
     --resource-group "$RESOURCE_GROUP" \
     --role-definition-id "$COSMOS_DATA_CONTRIBUTOR" \
     --principal-id "$assignee" \
     --scope "/" \
-    --output none 2>/dev/null \
-    && echo "  OK" \
-    || echo "  Already exists or skipped"
+    --output none 2>&1); then
+    echo "  OK"
+  elif grep -qiE 'already exists|exists' <<<"$output"; then
+    echo "  Already exists — skipped"
+  else
+    echo "  FAILED:"
+    sed 's/^/    /' <<<"$output"
+    FAILED=1
+  fi
 }
 
 echo "---------------------------------------------------------------------"
@@ -137,5 +172,9 @@ assign_role "MCP       → Log Analytics Reader" "$MCP_APP_PRINCIPAL" "$LOG_ANAL
 assign_role "MCP       → Monitoring Reader"    "$MCP_APP_PRINCIPAL" "$MONITORING_READER"    "$RESOURCE_GROUP_ID"
 
 echo ""
+if [[ "$FAILED" -ne 0 ]]; then
+  echo "FAILED: one or more role assignments did not complete — review the errors above."
+  exit 1
+fi
 echo "Done! All role assignments are in place for '$RESOURCE_GROUP'."
 echo ""
