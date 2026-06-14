@@ -1,104 +1,43 @@
-using DepenMock.Attributes;
 using DepenMock.Moq;
 using Microsoft.Azure.Functions.Worker;
-using Sudoku.Application.Interfaces;
-using Sudoku.Domain.ValueObjects;
 using Sudoku.Functions.Functions;
+using Sudoku.Functions.Services;
 
 namespace UnitTests.Functions;
 
-[LogOutput(LogOutputTiming.Always)]
 public class PuzzlePoolSeedFunctionTests : MoqBaseTestByType<PuzzlePoolSeedFunction>
 {
-    private readonly Mock<IPuzzlePoolService> _mockPuzzlePoolService;
-    private const int TargetPoolSize = 10;
+    private readonly Mock<IPuzzlePoolSeeder> _mockSeeder;
 
     public PuzzlePoolSeedFunctionTests()
     {
-        _mockPuzzlePoolService = Container.ResolveMock<IPuzzlePoolService>().AsMoq();
+        _mockSeeder = Container.ResolveMock<IPuzzlePoolSeeder>().AsMoq();
     }
 
     [Fact]
-    public async Task Run_WhenPoolBelowTarget_SeedsMissingPuzzlesForEachDifficulty()
+    public async Task Run_InvokesSeederOnce()
     {
         // Arrange
-        var currentCount = 7;
-        var expectedSeedCount = TargetPoolSize - currentCount;
-
-        _mockPuzzlePoolService.SetupGetAvailableCountReturns(currentCount);
-
         var sut = ResolveSut();
 
         // Act
         await sut.Run(CreateTimerInfo());
 
         // Assert
-        _mockPuzzlePoolService.VerifySeedCalledOnce(GameDifficulty.Easy, expectedSeedCount);
-        _mockPuzzlePoolService.VerifySeedCalledOnce(GameDifficulty.Medium, expectedSeedCount);
-        _mockPuzzlePoolService.VerifySeedCalledOnce(GameDifficulty.Hard, expectedSeedCount);
-        _mockPuzzlePoolService.VerifySeedCalledOnce(GameDifficulty.Expert, expectedSeedCount);
+        _mockSeeder.VerifySeedPoolCalledOnce();
     }
 
     [Fact]
-    public async Task Run_WhenPoolAtTarget_DoesNotSeedAnyPuzzles()
+    public async Task Run_LogsTriggerInformation()
     {
         // Arrange
-        _mockPuzzlePoolService.SetupGetAvailableCountReturns(TargetPoolSize);
-
         var sut = ResolveSut();
 
         // Act
         await sut.Run(CreateTimerInfo());
 
         // Assert
-        _mockPuzzlePoolService.VerifySeedNeverCalled();
-    }
-
-    [Fact]
-    public async Task Run_ChecksEachDifficultyExactlyOnce()
-    {
-        // Arrange
-        _mockPuzzlePoolService.SetupGetAvailableCountReturns(TargetPoolSize);
-
-        var sut = ResolveSut();
-
-        // Act
-        await sut.Run(CreateTimerInfo());
-
-        // Assert
-        _mockPuzzlePoolService.VerifyGetAvailableCountCalledOnce(GameDifficulty.Easy);
-        _mockPuzzlePoolService.VerifyGetAvailableCountCalledOnce(GameDifficulty.Medium);
-        _mockPuzzlePoolService.VerifyGetAvailableCountCalledOnce(GameDifficulty.Hard);
-        _mockPuzzlePoolService.VerifyGetAvailableCountCalledOnce(GameDifficulty.Expert);
-    }
-
-    [Theory]
-    [InlineData(0, 10)]
-    [InlineData(5, 5)]
-    [InlineData(9, 1)]
-    [InlineData(10, 0)]
-    public async Task Run_SeedsExactlyTheNumberNeededToReachTarget(int currentCount, int expectedSeedCount)
-    {
-        // Arrange
-        _mockPuzzlePoolService.SetupGetAvailableCountReturns(currentCount);
-
-        var sut = ResolveSut();
-
-        // Act
-        await sut.Run(CreateTimerInfo());
-
-        // Assert
-        if (expectedSeedCount > 0)
-        {
-            _mockPuzzlePoolService.VerifySeedCalledOnce(GameDifficulty.Easy, expectedSeedCount);
-            _mockPuzzlePoolService.VerifySeedCalledOnce(GameDifficulty.Medium, expectedSeedCount);
-            _mockPuzzlePoolService.VerifySeedCalledOnce(GameDifficulty.Hard, expectedSeedCount);
-            _mockPuzzlePoolService.VerifySeedCalledOnce(GameDifficulty.Expert, expectedSeedCount);
-        }
-        else
-        {
-            _mockPuzzlePoolService.VerifySeedNeverCalled();
-        }
+        Logger.InformationLogs().ContainsMessage("Puzzle pool seed function triggered");
     }
 
     private static TimerInfo CreateTimerInfo() => new();
