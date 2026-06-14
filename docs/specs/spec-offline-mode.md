@@ -16,7 +16,7 @@ Every gameplay action — creating a game, making moves, undo, reset, pause/resu
 **Non-Goals:**
 - Real-time multiplayer or cross-device sync (single-player only)
 - Conflict resolution for simultaneous edits from multiple devices
-- Porting the full puzzle solver to TypeScript (puzzle supply is handled via pre-fetch + static fallback)
+- Porting the full puzzle solver to TypeScript (puzzle supply is handled via non-destructive pre-fetch from the existing server puzzle pool + static fallback)
 - Service worker background sync (sync happens in-app on reconnect, not from a closed tab)
 
 ---
@@ -34,7 +34,7 @@ Every gameplay action — creating a game, making moves, undo, reset, pause/resu
 | FR-7 | The app displays an offline banner when there is no network connection |
 | FR-8 | All local changes sync to the server automatically when connectivity is restored |
 | FR-9 | A first-time user who opens the app offline can create a local profile and play a game |
-| FR-10 | The puzzle bank is replenished in the background when the player is online |
+| FR-10 | The puzzle bank is replenished in the background — by reading from the server puzzle pool — when the player is online |
 
 ---
 
@@ -42,10 +42,10 @@ Every gameplay action — creating a game, making moves, undo, reset, pause/resu
 
 - **Performance:** Puzzle retrieval from the local bank must complete in <50ms. The offline game engine (TypeScript) must process a move in <10ms.
 - **Reliability:** The IndexedDB store must not lose game state across crashes or forced reloads.
-- **Storage:** Each game is ~10KB in IndexedDB. 80 pre-fetched puzzles adds ~40KB. Well within browser storage limits.
+- **Storage:** Each game is ~10KB in IndexedDB. The pre-fetched bank holds up to ~10 puzzles per difficulty (~40 puzzles, ~20KB), bounded by the server pool size. Well within browser storage limits.
 - **Offline first install:** 10 hardcoded fallback puzzles per difficulty (~5KB total) are bundled in the app to serve new users who are offline from first launch.
 - **Sync correctness:** Operations replay in creation order per game. A sync failure on one game must not block sync of other games.
-- **Security:** The new `GET /api/puzzles/{difficulty}` endpoint is authenticated identically to all existing game endpoints.
+- **Security:** The new `GET /api/puzzles/{difficulty}` endpoint is authenticated identically to all existing game endpoints. The endpoint is read-only and non-destructive — it never removes puzzles from the shared pool.
 - **Accessibility:** The `OfflineBanner` must not obscure game content; it uses a slim fixed banner with sufficient colour contrast (WCAG AA).
 - **Observability:** Sync failures are surfaced to the player via a visual indicator on the affected game card. Sync errors are logged to the browser console.
 
@@ -57,14 +57,26 @@ Every gameplay action — creating a game, making moves, undo, reset, pause/resu
 
 The offline feature inserts a transparent routing layer inside `useGameService`. When online, the existing API paths are used unchanged; responses are mirrored into IndexedDB as a side effect. When offline, calls are routed to a pure TypeScript game engine that operates directly on `GameModel` objects stored in IndexedDB. A sync queue records every offline mutation. On reconnect, the queue drains by replaying operations against the existing REST API — no new backend mutation endpoints are needed.
 
-Puzzle supply is solved with a two-tier bank: 10 hardcoded puzzles per difficulty bundled in the app (static fallback), plus up to 50 per difficulty pre-fetched into IndexedDB from a new read-only `GET /api/puzzles/{difficulty}` endpoint.
+Puzzle supply is solved with a two-tier bank: 10 hardcoded puzzles per difficulty bundled in the app (static fallback), plus puzzles pre-fetched into IndexedDB from a new read-only `GET /api/puzzles/{difficulty}?count=N` endpoint. That endpoint reads the **existing** seeded `sudoku-puzzles` blob pool **non-destructively** (it does not dequeue/delete), so it never drains the shared online pool. The pre-fetched bank is therefore capped at the current pool size (~10 per difficulty).
+
+### Existing Puzzle Pool (context — already in production)
+
+The backend already maintains a pre-generated puzzle pool that this feature reuses rather than reinvents:
+
+- Blob container **`sudoku-puzzles`**, organized as `{difficulty}/{puzzleId}.json`, target **~10 puzzles per difficulty**.
+- Seeded and replenished by the **`Sudoku.Functions`** project: a nightly `TimerTrigger` seeder, an on-demand `POST /seed-puzzle-pool` HTTP function, and an Event Grid `PuzzleReplenishFunction` that tops the pool back up whenever a puzzle blob is removed.
+- `IPuzzlePoolService` exposes `GetAvailableCountAsync`, `SeedAsync`, and a **destructive** `DequeueAsync` (load + delete = exclusive claim).
+- `CreateGameCommandHandler` already creates games by dequeuing from the pool, falling back to `IPuzzleGenerator.GeneratePuzzleAsync` only when the pool is empty.
+
+The offline endpoint adds a **non-destructive** read path alongside the existing destructive dequeue, so online game creation and offline pre-fetch do not compete for the same blobs.
 
 ### Affected Projects
 
 - **Domain:** None
-- **Application:** New `GetPuzzleQuery` + `GetPuzzleQueryHandler`
-- **Infrastructure:** None
+- **Application:** New `GetPuzzlesQuery` + `GetPuzzlesQueryHandler` (batch)
+- **Infrastructure:** New non-destructive `PeekManyAsync(difficulty, count)` on `IPuzzlePoolService` / `PuzzlePoolService` (enumerate ids, load up to N, **do not delete**); reuses existing `IPuzzleBlobStorage.GetPuzzleIdsAsync` + `LoadAsync`
 - **API:** New `PuzzlesController` with one endpoint
+- **Functions:** None — the existing pool seeders/replenisher are unchanged
 - **React/Vite:** New engine, offline store, sync queue, network status hook, sync manager hook, offline banner
 
 ### Sequence Diagram — Online Path (unchanged)
@@ -167,9 +179,9 @@ interface PuzzleBankEntry {
 }
 ```
 
-### New API Response: `CellDto[]`
+### New API Response: `CellDto[][]`
 
-The new `GET /api/puzzles/{difficulty}` endpoint returns the existing `CellDto[]` type (81 elements) — no new DTO required.
+The new `GET /api/puzzles/{difficulty}?count=N` endpoint returns a batch of up to N puzzles, each an 81-element `CellDto[]` — i.e. `CellDto[][]`. It reuses the existing `CellDto` type, so no new DTO is required.
 
 ### Persistence Changes
 
@@ -184,16 +196,17 @@ The new `GET /api/puzzles/{difficulty}` endpoint returns the existing `CellDto[]
 
 ## 6. CQRS Components
 
-### New Query: `GetPuzzleQuery`
+### New Query: `GetPuzzlesQuery`
 
-- **Purpose:** Generate and return a single puzzle (81 cells) without creating a game record
-- **Input:** `GameDifficulty Difficulty`
-- **Output:** `Result<IEnumerable<CellDto>>`
-- **Handler:** Calls `IPuzzleGenerator.GeneratePuzzleAsync(difficulty)`, maps `Cell[]` → `CellDto[]`
-- **Side effects:** None — no persistence, no domain events
+- **Purpose:** Return a batch of pre-generated puzzles (each 81 cells) from the server pool to fill the client's offline bank, without creating a game record
+- **Input:** `GameDifficulty Difficulty, int Count`
+- **Output:** `Result<IReadOnlyList<IReadOnlyList<CellDto>>>` (up to `Count` puzzles)
+- **Handler:** Calls `IPuzzlePoolService.PeekManyAsync(difficulty, count)` (non-destructive read of the `sudoku-puzzles` pool), maps each `Cell[]` → `CellDto[]`
+- **Side effects:** None — explicitly no dequeue, no delete, no on-demand generation, no persistence, no domain events
+- **Empty/short pool:** Returns fewer than `Count` (possibly zero); the client falls back to its bundled hardcoded puzzles. The handler does not generate puzzles to top up.
 - **File locations:**
-  - `src/backend/Sudoku.Application/Queries/GetPuzzleQuery.cs`
-  - `src/backend/Sudoku.Application/Handlers/GetPuzzleQueryHandler.cs`
+  - `src/backend/Sudoku.Application/Queries/GetPuzzlesQuery.cs`
+  - `src/backend/Sudoku.Application/Handlers/GetPuzzlesQueryHandler.cs`
 
 ---
 
@@ -257,7 +270,7 @@ Player comes back online
 
 | Method | Route | Auth | Request | Response | Notes |
 |--------|-------|------|---------|----------|-------|
-| GET | `/api/puzzles/{difficulty}` | Required | — | `CellDto[]` (81 items) | New endpoint; difficulty is `Easy\|Medium\|Hard\|Expert` |
+| GET | `/api/puzzles/{difficulty}?count=N` | Required | — | `CellDto[][]` (≤ N puzzles, 81 cells each) | New endpoint; non-destructive read of the server pool; difficulty is `Easy\|Medium\|Hard\|Expert` |
 
 All existing mutation endpoints are unchanged. Sync replays against existing endpoints.
 
@@ -277,7 +290,7 @@ All existing mutation endpoints are unchanged. Sync replays against existing end
 
 ### Unit Tests (Backend)
 
-- `GetPuzzleQueryHandlerTests.cs` — verifies handler returns 81 cells, correct difficulty mapping, propagates generator errors
+- `GetPuzzlesQueryHandlerTests.cs` — verifies handler returns up to N puzzles (81 cells each), the pool count is unchanged after the call (non-destructive), the result is capped at pool size, correct difficulty mapping, and an empty pool returns an empty result
 
 ### Integration Tests
 
@@ -294,7 +307,8 @@ All existing mutation endpoints are unchanged. Sync replays against existing end
 
 | Risk | Likelihood | Impact | Mitigation |
 |------|-----------|--------|-----------|
-| Fallback puzzle bank exhausts (user plays >10 offline games before ever going online) | Low | Medium | Pre-fetch bank holds 50 per difficulty; bank replenishes on every online session. Expand static bank if needed. |
+| Fallback puzzle bank exhausts (user plays many offline games before ever going online) | Low | Medium | Bank is bounded by the server pool size (~10 per difficulty), plus 10 hardcoded fallbacks ≈ ~20 games per difficulty; bank replenishes on every online session. Raise the pool target (`PuzzlePoolSeeder.TargetPoolSize`) or expand the static bank if needed. |
+| Non-destructive read returns the same puzzle set to every offline client (shared pool, not per-user) | Certain | Low | Puzzles are not secret and the game is single-player; cross-user repetition is acceptable. Per-user uniqueness would require a larger pool and per-client tracking — out of scope. |
 | Sync ID reconciliation race (user navigates away during sync) | Low | Low | `BroadcastChannel` message is fire-and-forget; missed messages mean URL stays on local ID until next navigation, which re-resolves from IndexedDB. |
 | `navigator.onLine` false positive (captive portal) | Medium | Low | API call failure in "online" path falls back to offline routing automatically. |
 | Dexie adds bundle size (~23KB gzipped) | Certain | Low | Acceptable trade-off; already precached by service worker. |
@@ -319,8 +333,8 @@ All existing mutation endpoints are unchanged. Sync replays against existing end
 9. `npm test` — all tests pass
 
 **Phase 3 — Puzzle Bank**
-10. Add `GetPuzzleQuery` + handler + `PuzzlesController` to backend; add tests
-11. Create `src/offline/puzzleBank.ts` (`getPuzzleForDifficulty`, `replenishBank`)
+10. Add `PeekManyAsync(difficulty, count)` to `IPuzzlePoolService` / `PuzzlePoolService` (non-destructive); add `GetPuzzlesQuery` + handler + `PuzzlesController` to backend; add tests
+11. Create `src/offline/puzzleBank.ts` (`getPuzzleForDifficulty`, `replenishBank` — fetches a batch from `GET /api/puzzles/{difficulty}?count=N`)
 12. Create `src/offline/fallbackPuzzles.ts` (10 puzzles × 4 difficulties, generated from backend)
 
 **Phase 4 — Offline Play** (main integration)
@@ -359,8 +373,17 @@ All existing mutation endpoints are unchanged. Sync replays against existing end
 4. **Fresh install offline:**
    - Clear all storage, disable network, open app
    - Create local profile → start game → play → reload → state persists
+5. **Puzzle endpoint is non-destructive:**
+   - Note the pool count via `GET /seed-puzzle-pool` logs or the blob container
+   - Call `GET /api/puzzles/{difficulty}?count=10` → returns up to 10 puzzles
+   - Confirm the `sudoku-puzzles` pool count is **unchanged** (no puzzles dequeued/deleted)
 
 ---
+
+## Resolved Decisions
+
+- **How should the offline puzzle endpoint source puzzles?** *Resolved: non-destructive read of the existing seeded `sudoku-puzzles` blob pool (new `PeekManyAsync`), never dequeuing. This reuses already-generated puzzles and avoids draining the shared online pool or paying per-request generation cost.*
+- **What shape should the endpoint take?** *Resolved: batch — `GET /api/puzzles/{difficulty}?count=N` returns up to N puzzles in one round-trip to fill the offline bank.*
 
 ## Open Questions
 
