@@ -34,7 +34,6 @@ public class SinglesInRowsStrategy : SolverStrategy
 				if (occurrence != 1) continue;
 
 				var loneRangerCell = puzzle.GetCell(rowPos, colPos);
-				Console.WriteLine($"Setting cell:{loneRangerCell.Row}:{loneRangerCell.Column} to value {number}");
 				loneRangerCell.SetValue(number);
 				loneRangerCell.PossibleValues.Clear();
 				changesMade = true;
