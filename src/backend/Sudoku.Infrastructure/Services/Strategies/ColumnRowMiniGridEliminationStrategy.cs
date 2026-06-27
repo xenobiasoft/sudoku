@@ -13,7 +13,6 @@ public class ColumnRowMiniGridEliminationStrategy : SolverStrategy
 			if (cell.Value.HasValue || cell.PossibleValues.Count != 1) continue;
 
 			var cellValue = cell.PossibleValues.First();
-			Console.WriteLine($"Setting cell:{cell.Row}:{cell.Column} to value {cellValue}");
 			cell.SetValue(cellValue);
 			cell.PossibleValues.Clear();
             changesMade = true;
