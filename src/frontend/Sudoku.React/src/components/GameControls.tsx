@@ -50,7 +50,7 @@ export default function GameControls({
           <i className="fa fa-undo" />
         </button>
         <button className={styles.btn} onClick={onReset} title="Reset">
-          <i className="fa fa-rotate-left" />
+          <i className="fa fa-trash-can" />
         </button>
         <button
           className={`${styles.btn} ${pencilMode ? '' : styles.btnOutline}`}
