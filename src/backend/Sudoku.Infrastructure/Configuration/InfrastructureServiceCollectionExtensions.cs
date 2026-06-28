@@ -81,7 +81,7 @@ public static class InfrastructureServiceCollectionExtensions
 
         private IServiceCollection AddPuzzleServices()
         {
-            services.AddScoped<IPuzzleGenerator, PuzzleGenerator>();
+            services.AddScoped<IPuzzleGenerator, UniqueSolutionPuzzleGenerator>();
             services.AddScoped<IPuzzleSolver, StrategyBasedPuzzleSolver>();
 
             typeof(SolverStrategy).Assembly
