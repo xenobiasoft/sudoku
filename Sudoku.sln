@@ -57,10 +57,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "params", "params", "{0B6998
 		infra\params\staging.bicepparam = infra\params\staging.bicepparam
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "backend", "backend", "{FE360695-3F2B-1049-3887-35FBB5135923}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sudoku.Benchmarks", "src\backend\Sudoku.Benchmarks\Sudoku.Benchmarks.csproj", "{3C73669A-2EED-471C-ACF3-E66F1A95A6FC}"
 EndProject
 Global
@@ -200,8 +196,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{F2DFCC82-9530-4EB9-9237-377038CC4FCA} = {9A29756C-E327-47DF-B5A2-BF6956C21A74}
 		{0B69982A-788E-4277-A168-A9EA56E58EA9} = {9A29756C-E327-47DF-B5A2-BF6956C21A74}
-		{FE360695-3F2B-1049-3887-35FBB5135923} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
-		{3C73669A-2EED-471C-ACF3-E66F1A95A6FC} = {FE360695-3F2B-1049-3887-35FBB5135923}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B3A3B7C7-B547-499D-8BB0-DFBB021089C3}
