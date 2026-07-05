@@ -1,63 +1,84 @@
 .savedGameCard {
-  align-items: center;
-  border-radius: 8px;
   display: flex;
-  flex-direction: row;
-  margin: 0.25rem 0;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 15px;
+  background-color: var(--surface);
+  box-shadow: 0 2px 12px var(--shadow);
 }
 
 .sudokuThumbnail {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: grid;
-  font-size: 0.5rem;
   grid-template-columns: repeat(9, 1fr);
   grid-template-rows: repeat(9, 1fr);
-  height: 120px;
-  min-height: 120px;
-  min-width: 120px;
-  width: 120px;
+  width: 88px;
+  height: 88px;
+  min-width: 88px;
+  padding: 0;
+  border: 1.5px solid var(--line-bold);
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--surface);
   cursor: pointer;
-}
-
-.sudokuThumbnail:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  font-size: 7px;
 }
 
 .cell {
-  align-items: center;
-  aspect-ratio: 1 / 1;
-  border: 1px solid #ddd;
   display: flex;
-  height: 100%;
+  align-items: center;
   justify-content: center;
-  min-height: 0;
+  border-right: 0.5px solid var(--line);
+  border-bottom: 0.5px solid var(--line);
+}
+
+.given {
+  color: var(--ink-soft);
+  font-weight: 600;
+}
+
+.entry {
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.info {
+  flex: 1;
   min-width: 0;
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.difficulty {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.meta {
+  font-size: 13px;
+  color: var(--ink-soft);
 }
 
 .deleteButton {
-  background-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   border: none;
+  border-radius: 9px;
+  background-color: transparent;
+  color: var(--ink-soft);
+  font-size: 16px;
   cursor: pointer;
-  margin-left: 0.5rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
-.delGameIcon {
-  color: #e63946;
-  cursor: pointer;
-  font-size: 1.2rem;
-}
-
-.delGameIcon:hover {
-  color: #d62839;
-}
-
-@media (min-width: 768px) {
-  .sudokuThumbnail {
-    font-size: 0.7rem;
-    height: 150px;
-    min-height: 150px;
-    min-width: 150px;
-    width: 150px;
-  }
+.deleteButton:hover {
+  background-color: var(--error-soft);
+  color: var(--error);
 }

@@ -16,7 +16,11 @@ vi.mock('../hooks/usePlayerService', () => ({
 }));
 
 function renderPage() {
-  return render(<MemoryRouter><SelectDifficultyPage /></MemoryRouter>);
+  return render(
+    <MemoryRouter initialEntries={['/select-difficulty']}>
+      <SelectDifficultyPage />
+    </MemoryRouter>
+  );
 }
 
 beforeEach(() => {
@@ -25,38 +29,38 @@ beforeEach(() => {
 });
 
 describe('SelectDifficultyPage', () => {
-  it('renders three difficulty buttons', () => {
+  it('renders three difficulty cards', () => {
     renderPage();
-    expect(screen.getByRole('button', { name: 'Easy' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Medium' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Hard' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Easy/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Medium/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Hard/i })).toBeInTheDocument();
   });
 
   it('navigates to /new/Easy when Easy is clicked', async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.click(screen.getByRole('button', { name: 'Easy' }));
+    await user.click(screen.getByRole('button', { name: /Easy/i }));
     expect(mockNavigate).toHaveBeenCalledWith('/new/Easy');
   });
 
   it('navigates to /new/Medium when Medium is clicked', async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.click(screen.getByRole('button', { name: 'Medium' }));
+    await user.click(screen.getByRole('button', { name: /Medium/i }));
     expect(mockNavigate).toHaveBeenCalledWith('/new/Medium');
   });
 
   it('navigates to /new/Hard when Hard is clicked', async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.click(screen.getByRole('button', { name: 'Hard' }));
+    await user.click(screen.getByRole('button', { name: /Hard/i }));
     expect(mockNavigate).toHaveBeenCalledWith('/new/Hard');
   });
 
-  it('navigates to / when Back is clicked', async () => {
+  it('navigates to / when the header back affordance is clicked', async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.click(screen.getByRole('button', { name: /Back/i }));
+    await user.click(screen.getByRole('button', { name: /home/i }));
     expect(mockNavigate).toHaveBeenCalledWith('/');
   });
 

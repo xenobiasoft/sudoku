@@ -58,31 +58,34 @@ export default function CreateProfilePage() {
   const isValid = validate(alias) === null;
 
   return (
-    <Layout>
+    <Layout hideHeader>
       <div className={styles.container}>
-        <h1 className={styles.title}>Choose Your Alias</h1>
+        <div className={styles.brand}>
+          <span className={styles.wordmark}>Sudoku</span>
+          <span className={styles.tagline}>a quiet place to think</span>
+        </div>
+
+        <h1 className={styles.title}>Choose your alias</h1>
         <p className={styles.subtitle}>
           Pick a unique name to identify yourself. You can update it later from your profile page.
         </p>
         <form onSubmit={handleSubmit} className={styles.form}>
-          <label htmlFor="alias" className={styles.label}>Alias</label>
           <input
             id="alias"
             type="text"
             value={alias}
             onChange={e => setAlias(e.target.value)}
-            placeholder="e.g. sudoku-master"
+            placeholder="e.g. quiet-fox"
             className={styles.input}
             maxLength={50}
+            aria-label="Alias"
             aria-describedby={error ? 'alias-error' : undefined}
             aria-invalid={!!error}
             autoFocus
           />
-          {error && (
-            <p id="alias-error" className={styles.error} role="alert">{error}</p>
-          )}
+          <p id="alias-error" className={styles.error} role="alert">{error ?? ' '}</p>
           <p className={styles.hint}>
-            2–50 characters · letters, numbers, dashes, and underscores only
+            2–50 characters · letters, numbers, dashes, underscores
           </p>
           <button
             type="submit"
@@ -90,7 +93,7 @@ export default function CreateProfilePage() {
             disabled={!isValid || isSubmitting}
             aria-busy={isSubmitting}
           >
-            {isSubmitting ? 'Creating…' : 'Create Profile'}
+            {isSubmitting ? 'Creating…' : 'Begin'}
           </button>
         </form>
         <p className={styles.warning}>

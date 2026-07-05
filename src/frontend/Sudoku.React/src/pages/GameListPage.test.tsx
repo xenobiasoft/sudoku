@@ -22,7 +22,11 @@ vi.mock('../hooks/useGameService', () => ({
 }));
 
 function renderPage() {
-  return render(<MemoryRouter><GameListPage /></MemoryRouter>);
+  return render(
+    <MemoryRouter initialEntries={['/games']}>
+      <GameListPage />
+    </MemoryRouter>
+  );
 }
 
 beforeEach(() => {
@@ -34,7 +38,7 @@ beforeEach(() => {
 describe('GameListPage', () => {
   it('shows empty state message when no games exist', () => {
     renderPage();
-    expect(screen.getByText(/No saved games yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/nothing here yet/i)).toBeInTheDocument();
   });
 
   it('shows loading state', () => {
@@ -88,10 +92,10 @@ describe('GameListPage', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/');
   });
 
-  it('navigates to / when Back is clicked', async () => {
+  it('navigates to / when the header back affordance is clicked', async () => {
     const user = userEvent.setup();
     renderPage();
-    await user.click(screen.getByRole('button', { name: /Back/i }));
+    await user.click(screen.getByRole('button', { name: /home/i }));
     expect(mockNavigate).toHaveBeenCalledWith('/');
   });
 });

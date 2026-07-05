@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+</helmet>
+
+<section id="turn-1" style="padding:56px 60px;font-family:'Hanken Grotesk',system-ui,sans-serif;">
+  <div style="display:flex;align-items:baseline;gap:16px;margin-bottom:6px;">
+    <span style="display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:26px;padding:0 9px;border-radius:7px;background:#1a1a1a;color:#fff;font-size:13px;font-weight:600;letter-spacing:.03em;">1</span>
+    <h1 style="font-family:'Newsreader',serif;font-weight:500;font-size:30px;margin:0;color:#1a1a1a;">Zen Sudoku — two color directions</h1>
+  </div>
+  <p style="margin:0 0 34px 50px;font-size:15px;color:#6a6a6a;max-width:640px;line-height:1.5;">Calm, minimal, mobile-first — rebuilt around your real app: profiles, saved games, collapsible stats, and the number pad + erase / undo / reset / pencil controls. Both are fully playable; toggle dark mode with the ☾ in each corner. Same app, two palettes.</p>
+
+  <div style="display:flex;gap:48px;flex-wrap:wrap;">
+    <div id="1a" style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:24px;padding:0 8px;border-radius:6px;background:#e8edf2;color:#2c4a63;font-size:12px;font-weight:600;">1a</span>
+        <span style="font-weight:600;font-size:16px;color:#1a1a1a;">Cool</span>
+        <span style="font-family:'Newsreader',serif;font-style:italic;font-size:15px;color:#7a7a7a;">teal &amp; slate</span>
+      </div>
+      <div style="width:430px;height:840px;border-radius:30px;overflow:hidden;background:#fff;box-shadow:0 30px 70px -20px rgba(20,30,50,.35),0 0 0 1px rgba(0,0,0,.05);">
+        <dc-import name="Sudoku" palette="cool" theme="light" start="game" hint-size="430px,840px"></dc-import>
+      </div>
+    </div>
+
+    <div id="1b" style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:24px;padding:0 8px;border-radius:6px;background:#f2e8e2;color:#6a4530;font-size:12px;font-weight:600;">1b</span>
+        <span style="font-weight:600;font-size:16px;color:#1a1a1a;">Warm</span>
+        <span style="font-family:'Newsreader',serif;font-style:italic;font-size:15px;color:#7a7a7a;">terracotta &amp; sand</span>
+      </div>
+      <div style="width:430px;height:840px;border-radius:30px;overflow:hidden;background:#fff;box-shadow:0 30px 70px -20px rgba(50,30,20,.35),0 0 0 1px rgba(0,0,0,.05);">
+        <dc-import name="Sudoku" palette="warm" theme="light" start="game" hint-size="430px,840px"></dc-import>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+</body>
+</html>

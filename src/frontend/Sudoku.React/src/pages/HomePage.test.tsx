@@ -16,6 +16,12 @@ vi.mock('../hooks/usePlayerService', () => ({
   usePlayerService: () => mockUsePlayerService(),
 }));
 
+const mockLoadGames = vi.fn();
+const mockUseGameService = vi.fn();
+vi.mock('../hooks/useGameService', () => ({
+  useGameService: () => mockUseGameService(),
+}));
+
 function newPlayer() {
   return { playerAlias: null, profileId: null, isInitialized: false, isNewPlayer: true, isLoading: false, error: null, initializePlayer: vi.fn(), clearPlayer: vi.fn() };
 }
@@ -30,87 +36,99 @@ function renderPage() {
 
 beforeEach(() => {
   mockNavigate.mockClear();
+  mockLoadGames.mockClear();
+  mockLoadGames.mockResolvedValue(undefined);
   mockUsePlayerService.mockReturnValue(returningPlayer());
+  mockUseGameService.mockReturnValue({ savedGames: [], loadGames: mockLoadGames });
 });
 
 describe('HomePage', () => {
   it('renders three navigation cards', () => {
     renderPage();
-    expect(screen.getByText(/Manage Profile/i)).toBeInTheDocument();
-    expect(screen.getByText(/Start New Game/i)).toBeInTheDocument();
-    expect(screen.getByText(/Browse Game List/i)).toBeInTheDocument();
+    expect(screen.getByText('New game')).toBeInTheDocument();
+    expect(screen.getByText('Saved games')).toBeInTheDocument();
+    expect(screen.getByText('Profile')).toBeInTheDocument();
   });
 
   describe('new player', () => {
     beforeEach(() => { mockUsePlayerService.mockReturnValue(newPlayer()); });
 
-    it('shows "Create Profile" on the profile card', () => {
+    it('shows the "Create your alias" prompt on the profile card', () => {
       renderPage();
-      expect(screen.getByText(/Create Profile/i)).toBeInTheDocument();
+      expect(screen.getByText(/Create your alias/i)).toBeInTheDocument();
     });
 
-    it('disables Start New Game card', () => {
+    it('disables the New game card', () => {
       renderPage();
-      expect(screen.getByRole('button', { name: /Start New Game/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /New game/i })).toBeDisabled();
     });
 
-    it('disables Browse Game List card', () => {
+    it('disables the Saved games card', () => {
       renderPage();
-      expect(screen.getByRole('button', { name: /Browse Game List/i })).toBeDisabled();
+      expect(screen.getByRole('button', { name: /Saved games/i })).toBeDisabled();
     });
 
-    it('shows helper text on both disabled cards', () => {
+    it('keeps the Profile card enabled', () => {
       renderPage();
-      expect(screen.getAllByText(/Create a profile to unlock this/i)).toHaveLength(2);
+      expect(screen.getByRole('button', { name: /Profile/i })).not.toBeDisabled();
     });
 
     it('navigates to /create-profile when Profile card is clicked', async () => {
       const user = userEvent.setup();
       renderPage();
-      await user.click(screen.getByRole('button', { name: /Create Profile/i }));
+      await user.click(screen.getByRole('button', { name: /Profile/i }));
       expect(mockNavigate).toHaveBeenCalledWith('/create-profile');
     });
 
-    it('does not make any API calls on mount', () => {
+    it('does not load games on mount', () => {
       renderPage();
-      expect(screen.queryByText(/Loading/i)).not.toBeInTheDocument();
+      expect(mockLoadGames).not.toHaveBeenCalled();
     });
   });
 
   describe('returning player', () => {
-    it('shows "Manage Profile" on the profile card', () => {
+    it('shows the "Manage your alias" prompt on the profile card', () => {
       renderPage();
-      expect(screen.getByText(/Manage Profile/i)).toBeInTheDocument();
+      expect(screen.getByText(/Manage your alias/i)).toBeInTheDocument();
     });
 
-    it('enables all three cards', () => {
+    it('greets the player by alias', () => {
       renderPage();
-      screen.getAllByRole('button').forEach(btn => expect(btn).not.toBeDisabled());
+      expect(screen.getByText('test-user')).toBeInTheDocument();
     });
 
-    it('does not show helper text', () => {
+    it('loads saved games on mount', () => {
       renderPage();
-      expect(screen.queryByText(/Create a profile to unlock this/i)).not.toBeInTheDocument();
+      expect(mockLoadGames).toHaveBeenCalledWith('p1');
     });
 
-    it('navigates to /profile when Manage Profile is clicked', async () => {
+    it('shows the saved games count', () => {
+      mockUseGameService.mockReturnValue({
+        savedGames: [{ id: 'a' }, { id: 'b' }],
+        loadGames: mockLoadGames,
+      });
+      renderPage();
+      expect(screen.getByText(/2 in progress/i)).toBeInTheDocument();
+    });
+
+    it('navigates to /profile when Profile card is clicked', async () => {
       const user = userEvent.setup();
       renderPage();
-      await user.click(screen.getByRole('button', { name: /Manage Profile/i }));
+      await user.click(screen.getByRole('button', { name: /Profile/i }));
       expect(mockNavigate).toHaveBeenCalledWith('/profile');
     });
 
-    it('navigates to /select-difficulty when Start New Game is clicked', async () => {
+    it('navigates to /select-difficulty when New game card is clicked', async () => {
       const user = userEvent.setup();
       renderPage();
-      await user.click(screen.getByRole('button', { name: /Start New Game/i }));
+      await user.click(screen.getByRole('button', { name: /New game/i }));
       expect(mockNavigate).toHaveBeenCalledWith('/select-difficulty');
     });
 
-    it('navigates to /games when Browse Game List is clicked', async () => {
+    it('navigates to /games when Saved games card is clicked', async () => {
       const user = userEvent.setup();
       renderPage();
-      await user.click(screen.getByRole('button', { name: /Browse Game List/i }));
+      await user.click(screen.getByRole('button', { name: /Saved games/i }));
       expect(mockNavigate).toHaveBeenCalledWith('/games');
     });
   });

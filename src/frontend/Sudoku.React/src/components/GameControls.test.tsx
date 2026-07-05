@@ -2,14 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import GameControls from './GameControls';
+import { make81Cells } from '../test/helpers';
 
 function renderControls(overrides: Partial<React.ComponentProps<typeof GameControls>> = {}) {
   const defaults = {
+    cells: make81Cells(),
     pencilMode: false,
     canUndo: true,
     onNumberClick: vi.fn(),
     onErase: vi.fn(),
-    onHome: vi.fn(),
     onUndo: vi.fn(),
     onReset: vi.fn(),
     onTogglePencil: vi.fn(),
@@ -25,17 +26,17 @@ describe('GameControls', () => {
     }
   });
 
-  it('renders the erase button', () => {
+  it('renders the action buttons', () => {
     renderControls();
-    expect(screen.getByTitle('Erase')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /erase/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /undo/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /reset/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /pencil/i })).toBeInTheDocument();
   });
 
-  it('renders home, undo, reset, and pencil buttons', () => {
+  it('renders a disabled Hint button', () => {
     renderControls();
-    expect(screen.getByTitle('Home')).toBeInTheDocument();
-    expect(screen.getByTitle('Undo')).toBeInTheDocument();
-    expect(screen.getByTitle('Reset')).toBeInTheDocument();
-    expect(screen.getByTitle('Pencil mode')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /hint/i })).toBeDisabled();
   });
 
   it('calls onNumberClick with the correct number', async () => {
@@ -46,40 +47,43 @@ describe('GameControls', () => {
     expect(onNumberClick).toHaveBeenCalledWith(5);
   });
 
+  it('shows the remaining count for a number', () => {
+    // A board with three 5s placed leaves 6 remaining.
+    const cells = make81Cells();
+    [0, 1, 2].forEach(i => {
+      cells[i] = { ...cells[i], value: 5, hasValue: true };
+    });
+    renderControls({ cells });
+    const fiveButton = screen.getByRole('button', { name: '5' });
+    expect(fiveButton).toHaveTextContent('6');
+  });
+
   it('calls onErase when erase button is clicked', async () => {
     const user = userEvent.setup();
     const onErase = vi.fn();
     renderControls({ onErase });
-    await user.click(screen.getByTitle('Erase'));
+    await user.click(screen.getByRole('button', { name: /erase/i }));
     expect(onErase).toHaveBeenCalledOnce();
-  });
-
-  it('calls onHome when home button is clicked', async () => {
-    const user = userEvent.setup();
-    const onHome = vi.fn();
-    renderControls({ onHome });
-    await user.click(screen.getByTitle('Home'));
-    expect(onHome).toHaveBeenCalledOnce();
   });
 
   it('calls onUndo when undo button is clicked', async () => {
     const user = userEvent.setup();
     const onUndo = vi.fn();
     renderControls({ onUndo, canUndo: true });
-    await user.click(screen.getByTitle('Undo'));
+    await user.click(screen.getByRole('button', { name: /undo/i }));
     expect(onUndo).toHaveBeenCalledOnce();
   });
 
   it('disables undo button when canUndo is false', () => {
     renderControls({ canUndo: false });
-    expect(screen.getByTitle('Undo')).toBeDisabled();
+    expect(screen.getByRole('button', { name: /undo/i })).toBeDisabled();
   });
 
   it('calls onReset when reset button is clicked', async () => {
     const user = userEvent.setup();
     const onReset = vi.fn();
     renderControls({ onReset });
-    await user.click(screen.getByTitle('Reset'));
+    await user.click(screen.getByRole('button', { name: /reset/i }));
     expect(onReset).toHaveBeenCalledOnce();
   });
 
@@ -87,7 +91,7 @@ describe('GameControls', () => {
     const user = userEvent.setup();
     const onTogglePencil = vi.fn();
     renderControls({ onTogglePencil });
-    await user.click(screen.getByTitle('Pencil mode'));
+    await user.click(screen.getByRole('button', { name: /pencil/i }));
     expect(onTogglePencil).toHaveBeenCalledOnce();
   });
 });

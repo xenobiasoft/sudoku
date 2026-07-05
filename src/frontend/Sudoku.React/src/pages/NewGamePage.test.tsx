@@ -67,7 +67,7 @@ beforeEach(() => {
 describe('NewGamePage', () => {
   it('shows a loading message with the difficulty', () => {
     renderNewGamePage('Easy');
-    expect(screen.getByText(/Creating Easy puzzle/i)).toBeInTheDocument();
+    expect(screen.getByText(/setting out a easy puzzle/i)).toBeInTheDocument();
   });
 
   it('navigates to game page after successfully creating a game', async () => {

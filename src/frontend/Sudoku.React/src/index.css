@@ -1,19 +1,115 @@
-html, body {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+/* ==========================================================================
+   Zen redesign — warm terracotta theme tokens
+   Authoritative values from docs/Sudoku app redesign/README.md
+   ========================================================================== */
+
+/* WARM — Light (default) */
+:root,
+[data-theme='light'] {
+  --bg:          oklch(0.982 0.008 78);
+  --surface:     oklch(0.996 0.005 78);
+  --surface-2:   oklch(0.955 0.013 70);
+  --ink:         oklch(0.31 0.03 48);
+  --ink-soft:    oklch(0.53 0.03 52);
+  --line:        oklch(0.90 0.013 66);
+  --line-bold:   oklch(0.52 0.04 48);
+  --accent:      oklch(0.60 0.11 45);
+  --accent-soft: oklch(0.93 0.04 58);
+  --accent-ink:  oklch(0.99 0.006 78);
+  --given:       oklch(0.31 0.03 48);
+  --entry:       oklch(0.56 0.12 46);
+  --highlight:   oklch(0.958 0.016 72);
+  --same:        oklch(0.91 0.05 58);
+  --error:       oklch(0.55 0.15 27);
+  --error-soft:  oklch(0.93 0.055 32);
+  --shadow:      rgba(70, 45, 25, 0.10);
+}
+
+/* WARM — Dark */
+[data-theme='dark'] {
+  --bg:          oklch(0.21 0.016 55);
+  --surface:     oklch(0.25 0.018 52);
+  --surface-2:   oklch(0.29 0.022 52);
+  --ink:         oklch(0.94 0.012 72);
+  --ink-soft:    oklch(0.72 0.025 62);
+  --line:        oklch(0.35 0.02 55);
+  --line-bold:   oklch(0.60 0.035 55);
+  --accent:      oklch(0.73 0.11 58);
+  --accent-soft: oklch(0.34 0.05 50);
+  --accent-ink:  oklch(0.20 0.02 50);
+  --given:       oklch(0.94 0.012 72);
+  --entry:       oklch(0.82 0.11 58);
+  --highlight:   oklch(0.29 0.028 55);
+  --same:        oklch(0.37 0.06 55);
+  --error:       oklch(0.71 0.14 32);
+  --error-soft:  oklch(0.37 0.075 32);
+  --shadow:      rgba(0, 0, 0, 0.35);
+}
+
+html,
+body {
+  font-family: 'Hanken Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   margin: 0;
   padding: 0;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
 h1:focus {
   outline: none;
 }
 
-a, .btn-link {
-  color: #0071c1;
+a,
+.btn-link {
+  color: var(--accent);
 }
 
-.btn-primary {
-  color: #fff;
-  background-color: #1b6ec2;
-  border-color: #1861ac;
+/* Tabular numerals for times / counters */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   Keyframes
+   ========================================================================== */
+
+@keyframes sd-fadeup {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sd-pop {
+  0%   { transform: scale(0.6); }
+  60%  { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+@keyframes sd-load {
+  0%, 100% { opacity: 0.25; transform: translateY(0); }
+  50%      { opacity: 1; transform: translateY(-5px); }
+}
+
+@keyframes sd-modal {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

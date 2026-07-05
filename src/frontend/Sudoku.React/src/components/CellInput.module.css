@@ -1,100 +1,91 @@
-.cell:nth-child(3n+1) {
-  border-left: 3px solid #000000;
-}
-
 .cell {
-  background-color: #FAEBD7;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  aspect-ratio: 1 / 1;
+  border: none;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  background-color: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.16s ease, color 0.16s ease;
 }
 
+/* 3x3 box separators + outer edges */
+.boxRight {
+  border-right: 2px solid var(--line-bold);
+}
+
+.boxBottom {
+  border-bottom: 2px solid var(--line-bold);
+}
+
+.lastCol {
+  border-right: none;
+}
+
+.lastRow {
+  border-bottom: none;
+}
+
+/* Background fills */
 .highlight {
-  background-color: #d8eef8 !important;
+  background-color: var(--highlight);
 }
 
-.selected {
-  background-color: #b8d8f0 !important;
+.same {
+  background-color: var(--same);
 }
 
 .invalid {
-  background-color: #ffdddd !important;
+  background-color: var(--error-soft);
 }
 
-.cell input,
-.cell label {
-  align-items: center;
-  background-color: #FAEBD7;
-  border: 1px solid black;
-  display: flex;
-  font-size: 1.5rem;
-  font-weight: bold;
-  height: min(36px, calc((100vw - 1rem - 12px) / 9));
-  justify-content: center;
-  line-height: 1.3em;
-  max-width: min(36px, calc((100vw - 1rem - 12px) / 9));
-  padding: .25rem;
-  text-align: center;
-  width: 100%;
-  box-sizing: border-box;
-  cursor: pointer;
+.selected {
+  background-color: var(--accent-soft);
+  box-shadow: inset 0 0 0 2px var(--accent);
 }
 
-.cell label {
-  color: #505050;
+/* Digit roles */
+.digit {
+  font-size: clamp(17px, 5.6vw, 27px);
+  line-height: 1;
+  animation: sd-pop 0.2s ease;
 }
 
-.cell input {
-  color: royalblue;
-  outline: none;
+.given {
+  color: var(--given);
+  font-weight: 600;
 }
 
-.cell input:focus,
-.cell label:focus {
-  background-color: #F0F8FF !important;
+.entry {
+  color: var(--entry);
+  font-weight: 500;
 }
 
-.highlight input,
-.highlight label {
-  background-color: #d8eef8 !important;
+.invalidDigit {
+  color: var(--error);
+  font-weight: 600;
 }
 
-.selected input,
-.selected label {
-  background-color: #b8d8f0 !important;
-}
-
-.invalid input,
-.invalid label {
-  background-color: #ffdddd !important;
-  outline: 1px solid red;
-}
-
+/* Pencil marks */
 .pencilValues {
+  position: absolute;
+  inset: 0;
   display: grid;
-  font-size: 0.6rem;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  height: 100%;
-  line-height: 1rem;
   pointer-events: none;
-  position: absolute;
-  text-align: center;
-  width: 100%;
-  top: 0;
-  left: 0;
+  color: var(--ink-soft);
+  font-size: clamp(7px, 2.1vw, 10px);
+  font-weight: 500;
 }
 
 .pencilEntry {
-  align-items: center;
   display: flex;
+  align-items: center;
   justify-content: center;
-  min-height: .6rem;
-  pointer-events: none;
-}
-
-@media (min-width: 641px) {
-  .cell input,
-  .cell label {
-    height: 40px;
-    width: 40px;
-  }
 }
