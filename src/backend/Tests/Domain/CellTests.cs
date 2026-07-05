@@ -583,4 +583,45 @@ public class CellTests : MoqBaseTestByType<Cell>
         clonedCell.Value.Should().Be(5);
         clonedCell.PossibleValues.Should().BeEmpty();
     }
+
+    [Fact]
+    public void CreateHint_CreatesLockedCellWithValue()
+    {
+        // Act
+        var cell = Cell.CreateHint(3, 4, 7);
+
+        // Assert
+        cell.Value.Should().Be(7);
+        cell.HasValue.Should().BeTrue();
+        cell.IsHint.Should().BeTrue();
+        cell.IsFixed.Should().BeFalse();
+        cell.IsLocked.Should().BeTrue();
+    }
+
+    [Fact]
+    public void SetValue_OnHintCell_ThrowsCellIsFixedException()
+    {
+        // Arrange
+        var cell = Cell.CreateHint(3, 4, 7);
+
+        // Act
+        Action act = () => cell.SetValue(9);
+
+        // Assert
+        act.Should().Throw<CellIsFixedException>();
+    }
+
+    [Fact]
+    public void DeepCopy_PreservesIsHint()
+    {
+        // Arrange
+        var cell = Cell.CreateHint(3, 4, 7);
+
+        // Act
+        var clone = cell.DeepCopy();
+
+        // Assert
+        clone.IsHint.Should().BeTrue();
+        clone.Value.Should().Be(7);
+    }
 }

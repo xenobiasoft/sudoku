@@ -23,6 +23,7 @@ export interface UseGameServiceReturn {
   resumeGame: (profileId: string, gameId: string) => Promise<void>;
   makeMove: (profileId: string, gameId: string, row: number, column: number, value: number | null, duration: string) => Promise<GameModel>;
   undoMove: (profileId: string, gameId: string) => Promise<GameModel>;
+  requestHint: (profileId: string, gameId: string, duration: string) => Promise<GameModel>;
   resetGame: (profileId: string, gameId: string) => Promise<GameModel>;
   addPossibleValue: (profileId: string, gameId: string, row: number, column: number, value: number) => Promise<GameModel>;
   removePossibleValue: (profileId: string, gameId: string, row: number, column: number, value: number) => Promise<GameModel>;
@@ -267,6 +268,25 @@ export function useGameService(): UseGameServiceReturn {
     }
   }, []);
 
+  const requestHint = useCallback(async (profileId: string, gameId: string, duration: string): Promise<GameModel> => {
+    if (!profileId || !gameId) {
+      throw new Error('Profile ID and game ID are required');
+    }
+
+    setGameError(null);
+
+    try {
+      const updatedGame = await apiClient.getHint(profileId, gameId, duration);
+      setCurrentGame(updatedGame);
+      return updatedGame;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to get hint';
+      setGameError(errorMessage);
+      console.error('Failed to get hint:', err);
+      throw err;
+    }
+  }, []);
+
   const resetGame = useCallback(async (profileId: string, gameId: string): Promise<GameModel> => {
     if (!profileId || !gameId) {
       throw new Error('Profile ID and game ID are required');
@@ -364,6 +384,7 @@ export function useGameService(): UseGameServiceReturn {
     resumeGame,
     makeMove,
     undoMove,
+    requestHint,
     resetGame,
     addPossibleValue,
     removePossibleValue,

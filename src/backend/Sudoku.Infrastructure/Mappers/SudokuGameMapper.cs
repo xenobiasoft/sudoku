@@ -70,6 +70,7 @@ public static class SudokuGameMapper
             Column = cell.Column,
             Value = cell.Value,
             IsFixed = cell.IsFixed,
+            IsHint = cell.IsHint,
             PossibleValues = cell.PossibleValues.ToHashSet()
         };
         return cellDocument;
@@ -77,7 +78,7 @@ public static class SudokuGameMapper
 
     private static Cell ToDomain(this CellDocument document)
     {
-        var cell = Cell.Create(document.Row, document.Column, document.Value, document.IsFixed);
+        var cell = Cell.Create(document.Row, document.Column, document.Value, document.IsFixed, document.IsHint);
 
         // Set possible values using reflection since there's no public setter
         var cellType = typeof(Cell);
@@ -94,6 +95,7 @@ public static class SudokuGameMapper
             TotalMoves = statistics.TotalMoves,
             ValidMoves = statistics.ValidMoves,
             InvalidMoves = statistics.InvalidMoves,
+            HintsUsed = statistics.HintsUsed,
             PlayDuration = statistics.PlayDuration,
             LastMoveAt = statistics.LastMoveAt
         };
@@ -115,6 +117,9 @@ public static class SudokuGameMapper
 
         var invalidMovesField = statsType.GetField("<InvalidMoves>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         invalidMovesField?.SetValue(statistics, document.InvalidMoves);
+
+        var hintsUsedField = statsType.GetField("<HintsUsed>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        hintsUsedField?.SetValue(statistics, document.HintsUsed);
 
         var playDurationField = statsType.GetField("<PlayDuration>k__BackingField", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
         playDurationField?.SetValue(statistics, document.PlayDuration);

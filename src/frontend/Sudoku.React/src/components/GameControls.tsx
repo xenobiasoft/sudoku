@@ -5,9 +5,11 @@ interface GameControlsProps {
   cells: CellModel[];
   pencilMode: boolean;
   canUndo: boolean;
+  hintsRemaining: number;
   onNumberClick: (value: number) => void;
   onErase: () => void;
   onUndo: () => void;
+  onHint: () => void;
   onReset: () => void;
   onTogglePencil: () => void;
 }
@@ -16,9 +18,11 @@ export default function GameControls({
   cells,
   pencilMode,
   canUndo,
+  hintsRemaining,
   onNumberClick,
   onErase,
   onUndo,
+  onHint,
   onReset,
   onTogglePencil,
 }: GameControlsProps) {
@@ -66,9 +70,16 @@ export default function GameControls({
           <i className="fa fa-pencil" />
           <span className={styles.actionLabel}>Pencil</span>
         </button>
-        <button type="button" className={styles.actionBtn} disabled title="Hints coming soon">
+        <button
+          type="button"
+          className={styles.actionBtn}
+          onClick={onHint}
+          disabled={hintsRemaining <= 0}
+          title={hintsRemaining > 0 ? `Reveal a cell (${hintsRemaining} left)` : 'No hints remaining'}
+        >
           <i className="fa fa-lightbulb" />
           <span className={styles.actionLabel}>Hint</span>
+          <span className={`${styles.hintBadge} tnum`}>{hintsRemaining}</span>
         </button>
         <button type="button" className={styles.actionBtn} onClick={onReset}>
           <i className="fa fa-trash-can" />

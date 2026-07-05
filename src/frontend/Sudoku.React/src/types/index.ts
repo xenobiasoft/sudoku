@@ -3,6 +3,7 @@ export interface CellModel {
   column: number;
   value: number | null;
   isFixed: boolean;
+  isHint: boolean;
   hasValue: boolean;
   possibleValues: number[];
 }
@@ -10,6 +11,8 @@ export interface CellModel {
 export interface GameStatisticsModel {
   totalMoves: number;
   invalidMoves: number;
+  hintsUsed: number;
+  hintsRemaining: number;
   playDuration: string;
 }
 

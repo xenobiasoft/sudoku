@@ -60,6 +60,9 @@ public class CellDocument
     [JsonProperty("isFixed")]
     public bool IsFixed { get; set; }
 
+    [JsonProperty("isHint")]
+    public bool IsHint { get; set; }
+
     [JsonProperty("possibleValues")]
     public HashSet<int> PossibleValues { get; set; } = [];
 }
@@ -74,6 +77,9 @@ public class GameStatisticsDocument
 
     [JsonProperty("invalidMoves")]
     public int InvalidMoves { get; set; }
+
+    [JsonProperty("hintsUsed")]
+    public int HintsUsed { get; set; }
 
     [JsonProperty("playDuration")]
     public TimeSpan PlayDuration { get; set; }
