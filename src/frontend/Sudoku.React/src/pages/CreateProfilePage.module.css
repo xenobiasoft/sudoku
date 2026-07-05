@@ -1,68 +1,104 @@
 .container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 80vh;
+  max-width: 400px;
   margin: 0 auto;
-  max-width: 430px;
-  padding: 2rem 1rem;
+  animation: sd-fadeup 0.5s ease both;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 32px;
+}
+
+.wordmark {
+  font-family: 'Newsreader', serif;
+  font-weight: 500;
+  font-size: clamp(40px, 13vw, 54px);
+  line-height: 1;
+  color: var(--ink);
+}
+
+.tagline {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 17px;
+  color: var(--ink-soft);
+  margin-top: 4px;
 }
 
 .title {
-  margin: 0 0 0.5rem;
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0 0 6px 0;
 }
 
 .subtitle {
-  color: #555;
-  margin: 0 0 1.5rem;
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 0 0 16px 0;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-}
-
-.label {
-  font-weight: 600;
 }
 
 .input {
-  padding: 0.6rem 0.8rem;
-  font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  width: 100%;
+  padding: 14px 16px;
+  font-size: 16px;
+  font-family: inherit;
+  color: var(--ink);
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
   outline: none;
+  transition: border-color 0.15s ease;
 }
 
 .input:focus {
-  border-color: #555;
+  border-color: var(--accent);
 }
 
-.input[aria-invalid="true"] {
-  border-color: #d9534f;
+.input[aria-invalid='true'] {
+  border-color: var(--error);
 }
 
 .error {
-  color: #d9534f;
-  font-size: 0.875rem;
-  margin: 0;
+  min-height: 18px;
+  color: var(--error);
+  font-size: 13px;
+  margin: 6px 0 0 0;
 }
 
 .hint {
-  color: #777;
-  font-size: 0.8rem;
-  margin: 0;
+  color: var(--ink-soft);
+  font-size: 12px;
+  margin: 0 0 12px 0;
 }
 
 .button {
-  margin-top: 0.75rem;
-  padding: 0.7rem 1.25rem;
-  font-size: 1rem;
+  align-self: flex-start;
+  padding: 14px 22px;
+  font-size: 15px;
   font-weight: 600;
-  background: #1b6ec2;
-  color: white;
-  border: 1px solid #1861ac;
-  border-radius: 4px;
+  font-family: inherit;
+  background-color: var(--accent);
+  color: var(--accent-ink);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px var(--shadow);
   cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.button:hover:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 .button:disabled {
@@ -71,7 +107,7 @@
 }
 
 .warning {
-  margin-top: 1.25rem;
-  font-size: 0.8rem;
-  color: #888;
+  margin-top: 24px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
 }

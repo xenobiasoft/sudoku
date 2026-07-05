@@ -22,16 +22,16 @@ describe('GameStats', () => {
 
   it('does not show expanded stats by default', () => {
     render(<GameStats statistics={makeStats({ totalMoves: 5 })} elapsedSeconds={0} />);
-    expect(screen.queryByText('Total Moves')).not.toBeInTheDocument();
+    expect(screen.queryByText('Total moves')).not.toBeInTheDocument();
   });
 
   it('shows expanded stats after clicking the header', async () => {
     const user = userEvent.setup();
     render(<GameStats statistics={makeStats({ totalMoves: 7, invalidMoves: 2 })} elapsedSeconds={0} />);
     await user.click(screen.getByText('Time'));
-    expect(screen.getByText('Total Moves')).toBeInTheDocument();
+    expect(screen.getByText('Total moves')).toBeInTheDocument();
     expect(screen.getByText('7')).toBeInTheDocument();
-    expect(screen.getByText('Invalid Moves')).toBeInTheDocument();
+    expect(screen.getByText('Invalid moves')).toBeInTheDocument();
     expect(screen.getByText('2')).toBeInTheDocument();
   });
 
@@ -40,8 +40,8 @@ describe('GameStats', () => {
     render(<GameStats statistics={makeStats({ totalMoves: 3 })} elapsedSeconds={0} />);
     const header = screen.getByText('Time');
     await user.click(header);
-    expect(screen.getByText('Total Moves')).toBeInTheDocument();
+    expect(screen.getByText('Total moves')).toBeInTheDocument();
     await user.click(header);
-    expect(screen.queryByText('Total Moves')).not.toBeInTheDocument();
+    expect(screen.queryByText('Total moves')).not.toBeInTheDocument();
   });
 });

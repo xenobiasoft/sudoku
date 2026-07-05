@@ -1,42 +1,64 @@
 .gameStats {
-  background-color: #f9f9f9;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin: 1rem auto 0 auto;
-  max-width: 350px;
-  padding: 1rem;
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  max-width: 440px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  box-shadow: 0 2px 12px var(--shadow);
 }
 
 .statHeader {
-  cursor: pointer;
+  width: 100%;
   display: flex;
-  gap: 0.5rem;
-  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--ink);
 }
 
-.statHeader .label {
-  font-weight: bold;
+.headerLabel {
+  font-size: 14px;
+  font-weight: 600;
 }
 
-.statHeader .value {
-  flex-grow: 1;
-  text-align: end;
+.headerValue {
+  flex: 1;
+  text-align: center;
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.chevron {
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.statBody {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
 }
 
 .statItem {
   display: flex;
   justify-content: space-between;
-  font-size: 1rem;
-  margin-right: 1.5rem;
+  align-items: center;
 }
 
 .label {
-  font-weight: bold;
+  font-size: 13px;
+  color: var(--ink-soft);
 }
 
 .value {
-  color: #333;
+  font-size: 13px;
+  color: var(--ink);
 }

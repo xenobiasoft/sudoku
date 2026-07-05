@@ -1,5 +1,8 @@
 .gameView {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   margin: 0 auto;
-  max-width: 430px;
-  padding: 0 0.5rem;
+  max-width: 440px;
+  animation: sd-fadeup 0.4s ease both;
 }

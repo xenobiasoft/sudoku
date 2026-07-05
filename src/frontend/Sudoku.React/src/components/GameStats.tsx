@@ -19,22 +19,27 @@ export default function GameStats({ statistics, elapsedSeconds }: GameStatsProps
 
   return (
     <div className={styles.gameStats}>
-      <div className={styles.statHeader} onClick={() => setExpanded(e => !e)}>
-        <span className={styles.label}>Time</span>
-        <span className={styles.value}>{formatTime(elapsedSeconds)}</span>
-        <i className={`fa fa-chevron-${expanded ? 'up' : 'down'}`} />
-      </div>
+      <button
+        type="button"
+        className={styles.statHeader}
+        onClick={() => setExpanded(e => !e)}
+        aria-expanded={expanded}
+      >
+        <span className={styles.headerLabel}>Time</span>
+        <span className={`${styles.headerValue} tnum`}>{formatTime(elapsedSeconds)}</span>
+        <i className={`fa fa-chevron-${expanded ? 'up' : 'down'} ${styles.chevron}`} />
+      </button>
       {expanded && (
-        <>
+        <div className={styles.statBody}>
           <div className={styles.statItem}>
-            <span className={styles.label}>Total Moves</span>
-            <span className={styles.value}>{statistics.totalMoves}</span>
+            <span className={styles.label}>Total moves</span>
+            <span className={`${styles.value} tnum`}>{statistics.totalMoves}</span>
           </div>
           <div className={styles.statItem}>
-            <span className={styles.label}>Invalid Moves</span>
-            <span className={styles.value}>{statistics.invalidMoves}</span>
+            <span className={styles.label}>Invalid moves</span>
+            <span className={`${styles.value} tnum`}>{statistics.invalidMoves}</span>
           </div>
-        </>
+        </div>
       )}
     </div>
   );

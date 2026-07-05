@@ -31,15 +31,18 @@ export default function GameListPage() {
   return (
     <Layout>
       <div className={styles.container}>
-        <h2 className={styles.title}>Saved Games</h2>
+        <h1 className={styles.title}>Saved games</h1>
 
         {isLoading && <p className={styles.status}>Loading…</p>}
         {error && <p className={styles.errorStatus}>Failed to load games. Please try again.</p>}
 
         {isLoaded && savedGames.length === 0 && (
-          <p className={styles.emptyState}>
-            No saved games yet. Start a new game to get going!
-          </p>
+          <div className={styles.emptyState}>
+            <p className={styles.emptyText}>nothing here yet</p>
+            <button type="button" className={styles.startButton} onClick={() => navigate('/select-difficulty')}>
+              Start a game
+            </button>
+          </div>
         )}
 
         {savedGames.length > 0 && (
@@ -51,10 +54,6 @@ export default function GameListPage() {
             ))}
           </ul>
         )}
-
-        <button className={styles.backButton} onClick={() => navigate('/')}>
-          ← Back
-        </button>
       </div>
     </Layout>
   );

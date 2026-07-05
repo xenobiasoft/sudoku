@@ -17,16 +17,9 @@ function renderBoard(overrides: Partial<React.ComponentProps<typeof GameBoard>> 
 }
 
 describe('GameBoard', () => {
-  it('renders a 9x9 table', () => {
+  it('renders 81 cell buttons', () => {
     renderBoard();
-    const rows = document.querySelectorAll('tr');
-    expect(rows).toHaveLength(9);
-  });
-
-  it('renders 81 cells total', () => {
-    renderBoard();
-    const cells = document.querySelectorAll('td');
-    expect(cells).toHaveLength(81);
+    expect(screen.getAllByRole('button')).toHaveLength(81);
   });
 
   it('renders cell values', () => {
@@ -42,17 +35,16 @@ describe('GameBoard', () => {
     const cells = make81Cells();
     cells[4] = makeCell({ row: 0, column: 4, value: null, isFixed: false });
     renderBoard({ cells, onCellSelect });
-    // Click the input in the 5th cell of row 0
-    const inputs = screen.getAllByRole('textbox');
-    await user.click(inputs[4]);
+    // Click the 5th cell of row 0 (index 4)
+    const buttons = screen.getAllByRole('button');
+    await user.click(buttons[4]);
     expect(onCellSelect).toHaveBeenCalledWith(0, 4);
   });
 
-  it('fires onKeyDown when a key is pressed in the table', () => {
+  it('fires onKeyDown when a key is pressed on the grid', () => {
     const onKeyDown = vi.fn();
     renderBoard({ onKeyDown });
-    const table = document.querySelector('table')!;
-    fireEvent.keyDown(table, { key: '5' });
+    fireEvent.keyDown(screen.getByRole('grid'), { key: '5' });
     expect(onKeyDown).toHaveBeenCalled();
   });
 });

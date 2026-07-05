@@ -32,12 +32,12 @@ export default function NewGamePage() {
   }, [isNewPlayer, navigate]);
 
   return (
-    <Layout>
+    <Layout hideHeader>
       <div className={styles.loadingContainer}>
-        <h2>Creating {difficulty} puzzle...</h2>
+        <p className={styles.message}>setting out a {difficulty?.toLowerCase()} puzzle…</p>
         <div className={styles.sudokuLoader}>
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-            <span key={n}>{n}</span>
+            <span key={n} className={styles.tile}>{n}</span>
           ))}
         </div>
       </div>

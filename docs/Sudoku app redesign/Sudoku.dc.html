@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+@keyframes sd-fadeup { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+@keyframes sd-pop { 0% { transform:scale(.6); } 60% { transform:scale(1.14); } 100% { transform:scale(1); } }
+@keyframes sd-load { 0%,100% { opacity:.25; transform:translateY(0); } 50% { opacity:1; transform:translateY(-5px); } }
+@keyframes sd-modal { from { opacity:0; transform:translateY(14px) scale(.97); } to { opacity:1; transform:none; } }
+</style>
+</helmet>
+<div style="{{ rootStyle }}">
+  <div style="width:100%;max-width:460px;min-height:100%;box-sizing:border-box;display:flex;flex-direction:column;">
+
+    <sc-if value="{{ showHeader }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px clamp(18px,4.5vw,28px);border-bottom:1px solid var(--line,#eee);">
+        <div style="flex:1;display:flex;justify-content:flex-start;">
+          <sc-if value="{{ isBrand }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ onHeaderLeft }}" style="font-family:'Newsreader',serif;font-size:21px;font-weight:500;color:var(--ink,#2b2b2b);background:none;border:none;cursor:pointer;padding:0;letter-spacing:-.01em;">Sudoku</button>
+          </sc-if>
+          <sc-if value="{{ isBack }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ onHeaderLeft }}" style="font-size:14px;color:var(--ink-soft,#777);background:none;border:none;cursor:pointer;padding:4px 0;font-family:inherit;">{{ headerLeft }}</button>
+          </sc-if>
+        </div>
+        <div style="flex:1;text-align:center;font-family:'Newsreader',serif;font-size:16px;color:var(--ink,#2b2b2b);">{{ headerCenter }}</div>
+        <div style="flex:1;display:flex;justify-content:flex-end;">
+          <button onClick="{{ onToggleTheme }}" style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--surface-2,#eee);color:var(--ink-soft,#777);font-size:15px;border:none;cursor:pointer;transition:.2s;">{{ themeGlyph }}</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <div style="flex:1;display:flex;flex-direction:column;padding:clamp(18px,4.5vw,28px);box-sizing:border-box;">
+
+      <sc-if value="{{ isCreate }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;animation:sd-fadeup .5s ease both;">
+          <div style="font-family:'Newsreader',serif;font-size:clamp(40px,13vw,54px);font-weight:500;letter-spacing:-.02em;line-height:1;color:var(--ink,#2b2b2b);">Sudoku</div>
+          <div style="font-family:'Newsreader',serif;font-style:italic;font-size:17px;color:var(--ink-soft,#777);margin-top:12px;margin-bottom:34px;">a quiet place to think</div>
+          <div style="font-weight:600;font-size:19px;color:var(--ink,#2b2b2b);">Choose your alias</div>
+          <div style="font-size:14px;color:var(--ink-soft,#777);margin-top:6px;line-height:1.5;">A name to keep your games under. You can change it later.</div>
+          <input value="{{ aliasInput }}" onInput="{{ onAliasInput }}" placeholder="e.g. quiet-fox" maxlength="50" style="width:100%;box-sizing:border-box;margin-top:16px;padding:14px 16px;border-radius:12px;border:1px solid var(--line,#e5e5e5);background:var(--surface,#fff);color:var(--ink,#2b2b2b);font-family:inherit;font-size:16px;outline:none;">
+          <div style="min-height:18px;margin-top:8px;font-size:13px;color:var(--error,#c33);">{{ aliasError }}</div>
+          <div style="font-size:12px;color:var(--ink-soft,#777);opacity:.8;">2–50 characters · letters, numbers, dashes, underscores</div>
+          <button onClick="{{ onCreateProfile }}" style="{{ createBtnStyle }}">Begin</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;display:flex;flex-direction:column;animation:sd-fadeup .45s ease both;">
+          <div style="padding:14px 2px 26px;">
+            <div style="font-family:'Newsreader',serif;font-style:italic;font-size:16px;color:var(--ink-soft,#777);">welcome back,</div>
+            <div style="font-family:'Newsreader',serif;font-size:clamp(34px,10vw,44px);font-weight:500;color:var(--ink,#2b2b2b);line-height:1.05;margin-top:2px;">{{ alias }}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:11px;">
+            <button onClick="{{ onGoDifficulty }}" style="display:flex;align-items:center;justify-content:space-between;text-align:left;width:100%;padding:19px 20px;border-radius:15px;background:var(--accent,#c66);border:1px solid transparent;cursor:pointer;font-family:inherit;transition:.18s;box-shadow:0 6px 20px var(--shadow,rgba(0,0,0,.08));" style-hover="transform:translateY(-2px);">
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:17px;color:var(--accent-ink,#fff);">New game</div>
+                <div style="font-size:13px;color:var(--accent-ink,#fff);opacity:.8;margin-top:3px;">Start a fresh puzzle</div>
+              </div>
+              <div style="font-family:'Newsreader',serif;font-size:22px;color:var(--accent-ink,#fff);">→</div>
+            </button>
+            <button onClick="{{ onGoGames }}" style="display:flex;align-items:center;justify-content:space-between;text-align:left;width:100%;padding:17px 20px;border-radius:15px;background:var(--surface,#fff);border:1px solid var(--line,#e5e5e5);cursor:pointer;font-family:inherit;transition:.18s;box-shadow:0 2px 12px var(--shadow,rgba(0,0,0,.05));" style-hover="transform:translateY(-2px)">
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:17px;color:var(--ink,#2b2b2b);">Saved games</div>
+                <div style="font-size:13px;color:var(--ink-soft,#777);margin-top:3px;">{{ savedLabel }}</div>
+              </div>
+              <div style="font-family:'Newsreader',serif;font-size:22px;color:var(--accent,#c66);">→</div>
+            </button>
+            <button onClick="{{ onGoProfile }}" style="display:flex;align-items:center;justify-content:space-between;text-align:left;width:100%;padding:17px 20px;border-radius:15px;background:var(--surface,#fff);border:1px solid var(--line,#e5e5e5);cursor:pointer;font-family:inherit;transition:.18s;box-shadow:0 2px 12px var(--shadow,rgba(0,0,0,.05));" style-hover="transform:translateY(-2px)">
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:17px;color:var(--ink,#2b2b2b);">Profile</div>
+                <div style="font-size:13px;color:var(--ink-soft,#777);margin-top:3px;">Manage your alias</div>
+              </div>
+              <div style="font-family:'Newsreader',serif;font-size:22px;color:var(--accent,#c66);">→</div>
+            </button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isDifficulty }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;animation:sd-fadeup .45s ease both;">
+          <div style="font-family:'Newsreader',serif;font-size:clamp(30px,9vw,40px);font-weight:500;color:var(--ink,#2b2b2b);margin-bottom:6px;">Select difficulty</div>
+          <div style="font-family:'Newsreader',serif;font-style:italic;font-size:16px;color:var(--ink-soft,#777);margin-bottom:26px;">how much quiet do you want?</div>
+          <div style="display:flex;flex-direction:column;gap:11px;">
+            <sc-for list="{{ diffOptions }}" as="opt" hint-placeholder-count="3">
+              <button onClick="{{ opt.onClick }}" style="display:flex;align-items:center;justify-content:space-between;text-align:left;width:100%;padding:18px 20px;border-radius:15px;background:var(--surface,#fff);border:1px solid var(--line,#e5e5e5);cursor:pointer;font-family:inherit;transition:.18s;box-shadow:0 2px 12px var(--shadow,rgba(0,0,0,.05));" style-hover="transform:translateY(-2px)">
+                <div style="flex:1;min-width:0;">
+                  <div style="font-weight:600;font-size:17px;color:var(--ink,#2b2b2b);">{{ opt.name }}</div>
+                  <div style="font-size:13px;color:var(--ink-soft,#777);margin-top:3px;">{{ opt.desc }}</div>
+                </div>
+                <div style="font-family:'Newsreader',serif;font-size:15px;color:var(--accent,#c66);">{{ opt.dots }}</div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;animation:sd-fadeup .3s ease both;">
+          <div style="font-family:'Newsreader',serif;font-style:italic;font-size:19px;color:var(--ink-soft,#777);text-align:center;">setting out a {{ difficultyLower }} puzzle…</div>
+          <div style="display:flex;gap:9px;">
+            <sc-for list="{{ loadTiles }}" as="t" hint-placeholder-count="9">
+              <div style="{{ t.style }}">{{ t.n }}</div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isGame }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;flex:1;animation:sd-fadeup .4s ease both;">
+          <div style="width:100%;max-width:440px;margin:0 auto;box-sizing:border-box;background:var(--surface,#fff);border:1px solid var(--line,#e5e5e5);border-radius:14px;padding:12px 16px;box-shadow:0 2px 12px var(--shadow,rgba(0,0,0,.04));">
+            <div onClick="{{ onToggleStats }}" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;">
+              <span style="font-weight:600;font-size:14px;color:var(--ink,#2b2b2b);">Time</span>
+              <span style="font-variant-numeric:tabular-nums;font-size:15px;color:var(--ink,#2b2b2b);letter-spacing:.02em;">{{ timeStr }}</span>
+              <span style="font-size:12px;color:var(--ink-soft,#777);width:18px;text-align:right;">{{ statsChevron }}</span>
+            </div>
+            <sc-if value="{{ statsOpen }}" hint-placeholder-val="{{ true }}">
+              <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line,#eee);display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--ink-soft,#777);">Total moves</span><span style="color:var(--ink,#2b2b2b);font-variant-numeric:tabular-nums;">{{ moves }}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--ink-soft,#777);">Invalid moves</span><span style="color:var(--ink,#2b2b2b);font-variant-numeric:tabular-nums;">{{ invalid }}</span></div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;"><span style="color:var(--ink-soft,#777);">Hints used</span><span style="color:var(--ink,#2b2b2b);font-variant-numeric:tabular-nums;">{{ hintsUsed }}</span></div>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="width:100%;max-width:440px;margin:16px auto 0;">
+            <div style="display:grid;grid-template-columns:repeat(9,1fr);aspect-ratio:1/1;width:100%;border:2px solid var(--line-bold,#999);border-radius:12px;overflow:hidden;background:var(--surface,#fff);box-shadow:0 10px 34px var(--shadow,rgba(0,0,0,.08));">
+              <sc-for list="{{ cells }}" as="cell" hint-placeholder-count="81">
+                <div onClick="{{ cell.onClick }}" style="{{ cell.style }}">{{ cell.content }}</div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:6px;margin:16px auto 0;max-width:440px;width:100%;">
+            <sc-for list="{{ pad }}" as="p" hint-placeholder-count="9">
+              <button onClick="{{ p.onClick }}" style="{{ p.style }}">
+                <span style="font-size:clamp(22px,7vw,28px);font-weight:500;line-height:1;">{{ p.digit }}</span>
+                <span style="font-size:10px;color:var(--ink-soft,#777);margin-top:2px;min-height:12px;">{{ p.remaining }}</span>
+              </button>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;gap:8px;margin:14px auto 4px;max-width:440px;width:100%;">
+            <button onClick="{{ onUndo }}" style="{{ undoBtnStyle }}">
+              <span style="font-size:19px;line-height:1;">↶</span><span style="font-size:11px;color:var(--ink-soft,#777);">Undo</span>
+            </button>
+            <button onClick="{{ onErase }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:11px 4px;border-radius:12px;background:var(--surface-2,#eee);border:1px solid var(--line,#e5e5e5);color:var(--ink,#2b2b2b);cursor:pointer;font-family:inherit;transition:.15s;">
+              <span style="font-size:19px;line-height:1;">✕</span><span style="font-size:11px;color:var(--ink-soft,#777);">Erase</span>
+            </button>
+            <button onClick="{{ onTogglePencil }}" style="{{ pencilBtnStyle }}">
+              <span style="font-size:18px;line-height:1;">✎</span><span style="font-size:11px;color:inherit;opacity:.85;">{{ pencilLabel }}</span>
+            </button>
+            <button onClick="{{ onHint }}" style="{{ hintBtnStyle }}">
+              <span style="font-size:17px;line-height:1;">✦</span><span style="font-size:11px;color:var(--ink-soft,#777);">{{ hintLabel }}</span>
+            </button>
+            <button onClick="{{ onReset }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;padding:11px 4px;border-radius:12px;background:var(--surface-2,#eee);border:1px solid var(--line,#e5e5e5);color:var(--ink,#2b2b2b);cursor:pointer;font-family:inherit;transition:.15s;">
+              <span style="font-size:17px;line-height:1;">⟲</span><span style="font-size:11px;color:var(--ink-soft,#777);">Reset</span>
+            </button>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isGames }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;display:flex;flex-direction:column;animation:sd-fadeup .45s ease both;">
+          <div style="font-family:'Newsreader',serif;font-size:clamp(28px,8vw,36px);font-weight:500;color:var(--ink,#2b2b2b);margin-bottom:18px;">Saved games</div>
+          <sc-if value="{{ noGames }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:40px 20px;">
+              <div style="font-family:'Newsreader',serif;font-style:italic;font-size:19px;color:var(--ink-soft,#777);">nothing here yet</div>
+              <button onClick="{{ onGoDifficulty }}" style="{{ createBtnStyle }}">Start a game</button>
+            </div>
+          </sc-if>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <sc-for list="{{ games }}" as="g" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;gap:14px;padding:14px;border-radius:15px;background:var(--surface,#fff);border:1px solid var(--line,#e5e5e5);box-shadow:0 2px 12px var(--shadow,rgba(0,0,0,.05));">
+                <div onClick="{{ g.onResume }}" style="display:grid;grid-template-columns:repeat(9,1fr);grid-template-rows:repeat(9,1fr);width:88px;height:88px;flex-shrink:0;border:1.5px solid var(--line-bold,#999);border-radius:6px;overflow:hidden;cursor:pointer;background:var(--surface,#fff);">
+                  <sc-for list="{{ g.thumb }}" as="tc" hint-placeholder-count="81">
+                    <div style="{{ tc.style }}">{{ tc.ch }}</div>
+                  </sc-for>
+                </div>
+                <div onClick="{{ g.onResume }}" style="flex:1;min-width:0;cursor:pointer;">
+                  <div style="font-weight:600;font-size:16px;color:var(--ink,#2b2b2b);">{{ g.difficulty }}</div>
+                  <div style="font-size:13px;color:var(--ink-soft,#777);margin-top:3px;font-variant-numeric:tabular-nums;">{{ g.meta }}</div>
+                </div>
+                <button onClick="{{ g.onDelete }}" style="width:36px;height:36px;border-radius:9px;background:none;border:none;color:var(--ink-soft,#777);font-size:16px;cursor:pointer;flex-shrink:0;transition:.15s;" style-hover="background:var(--error-soft);color:var(--error)">✕</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;display:flex;flex-direction:column;animation:sd-fadeup .45s ease both;">
+          <div style="font-family:'Newsreader',serif;font-size:clamp(28px,8vw,36px);font-weight:500;color:var(--ink,#2b2b2b);margin-bottom:22px;">Your profile</div>
+          <div style="background:var(--surface,#fff);border:1px solid var(--line,#e5e5e5);border-radius:15px;padding:20px;box-shadow:0 2px 12px var(--shadow,rgba(0,0,0,.05));">
+            <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft,#777);">Alias</div>
+            <sc-if value="{{ editingAlias }}" hint-placeholder-val="{{ true }}">
+              <input value="{{ aliasInput }}" onInput="{{ onAliasInput }}" maxlength="50" style="width:100%;box-sizing:border-box;margin-top:8px;padding:12px 14px;border-radius:10px;border:1px solid var(--line,#e5e5e5);background:var(--bg,#faf8f5);color:var(--ink,#2b2b2b);font-family:inherit;font-size:16px;outline:none;">
+              <div style="min-height:16px;margin-top:6px;font-size:13px;color:var(--error,#c33);">{{ aliasError }}</div>
+              <div style="display:flex;gap:8px;margin-top:6px;">
+                <button onClick="{{ onSaveAlias }}" style="padding:9px 18px;border-radius:10px;background:var(--accent,#c66);color:var(--accent-ink,#fff);border:none;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Save</button>
+                <button onClick="{{ onCancelEdit }}" style="padding:9px 18px;border-radius:10px;background:var(--surface-2,#eee);color:var(--ink,#2b2b2b);border:1px solid var(--line,#e5e5e5);font-size:14px;cursor:pointer;font-family:inherit;">Cancel</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{ notEditingAlias }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+                <span style="font-size:20px;color:var(--ink,#2b2b2b);font-weight:500;">{{ alias }}</span>
+                <button onClick="{{ onEditAlias }}" style="font-size:14px;color:var(--accent,#c66);background:none;border:none;cursor:pointer;font-family:inherit;">Edit</button>
+              </div>
+            </sc-if>
+          </div>
+          <div style="margin-top:14px;background:var(--surface,#fff);border:1px solid var(--line,#e5e5e5);border-radius:15px;padding:20px;box-shadow:0 2px 12px var(--shadow,rgba(0,0,0,.05));">
+            <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft,#777);">Member since</div>
+            <div style="font-size:16px;color:var(--ink,#2b2b2b);margin-top:6px;">{{ memberSince }}</div>
+          </div>
+          <div style="font-size:12.5px;color:var(--ink-soft,#777);line-height:1.5;margin-top:16px;opacity:.85;">Your profile lives in this browser. Clearing browser data will ask you to begin again.</div>
+          <div style="margin-top:auto;padding-top:26px;">
+            <sc-if value="{{ notConfirmingDelete }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ onAskDelete }}" style="font-size:14px;color:var(--error,#c33);background:none;border:none;cursor:pointer;font-family:inherit;padding:8px 0;">Delete profile</button>
+            </sc-if>
+            <sc-if value="{{ confirmingDelete }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:16px;border-radius:12px;background:var(--error-soft,#fee);">
+                <div style="font-size:13.5px;color:var(--ink,#2b2b2b);line-height:1.5;">This permanently deletes your profile and all saved games. This can't be undone.</div>
+                <div style="display:flex;gap:8px;margin-top:12px;">
+                  <button onClick="{{ onDeleteProfile }}" style="padding:9px 16px;border-radius:10px;background:var(--error,#c33);color:#fff;border:none;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit;">Yes, delete</button>
+                  <button onClick="{{ onCancelDelete }}" style="padding:9px 16px;border-radius:10px;background:var(--surface,#fff);color:var(--ink,#2b2b2b);border:1px solid var(--line,#e5e5e5);font-size:14px;cursor:pointer;font-family:inherit;">Cancel</button>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isWin }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;animation:sd-modal .5s ease both;padding:20px;">
+          <div style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent,#c66);">{{ difficulty }}</div>
+          <div style="font-family:'Newsreader',serif;font-size:clamp(50px,16vw,68px);font-weight:500;color:var(--ink,#2b2b2b);line-height:1;margin-top:8px;">Solved</div>
+          <div style="font-family:'Newsreader',serif;font-style:italic;color:var(--ink-soft,#777);font-size:18px;margin-top:12px;">a clear, quiet finish</div>
+          <div style="display:flex;gap:22px;margin-top:30px;">
+            <div><div style="font-family:'Newsreader',serif;font-size:28px;color:var(--ink,#2b2b2b);font-variant-numeric:tabular-nums;">{{ timeStr }}</div><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft,#777);margin-top:2px;">Time</div></div>
+            <div><div style="font-family:'Newsreader',serif;font-size:28px;color:var(--ink,#2b2b2b);">{{ moves }}</div><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft,#777);margin-top:2px;">Moves</div></div>
+            <div><div style="font-family:'Newsreader',serif;font-size:28px;color:var(--ink,#2b2b2b);">{{ invalid }}</div><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft,#777);margin-top:2px;">Invalid</div></div>
+            <div><div style="font-family:'Newsreader',serif;font-size:28px;color:var(--ink,#2b2b2b);">{{ hintsUsed }}</div><div style="font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft,#777);margin-top:2px;">Hints</div></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:34px;">
+            <button onClick="{{ onGoDifficulty }}" style="padding:13px 24px;border-radius:12px;background:var(--accent,#c66);color:var(--accent-ink,#fff);border:none;font-weight:600;font-size:15px;cursor:pointer;font-family:inherit;box-shadow:0 6px 20px var(--shadow,rgba(0,0,0,.1));">New puzzle</button>
+            <button onClick="{{ onGoHomeWin }}" style="padding:13px 24px;border-radius:12px;background:var(--surface-2,#eee);color:var(--ink,#2b2b2b);border:1px solid var(--line,#e5e5e5);font-weight:500;font-size:15px;cursor:pointer;font-family:inherit;">Home</button>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:860},&quot;palette&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;warm&quot;,&quot;cool&quot;],&quot;default&quot;:&quot;warm&quot;,&quot;tsType&quot;:&quot;'warm'|'cool'&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;default&quot;:&quot;light&quot;,&quot;tsType&quot;:&quot;'light'|'dark'&quot;,&quot;section&quot;:&quot;Theme&quot;},&quot;start&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;auto&quot;,&quot;game&quot;],&quot;default&quot;:&quot;auto&quot;,&quot;tsType&quot;:&quot;'auto'|'game'&quot;,&quot;section&quot;:&quot;Demo&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.SOL = "534678912672195348198342567859761423426853791713924856961537284287419635345286179".split('').map(Number);
+    this.KEY_P='sd.profile'; this.KEY_G='sd.games';
+    this.palettes = {
+      cool: {
+        light: { bg:'oklch(0.981 0.006 220)', surface:'oklch(0.995 0.004 220)', surface2:'oklch(0.955 0.009 220)', ink:'oklch(0.32 0.03 245)', inkSoft:'oklch(0.56 0.025 240)', line:'oklch(0.90 0.012 230)', lineBold:'oklch(0.55 0.03 240)', accent:'oklch(0.60 0.10 215)', accentSoft:'oklch(0.93 0.035 215)', accentInk:'oklch(0.99 0.005 220)', given:'oklch(0.32 0.03 245)', entry:'oklch(0.55 0.11 220)', highlight:'oklch(0.955 0.014 220)', same:'oklch(0.90 0.045 215)', error:'oklch(0.56 0.15 25)', errorSoft:'oklch(0.93 0.05 25)', shadow:'rgba(30,45,70,0.10)' },
+        dark: { bg:'oklch(0.21 0.016 245)', surface:'oklch(0.25 0.018 245)', surface2:'oklch(0.29 0.02 245)', ink:'oklch(0.93 0.012 225)', inkSoft:'oklch(0.70 0.02 230)', line:'oklch(0.35 0.02 245)', lineBold:'oklch(0.60 0.03 235)', accent:'oklch(0.72 0.10 205)', accentSoft:'oklch(0.34 0.045 220)', accentInk:'oklch(0.20 0.02 245)', given:'oklch(0.93 0.012 225)', entry:'oklch(0.80 0.11 205)', highlight:'oklch(0.29 0.025 240)', same:'oklch(0.37 0.055 210)', error:'oklch(0.70 0.14 28)', errorSoft:'oklch(0.37 0.07 28)', shadow:'rgba(0,0,0,0.35)' }
+      },
+      warm: {
+        light: { bg:'oklch(0.982 0.008 78)', surface:'oklch(0.996 0.005 78)', surface2:'oklch(0.955 0.013 70)', ink:'oklch(0.31 0.03 48)', inkSoft:'oklch(0.53 0.03 52)', line:'oklch(0.90 0.013 66)', lineBold:'oklch(0.52 0.04 48)', accent:'oklch(0.60 0.11 45)', accentSoft:'oklch(0.93 0.04 58)', accentInk:'oklch(0.99 0.006 78)', given:'oklch(0.31 0.03 48)', entry:'oklch(0.56 0.12 46)', highlight:'oklch(0.958 0.016 72)', same:'oklch(0.91 0.05 58)', error:'oklch(0.55 0.15 27)', errorSoft:'oklch(0.93 0.055 32)', shadow:'rgba(70,45,25,0.10)' },
+        dark: { bg:'oklch(0.21 0.016 55)', surface:'oklch(0.25 0.018 52)', surface2:'oklch(0.29 0.022 52)', ink:'oklch(0.94 0.012 72)', inkSoft:'oklch(0.72 0.025 62)', line:'oklch(0.35 0.02 55)', lineBold:'oklch(0.60 0.035 55)', accent:'oklch(0.73 0.11 58)', accentSoft:'oklch(0.34 0.05 50)', accentInk:'oklch(0.20 0.02 50)', given:'oklch(0.94 0.012 72)', entry:'oklch(0.82 0.11 58)', highlight:'oklch(0.29 0.028 55)', same:'oklch(0.37 0.06 55)', error:'oklch(0.71 0.14 32)', errorSoft:'oklch(0.37 0.075 32)', shadow:'rgba(0,0,0,0.35)' }
+      }
+    };
+    this.demo = props.start==='game';
+    let profile=null, games=[];
+    if(!this.demo){
+      try { const p=localStorage.getItem(this.KEY_P); if(p) profile=JSON.parse(p); } catch(e){}
+      try { const g=localStorage.getItem(this.KEY_G); if(g) games=JSON.parse(g)||[]; } catch(e){}
+    }
+    this.state = {
+      screen: this.demo?'game':(profile?'home':'create'),
+      theme: props.theme==='dark'?'dark':'light',
+      alias: profile?profile.alias:(this.demo?'Guest':null),
+      createdAt: profile?profile.createdAt:null,
+      aliasInput:'', aliasError:'', editingAlias:false, confirmDelete:false,
+      difficulty:'Medium',
+      board: this.demo?this.makeBoard('Medium'):this.blankBoard(),
+      selected:null, notesMode:false,
+      seconds:0, running: this.demo,
+      moves:0, invalid:0, hintsLeft:3, statsOpen:false,
+      gameId: this.demo?'demo':null, gameCreatedAt:this.demo?Date.now():null,
+      savedGames: games
+    };
+  }
+  blankBoard(){ return Array.from({length:81},()=>({v:0,given:false,notes:[],wrong:false,hint:false})); }
+  rng(seed){ return function(){ seed|=0; seed=seed+0x6D2B79F5|0; var t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+  makeBoard(diff){
+    const givens = diff==='Easy'?42:diff==='Medium'?32:26;
+    const idx=[...Array(81).keys()];
+    const r=this.rng((Date.now()%2147483647)||1);
+    for(let i=idx.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); const t=idx[i]; idx[i]=idx[j]; idx[j]=t; }
+    const keep=new Set(idx.slice(0,givens));
+    return Array.from({length:81},(_,i)=>({v: keep.has(i)?this.SOL[i]:0, given:keep.has(i), notes:[], wrong:false, hint:false}));
+  }
+  peers(i){ const r=Math.floor(i/9),c=i%9,br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3; const s=new Set(); for(let k=0;k<9;k++){ s.add(r*9+k); s.add(k*9+c); } for(let a=0;a<3;a++)for(let b=0;b<3;b++)s.add((br+a)*9+(bc+b)); s.delete(i); return s; }
+  serialize(board){ return board.map(c=>({v:c.v,given:c.given,notes:[...(c.notes||[])],wrong:c.wrong,hint:!!c.hint})); }
+  fmt(sec){ const m=String(Math.floor(sec/60)).padStart(2,'0'), s=String(sec%60).padStart(2,'0'); return m+':'+s; }
+
+  persistGames(games){ if(this.demo) return; try { localStorage.setItem(this.KEY_G, JSON.stringify(games)); } catch(e){} }
+  persistProfile(p){ if(this.demo) return; try { localStorage.setItem(this.KEY_P, JSON.stringify(p)); } catch(e){} }
+  saveCurrent(){
+    if(this.demo || !this.state.gameId) return;
+    const s=this.state;
+    const rec={ id:s.gameId, difficulty:s.difficulty, cells:this.serialize(s.board), seconds:s.seconds, moves:s.moves, invalid:s.invalid, hintsLeft:s.hintsLeft, createdAt:s.gameCreatedAt||Date.now(), updatedAt:Date.now() };
+    const games=[rec, ...s.savedGames.filter(g=>g.id!==s.gameId)];
+    this.setState({savedGames:games});
+    this.persistGames(games);
+  }
+
+  // profile
+  validateAlias(v){ const t=(v||'').trim(); if(t.length<2) return 'At least 2 characters.'; if(t.length>50) return 'At most 50 characters.'; if(!/^[a-z0-9_-]+$/i.test(t)) return 'Letters, numbers, dashes, underscores only.'; return ''; }
+  onAliasInput(e){ this.setState({aliasInput:e.target.value, aliasError:''}); }
+  createProfile(){ const err=this.validateAlias(this.state.aliasInput); if(err){ this.setState({aliasError:err}); return; } const alias=this.state.aliasInput.trim(); const createdAt=Date.now(); this.persistProfile({alias,createdAt}); this.setState({alias,createdAt,screen:'home',aliasInput:''}); }
+  editAlias(){ this.setState({editingAlias:true, aliasInput:this.state.alias, aliasError:''}); }
+  saveAlias(){ const err=this.validateAlias(this.state.aliasInput); if(err){ this.setState({aliasError:err}); return; } const alias=this.state.aliasInput.trim(); this.persistProfile({alias,createdAt:this.state.createdAt}); this.setState({alias,editingAlias:false}); }
+  cancelEdit(){ this.setState({editingAlias:false,aliasError:''}); }
+  deleteProfile(){ try { localStorage.removeItem(this.KEY_P); localStorage.removeItem(this.KEY_G); } catch(e){} this.setState({alias:null,createdAt:null,savedGames:[],confirmDelete:false,screen:'create',aliasInput:''}); }
+
+  // nav
+  goHome(){ if(this.state.screen==='game') this.saveCurrent(); this.setState({screen:'home',running:false}); }
+  goDifficulty(){ this.setState({screen:'difficulty'}); }
+  goGames(){ this.setState({screen:'games',running:false}); }
+  goProfile(){ this.setState({screen:'profile',confirmDelete:false,editingAlias:false}); }
+  toggleTheme(){ this.setState(s=>({theme:s.theme==='light'?'dark':'light'})); }
+  toggleStats(){ this.setState(s=>({statsOpen:!s.statsOpen})); }
+
+  startCreate(diff){ this.setState({screen:'loading',difficulty:diff}); clearTimeout(this._load); this._load=setTimeout(()=>{ const board=this.makeBoard(diff); const id='g'+Date.now(); this.setState({ screen:'game', board, selected:null, notesMode:false, seconds:0, running:true, moves:0, invalid:0, hintsLeft:3, statsOpen:false, gameId:id, gameCreatedAt:Date.now() }, ()=>this.saveCurrent()); },850); }
+  resume(g){ const board=(g.cells||[]).map(c=>({v:c.v,given:c.given,notes:[...(c.notes||[])],wrong:c.wrong,hint:!!c.hint})); this.setState({ screen:'game', difficulty:g.difficulty, board, selected:null, notesMode:false, seconds:g.seconds||0, running:true, moves:g.moves||0, invalid:g.invalid||0, hintsLeft:(g.hintsLeft==null?3:g.hintsLeft), gameId:g.id, gameCreatedAt:g.createdAt }); }
+  deleteSaved(id){ const games=this.state.savedGames.filter(g=>g.id!==id); this.setState({savedGames:games}); this.persistGames(games); }
+
+  select(i){ this.setState({selected:i}); }
+  input(d){
+    const {selected,board,notesMode}=this.state;
+    if(selected==null || board[selected].given || board[selected].hint) return;
+    const nb=this.serialize(board);
+    if(notesMode){
+      if(nb[selected].v!==0) return;
+      const set=new Set(nb[selected].notes);
+      if(set.has(d)) set.delete(d); else set.add(d);
+      nb[selected].notes=[...set].sort((a,b)=>a-b);
+      this.setState({board:nb}, ()=>this.saveCurrent());
+      return;
+    }
+    this._pushHist();
+    nb[selected].v=d; nb[selected].notes=[];
+    const wrong=d!==this.SOL[selected]; nb[selected].wrong=wrong;
+    if(!wrong){ this.peers(selected).forEach(p=>{ if(nb[p].notes.includes(d)) nb[p].notes=nb[p].notes.filter(x=>x!==d); }); }
+    const won=nb.every((c,i)=>c.v===this.SOL[i]);
+    this.setState(s=>({ board:nb, moves:s.moves+1, invalid:s.invalid+(wrong?1:0), running: won?false:s.running, screen: won?'win':'game' }), ()=>{ if(this.state.screen==='win'){ this.deleteSaved(this.state.gameId); } else { this.saveCurrent(); } });
+  }
+  _pushHist(){ this._hist=(this._hist||[]); this._hist.push(this.serialize(this.state.board)); if(this._hist.length>50) this._hist.shift(); }
+  erase(){
+    const {selected,board}=this.state;
+    if(selected==null) return; const c=board[selected];
+    if(c.given || c.hint || (c.v===0 && c.notes.length===0)) return;
+    this._pushHist();
+    const nb=this.serialize(board); nb[selected]={v:0,given:false,notes:[],wrong:false};
+    this.setState(s=>({board:nb,moves:s.moves+1}), ()=>this.saveCurrent());
+  }
+  undo(){ if(!this._hist||!this._hist.length) return; const prev=this._hist.pop(); this.setState({board:prev}, ()=>this.saveCurrent()); }
+  reset(){ const nb=this.state.board.map(c=>c.given?{v:c.v,given:true,notes:[],wrong:false,hint:false}:{v:0,given:false,notes:[],wrong:false,hint:false}); this._hist=[]; this.setState({board:nb,selected:null,hintsLeft:3}, ()=>this.saveCurrent()); }
+  togglePencil(){ this.setState(s=>({notesMode:!s.notesMode})); }
+  hint(){
+    const board=this.state.board;
+    if(this.state.hintsLeft<=0) return;
+    let target=this.state.selected;
+    if(target==null || board[target].given || board[target].hint || board[target].v===this.SOL[target]){ target=board.findIndex((c,i)=>!c.given && !c.hint && c.v!==this.SOL[i]); }
+    if(target<0) return;
+    this._pushHist();
+    const nb=this.serialize(board);
+    nb[target].v=this.SOL[target]; nb[target].notes=[]; nb[target].wrong=false; nb[target].hint=true;
+    this.peers(target).forEach(p=>{ nb[p].notes=nb[p].notes.filter(x=>x!==this.SOL[target]); });
+    const won=nb.every((c,i)=>c.v===this.SOL[i]);
+    this.setState(s=>({ board:nb, selected:target, hintsLeft:s.hintsLeft-1, running:won?false:s.running, screen:won?'win':'game' }), ()=>{ if(this.state.screen==='win'){ this.deleteSaved(this.state.gameId); } else { this.saveCurrent(); } });
+  }
+
+  componentDidMount(){ this._t=setInterval(()=>{ if(this.state.running) this.setState(s=>({seconds:s.seconds+1})); },1000); }
+  componentWillUnmount(){ clearInterval(this._t); clearTimeout(this._load); }
+
+  renderVals(){
+    const pal=this.props.palette==='cool'?'cool':'warm';
+    const theme=this.state.theme;
+    const v=this.palettes[pal][theme];
+    const rootStyle=Object.assign({
+      '--bg':v.bg,'--surface':v.surface,'--surface-2':v.surface2,'--ink':v.ink,'--ink-soft':v.inkSoft,'--line':v.line,'--line-bold':v.lineBold,'--accent':v.accent,'--accent-soft':v.accentSoft,'--accent-ink':v.accentInk,'--given':v.given,'--entry':v.entry,'--highlight':v.highlight,'--same':v.same,'--error':v.error,'--error-soft':v.errorSoft,'--shadow':v.shadow
+    },{ fontFamily:"'Hanken Grotesk',system-ui,sans-serif", background:'var(--bg)', color:'var(--ink)', minHeight:'100%', width:'100%', boxSizing:'border-box', display:'flex', flexDirection:'column', alignItems:'center', WebkitFontSmoothing:'antialiased', transition:'background-color .35s ease,color .35s ease' });
+
+    const st=this.state, screen=st.screen, board=st.board;
+    const sel=st.selected, selVal=sel!=null?board[sel].v:0;
+    const peers = sel!=null?this.peers(sel):new Set();
+
+    const cells=board.map((c,i)=>{
+      const col=i%9,row=Math.floor(i/9);
+      const isSel=i===sel, inPeer=peers.has(i), sameNum=selVal!==0 && c.v===selVal;
+      let bg='transparent';
+      if(inPeer) bg='var(--highlight)';
+      if(sameNum) bg='var(--same)';
+      if(c.wrong) bg='var(--error-soft)';
+      if(isSel) bg='var(--accent-soft)';
+      const color=c.given?'var(--given)':(c.hint?'var(--accent)':(c.wrong?'var(--error)':'var(--entry)'));
+      const style={ display:'flex',alignItems:'center',justifyContent:'center', fontSize:'clamp(17px,5.6vw,27px)',lineHeight:1,fontWeight:c.given?600:(c.hint?700:(c.wrong?600:500)), cursor:'pointer',userSelect:'none',position:'relative', background:bg,color, boxShadow:isSel?'inset 0 0 0 2px var(--accent)':'none', transition:'background-color .16s ease,color .16s ease', borderRight:(col===2||col===5)?'2px solid var(--line-bold)':(col===8?'none':'1px solid var(--line)'), borderBottom:(row===2||row===5)?'2px solid var(--line-bold)':(row===8?'none':'1px solid var(--line)') };
+      let content=null;
+      if(c.v!==0){ content=React.createElement('span',{style:{animation:'sd-pop .2s ease'}},c.v); }
+      else if(c.notes&&c.notes.length){ content=React.createElement('div',{style:{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gridTemplateRows:'repeat(3,1fr)',width:'100%',height:'100%',padding:'1px',boxSizing:'border-box',fontSize:'clamp(7px,2.1vw,10px)',fontWeight:500,color:'var(--ink-soft)',lineHeight:1}}, [1,2,3,4,5,6,7,8,9].map(d=>React.createElement('div',{key:d,style:{display:'flex',alignItems:'center',justifyContent:'center'}}, c.notes.includes(d)?d:''))); }
+      return { key:i, style, content, onClick:()=>this.select(i) };
+    });
+
+    const counts={}; for(let d=1;d<=9;d++)counts[d]=0; board.forEach(c=>{ if(c.v)counts[c.v]++; });
+    const pad=[1,2,3,4,5,6,7,8,9].map(d=>{ const rem=9-counts[d], done=rem<=0; return { digit:d, remaining:done?'':rem, onClick:()=>this.input(d), style:{ flex:1, aspectRatio:'1/1.15', display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center', borderRadius:'12px', background:'var(--surface-2)', border:'1px solid var(--line)', color:'var(--ink)', cursor:done?'default':'pointer', fontFamily:'inherit', opacity:done?0.3:1, pointerEvents:done?'none':'auto', transition:'transform .1s ease,background-color .15s ease' } }; });
+
+    const ctrlBase={ flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:'5px',padding:'11px 4px',borderRadius:'12px', background:'var(--surface-2)', border:'1px solid var(--line)', color:'var(--ink)', cursor:'pointer', fontFamily:'inherit', transition:'.15s' };
+    const canUndo=this._hist&&this._hist.length>0;
+    const undoBtnStyle=Object.assign({},ctrlBase,{ opacity:canUndo?1:0.4, pointerEvents:canUndo?'auto':'none' });
+    const pencilBtnStyle=Object.assign({},ctrlBase,{ background: st.notesMode?'var(--accent)':'var(--surface-2)', color: st.notesMode?'var(--accent-ink)':'var(--ink)', border: st.notesMode?'1px solid transparent':'1px solid var(--line)' });
+    const hintBtnStyle=Object.assign({},ctrlBase,{ opacity: st.hintsLeft>0?1:0.4, pointerEvents: st.hintsLeft>0?'auto':'none' });
+    const createBtnStyle={ marginTop:'22px', padding:'14px 22px', borderRadius:'12px', background:'var(--accent)', color:'var(--accent-ink)', border:'none', fontWeight:600, fontSize:'15px', cursor:'pointer', fontFamily:'inherit', alignSelf:'flex-start', boxShadow:'0 6px 18px var(--shadow)' };
+
+    const diffMeta=[['Easy','A gentle warm-up','·'],['Medium','A steady challenge','··'],['Hard','For a clear mind','···']];
+    const diffOptions=diffMeta.map(m=>({ name:m[0], desc:m[1], dots:m[2], onClick:()=>this.startCreate(m[0]) }));
+
+    const loadTiles=[1,2,3,4,5,6,7,8,9].map((n,i)=>({ n, style:{ width:'26px',height:'32px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'6px',background:'var(--surface-2)',color:'var(--accent)',fontWeight:600,fontSize:'15px', animation:'sd-load 1.1s ease-in-out '+(i*0.09)+'s infinite' } }));
+
+    const games=(st.savedGames||[]).map(g=>{
+      const thumb=(g.cells||[]).map(c=>({ ch:c.v||'', style:{ display:'flex',alignItems:'center',justifyContent:'center',fontSize:'7px',lineHeight:1,color:c.given?'var(--ink-soft)':'var(--accent)',fontWeight:c.given?600:500, borderRight:(c===0)?'':'0.5px solid var(--line)', borderBottom:'0.5px solid var(--line)' } }));
+      return { difficulty:g.difficulty, meta:this.fmt(g.seconds||0)+' · '+(g.moves||0)+' moves', thumb, onResume:()=>this.resume(g), onDelete:()=>this.deleteSaved(g.id) };
+    });
+
+    const isBrand = screen==='home';
+    const backMap={ difficulty:'‹ Back', game:'‹ Home', games:'‹ Back', profile:'‹ Back' };
+    const centerMap={ difficulty:'New game', game:st.difficulty, games:'Saved games', profile:'Profile' };
+    const onHeaderLeft = screen==='game'?(()=>this.goHome()):(screen==='home'?(()=>{}):(()=>this.setState({screen:'home'})));
+
+    return {
+      rootStyle,
+      showHeader: !['create','loading','win'].includes(screen),
+      isBrand, isBack: !isBrand && !!backMap[screen],
+      headerLeft: backMap[screen]||'', headerCenter: centerMap[screen]||'',
+      onHeaderLeft,
+      isCreate:screen==='create', isHome:screen==='home', isDifficulty:screen==='difficulty', isLoading:screen==='loading', isGame:screen==='game', isGames:screen==='games', isProfile:screen==='profile', isWin:screen==='win',
+      alias: st.alias||'',
+      aliasInput: st.aliasInput, aliasError: st.aliasError,
+      editingAlias: st.editingAlias, notEditingAlias: !st.editingAlias,
+      confirmingDelete: st.confirmDelete, notConfirmingDelete: !st.confirmDelete,
+      memberSince: st.createdAt? new Date(st.createdAt).toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'}) : '—',
+      savedLabel: (st.savedGames.length===0?'None yet':(st.savedGames.length===1?'1 in progress':st.savedGames.length+' in progress')),
+      difficulty: st.difficulty, difficultyLower:(st.difficulty||'').toLowerCase(),
+      timeStr: this.fmt(st.seconds), moves: st.moves, invalid: st.invalid,
+      hintsLeft: st.hintsLeft, hintsUsed: 3-st.hintsLeft, hintLabel:'Hint · '+st.hintsLeft, hintBtnStyle,
+      onHint:()=>this.hint(),
+      statsOpen: st.statsOpen, statsChevron: st.statsOpen?'⌃':'⌄',
+      themeGlyph: theme==='light'?'☾':'☼',
+      cells, pad, diffOptions, loadTiles, games,
+      noGames: st.savedGames.length===0,
+      undoBtnStyle, pencilBtnStyle, createBtnStyle,
+      pencilLabel: st.notesMode?'Pencil on':'Pencil',
+      onToggleTheme:()=>this.toggleTheme(),
+      onAliasInput:(e)=>this.onAliasInput(e),
+      onCreateProfile:()=>this.createProfile(),
+      onGoDifficulty:()=>this.goDifficulty(),
+      onGoGames:()=>this.goGames(),
+      onGoProfile:()=>this.goProfile(),
+      onEditAlias:()=>this.editAlias(),
+      onSaveAlias:()=>this.saveAlias(),
+      onCancelEdit:()=>this.cancelEdit(),
+      onAskDelete:()=>this.setState({confirmDelete:true}),
+      onCancelDelete:()=>this.setState({confirmDelete:false}),
+      onDeleteProfile:()=>this.deleteProfile(),
+      onToggleStats:()=>this.toggleStats(),
+      onUndo:()=>this.undo(),
+      onErase:()=>this.erase(),
+      onReset:()=>this.reset(),
+      onTogglePencil:()=>this.togglePencil(),
+      onGoHomeWin:()=>this.setState({screen:'home',running:false}),
+    };
+  }
+}
+</script>
+</body>
+</html>

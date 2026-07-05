@@ -137,8 +137,7 @@ export default function ProfilePage() {
   return (
     <Layout>
       <div className={styles.container}>
-        <button className={styles.backButton} onClick={() => navigate('/')}>← Back</button>
-        <h1 className={styles.title}>Your Profile</h1>
+        <h1 className={styles.title}>Your profile</h1>
 
         {isLoading ? (
           <p>Loading…</p>
@@ -199,7 +198,7 @@ export default function ProfilePage() {
 
             <div className={styles.deleteSection}>
               {isConfirmingDelete ? (
-                <>
+                <div className={styles.deleteConfirm}>
                   <p className={styles.deleteConfirmText}>
                     This will permanently delete your profile and all associated games. This cannot be undone.
                   </p>
@@ -212,7 +211,7 @@ export default function ProfilePage() {
                       onClick={handleDeleteProfile}
                       disabled={isDeleting}
                     >
-                      {isDeleting ? 'Deleting…' : 'Yes, delete my profile'}
+                      {isDeleting ? 'Deleting…' : 'Yes, delete'}
                     </button>
                     <button
                       className={styles.cancelButton}
@@ -222,13 +221,13 @@ export default function ProfilePage() {
                       Cancel
                     </button>
                   </div>
-                </>
+                </div>
               ) : (
                 <button
                   className={styles.deleteButton}
                   onClick={() => setIsConfirmingDelete(true)}
                 >
-                  Delete Profile
+                  Delete profile
                 </button>
               )}
             </div>

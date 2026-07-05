@@ -1,68 +1,95 @@
-.btnToolbar {
-  display: flex;
-  flex-direction: row;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 2rem;
-}
-
-@media (max-width: 479px) {
-  .btnToolbar {
-    margin-top: 1rem;
-  }
-}
-
-.numberPanel {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(4, 1fr);
-}
-
-.btnPanel {
+.controls {
   display: flex;
   flex-direction: column;
-  gap: .5rem;
+  gap: 12px;
+  max-width: 440px;
+  margin: 0 auto;
 }
 
-.btnNum {
-  height: 4rem;
-  width: 4rem;
-  color: #fff;
-  background-color: #1b6ec2;
-  border: 1px solid #1861ac;
-  font-size: 1rem;
+/* Number pad: single row of 9 */
+.numberPad {
+  display: flex;
+  gap: 6px;
+}
+
+.numBtn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  aspect-ratio: 1 / 1.15;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background-color: var(--surface-2);
+  color: var(--ink);
   cursor: pointer;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
 }
 
-.btnNum:hover {
-  background-color: #155a9c;
+.numBtn:hover:not(:disabled) {
+  background-color: var(--highlight);
 }
 
-.btn {
-  padding: 0.5rem 1rem;
-  min-height: 44px;
-  color: #fff;
-  background-color: #1b6ec2;
-  border: 1px solid #1861ac;
+.numBtn:disabled {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.numDigit {
+  font-size: clamp(21px, 6.2vw, 28px);
+  font-weight: 500;
+  line-height: 1;
+}
+
+.numRemaining {
+  font-size: 10px;
+  color: var(--ink-soft);
+}
+
+/* Action row: five equal buttons */
+.actionRow {
+  display: flex;
+  gap: 8px;
+}
+
+.actionBtn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 4px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background-color: var(--surface-2);
+  color: var(--ink);
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 17px;
+  transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
 }
 
-.btn:hover {
-  background-color: #155a9c;
+.actionBtn:hover:not(:disabled) {
+  background-color: var(--highlight);
 }
 
-.btn:disabled {
-  opacity: 0.6;
+.actionBtn:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-.btnOutline {
-  background-color: transparent;
-  color: #1b6ec2;
-  border: 1px solid #1b6ec2;
+.actionActive {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
 }
 
-.btnOutline:hover {
-  background-color: #e8f0fe;
+.actionActive:hover:not(:disabled) {
+  background-color: var(--accent);
+}
+
+.actionLabel {
+  font-size: 11px;
 }

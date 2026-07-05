@@ -91,9 +91,9 @@ describe('GamePage - New Architecture', () => {
     
     await waitFor(() => {
       // Should render the game board from currentGame
-      expect(document.querySelector('table')).toBeInTheDocument();
-      // Should render controls
-      expect(screen.getByTitle('Home')).toBeInTheDocument();
+      expect(screen.getByRole('grid')).toBeInTheDocument();
+      // Should render the header back-to-home affordance
+      expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument();
       // Should render stats
       expect(screen.getByText('Time')).toBeInTheDocument();
     });

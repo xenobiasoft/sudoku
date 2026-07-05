@@ -36,6 +36,7 @@ export default function GamePage() {
   const [pencilMode, setPencilMode] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [solved, setSolved] = useState(false);
+  const [solvedGame, setSolvedGame] = useState<GameModel | null>(null);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(Date.now());
@@ -130,6 +131,7 @@ export default function GamePage() {
       if (isSolved(updated.cells)) {
         solvedRef.current = true;
         stopTimer();
+        setSolvedGame(updated);
         setSolved(true);
         if (profileId) {
           try {
@@ -195,7 +197,7 @@ export default function GamePage() {
     navigate('/');
   };
 
-  const handleKeyDown = (e: KeyboardEvent<HTMLTableElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (!selectedCell) return;
     const { row, column } = selectedCell;
 
@@ -261,8 +263,13 @@ export default function GamePage() {
 
   if (solved) {
     return (
-      <Layout>
-        <VictoryDisplay onClose={handleVictoryClose} />
+      <Layout hideHeader>
+        <VictoryDisplay
+          difficulty={solvedGame?.difficulty ?? ''}
+          statistics={solvedGame?.statistics}
+          elapsedSeconds={elapsedSeconds}
+          onClose={handleVictoryClose}
+        />
       </Layout>
     );
   }
@@ -278,9 +285,12 @@ export default function GamePage() {
   }
 
   const invalidCells = validateCells(game.cells);
+  const difficultyLabel = game.difficulty
+    ? game.difficulty.charAt(0).toUpperCase() + game.difficulty.slice(1)
+    : '';
 
   return (
-    <Layout>
+    <Layout title={difficultyLabel} onBack={handleHome}>
       <div className={styles.gameView}>
         <GameStats
           statistics={game.statistics}
@@ -295,11 +305,11 @@ export default function GamePage() {
           onKeyDown={handleKeyDown}
         />
         <GameControls
+          cells={game.cells}
           pencilMode={pencilMode}
           canUndo={(game.moveHistory?.length ?? 0) > 0}
           onNumberClick={handleNumberInput}
           onErase={handleErase}
-          onHome={handleHome}
           onUndo={handleUndo}
           onReset={handleReset}
           onTogglePencil={() => setPencilMode(p => !p)}

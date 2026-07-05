@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import GamePage from './GamePage';
@@ -210,7 +210,7 @@ describe('GamePage - after load', () => {
     });
     renderGamePage();
     await waitFor(() => {
-      expect(document.querySelector('table')).toBeInTheDocument();
+      expect(screen.getByRole('grid')).toBeInTheDocument();
     });
   });
 
@@ -225,7 +225,7 @@ describe('GamePage - after load', () => {
     });
     renderGamePage();
     await waitFor(() => {
-      expect(screen.getByTitle('Home')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument();
     });
   });
 
@@ -296,10 +296,10 @@ describe('GamePage - cell selection', () => {
     });
     renderGamePage();
     await waitFor(() => {
-      expect(document.querySelector('table')).toBeInTheDocument();
+      expect(screen.getByRole('grid')).toBeInTheDocument();
     });
     // Click on the first input cell
-    const inputs = screen.getAllByRole('textbox');
+    const inputs = within(screen.getByRole('grid')).getAllByRole('button');
     await userEvent.click(inputs[0]);
     // The cell should be selected (no specific assertion needed beyond no crash)
     expect(inputs[0]).toBeInTheDocument();
@@ -318,16 +318,16 @@ describe('GamePage - keyboard navigation', () => {
     });
     renderGamePage();
     await waitFor(() => {
-      expect(document.querySelector('table')).toBeInTheDocument();
+      expect(screen.getByRole('grid')).toBeInTheDocument();
     });
-    const table = document.querySelector('table')!;
+    const grid = screen.getByRole('grid');
     // First select a cell
-    const inputs = screen.getAllByRole('textbox');
+    const inputs = within(grid).getAllByRole('button');
     await userEvent.click(inputs[4]);
     // Then press arrow key
-    fireEvent.keyDown(table, { key: 'ArrowDown' });
+    fireEvent.keyDown(grid, { key: 'ArrowDown' });
     // No error should occur
-    expect(table).toBeInTheDocument();
+    expect(grid).toBeInTheDocument();
   });
 });
 
@@ -347,10 +347,10 @@ describe('GamePage - number input', () => {
     });
     renderGamePage();
     await waitFor(() => {
-      expect(document.querySelector('table')).toBeInTheDocument();
+      expect(screen.getByRole('grid')).toBeInTheDocument();
     });
     // Select cell (0,0)
-    const inputs = screen.getAllByRole('textbox');
+    const inputs = within(screen.getByRole('grid')).getAllByRole('button');
     await userEvent.click(inputs[0]);
     // Click the number 5 button
     await userEvent.click(screen.getByRole('button', { name: '5' }));
@@ -373,7 +373,7 @@ describe('GamePage - number input', () => {
     });
     renderGamePage();
     await waitFor(() => {
-      expect(document.querySelector('table')).toBeInTheDocument();
+      expect(screen.getByRole('grid')).toBeInTheDocument();
     });
     await userEvent.click(screen.getByRole('button', { name: '7' }));
     expect(mockMakeMove).not.toHaveBeenCalled();
@@ -396,11 +396,11 @@ describe('GamePage - erase', () => {
     });
     renderGamePage();
     await waitFor(() => {
-      expect(document.querySelector('table')).toBeInTheDocument();
+      expect(screen.getByRole('grid')).toBeInTheDocument();
     });
-    const inputs = screen.getAllByRole('textbox');
+    const inputs = within(screen.getByRole('grid')).getAllByRole('button');
     await userEvent.click(inputs[0]);
-    await userEvent.click(screen.getByTitle('Erase'));
+    await userEvent.click(screen.getByRole('button', { name: /erase/i }));
     await waitFor(() => {
       expect(mockMakeMove).toHaveBeenCalledWith(
         'test-player', game.id, 0, 0, null, expect.any(String)
@@ -423,9 +423,9 @@ describe('GamePage - undo / reset', () => {
     });
     renderGamePage();
     await waitFor(() => {
-      expect(screen.getByTitle('Undo')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /undo/i })).toBeInTheDocument();
     });
-    await userEvent.click(screen.getByTitle('Undo'));
+    await userEvent.click(screen.getByRole('button', { name: /undo/i }));
     await waitFor(() => {
       expect(mockUndoMove).toHaveBeenCalledWith('test-player', game.id);
     });
@@ -444,9 +444,9 @@ describe('GamePage - undo / reset', () => {
     });
     renderGamePage();
     await waitFor(() => {
-      expect(screen.getByTitle('Reset')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /reset/i })).toBeInTheDocument();
     });
-    await userEvent.click(screen.getByTitle('Reset'));
+    await userEvent.click(screen.getByRole('button', { name: /reset/i }));
     await waitFor(() => {
       expect(mockResetGame).toHaveBeenCalledWith('test-player', game.id);
     });
@@ -466,9 +466,9 @@ describe('GamePage - home navigation', () => {
     });
     renderGamePage('g1');
     await waitFor(() => {
-      expect(screen.getByTitle('Home')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /home/i })).toBeInTheDocument();
     });
-    await userEvent.click(screen.getByTitle('Home'));
+    await userEvent.click(screen.getByRole('button', { name: /home/i }));
     await waitFor(() => {
       expect(mockPauseGame).toHaveBeenCalledWith('test-player', 'g1');
       expect(mockNavigate).toHaveBeenCalledWith('/');
@@ -488,10 +488,10 @@ describe('GamePage - pencil mode', () => {
     });
     renderGamePage();
     await waitFor(() => {
-      expect(screen.getByTitle('Pencil mode')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /pencil/i })).toBeInTheDocument();
     });
     // Pencil button should be present
-    const pencilBtn = screen.getByTitle('Pencil mode');
+    const pencilBtn = screen.getByRole('button', { name: /pencil/i });
     await userEvent.click(pencilBtn);
     // No crash expected
     expect(pencilBtn).toBeInTheDocument();
@@ -512,12 +512,12 @@ describe('GamePage - pencil mode', () => {
     });
     renderGamePage();
     await waitFor(() => {
-      expect(document.querySelector('table')).toBeInTheDocument();
+      expect(screen.getByRole('grid')).toBeInTheDocument();
     });
     // Enable pencil mode
-    await userEvent.click(screen.getByTitle('Pencil mode'));
+    await userEvent.click(screen.getByRole('button', { name: /pencil/i }));
     // Select cell (0,0)
-    const inputs = screen.getAllByRole('textbox');
+    const inputs = within(screen.getByRole('grid')).getAllByRole('button');
     await userEvent.click(inputs[0]);
     // Click number 3
     await userEvent.click(screen.getByRole('button', { name: '3' }));
@@ -563,15 +563,15 @@ describe('GamePage - victory', () => {
 
     renderGamePage();
     await waitFor(() => {
-      expect(document.querySelector('table')).toBeInTheDocument();
+      expect(screen.getByRole('grid')).toBeInTheDocument();
     });
     // Select cell (0,0)
-    const inputs = screen.getAllByRole('textbox');
+    const inputs = within(screen.getByRole('grid')).getAllByRole('button');
     await userEvent.click(inputs[0]);
     // Enter the missing value (5)
     await userEvent.click(screen.getByRole('button', { name: '5' }));
     await waitFor(() => {
-      expect(screen.getByText(/Puzzle Solved/i)).toBeInTheDocument();
+      expect(screen.getByText('Solved')).toBeInTheDocument();
     });
   });
 });

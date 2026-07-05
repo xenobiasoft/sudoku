@@ -1,76 +1,98 @@
-.victoryOverlay {
-  animation: fadeIn 0.5s ease-in-out;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.6);
+.victory {
   display: flex;
-  inset: 0;
-  justify-content: center;
-  position: fixed;
-  z-index: 1000;
-}
-
-.victoryModal {
-  animation: popIn 0.3s ease-in-out;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  max-width: 90%;
-  padding: 2rem;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  width: 400px;
+  min-height: 70vh;
+  justify-content: center;
+  gap: 8px;
+  animation: sd-modal 0.5s ease both;
 }
 
-.victoryTitle {
-  animation: shimmer 3s infinite linear;
-  color: #333;
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
 }
 
-.victorySubtitle {
-  color: #666;
-  font-size: 1rem;
-  margin-bottom: 1.5rem;
+.headline {
+  font-family: 'Newsreader', serif;
+  font-weight: 500;
+  font-size: clamp(50px, 16vw, 68px);
+  line-height: 1;
+  margin: 4px 0 0 0;
+  color: var(--ink);
 }
 
-.victoryButton {
-  padding: 0.6rem 1.2rem;
-  min-height: 44px;
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 4px;
+.tagline {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--ink-soft);
+  margin: 0 0 8px 0;
+}
+
+.stats {
+  display: flex;
+  gap: 22px;
+  margin: 16px 0 24px 0;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.statValue {
+  font-family: 'Newsreader', serif;
+  font-size: 28px;
+  color: var(--ink);
+}
+
+.statCaption {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 260px;
+}
+
+.primary,
+.ghost {
+  padding: 14px 22px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 1rem;
-  transition: background 0.3s ease;
+  transition: background-color 0.15s ease, transform 0.15s ease;
 }
 
-.victoryButton:hover {
-  background-color: #5a6268;
+.primary {
+  border: none;
+  background-color: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 6px 18px var(--shadow);
 }
 
-@media (max-width: 479px) {
-  .victoryModal {
-    padding: 1.25rem;
-  }
-
-  .victoryTitle {
-    font-size: 1.5rem;
-  }
+.ghost {
+  background-color: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--ink);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes popIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-@keyframes shimmer {
-  0% { color: #333; }
-  50% { color: #4CAF50; }
-  100% { color: #333; }
+.primary:hover,
+.ghost:hover {
+  transform: translateY(-1px);
 }

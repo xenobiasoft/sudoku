@@ -1,52 +1,64 @@
 .container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 2rem;
-  text-align: center;
+  animation: sd-fadeup 0.4s ease both;
 }
 
 .title {
-  margin-bottom: 1.5rem;
-  color: #333;
+  font-family: 'Newsreader', serif;
+  font-weight: 500;
+  font-size: clamp(28px, 8vw, 36px);
+  line-height: 1.1;
+  margin: 8px 0 24px 0;
+  color: var(--ink);
 }
 
 .status {
-  color: #666;
+  color: var(--ink-soft);
 }
 
 .errorStatus {
-  color: #e63946;
+  color: var(--error);
 }
 
 .emptyState {
-  color: #666;
-  margin: 2rem 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 48px 0;
+  text-align: center;
+}
+
+.emptyText {
+  font-family: 'Newsreader', serif;
+  font-style: italic;
+  font-size: 19px;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.startButton {
+  padding: 14px 22px;
+  border: none;
+  border-radius: 12px;
+  background-color: var(--accent);
+  color: var(--accent-ink);
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 6px 18px var(--shadow);
+  transition: transform 0.15s ease;
+}
+
+.startButton:hover {
+  transform: translateY(-1px);
 }
 
 .gameList {
   list-style: none;
   padding: 0;
-  margin: 0 0 1.5rem;
+  margin: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.backButton {
-  background: transparent;
-  border: none;
-  color: #666;
-  font-size: 1rem;
-  cursor: pointer;
-  margin-top: 1rem;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  padding: 0 0.25rem;
-}
-
-.backButton:hover {
-  color: #333;
+  flex-direction: column;
+  gap: 11px;
 }

@@ -4,96 +4,66 @@ import userEvent from '@testing-library/user-event';
 import CellInput from './CellInput';
 import { makeCell } from '../test/helpers';
 
-describe('CellInput - fixed cell', () => {
-  it('renders a label with the cell value when isFixed', () => {
+const baseProps = {
+  isSelected: false,
+  isHighlighted: false,
+  isSameNumber: false,
+  isInvalid: false,
+  onSelect: () => {},
+};
+
+describe('CellInput - given (fixed) cell', () => {
+  it('renders the cell value as a button', () => {
     const cell = makeCell({ isFixed: true, value: 7, hasValue: true });
-    render(
-      <table><tbody><tr>
-        <CellInput cell={cell} isSelected={false} isHighlighted={false} isInvalid={false} pencilMode={false} onSelect={() => {}} />
-      </tr></tbody></table>
-    );
-    expect(screen.getByText('7')).toBeInTheDocument();
-    expect(screen.queryByRole('textbox')).not.toBeInTheDocument();
+    render(<CellInput cell={cell} {...baseProps} />);
+    const button = screen.getByRole('button');
+    expect(button).toHaveTextContent('7');
   });
 
-  it('calls onSelect when fixed cell is clicked', async () => {
+  it('calls onSelect when clicked', async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
     const cell = makeCell({ isFixed: true, value: 3, hasValue: true });
-    render(
-      <table><tbody><tr>
-        <CellInput cell={cell} isSelected={false} isHighlighted={false} isInvalid={false} pencilMode={false} onSelect={onSelect} />
-      </tr></tbody></table>
-    );
-    await user.click(screen.getByText('3'));
+    render(<CellInput cell={cell} {...baseProps} onSelect={onSelect} />);
+    await user.click(screen.getByRole('button'));
     expect(onSelect).toHaveBeenCalledOnce();
   });
 });
 
 describe('CellInput - editable cell', () => {
-  it('renders an input element', () => {
+  it('renders an empty button when the cell has no value', () => {
     const cell = makeCell({ isFixed: false, value: null, hasValue: false });
-    render(
-      <table><tbody><tr>
-        <CellInput cell={cell} isSelected={false} isHighlighted={false} isInvalid={false} pencilMode={false} onSelect={() => {}} />
-      </tr></tbody></table>
-    );
-    expect(screen.getByRole('textbox')).toBeInTheDocument();
+    render(<CellInput cell={cell} {...baseProps} />);
+    const button = screen.getByRole('button');
+    expect(button).toHaveTextContent('');
   });
 
-  it('shows the cell value in input when hasValue is true', () => {
+  it('shows the entered value', () => {
     const cell = makeCell({ isFixed: false, value: 5, hasValue: true });
-    render(
-      <table><tbody><tr>
-        <CellInput cell={cell} isSelected={false} isHighlighted={false} isInvalid={false} pencilMode={false} onSelect={() => {}} />
-      </tr></tbody></table>
-    );
-    expect(screen.getByDisplayValue('5')).toBeInTheDocument();
+    render(<CellInput cell={cell} {...baseProps} />);
+    expect(screen.getByRole('button')).toHaveTextContent('5');
   });
 
-  it('shows empty input when cell has no value', () => {
-    const cell = makeCell({ isFixed: false, value: null, hasValue: false });
-    render(
-      <table><tbody><tr>
-        <CellInput cell={cell} isSelected={false} isHighlighted={false} isInvalid={false} pencilMode={false} onSelect={() => {}} />
-      </tr></tbody></table>
-    );
-    expect(screen.getByDisplayValue('')).toBeInTheDocument();
-  });
-
-  it('calls onSelect when input is clicked', async () => {
+  it('calls onSelect when clicked', async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
     const cell = makeCell({ isFixed: false });
-    render(
-      <table><tbody><tr>
-        <CellInput cell={cell} isSelected={false} isHighlighted={false} isInvalid={false} pencilMode={false} onSelect={onSelect} />
-      </tr></tbody></table>
-    );
-    await user.click(screen.getByRole('textbox'));
+    render(<CellInput cell={cell} {...baseProps} onSelect={onSelect} />);
+    await user.click(screen.getByRole('button'));
     expect(onSelect).toHaveBeenCalledOnce();
   });
 
   it('renders pencil values when possibleValues is non-empty and cell has no value', () => {
     const cell = makeCell({ isFixed: false, hasValue: false, possibleValues: [1, 3, 5] });
-    render(
-      <table><tbody><tr>
-        <CellInput cell={cell} isSelected={false} isHighlighted={false} isInvalid={false} pencilMode={true} onSelect={() => {}} />
-      </tr></tbody></table>
-    );
+    render(<CellInput cell={cell} {...baseProps} />);
     expect(screen.getByText('1')).toBeInTheDocument();
     expect(screen.getByText('3')).toBeInTheDocument();
     expect(screen.getByText('5')).toBeInTheDocument();
   });
 
-  it('does not render pencil values when cell has a value', () => {
+  it('does not render pencil values when the cell has a value', () => {
     const cell = makeCell({ isFixed: false, hasValue: true, value: 4, possibleValues: [1, 3] });
-    render(
-      <table><tbody><tr>
-        <CellInput cell={cell} isSelected={false} isHighlighted={false} isInvalid={false} pencilMode={true} onSelect={() => {}} />
-      </tr></tbody></table>
-    );
-    // pencil area should not be shown
+    render(<CellInput cell={cell} {...baseProps} />);
     expect(screen.queryByText('1')).not.toBeInTheDocument();
   });
 });

@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import type { CellModel } from '../types';
 import styles from './CellInput.module.css';
 
@@ -6,8 +5,8 @@ interface CellInputProps {
   cell: CellModel;
   isSelected: boolean;
   isHighlighted: boolean;
+  isSameNumber: boolean;
   isInvalid: boolean;
-  pencilMode: boolean;
   onSelect: () => void;
 }
 
@@ -15,52 +14,56 @@ export default function CellInput({
   cell,
   isSelected,
   isHighlighted,
+  isSameNumber,
   isInvalid,
   onSelect,
 }: CellInputProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-
   const getCellClass = (): string => {
     const classes = [styles.cell];
-    if (isInvalid) classes.push(styles.invalid);
-    else if (isSelected) classes.push(styles.selected);
+
+    // 3x3 box separators / outer edges
+    if (cell.column === 2 || cell.column === 5) classes.push(styles.boxRight);
+    if (cell.column === 8) classes.push(styles.lastCol);
+    if (cell.row === 2 || cell.row === 5) classes.push(styles.boxBottom);
+    if (cell.row === 8) classes.push(styles.lastRow);
+
+    // Background fill precedence: selected > invalid > same-number > peer highlight
+    if (isSelected) classes.push(styles.selected);
+    else if (isInvalid) classes.push(styles.invalid);
+    else if (isSameNumber) classes.push(styles.same);
     else if (isHighlighted) classes.push(styles.highlight);
+
     return classes.join(' ');
   };
 
-  const handleClick = () => {
-    onSelect();
-    inputRef.current?.focus();
-  };
+  const digitClass = isInvalid
+    ? styles.invalidDigit
+    : cell.isFixed
+      ? styles.given
+      : styles.entry;
 
-  if (cell.isFixed) {
-    return (
-      <td className={getCellClass()}>
-        <label onClick={handleClick}>{cell.value ?? ''}</label>
-      </td>
-    );
-  }
+  const showPencil = cell.possibleValues.length > 0 && !cell.hasValue;
 
   return (
-    <td className={getCellClass()}>
-      {cell.possibleValues.length > 0 && !cell.hasValue && (
-        <div className={styles.pencilValues}>
+    <button
+      type="button"
+      className={getCellClass()}
+      onClick={onSelect}
+      aria-label={`Row ${cell.row + 1}, column ${cell.column + 1}`}
+    >
+      {cell.hasValue && cell.value !== null ? (
+        <span key={cell.value} className={`${styles.digit} ${digitClass} tnum`}>
+          {cell.value}
+        </span>
+      ) : showPencil ? (
+        <span className={styles.pencilValues}>
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-            <div key={n} className={styles.pencilEntry}>
+            <span key={n} className={styles.pencilEntry}>
               {cell.possibleValues.includes(n) ? n : ''}
-            </div>
+            </span>
           ))}
-        </div>
-      )}
-      <input
-        ref={inputRef}
-        type="text"
-        readOnly
-        value={cell.hasValue && cell.value !== null ? cell.value.toString() : ''}
-        onClick={handleClick}
-        onChange={() => {}}
-        style={cell.possibleValues.length > 0 && !cell.hasValue ? { backgroundColor: 'transparent' } : undefined}
-      />
-    </td>
+        </span>
+      ) : null}
+    </button>
   );
 }
