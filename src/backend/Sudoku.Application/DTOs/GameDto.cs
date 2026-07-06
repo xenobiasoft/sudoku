@@ -40,6 +40,8 @@ public record GameStatisticsDto(
     int TotalMoves,
     int ValidMoves,
     int InvalidMoves,
+    int HintsUsed,
+    int HintsRemaining,
     TimeSpan PlayDuration,
     double AccuracyPercentage)
 {
@@ -49,6 +51,8 @@ public record GameStatisticsDto(
             statistics.TotalMoves,
             statistics.ValidMoves,
             statistics.InvalidMoves,
+            statistics.HintsUsed,
+            statistics.HintsRemaining,
             statistics.PlayDuration,
             statistics.AccuracyPercentage
         );
@@ -60,6 +64,7 @@ public record CellDto(
     int Column,
     int? Value,
     bool IsFixed,
+    bool IsHint,
     bool HasValue,
     List<int> PossibleValues)
 {
@@ -70,6 +75,7 @@ public record CellDto(
             cell.Column,
             cell.Value,
             cell.IsFixed,
+            cell.IsHint,
             cell.HasValue,
             cell.PossibleValues.ToList()
         );

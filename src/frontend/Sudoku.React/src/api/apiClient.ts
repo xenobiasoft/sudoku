@@ -96,6 +96,14 @@ export const apiClient = {
     return request(`/api/players/${profileId}/games/${gameId}`);
   },
 
+  getHint: async (profileId: string, gameId: string, playDuration: string): Promise<GameModel> => {
+    await request(`/api/players/${profileId}/games/${gameId}/actions/hint`, {
+      method: 'POST',
+      body: JSON.stringify({ playDuration }),
+    });
+    return request(`/api/players/${profileId}/games/${gameId}`);
+  },
+
   pauseGame: (profileId: string, gameId: string): Promise<void> =>
     request(`/api/players/${profileId}/games/${gameId}/status/pause`, { method: 'POST' }),
 

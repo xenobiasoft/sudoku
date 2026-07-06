@@ -6,6 +6,7 @@ export function makeCell(overrides: Partial<CellModel> = {}): CellModel {
     column: 0,
     value: null,
     isFixed: false,
+    isHint: false,
     hasValue: false,
     possibleValues: [],
     ...overrides,
@@ -16,6 +17,8 @@ export function makeStats(overrides: Partial<GameStatisticsModel> = {}): GameSta
   return {
     totalMoves: 0,
     invalidMoves: 0,
+    hintsUsed: 0,
+    hintsRemaining: 3,
     playDuration: '00:00:00',
     ...overrides,
   };

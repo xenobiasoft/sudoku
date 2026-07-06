@@ -15,10 +15,43 @@ public class GameStatisticsTests : MoqBaseTestByType<GameStatistics>
         statistics.TotalMoves.Should().Be(0);
         statistics.ValidMoves.Should().Be(0);
         statistics.InvalidMoves.Should().Be(0);
+        statistics.HintsUsed.Should().Be(0);
+        statistics.HintsRemaining.Should().Be(GameStatistics.MaxHints);
         statistics.PlayDuration.Should().Be(TimeSpan.Zero);
         statistics.LastMoveAt.Should().BeNull();
         statistics.AccuracyPercentage.Should().Be(0);
         statistics.HasMoves.Should().BeFalse();
+    }
+
+    [Fact]
+    public void RecordHint_IncrementsHintsUsedAndDecrementsHintsRemaining()
+    {
+        // Arrange
+        var statistics = GameStatistics.Create();
+
+        // Act
+        statistics.RecordHint();
+
+        // Assert
+        statistics.HintsUsed.Should().Be(1);
+        statistics.HintsRemaining.Should().Be(GameStatistics.MaxHints - 1);
+    }
+
+    [Fact]
+    public void RecordHint_WhenAllHintsUsed_HintsRemainingIsZero()
+    {
+        // Arrange
+        var statistics = GameStatistics.Create();
+
+        // Act
+        for (var i = 0; i < GameStatistics.MaxHints; i++)
+        {
+            statistics.RecordHint();
+        }
+
+        // Assert
+        statistics.HintsUsed.Should().Be(GameStatistics.MaxHints);
+        statistics.HintsRemaining.Should().Be(0);
     }
 
     [Fact]

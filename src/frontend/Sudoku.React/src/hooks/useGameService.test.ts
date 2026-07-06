@@ -9,6 +9,7 @@ vi.mock('../api/apiClient', () => ({
   apiClient: {
     getGames: vi.fn(),
     deleteGame: vi.fn(),
+    getHint: vi.fn(),
   },
 }));
 
@@ -43,6 +44,8 @@ const mockGames: GameModel[] = [
     statistics: {
       totalMoves: 5,
       invalidMoves: 0,
+      hintsUsed: 0,
+      hintsRemaining: 3,
       playDuration: '00:05:00',
     },
   },
@@ -61,6 +64,8 @@ const mockGames: GameModel[] = [
     statistics: {
       totalMoves: 15,
       invalidMoves: 2,
+      hintsUsed: 1,
+      hintsRemaining: 2,
       playDuration: '00:15:00',
     },
   },
@@ -79,6 +84,8 @@ const mockGames: GameModel[] = [
     statistics: {
       totalMoves: 25,
       invalidMoves: 5,
+      hintsUsed: 3,
+      hintsRemaining: 0,
       playDuration: '00:20:00',
     },
   },
@@ -325,6 +332,39 @@ describe('useGameService', () => {
 
       expect(apiClient.getGames).toHaveBeenCalledWith('test-player');
       expect(result.current.savedGames).toEqual([mockGames[0]]);
+    });
+  });
+
+  describe('requestHint', () => {
+    it('should call apiClient.getHint and set the current game', async () => {
+      const hintedGame = mockGames[0];
+      vi.mocked(apiClient.getHint).mockResolvedValue(hintedGame);
+
+      const { result } = renderHook(() => useGameService());
+
+      await act(async () => {
+        await result.current.requestHint('test-player', 'game-1', '00:01:00');
+      });
+
+      expect(apiClient.getHint).toHaveBeenCalledWith('test-player', 'game-1', '00:01:00');
+      expect(result.current.currentGame).toEqual(hintedGame);
+    });
+
+    it('should set gameError when the hint request fails', async () => {
+      vi.mocked(apiClient.getHint).mockRejectedValue(new Error('No hints remaining for this game'));
+
+      const { result } = renderHook(() => useGameService());
+
+      await act(async () => {
+        try {
+          await result.current.requestHint('test-player', 'game-1', '00:01:00');
+        } catch {
+          // expected
+        }
+      });
+
+      expect(result.current.gameError).toBe('No hints remaining for this game');
+      expect(consoleSpy).toHaveBeenCalledWith('Failed to get hint:', expect.any(Error));
     });
   });
 

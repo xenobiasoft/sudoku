@@ -66,5 +66,25 @@ namespace Sudoku.Api.Controllers
             var result = await Mediator.Send(new UndoLastMoveCommand(gameId));
             return HandleUnitResult(result);
         }
+
+        /// <summary>
+        /// Reveals a hint by filling one correct cell (subject to the per-game hint limit)
+        /// </summary>
+        /// <param name="profileId">The player's profile ID</param>
+        /// <param name="gameId">The game id</param>
+        /// <param name="request">Optional play duration to record with the hint</param>
+        /// <returns>No content if successful</returns>
+        [HttpPost("hint")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> RequestHintAsync(string profileId, string gameId, [FromBody] HintRequest? request)
+        {
+            var (_, error) = await GetAuthorizedGameAsync(profileId, gameId);
+            if (error != null) return error;
+
+            var result = await Mediator.Send(new RequestHintCommand(gameId, request?.PlayDuration ?? TimeSpan.Zero));
+            return HandleUnitResult(result);
+        }
     }
 }

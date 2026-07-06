@@ -23,3 +23,5 @@ public record PossibleValueAddedEvent(GameId GameId, int Row, int Column, int Va
 public record PossibleValueRemovedEvent(GameId GameId, int Row, int Column, int Value) : DomainEvent;
 
 public record PossibleValuesClearedEvent(GameId GameId, int Row, int Column) : DomainEvent;
+
+public record HintRevealedEvent(GameId GameId, int Row, int Column, int Value, GameStatistics Statistics) : DomainEvent;

@@ -97,7 +97,7 @@ public class SudokuGame : AggregateRoot
         }
 
         var cell = GetCell(row, column);
-        if (cell.IsFixed)
+        if (cell.IsLocked)
         {
             throw new CellIsFixedException($"Cannot modify fixed cell at position ({row}, {column})");
         }
@@ -118,6 +118,49 @@ public class SudokuGame : AggregateRoot
         {
             CompleteGame();
         }
+    }
+
+    /// <summary>
+    /// Reveals the correct value for a randomly chosen empty cell, locking it in place.
+    /// The caller supplies the solved puzzle (computed from the fixed clues), so the domain
+    /// stays free of any solver dependency. Hints do not enter the move history, so they are
+    /// unaffected by <see cref="UndoLastMove"/>.
+    /// </summary>
+    public (int Row, int Column, int Value) RevealHint(SudokuPuzzle solvedPuzzle)
+    {
+        if (Status != GameStatusEnum.InProgress)
+        {
+            throw new GameNotInProgressException($"Cannot reveal a hint in {Status} state");
+        }
+
+        if (Statistics.HintsUsed >= GameStatistics.MaxHints)
+        {
+            throw new HintLimitReachedException();
+        }
+
+        var emptyCells = _cells.Where(c => !c.IsLocked && !c.HasValue).ToList();
+        if (emptyCells.Count == 0)
+        {
+            throw new NoAvailableCellsForHintException();
+        }
+
+        var target = emptyCells[Random.Shared.Next(emptyCells.Count)];
+        var correctValue = solvedPuzzle.GetCell(target.Row, target.Column).Value
+            ?? throw new NoAvailableCellsForHintException();
+
+        var index = _cells.FindIndex(c => c.Row == target.Row && c.Column == target.Column);
+        _cells[index] = Cell.CreateHint(target.Row, target.Column, correctValue);
+
+        Statistics.RecordHint();
+
+        AddDomainEvent(new HintRevealedEvent(Id, target.Row, target.Column, correctValue, Statistics));
+
+        if (IsGameComplete())
+        {
+            CompleteGame();
+        }
+
+        return (target.Row, target.Column, correctValue);
     }
 
     public void AddPossibleValue(int row, int column, int value)
@@ -207,11 +250,24 @@ public class SudokuGame : AggregateRoot
             throw new GameNotInStartStateException("Game is already in its initial state");
         }
 
-        // Reset all non-fixed cells
-        foreach (var cell in _cells.Where(c => !c.IsFixed))
+        // Reset all non-fixed cells; hint-revealed cells are locked, so rebuild them as empty
+        for (var i = 0; i < _cells.Count; i++)
         {
-            cell.SetValue(null);
-            cell.ClearPossibleValues();
+            var cell = _cells[i];
+            if (cell.IsFixed)
+            {
+                continue;
+            }
+
+            if (cell.IsHint)
+            {
+                _cells[i] = Cell.CreateEmpty(cell.Row, cell.Column);
+            }
+            else
+            {
+                cell.SetValue(null);
+                cell.ClearPossibleValues();
+            }
         }
 
         // Clear move history

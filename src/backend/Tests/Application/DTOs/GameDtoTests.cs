@@ -99,6 +99,7 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
             dtoCell.Column.Should().Be(originalCell.Column);
             dtoCell.Value.Should().Be(originalCell.Value);
             dtoCell.IsFixed.Should().Be(originalCell.IsFixed);
+            dtoCell.IsHint.Should().Be(originalCell.IsHint);
             dtoCell.HasValue.Should().Be(originalCell.HasValue);
         }
     }
@@ -134,6 +135,8 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
         dto.Statistics.TotalMoves.Should().Be(game.Statistics.TotalMoves);
         dto.Statistics.ValidMoves.Should().Be(game.Statistics.ValidMoves);
         dto.Statistics.InvalidMoves.Should().Be(game.Statistics.InvalidMoves);
+        dto.Statistics.HintsUsed.Should().Be(game.Statistics.HintsUsed);
+        dto.Statistics.HintsRemaining.Should().Be(game.Statistics.HintsRemaining);
         dto.Statistics.PlayDuration.Should().Be(game.Statistics.PlayDuration);
         dto.Statistics.AccuracyPercentage.Should().Be(game.Statistics.AccuracyPercentage);
     }
@@ -147,7 +150,7 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
         var displayName = "TestPlayer";
         var difficulty = "Medium";
         var status = "InProgress";
-        var statistics = new GameStatisticsDto(10, 8, 2, TimeSpan.FromMinutes(5), 80.0);
+        var statistics = new GameStatisticsDto(10, 8, 2, 1, 2, TimeSpan.FromMinutes(5), 80.0);
         var createdAt = DateTime.UtcNow.AddMinutes(-10);
         var startedAt = DateTime.UtcNow.AddMinutes(-5);
         var completedAt = (DateTime?)null;

@@ -24,6 +24,7 @@ export default function GamePage() {
     resumeGame,
     makeMove,
     undoMove,
+    requestHint,
     resetGame,
     addPossibleValue,
     removePossibleValue,
@@ -149,7 +150,7 @@ export default function GamePage() {
   const handleNumberInput = async (value: number) => {
     if (!game || !selectedCell || !profileId) return;
     const cell = game.cells.find(c => c.row === selectedCell.row && c.column === selectedCell.column);
-    if (!cell || cell.isFixed) return;
+    if (!cell || cell.isFixed || cell.isHint) return;
 
     if (pencilMode) {
       await handleCellAction(game.cells, async () => {
@@ -169,7 +170,7 @@ export default function GamePage() {
   const handleErase = async () => {
     if (!game || !selectedCell || !profileId) return;
     const cell = game.cells.find(c => c.row === selectedCell.row && c.column === selectedCell.column);
-    if (!cell || cell.isFixed) return;
+    if (!cell || cell.isFixed || cell.isHint) return;
 
     if (pencilMode && cell.possibleValues.length > 0) {
       await handleCellAction(game.cells, () =>
@@ -185,6 +186,11 @@ export default function GamePage() {
   const handleUndo = async () => {
     if (!game || !profileId) return;
     await handleCellAction(game.cells, () => undoMove(profileId, game.id));
+  };
+
+  const handleHint = async () => {
+    if (!game || !profileId || game.statistics.hintsRemaining <= 0) return;
+    await handleCellAction(game.cells, () => requestHint(profileId, game.id, formatDuration(elapsedRef.current)));
   };
 
   const handleReset = async () => {
@@ -308,9 +314,11 @@ export default function GamePage() {
           cells={game.cells}
           pencilMode={pencilMode}
           canUndo={(game.moveHistory?.length ?? 0) > 0}
+          hintsRemaining={game.statistics.hintsRemaining}
           onNumberClick={handleNumberInput}
           onErase={handleErase}
           onUndo={handleUndo}
+          onHint={handleHint}
           onReset={handleReset}
           onTogglePencil={() => setPencilMode(p => !p)}
         />

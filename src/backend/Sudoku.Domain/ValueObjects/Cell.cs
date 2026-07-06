@@ -8,10 +8,17 @@ public record Cell
     public int Column { get; }
     public int? Value { get; private set; }
     public bool IsFixed { get; }
+    public bool IsHint { get; }
     public bool HasValue => Value.HasValue;
+
+    /// <summary>
+    /// A cell is locked when it cannot be modified by the player: original clues (<see cref="IsFixed"/>)
+    /// and cells revealed by a hint (<see cref="IsHint"/>).
+    /// </summary>
+    public bool IsLocked => IsFixed || IsHint;
     public HashSet<int> PossibleValues { get; private set; } = new();
 
-    private Cell(int row, int column, int? value, bool isFixed)
+    private Cell(int row, int column, int? value, bool isFixed, bool isHint = false)
     {
         if (row < 0 || row > 8)
         {
@@ -32,11 +39,12 @@ public record Cell
         Column = column;
         Value = value;
         IsFixed = isFixed;
+        IsHint = isHint;
     }
 
-    public static Cell Create(int row, int column, int? value = null, bool isFixed = false)
+    public static Cell Create(int row, int column, int? value = null, bool isFixed = false, bool isHint = false)
     {
-        return new Cell(row, column, value, isFixed);
+        return new Cell(row, column, value, isFixed, isHint);
     }
 
     public static Cell CreateFixed(int row, int column, int value)
@@ -49,9 +57,18 @@ public record Cell
         return new Cell(row, column, null, false);
     }
 
+    /// <summary>
+    /// Creates a cell revealed by a hint: it holds the correct value and is locked so the player
+    /// cannot change it, but it is distinct from an original clue (<see cref="IsFixed"/> stays false).
+    /// </summary>
+    public static Cell CreateHint(int row, int column, int value)
+    {
+        return new Cell(row, column, value, isFixed: false, isHint: true);
+    }
+
     public void SetValue(int value)
     {
-        if (IsFixed)
+        if (IsLocked)
         {
             throw new CellIsFixedException($"Cannot modify fixed cell at position ({Row}, {Column})");
         }
@@ -67,7 +84,7 @@ public record Cell
 
     public void SetValue(int? value)
     {
-        if (IsFixed)
+        if (IsLocked)
         {
             throw new CellIsFixedException($"Cannot modify fixed cell at position ({Row}, {Column})");
         }
@@ -90,7 +107,7 @@ public record Cell
 
     public void ClearValue()
     {
-        if (IsFixed)
+        if (IsLocked)
         {
             throw new CellIsFixedException($"Cannot modify fixed cell at position ({Row}, {Column})");
         }
@@ -100,7 +117,7 @@ public record Cell
 
     public void AddPossibleValue(int value)
     {
-        if (IsFixed)
+        if (IsLocked)
         {
             throw new CellIsFixedException($"Cannot modify fixed cell at position ({Row}, {Column})");
         }
@@ -123,7 +140,7 @@ public record Cell
 
     public void RemovePossibleValue(int value)
     {
-        if (IsFixed)
+        if (IsLocked)
         {
             throw new CellIsFixedException($"Cannot modify fixed cell at position ({Row}, {Column})");
         }
@@ -138,7 +155,7 @@ public record Cell
 
     public void ClearPossibleValues()
     {
-        if (IsFixed)
+        if (IsLocked)
         {
             throw new CellIsFixedException($"Cannot modify fixed cell at position ({Row}, {Column})");
         }
@@ -153,7 +170,7 @@ public record Cell
 
     public Cell DeepCopy()
     {
-        var clonedCell = new Cell(Row, Column, Value, IsFixed);
+        var clonedCell = new Cell(Row, Column, Value, IsFixed, IsHint);
 
         foreach (var possibleValue in PossibleValues)
         {

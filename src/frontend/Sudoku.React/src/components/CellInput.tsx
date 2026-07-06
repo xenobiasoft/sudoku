@@ -40,7 +40,9 @@ export default function CellInput({
     ? styles.invalidDigit
     : cell.isFixed
       ? styles.given
-      : styles.entry;
+      : cell.isHint
+        ? styles.hint
+        : styles.entry;
 
   const showPencil = cell.possibleValues.length > 0 && !cell.hasValue;
 

@@ -66,6 +66,11 @@
   font-weight: 500;
 }
 
+.hint {
+  color: var(--accent);
+  font-weight: 600;
+}
+
 .invalidDigit {
   color: var(--error);
   font-weight: 600;
