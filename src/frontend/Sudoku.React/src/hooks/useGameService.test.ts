@@ -113,9 +113,10 @@ describe('useGameService', () => {
   });
 
   describe('loadGames', () => {
-    it('should load games from localStorage cache first', async () => {
+    it('should paint cached games first, then revalidate from the API', async () => {
       const cachedGames = JSON.stringify(mockGames);
       mockLocalStorage.getItem.mockReturnValue(cachedGames);
+      vi.mocked(apiClient.getGames).mockResolvedValue(mockGames);
 
       const { result } = renderHook(() => useGameService());
 
@@ -124,15 +125,40 @@ describe('useGameService', () => {
       });
 
       expect(mockLocalStorage.getItem).toHaveBeenCalledWith('savedGames');
-      expect(apiClient.getGames).not.toHaveBeenCalled();
+      // Stale-while-revalidate: the cache is only a fast first paint; the API is
+      // still queried so stats (moves/time/difficulty) reflect server truth.
+      expect(apiClient.getGames).toHaveBeenCalledWith('test-player');
       expect(result.current.savedGames).toEqual([mockGames[0], mockGames[2]]); // Only non-completed games
       expect(result.current.isLoaded).toBe(true);
       expect(result.current.isLoading).toBe(false);
     });
 
+    it('should overwrite stale cached stats with fresh API data', async () => {
+      const staleGame: GameModel = {
+        ...mockGames[0],
+        statistics: { ...mockGames[0].statistics, totalMoves: 0, playDuration: '00:00:00' },
+      };
+      const freshGame: GameModel = {
+        ...mockGames[0],
+        statistics: { ...mockGames[0].statistics, totalMoves: 12, playDuration: '00:08:00' },
+      };
+      mockLocalStorage.getItem.mockReturnValue(JSON.stringify([staleGame]));
+      vi.mocked(apiClient.getGames).mockResolvedValue([freshGame]);
+
+      const { result } = renderHook(() => useGameService());
+
+      await act(async () => {
+        await result.current.loadGames('test-player');
+      });
+
+      expect(apiClient.getGames).toHaveBeenCalledWith('test-player');
+      expect(result.current.savedGames).toEqual([freshGame]);
+      expect(mockLocalStorage.setItem).toHaveBeenCalledWith('savedGames', JSON.stringify([freshGame]));
+    });
+
     it('should fallback to API when no cached games exist', async () => {
       mockLocalStorage.getItem.mockReturnValue(null);
-      (apiClient.getGames as any).mockResolvedValue(mockGames);
+      vi.mocked(apiClient.getGames).mockResolvedValue(mockGames);
 
       const { result } = renderHook(() => useGameService());
 
@@ -149,7 +175,7 @@ describe('useGameService', () => {
 
     it('should fallback to API when cached data is corrupted', async () => {
       mockLocalStorage.getItem.mockReturnValue('invalid-json');
-      (apiClient.getGames as any).mockResolvedValue(mockGames);
+      vi.mocked(apiClient.getGames).mockResolvedValue(mockGames);
 
       const { result } = renderHook(() => useGameService());
 
@@ -165,7 +191,7 @@ describe('useGameService', () => {
     it('should force refresh from API when forceRefresh is true', async () => {
       const cachedGames = JSON.stringify(mockGames);
       mockLocalStorage.getItem.mockReturnValue(cachedGames);
-      (apiClient.getGames as any).mockResolvedValue([mockGames[0]]);
+      vi.mocked(apiClient.getGames).mockResolvedValue([mockGames[0]]);
 
       const { result } = renderHook(() => useGameService());
 
@@ -180,7 +206,7 @@ describe('useGameService', () => {
 
     it('should handle API errors gracefully', async () => {
       mockLocalStorage.getItem.mockReturnValue(null);
-      (apiClient.getGames as any).mockRejectedValue(new Error('API Error'));
+      vi.mocked(apiClient.getGames).mockRejectedValue(new Error('API Error'));
 
       const { result } = renderHook(() => useGameService());
 
@@ -210,7 +236,7 @@ describe('useGameService', () => {
     it('should prevent multiple simultaneous loads', async () => {
       mockLocalStorage.getItem.mockReturnValue(null);
       let callCount = 0;
-      (apiClient.getGames as any).mockImplementation(() => {
+      vi.mocked(apiClient.getGames).mockImplementation(() => {
         callCount++;
         return new Promise(resolve => setTimeout(() => resolve(mockGames), 100));
       });
@@ -238,6 +264,8 @@ describe('useGameService', () => {
       // Setup initial state with cached games
       const cachedGames = JSON.stringify(mockGames);
       mockLocalStorage.getItem.mockReturnValue(cachedGames);
+      // loadGames now always revalidates from the API (stale-while-revalidate)
+      vi.mocked(apiClient.getGames).mockResolvedValue(mockGames);
     });
 
     it('should delete game from API and update local state', async () => {
@@ -293,7 +321,7 @@ describe('useGameService', () => {
       const { result } = renderHook(() => useGameService());
 
       // Load initial games from API
-      (apiClient.getGames as any).mockResolvedValue(mockGames);
+      vi.mocked(apiClient.getGames).mockResolvedValue(mockGames);
       await act(async () => {
         await result.current.loadGames('test-player');
       });
@@ -322,7 +350,7 @@ describe('useGameService', () => {
     it('should force reload games from API', async () => {
       const cachedGames = JSON.stringify(mockGames);
       mockLocalStorage.getItem.mockReturnValue(cachedGames);
-      (apiClient.getGames as any).mockResolvedValue([mockGames[0]]);
+      vi.mocked(apiClient.getGames).mockResolvedValue([mockGames[0]]);
 
       const { result } = renderHook(() => useGameService());
 
@@ -401,7 +429,7 @@ describe('useGameService', () => {
       const getGamesPromise = new Promise<GameModel[]>(resolve => {
         resolveGetGames = resolve;
       });
-      (apiClient.getGames as any).mockReturnValue(getGamesPromise);
+      vi.mocked(apiClient.getGames).mockReturnValue(getGamesPromise);
 
       const { result } = renderHook(() => useGameService());
 

@@ -14,7 +14,7 @@ public static class SudokuGameMapper
             GameId = game.Id.Value.ToString(),
             ProfileId = game.ProfileId.ToString(),
             DisplayName = game.DisplayName.Value,
-            Difficulty = game.Difficulty,
+            Difficulty = game.Difficulty.Name,
             Status = game.Status,
             Cells = game.GetCells().Select(ToDocument).ToList(),
             Statistics = ToDocument(game.Statistics),
@@ -44,11 +44,15 @@ public static class SudokuGameMapper
 
         var displayName = PlayerAlias.Create(string.IsNullOrEmpty(document.DisplayName) ? "Unknown" : document.DisplayName);
 
+        var difficulty = string.IsNullOrEmpty(document.Difficulty)
+            ? GameDifficulty.Easy
+            : GameDifficulty.FromName(document.Difficulty);
+
         var sudokuGame = SudokuGame.Reconstitute(
             GameId.Create(document.GameId),
             profileId,
             displayName,
-            document.Difficulty,
+            difficulty,
             document.Status,
             document.Statistics.ToDomain(),
             document.Cells.Select(ToDomain).ToList(),
