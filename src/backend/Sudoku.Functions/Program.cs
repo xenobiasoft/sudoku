@@ -5,6 +5,7 @@ using Sudoku.Functions.Services;
 using Sudoku.Infrastructure.Configuration;
 
 var builder = FunctionsApplication.CreateBuilder(args);
+builder.AddAzureCosmosClient("CosmosDb");
 builder.Services.AddInfrastructureServices(builder.Configuration);
 builder.Services.AddScoped<IPuzzlePoolSeeder, PuzzlePoolSeeder>();
 builder.Build().Run();
