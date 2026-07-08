@@ -62,7 +62,9 @@ export function useGameService(): UseGameServiceReturn {
     setError(null);
 
     try {
-      // First check localStorage if not forcing refresh
+      // Stale-while-revalidate: paint cached games immediately (if any) for a fast
+      // first render, then always fetch from the API below to refresh with the
+      // authoritative server state (move count, play duration, difficulty, etc.).
       if (!forceRefresh) {
         const cachedGames = localStorage.getItem('savedGames');
         if (cachedGames) {
@@ -72,8 +74,6 @@ export function useGameService(): UseGameServiceReturn {
               const availableGames = parsedGames.filter(g => g.status !== 'Completed');
               setSavedGames(availableGames);
               setIsLoaded(true);
-              setIsLoading(false);
-              return;
             }
           } catch {
             localStorage.removeItem('savedGames');

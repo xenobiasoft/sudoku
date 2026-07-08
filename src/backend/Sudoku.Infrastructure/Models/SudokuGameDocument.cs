@@ -1,6 +1,7 @@
 using Newtonsoft.Json;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
+using Sudoku.Infrastructure.Serialization;
 
 namespace Sudoku.Infrastructure.Models;
 
@@ -19,7 +20,8 @@ public class SudokuGameDocument
     public string? DisplayName { get; set; }
 
     [JsonProperty("difficulty")]
-    public GameDifficulty Difficulty { get; set; } = GameDifficulty.Easy;
+    [JsonConverter(typeof(GameDifficultyStringConverter))]
+    public string Difficulty { get; set; } = GameDifficulty.Easy.Name;
 
     [JsonProperty("status")]
     public GameStatusEnum Status { get; set; }
