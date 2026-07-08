@@ -34,12 +34,12 @@ export default function NewGamePage() {
   return (
     <Layout hideHeader>
       <div className={styles.loadingContainer}>
-        <p className={styles.message}>setting out a {difficulty?.toLowerCase()} puzzle…</p>
-        <div className={styles.sudokuLoader}>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-            <span key={n} className={styles.tile}>{n}</span>
+        <div className={styles.dots} role="status" aria-label="Loading puzzle">
+          {[0, 1, 2].map(n => (
+            <span key={n} className={styles.dot} data-testid="loader-dot" />
           ))}
         </div>
+        <p className={styles.message}>setting out a {difficulty?.toLowerCase()} puzzle…</p>
       </div>
     </Layout>
   );
