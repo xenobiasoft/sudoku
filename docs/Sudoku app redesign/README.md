@@ -137,7 +137,7 @@ Type scale (px unless noted):
 - Keyframes:
   - `sd-fadeup` — `opacity 0→1, translateY(10px)→0`, ~.4–.5s ease (screen enters).
   - `sd-pop` — `scale .6→1.14→1`, .2s ease (digit lands in a cell).
-  - `sd-load` — `opacity .25↔1, translateY 0↔-5px`, 1.1s ease-in-out infinite, staggered .09s per tile.
+  - `sd-load` — `opacity .25↔1, translateY 0↔-6px`, 1.2s ease-in-out infinite, staggered .16s per dot (loading dots breathe).
   - `sd-modal` — `opacity 0→1, translateY(14px)+scale(.97)→none`, .5s (victory).
 
 ### Icons
@@ -194,9 +194,15 @@ Order below maps to your routes/pages. App is a single centered ≤460px column 
   in `--accent`. Click → `/new/{difficulty}` (unchanged).
 
 ### 4. Loading / New Game → `pages/NewGamePage.tsx` + `.module.css`
-- Centered; italic "setting out a {difficulty} puzzle…" 19 `--ink-soft`.
-- Row of nine 26×32 tiles (radius 6, bg `--surface-2`, digit `--accent` 600/15) animating
-  `sd-load` staggered .09s. Replaces the old plain 1–9 loader. Keep your create→redirect logic.
+- Centered column, `gap:34px`, `sd-fadeup` in. **Breathing dots** above the caption:
+  three 16×16 circles (`border-radius:50%`, bg `--accent`), laid out in a flex row `gap:14`,
+  each animating `sd-load` (rise 6px + fade) on a 1.2s loop, staggered by .16s (dots 0/1/2 →
+  delays 0s/.16s/.32s) so they ripple. Below: italic "setting out a {difficulty} puzzle…"
+  19 `--ink-soft`. Keep your create→redirect logic; the loader is purely decorative while the
+  puzzle generates.
+- (We explored four loaders — grid-fills-in, progress-ring, breathing-dots, scanning-board — and
+  chose **breathing dots** as the calmest fit. The others live in `Loading Options.dc.html` if you
+  ever want to revisit.)
 
 ### 5. Game → `pages/GamePage.tsx` (+ `GameBoard`, `CellInput`, `GameControls`, `GameStats`)
 - **Stats card** (`GameStats`): radius 14, bg `--surface`, `1px solid var(--line)`, padding 12×16.
@@ -275,8 +281,8 @@ Order below maps to your routes/pages. App is a single centered ≤460px column 
   change (prototype keeps a 50-deep local stack; your `undoMove` service can back this).
 - **Theme toggle (new):** flips `light`/`dark` with the `.35s` color cross-fade; persist choice
   (e.g. `localStorage 'sudoku-theme'`) and read on load.
-- **Motion:** screens enter with `sd-fadeup`; cards lift `translateY(-2px)` on hover; loading tiles
-  breathe; victory uses `sd-modal`. All quick and subtle.
+- **Motion:** screens enter with `sd-fadeup`; cards lift `translateY(-2px)` on hover; the loading
+  dots breathe (`sd-load`, staggered); victory uses `sd-modal`. All quick and subtle.
 
 ## State Management
 Reuse `useGameService` / `usePlayerService` / `apiClient` as-is. Redesign adds only:

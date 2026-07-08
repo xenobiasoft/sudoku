@@ -109,10 +109,8 @@ describe('NewGamePage', () => {
     });
   });
 
-  it('shows the numeric loader with digits 1-9', () => {
+  it('shows the three breathing dots loader', () => {
     renderNewGamePage('Hard');
-    for (let n = 1; n <= 9; n++) {
-      expect(screen.getByText(n.toString())).toBeInTheDocument();
-    }
+    expect(screen.getAllByTestId('loader-dot')).toHaveLength(3);
   });
 });
