@@ -49,6 +49,12 @@ from azure.cosmos import CosmosClient
 # Cosmos regenerates these on write; they carry no meaning in the destination.
 SYSTEM_PROPERTIES = ("_rid", "_self", "_etag", "_attachments", "_ts")
 
+# Every query below spans partitions (games partitions on /gameId, profiles on
+# /profileId), so each query_items call must pass enable_cross_partition_query.
+# The synchronous client does not infer it — omitting it fails with "Cross
+# partition query is required but disabled". Only the async client sets it
+# automatically. read_all_items is a read feed, not a query, and needs nothing.
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -85,6 +91,7 @@ def copy_items(src_container, dst_container, since, dry_run):
         items = src_container.query_items(
             query="SELECT * FROM c WHERE c._ts >= @since",
             parameters=[{"name": "@since", "value": since}],
+            enable_cross_partition_query=True,
         )
 
     count = 0
@@ -99,7 +106,10 @@ def copy_items(src_container, dst_container, since, dry_run):
 def item_keys(container, pk_field):
     """Every (id, partition-key value) pair in a container."""
     query = f'SELECT c.id, c["{pk_field}"] AS pk FROM c'
-    return {(row["id"], row.get("pk")) for row in container.query_items(query=query)}
+    return {
+        (row["id"], row.get("pk"))
+        for row in container.query_items(query=query, enable_cross_partition_query=True)
+    }
 
 
 def prune_items(src_container, dst_container, pk_field, dry_run):
