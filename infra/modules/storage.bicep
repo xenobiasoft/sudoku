@@ -167,12 +167,17 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
       }
     ] : []
     defaultIdentity: 'FirstPartyIdentity'
-    enableFreeTier: cosmosDbEnableFreeTier
+    // Free tier requires provisioned throughput, so it cannot coexist with
+    // serverless. Forced off rather than left to fail the deployment, since
+    // cosmosDbEnableFreeTier defaults to true.
+    enableFreeTier: cosmosDbEnableFreeTier && !cosmosDbServerless
     enableAutomaticFailover: true
     enableMultipleWriteLocations: false
     enableAnalyticalStorage: false
     enableBurstCapacity: false
     enablePartitionMerge: false
+    // Must stay false: the API authenticates with the account key embedded in
+    // the ConnectionStrings--CosmosDb Key Vault secret, not managed identity.
     disableLocalAuth: false
     disableKeyBasedMetadataWriteAccess: false
     minimalTlsVersion: 'Tls12'
