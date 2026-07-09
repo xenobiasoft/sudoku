@@ -234,7 +234,9 @@ jobs:
           RG="rg-xenobiasoft-sudoku-prod-westus2"
           APP="${AZURE_FUNCTIONS_NAME}"
           FLEX_PLAN="XenobiasoftFunctionsPlan-prod"
-          COSMOS="cosmos-sudoku-prod"
+          # Kept in sync with COSMOS_ACCOUNT_NAME in scripts/assign-roles.sh —
+          # migrated off the free tier (2026-07) to cosmos-sudoku-prod2.
+          COSMOS="cosmos-sudoku-prod2"
 
           # Existence via an RG-scoped list + client-side filter (returns an
           # empty string / exit 0 when absent, so `set -e` only trips on a real

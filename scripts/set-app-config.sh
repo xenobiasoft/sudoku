@@ -46,7 +46,14 @@ push_production() {
     set_key "$LABEL" "CosmosDb:DisableSslValidation" "false"
     set_key "$LABEL" "CosmosDb:AutoCreateContainers" "false"
     set_key "$LABEL" "CosmosDb:UseManagedIdentity"   "true"
-    set_key "$LABEL" "CosmosDb:AccountEndpoint"      "https://cosmos-sudoku-prod.documents.azure.com:443/"
+    # NOTE: this key is NOT what points the CosmosClient at an account. Nothing
+    # reads CosmosDbOptions.AccountEndpoint; the client is built by Aspire's
+    # AddAzureCosmosClient("CosmosDb"), which resolves ConnectionStrings:CosmosDb
+    # from the Key Vault secret ConnectionStrings--CosmosDb. That secret is the
+    # authoritative endpoint and is what a tier migration must change.
+    # Kept in sync here only so the value isn't misleadingly stale.
+    # See docs/runbooks/cosmos-db-tier-migration.md.
+    set_key "$LABEL" "CosmosDb:AccountEndpoint"      "https://cosmos-sudoku-prod2.documents.azure.com:443/"
     set_key "$LABEL" "CosmosDb:ConnectionMode"       "Direct"
 
     # -------------------------------------------------------------------------

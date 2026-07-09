@@ -46,7 +46,10 @@ FUNCTIONS_APP_NAME="xenobiasoftsudokufunctions-prod"
 MCP_APP_NAME="xenobiasoftsudokumcp-prod"
 
 KEY_VAULT_NAME="kv-xenobiasoft-prod"
-COSMOS_ACCOUNT_NAME="cosmos-sudoku-prod"
+# Migrated off the free tier (2026-07) to a new serverless paid account; the
+# old cosmos-sudoku-prod account is left running as a rollback copy until the
+# migration is verified — see docs/runbooks/cosmos-db-tier-migration.md.
+COSMOS_ACCOUNT_NAME="cosmos-sudoku-prod2"
 APP_CONFIG_NAME="appcs-xenobiasoft-prod"
 STORAGE_ACCOUNT_NAME="stxenobiasoftprod"
 

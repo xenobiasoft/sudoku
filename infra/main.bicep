@@ -45,6 +45,9 @@ param cosmosDbAccountName string
 @description('Enable the Cosmos DB free tier. Only one account per subscription may use this.')
 param cosmosDbEnableFreeTier bool = true
 
+@description('Deploy the Cosmos DB account in Serverless capacity mode instead of manual provisioned throughput. Cannot be combined with free tier.')
+param cosmosDbServerless bool = false
+
 // ---------------------------------------------------------------------------
 // Key Vault parameters
 // ---------------------------------------------------------------------------
@@ -112,6 +115,7 @@ module storage 'modules/storage.bicep' = {
     storageAccountName: storageAccountName
     cosmosDbAccountName: cosmosDbAccountName
     cosmosDbEnableFreeTier: cosmosDbEnableFreeTier
+    cosmosDbServerless: cosmosDbServerless
   }
 }
 
