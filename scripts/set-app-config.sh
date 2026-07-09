@@ -45,12 +45,17 @@ push_production() {
     set_key "$LABEL" "CosmosDb:DatabaseName"         "sudoku"
     set_key "$LABEL" "CosmosDb:DisableSslValidation" "false"
     set_key "$LABEL" "CosmosDb:AutoCreateContainers" "false"
+    # NOTE: this does NOT select credentials. CosmosDbOptions.UseManagedIdentity
+    # is read only by CosmosDbService to gate container auto-creation. The API
+    # actually authenticates with the account key embedded in the Key Vault
+    # secret below.
     set_key "$LABEL" "CosmosDb:UseManagedIdentity"   "true"
     # NOTE: this key is NOT what points the CosmosClient at an account. Nothing
     # reads CosmosDbOptions.AccountEndpoint; the client is built by Aspire's
     # AddAzureCosmosClient("CosmosDb"), which resolves ConnectionStrings:CosmosDb
-    # from the Key Vault secret ConnectionStrings--CosmosDb. That secret is the
-    # authoritative endpoint and is what a tier migration must change.
+    # from the Key Vault secret ConnectionStrings--CosmosDb. That secret holds a
+    # full AccountEndpoint=...;AccountKey=... connection string and is what a
+    # tier migration must change.
     # Kept in sync here only so the value isn't misleadingly stale.
     # See docs/runbooks/cosmos-db-tier-migration.md.
     set_key "$LABEL" "CosmosDb:AccountEndpoint"      "https://cosmos-sudoku-prod2.documents.azure.com:443/"

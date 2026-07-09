@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Date** | 2026-07-09 |
-| **Status** | Code/config changes staged on branch `feature/cosmos-tier-migration` — not merged. No Azure-side step (Phases 0-8) has been executed. |
+| **Status** | Code/config changes staged on branch `feature/cosmos-tier-migration` — not merged. Phase 0 complete (see below). Phases 1-9 not yet executed. |
 | **Owner** | Project maintainer |
 | **Related** | [ADR-004 — Cosmos DB as persistence backend](../adr/ADR-004-cosmosdb.md), [.claude/rules/rbac-role-assignments.md](../../.claude/rules/rbac-role-assignments.md) |
 
@@ -25,6 +25,16 @@ These file changes exist on the feature branch and require no further edits. Eve
 The `CosmosClient` is constructed by Aspire's `builder.AddAzureCosmosClient("CosmosDb")` (`src/backend/Sudoku.Api/Program.cs:36`), which resolves the **connection string** `ConnectionStrings:CosmosDb`. In production that value comes from the Key Vault secret `ConnectionStrings--CosmosDb` in `kv-xenobiasoft-prod`, loaded by `AddAzureKeyVault` (`Program.cs:28`). Key Vault's configuration provider is registered *after* the App Configuration provider, so it wins.
 
 **The cutover is therefore a Key Vault secret change (Phase 5.3), not an App Config change.** If you had flipped only the App Config key, the cutover would have appeared to succeed, the API would have kept serving from `cosmos-sudoku-prod`, Phase 6 validation would have looked perfectly clean — and Phase 8's `az cosmosdb delete` would have been what finally took production down.
+
+### The API authenticates with an account key, not managed identity
+
+Phase 0 confirmed the secret holds a **full connection string** of the form `AccountEndpoint=…;AccountKey=…`. Three consequences:
+
+- **`CosmosDb:UseManagedIdentity = true` in App Configuration is misleading.** It does not select credentials. `CosmosDbOptions.UseManagedIdentity` is read in exactly one place — `CosmosDbService.cs:182` — where it gates *container auto-creation*. Cosmos authentication is whatever the connection string implies, and it implies key auth.
+- **The Cosmos data-plane RBAC grants in `scripts/assign-roles.sh` are vestigial for the API.** They're harmless, and `Sudoku.Functions` may still depend on them, so leave them in place. But they are not what lets the API read and write.
+- **`disableLocalAuth` must stay `false` on the new account** (it is — `storage.bicep:170`). Setting it `true` would break the API instantly, since key auth would be refused.
+
+Phase 5.3 must therefore carry the **new account's key**, not just its endpoint. And because the key is embedded in the secret, rotating either account's keys out-of-band will break the app until the secret is updated.
 
 ## Why
 
@@ -48,21 +58,16 @@ Decisions locked in for this plan:
 - No TTL on any container, and no ETag/optimistic-concurrency usage, so an upsert-based copy is safe.
 - `infra/params/staging.bicepparam` uses a separate, non-free account and leaves `cosmosDbServerless` at its `false` default — staging is unaffected.
 
-## Phase 0 — Confirm the Key Vault secret (do this first)
-
-Everything downstream depends on this secret's exact name and value format.
+## Phase 0 — Confirm the Key Vault secret ✅ complete
 
 ```
 az keyvault secret list --vault-name kv-xenobiasoft-prod --query "[].name" -o tsv
 az keyvault secret show --vault-name kv-xenobiasoft-prod --name ConnectionStrings--CosmosDb --query value -o tsv
 ```
 
-Two possible formats, and they change Phase 5.3:
+**Result:** the secret `ConnectionStrings--CosmosDb` holds a full connection string, `AccountEndpoint=https://cosmos-sudoku-prod.documents.azure.com:443/;AccountKey=…`. The API is on **key auth**. See the warning section above for what that implies.
 
-- **Bare endpoint URI** (`https://cosmos-sudoku-prod.documents.azure.com:443/`) — Aspire treats it as an `AccountEndpoint` and authenticates with `DefaultAzureCredential`. Consistent with the managed-identity grants in `assign-roles.sh`. Cutover swaps the host and nothing else.
-- **Full connection string** (`AccountEndpoint=…;AccountKey=…`) — the API is using **key auth**, the Cosmos RBAC grants are vestigial, and the cutover must also carry the *new account's* key.
-
-Confirm nothing else supplies the endpoint:
+Optionally confirm nothing else supplies the endpoint:
 ```
 az webapp config appsettings list --name XenobiasoftSudokuApi-prod \
   -g rg-xenobiasoft-sudoku-prod-westus2 --query "[?contains(name,'Cosmos')]"
@@ -104,7 +109,9 @@ bash scripts/assign-roles.sh
 ```
 It's idempotent and grants Cosmos Data Contributor to the API app, Functions app, and your developer principal. It also runs automatically as the last step of `deploy-infra` in CI, so a normal `main` push after Phase 1 applies it for you.
 
-**Cosmos data-plane role assignments propagate slowly** — typically a few minutes, occasionally much longer. Do not proceed to Phase 3 until a data-plane read from your developer principal succeeds against the new account. Verify the assignments exist:
+Since Phase 0 established that the API authenticates with an account key, these grants are **not** on the critical path for the cutover — the API would work even if they hadn't propagated. Run the script anyway: it keeps the new account's grants consistent with the old, and `Sudoku.Functions` (whose Cosmos credential source is unverified — see Phase 1 step 4) may depend on them.
+
+Cosmos data-plane role assignments propagate slowly, typically a few minutes. Verify they landed:
 ```
 az cosmosdb sql role assignment list --account-name cosmos-sudoku-prod2 -g rg-xenobiasoft-sudoku-prod-westus2 -o table
 ```
@@ -157,13 +164,25 @@ python scripts/migrate-cosmos-data.py \
 
 Run it once with `--dry-run --prune` first and read the list of documents it would delete.
 
-**5.3 — Flip the Key Vault secret.** This is the actual cutover. Preserve whatever value format Phase 0 revealed:
+**5.3 — Flip the Key Vault secret.** This is the actual cutover. Phase 0 established the value is a full connection string, so it must carry the new account's **endpoint and key**.
+
+First record the current value — you need it verbatim to roll back (Phase 7), and once Phase 8 deletes the old account its key dies with it:
 ```
+az keyvault secret show --vault-name kv-xenobiasoft-prod \
+  --name ConnectionStrings--CosmosDb --query value -o tsv
+```
+Keep it somewhere outside the repo. Key Vault also retains the prior version automatically — `az keyvault secret list-versions --vault-name kv-xenobiasoft-prod --name ConnectionStrings--CosmosDb` — so this is belt-and-braces.
+
+Then fetch the new account's key and write the new secret:
+```
+NEW_KEY=$(az cosmosdb keys list --name cosmos-sudoku-prod2 \
+  -g rg-xenobiasoft-sudoku-prod-westus2 --query primaryMasterKey -o tsv)
+
 az keyvault secret set --vault-name kv-xenobiasoft-prod \
   --name ConnectionStrings--CosmosDb \
-  --value "https://cosmos-sudoku-prod2.documents.azure.com:443/"
+  --value "AccountEndpoint=https://cosmos-sudoku-prod2.documents.azure.com:443/;AccountKey=${NEW_KEY};"
 ```
-If Phase 0 showed a full `AccountEndpoint=…;AccountKey=…` connection string, supply the same shape with the new account's endpoint and key.
+Match the old value's exact shape (trailing `;`, any `Database=` segment) rather than assuming the form above. `az keyvault secret set` writes the value as a command-line argument, so it will land in your shell history — clear it afterwards.
 
 Optionally also run `scripts/set-app-config.sh` (manual-only, not part of CI) so the dead `CosmosDb:AccountEndpoint` key isn't left stale. It changes nothing functionally.
 
@@ -182,32 +201,47 @@ The restart is **required**, not merely advisable: the Key Vault configuration p
 
 ## Phase 6 — Post-cutover validation
 
-- Watch Application Insights / logs for `CosmosException` or the `InvalidOperationException` thrown by `CosmosDbService.InitializeCosmosDbAsync` (missing database/container) for the first hour of real traffic.
+- **Confirm you are actually on the new account.** The failure mode this runbook exists to prevent is a cutover that silently didn't happen — and a cutover that didn't happen produces *no errors at all*. `CosmosDbService.InitializeCosmosDbAsync` logs the endpoint it connected to (`CosmosDbService.cs:180`), so check it directly:
+  ```
+  az webapp log tail --name XenobiasoftSudokuApi-prod -g rg-xenobiasoft-sudoku-prod-westus2 \
+    | grep "Initializing CosmosDB at endpoint"
+  ```
+  It must name `cosmos-sudoku-prod2`. Corroborate with metrics: requests on the new account non-zero, requests on the old account dropping to zero.
+- Watch Application Insights / logs for `CosmosException` or the `InvalidOperationException` thrown by `InitializeCosmosDbAsync` (missing database/container) for the first hour of real traffic. A `401`/`403` here means the connection string's key doesn't match the new account.
 - Confirm the new account's metrics show request charges (serverless: per-operation RU, no throttling).
-- **Confirm you are actually on the new account** — the failure mode this runbook exists to prevent is a cutover that silently didn't happen. Check the new account's metrics show non-zero requests, and the old account's drop to zero.
 - Leave `cosmos-sudoku-prod` **running and untouched** — this is your rollback path.
 
 ## Phase 7 — Rollback (if something's wrong post-cutover)
 
-Set the Key Vault secret back to the old account's endpoint and restart the API:
+Restore the connection string you recorded in Phase 5.3 — endpoint **and** the old account's key — then restart the API:
 ```
 az keyvault secret set --vault-name kv-xenobiasoft-prod \
   --name ConnectionStrings--CosmosDb \
-  --value "https://cosmos-sudoku-prod.documents.azure.com:443/"
+  --value "<the exact value captured in Phase 5.3>"
 az webapp restart --name XenobiasoftSudokuApi-prod -g rg-xenobiasoft-sudoku-prod-westus2
 ```
+If you didn't capture it, recover the previous version:
+```
+az keyvault secret list-versions --vault-name kv-xenobiasoft-prod --name ConnectionStrings--CosmosDb -o table
+az keyvault secret show --vault-name kv-xenobiasoft-prod --name ConnectionStrings--CosmosDb --version <prior-version-id> --query value -o tsv
+```
+Confirm the rollback took using the endpoint log line from Phase 6.
+
 Any writes that landed on the new account during the failed window must be manually replayed back to the old account (same script, endpoints reversed, with `--since` set to the cutover epoch) before re-attempting. This is the cost of the maintenance-window approach vs. dual-write — keep the window short.
 
 ## Phase 8 — Decommission the old account
 
-Only after at least 1-2 weeks of clean operation on the new account, and only once Phase 6 has positively confirmed traffic is hitting `cosmos-sudoku-prod2`:
+Only after at least 1-2 weeks of clean operation on the new account, and only once Phase 6 has **positively confirmed via the endpoint log line** that traffic is hitting `cosmos-sudoku-prod2`. This is the irreversible step, and the whole point of Phase 6's check is to stop you taking it while the API is quietly still on the old account.
 
 1. `az cosmosdb delete --name cosmos-sudoku-prod --resource-group rg-xenobiasoft-sudoku-prod-westus2`
 2. This also frees the subscription's one free-tier slot.
 
+After this, Phase 7 rollback is gone: the old account's access key dies with the account, so the connection string you saved is worthless.
+
 ## Phase 9 — Cleanup
 
-- **Remove the dead Cosmos config.** `CosmosDbOptions.AccountEndpoint`, `.DisableSslValidation`, and `.ConnectionMode` are bound but never read. The matching App Config keys (`set-app-config.sh`) and the `CosmosDb__AccountEndpoint` / `CosmosDb__UseManagedIdentity` app settings in `compute.bicep` and `functions.bicep` are all inert. Deleting them would have prevented the entire class of confusion this runbook's warning section describes.
+- **Remove the dead Cosmos config.** `CosmosDbOptions.AccountEndpoint`, `.DisableSslValidation`, and `.ConnectionMode` are bound but never read, as is the `CosmosDb__AccountEndpoint` app setting pushed by `compute.bicep` and `functions.bicep`. Deleting them would have prevented the entire class of confusion this runbook's warning section describes.
+- **Decide on Cosmos authentication.** The API uses an account key while `CosmosDb:UseManagedIdentity` reads `true` — a flag that only gates container auto-creation (`CosmosDbService.cs:182`) and has nothing to do with credentials. The managed identities already hold Cosmos Data Contributor via `assign-roles.sh`, so switching the Key Vault secret to a bare endpoint URI would let `DefaultAzureCredential` take over and remove the embedded key entirely. Worth doing as a follow-up, but **not** during this migration — one variable at a time.
 - Clarify how `Sudoku.Functions` obtains `ConnectionStrings:CosmosDb`; it registers a `CosmosClient` but no Key Vault or App Configuration provider.
 - Remove the now-unused `cosmosDbEnableFreeTier` parameter from `infra/main.bicep` and `infra/modules/storage.bicep`, or leave it defaulted to `false` — harmless either way.
 - Cosmos account names are immutable, so the `2` suffix is permanent short of another full migration. Not worth doing.
