@@ -5,28 +5,30 @@ See docs/runbooks/cosmos-db-tier-migration.md for the full runbook.
 
 Copies all items (or, with --since, only items changed at or after a given Unix
 epoch timestamp) from every container in a source Cosmos DB database to a
-same-named container in a destination database. Intended usage:
+same-named container in a destination database.
 
-  1. Bulk copy (Phase 3 of the runbook), no --since:
-       python migrate-cosmos-data.py \
-         --src-endpoint https://cosmos-sudoku-prod.documents.azure.com:443/ \
-         --src-key <old-account-primary-key> \
-         --dst-endpoint https://cosmos-sudoku-prod2.documents.azure.com:443/ \
-         --dst-key <new-account-primary-key> \
-         --database sudoku --containers games profiles
+Intended usage — a single full copy with writes stopped (Phase 3 of the runbook):
 
-  2. Delta sync + delete reconciliation during the maintenance window (Phase 5
-     of the runbook), using the epoch timestamp printed at the start of step 1:
-       python migrate-cosmos-data.py ... --since 1783728000 --prune
+    python migrate-cosmos-data.py \
+      --src-endpoint https://cosmos-sudoku-prod.documents.azure.com:443/ \
+      --src-key <old-account-primary-key> \
+      --dst-endpoint https://cosmos-sudoku-prod2.documents.azure.com:443/ \
+      --dst-key <new-account-primary-key> \
+      --database sudoku --containers games profiles --prune
 
---prune deletes destination documents that no longer exist in the source. The
-application hard-deletes games and profiles without leaving a tombstone, so a
---since delta cannot observe a deletion: the document is simply absent from the
-source query, and the copy made during the bulk pass survives. Without --prune,
-anything deleted between the bulk copy and the cutover comes back to life on the
-new account. Only run --prune once writes are stopped (Phase 5.1) — against a
-live source it races traffic and will delete documents the destination should
-keep.
+--prune deletes destination documents that no longer exist in the source, making
+the copy idempotent: re-running converges the destination on the source instead
+of accumulating orphans. This matters because the application hard-deletes games
+and profiles without leaving a tombstone, so a copy alone can never remove
+anything — a document deleted from the source after an earlier copy would
+otherwise survive on the destination forever. Only run --prune once writes are
+stopped; against a live source it races traffic and will delete documents the
+destination should keep.
+
+--since restricts the copy to items with _ts >= the given epoch, for an
+incremental pass against a large source. The single-copy flow above does not
+need it. Note that --since alone cannot observe deletions; pair it with --prune,
+which always enumerates the full source regardless of --since.
 
 Requires: pip install "azure-cosmos>=4.5,<5"
 
@@ -126,11 +128,9 @@ def main():
 
     start_epoch = int(time.time())
     print(f"Migration run started at epoch {start_epoch} ({time.ctime(start_epoch)}).")
-    if args.since is None:
-        print("Record this timestamp — pass it as --since on the delta-sync run before cutover.")
     if args.prune and not args.dry_run:
         print("WARNING: --prune deletes destination documents that are absent from the source.")
-        print("         Writes to the source must already be stopped (runbook Phase 5.1).")
+        print("         Writes to the source must already be stopped (runbook Phase 3.1).")
 
     src_db = CosmosClient(args.src_endpoint, args.src_key).get_database_client(args.database)
     dst_db = CosmosClient(args.dst_endpoint, args.dst_key).get_database_client(args.database)
