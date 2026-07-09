@@ -19,8 +19,14 @@ param enableSwaCustomDomain = true
 
 // Storage
 param storageAccountName = 'stxenobiasoftprod'
-param cosmosDbAccountName = 'cosmos-sudoku-prod'
-param cosmosDbEnableFreeTier = true
+// Migrated off the free tier (2026-07): free tier can only be set at account
+// creation and cannot be converted in place, so this points at a newly
+// provisioned, serverless, paid account. The original free-tier account
+// (cosmos-sudoku-prod) is intentionally left out of this template so Bicep
+// never touches it — see docs/runbooks/cosmos-db-tier-migration.md.
+param cosmosDbAccountName = 'cosmos-sudoku-prod2'
+param cosmosDbEnableFreeTier = false
+param cosmosDbServerless = true
 
 // Key Vault
 param keyVaultName = 'kv-xenobiasoft-prod'

@@ -6,6 +6,9 @@ param cosmosDbAccountName string
 @description('Enable the Cosmos DB free tier. Only one account per subscription may use this. Set to false if another account in the subscription already uses it.')
 param cosmosDbEnableFreeTier bool = true
 
+@description('Deploy the Cosmos DB account in Serverless capacity mode instead of manual provisioned throughput. Cannot be combined with free tier.')
+param cosmosDbServerless bool = false
+
 var tags = {
   environment: environment
   project: 'XenobiaSoftSudoku'
@@ -118,6 +121,14 @@ resource tableService 'Microsoft.Storage/storageAccounts/tableServices@2023-01-0
 // Cosmos DB
 // ---------------------------------------------------------------------------
 
+// Serverless accounts reject an explicit throughput cap, so `capacity` is
+// omitted entirely rather than passed as an empty object.
+var cosmosDbCapacity = cosmosDbServerless ? {} : {
+  capacity: {
+    totalThroughputLimit: 1000
+  }
+}
+
 resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
   name: cosmosDbAccountName
   location: location
@@ -126,7 +137,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
     defaultExperience: 'Core (SQL)'
     'hidden-workload-type': 'Production'
   })
-  properties: {
+  properties: union({
     databaseAccountOfferType: 'Standard'
     analyticalStorageConfiguration: {
         schemaType: 'WellDefined'
@@ -138,7 +149,8 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
       {
         locationName: location
         failoverPriority: 0
-        isZoneRedundant: true
+        // Serverless accounts are single-region and do not support availability zones.
+        isZoneRedundant: !cosmosDbServerless
       }
     ]
     backupPolicy: {
@@ -149,17 +161,23 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
         backupStorageRedundancy: 'Geo'
       }
     }
-    capabilities: []
-    capacity: {
-      totalThroughputLimit: 1000
-    }
+    capabilities: cosmosDbServerless ? [
+      {
+        name: 'EnableServerless'
+      }
+    ] : []
     defaultIdentity: 'FirstPartyIdentity'
-    enableFreeTier: cosmosDbEnableFreeTier
+    // Free tier requires provisioned throughput, so it cannot coexist with
+    // serverless. Forced off rather than left to fail the deployment, since
+    // cosmosDbEnableFreeTier defaults to true.
+    enableFreeTier: cosmosDbEnableFreeTier && !cosmosDbServerless
     enableAutomaticFailover: true
     enableMultipleWriteLocations: false
     enableAnalyticalStorage: false
     enableBurstCapacity: false
     enablePartitionMerge: false
+    // Must stay false: the API authenticates with the account key embedded in
+    // the ConnectionStrings--CosmosDb Key Vault secret, not managed identity.
     disableLocalAuth: false
     disableKeyBasedMetadataWriteAccess: false
     minimalTlsVersion: 'Tls12'
@@ -168,7 +186,7 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
     virtualNetworkRules: []
     ipRules: []
     cors: []
-  }
+  }, cosmosDbCapacity)
 }
 
 resource sudokuDatabase 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases@2024-05-15' = {
@@ -219,7 +237,7 @@ resource gamesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/cont
     }
 }
 
-resource gamesThroughput 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/throughputSettings@2024-05-15' = {
+resource gamesThroughput 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/throughputSettings@2024-05-15' = if (!cosmosDbServerless) {
   parent: gamesContainer
   name: 'default'
   properties: {
@@ -257,7 +275,7 @@ resource profilesContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/c
   }
 }
 
-resource profilesThroughput 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/throughputSettings@2024-05-15' = {
+resource profilesThroughput 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/throughputSettings@2024-05-15' = if (!cosmosDbServerless) {
   parent: profilesContainer
   name: 'default'
   properties: {
