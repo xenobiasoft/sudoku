@@ -18,7 +18,7 @@ The fix is to **materialize a compact completion record** when a game is complet
 - Give each player a Stats page surfacing per-user statistics: **games played, win rate, average solve time by difficulty, and best times**.
 - Persist a durable, compact **completion record** on game completion so wins are never lost when the game document is deleted.
 - Compute statistics **server-side** (authoritative), consistent with the project decision to keep game logic server-authoritative.
-- Leverage the existing (currently stubbed) `GameCompletedEventHandler` and domain event pipeline; avoid changing the client's delete-on-solve behaviour.
+- Wire up the domain event pipeline (currently registered but never invoked — see §4 Prerequisite) and implement the stubbed `GameCompletedEventHandler`; avoid changing the client's delete-on-solve behaviour.
 
 **Non-Goals:**
 - Keeping full solved-game documents (cells + move history) for history/replay. Completed games are reduced to stats-only records and **do not appear in the games list**.
@@ -64,11 +64,19 @@ The fix is to **materialize a compact completion record** when a game is complet
 
 ## 4. Architecture Overview
 
+### Prerequisite: wire up domain event dispatch
+
+**The domain event pipeline is not currently invoked at runtime.** `DomainEventDispatcher` exists and is registered in DI (`InfrastructureServiceCollectionExtensions.cs`), and aggregates accumulate events via `AddDomainEvent()`, but **no code calls `IDomainEventDispatcher.DispatchAsync` or reads `aggregate.DomainEvents`** — so every `IDomainEventHandler` (including `GameCompletedEventHandler`) is dead code today. This feature must first close that gap:
+
+- After an aggregate is persisted, dispatch its `DomainEvents` via `IDomainEventDispatcher`, then call `ClearDomainEvents()` to prevent re-dispatch on a later save. **Preferred single point:** `CosmosDbGameRepository.SaveAsync(game)` (inject `IDomainEventDispatcher`), which uniformly covers `CompleteGame()` raised inside `MakeMove`/`RevealHint`. Alternative: dispatch explicitly in each command handler after `SaveAsync`.
+- This is **foundational, not stats-specific** — it activates all currently-stubbed handlers (`GameCreated`, `MoveMade`, etc.). Those handlers are today no-op stubs (log only), so enabling dispatch is low-risk, but the change should be called out as broader than the stats feature.
+- `DomainEventDispatcher.DispatchAsync` currently **rethrows** on handler failure. Wired into `SaveAsync`, a throwing handler would fail the persisting operation (e.g., the completing move). Combined with the idempotent completion write + delete-time backstop (below), completion capture stays safe; see §11 for the failure-handling decision.
+
 ### High-Level Description
 
 Two flows:
 
-**Write (on completion).** The `SudokuGame` aggregate's `CompleteGame()` raises an **enriched** `GameCompletedEvent` carrying `ProfileId`, `Difficulty`, `Statistics`, and `CompletedAt`. `IDomainEventDispatcher` dispatches it in-process **after persistence**, invoking `GameCompletedEventHandler` (Infrastructure) — currently a stub with a literal TODO "Update player statistics." The handler maps the event to a `GameCompletion` record and upserts it (keyed by `gameId`) via a new `IGameCompletionRepository`. The heavy game document is unaffected and is still deleted by the client's existing delete-on-solve call.
+**Write (on completion).** The `SudokuGame` aggregate's `CompleteGame()` raises an **enriched** `GameCompletedEvent` carrying `ProfileId`, `Difficulty`, `Statistics`, and `CompletedAt`. Once dispatch is wired (above), `IDomainEventDispatcher` dispatches it in-process **after persistence**, invoking `GameCompletedEventHandler` (Infrastructure) — currently a stub with a literal TODO "Update player statistics." The handler maps the event to a `GameCompletion` record and upserts it (keyed by `gameId`) via a new `IGameCompletionRepository`. The heavy game document is unaffected and is still deleted by the client's existing delete-on-solve call, which carries the delete-time backstop.
 
 **Read (stats page).** `StatsController` → `GetPlayerStatsQuery` → handler loads the player's completion records (`IGameCompletionRepository`) and non-completed games (`IGameRepository.GetByProfileIdAsync`), aggregates them into `PlayerStatsDto`, and returns it. The React `StatsPage` renders KPI tiles + per-difficulty rows.
 
@@ -76,7 +84,7 @@ Two flows:
 
 - **Domain:** Enrich `GameCompletedEvent` with `ProfileId`, `Difficulty`, `CompletedAt` (raised in `CompleteGame()`).
 - **Application:** New `GetPlayerStatsQuery` + handler; `PlayerStatsDto`/`DifficultyStatsDto`; `GameCompletion` read model; `IGameCompletionRepository` interface; `DeleteGameCommandHandler` gains the delete-time backstop (upsert a completion record before deleting a `Completed` game).
-- **Infrastructure:** Implement `GameCompletedEventHandler` to write the record; new `CosmosDbGameCompletionRepository` + `GameCompletionDocument` (mirrors the `profiles` container's `AutoCreateContainers`/`CreateContainerIfNotExistsAsync` pattern); DI registration; new `game-completions` Cosmos container.
+- **Infrastructure:** **Wire domain event dispatch** in `CosmosDbGameRepository.SaveAsync` (dispatch + `ClearDomainEvents`) — the prerequisite above; implement `GameCompletedEventHandler` to write the record; new `CosmosDbGameCompletionRepository` + `GameCompletionDocument` (mirrors the `profiles` container's `AutoCreateContainers`/`CreateContainerIfNotExistsAsync` pattern); DI registration; new `game-completions` Cosmos container.
 - **API:** New `StatsController` with one GET endpoint.
 - **React/Vite:** New `StatsPage` + styles + test, `useStatsService` hook, `apiClient.getPlayerStats`, `PlayerStatsModel`/`DifficultyStatsModel` types, `/stats` route, Home page nav card. **No games-list or GamePage changes.**
 - **Aspire components:** New container provisioning (see §3 Deployment).
@@ -95,7 +103,7 @@ sequenceDiagram
     UI->>API: PUT .../actions (final move)
     API->>Domain: MakeMove(...) → CompleteGame()
     Domain-->>API: raises GameCompletedEvent(profileId, difficulty, stats, completedAt)
-    API->>Disp: dispatch after persistence
+    API->>Disp: SaveAsync dispatches DomainEvents then ClearDomainEvents (newly wired)
     Disp->>H: HandleAsync(event)
     H->>CRepo: Upsert(GameCompletion keyed by gameId)
     UI->>API: DELETE .../games/{gameId} (existing behaviour)
@@ -231,7 +239,7 @@ The controller contains no business logic; the handler performs read-side projec
 |-------|--------|---------------|---------|
 | `GameCompletedEvent` | Enriched (was `(GameId, GameStatistics)`) | `ProfileId`, `Difficulty`, `CompletedAt` | `GameCompletedEventHandler` implemented to upsert a `GameCompletion` via `IGameCompletionRepository` |
 
-No new events. Dispatch remains in-process after persistence via `IDomainEventDispatcher`. Update any existing consumers/tests of the old `GameCompletedEvent` signature.
+No new events. **Dispatch must be wired first** (§4 Prerequisite) — today the dispatcher is registered but never called, so no handler runs. After wiring, events dispatch in-process after persistence via `IDomainEventDispatcher`, and the aggregate's events are cleared (`ClearDomainEvents()`) post-dispatch to avoid double-dispatch on later saves. Update any existing consumers/tests of the old `GameCompletedEvent` signature.
 
 ---
 
@@ -274,6 +282,7 @@ Behaviour mirrors `GamesController.GetAllGamesAsync`: validate `profileId` non-e
 
 ### Unit Tests (backend)
 
+- **Event dispatch wiring:** `SaveAsync` dispatches an aggregate's accumulated `DomainEvents` to registered `IDomainEventHandler`s and then clears them (a second save does not re-dispatch). Covers the §4 prerequisite.
 - **`GameCompletedEventHandler`:** writes a `GameCompletion` with the event's `profileId`, `gameId`, `difficulty`, `playDuration`, `completedAt`; upsert is idempotent (same `gameId` twice → one record). Mock `IGameCompletionRepository`.
 - **`DeleteGameCommandHandler` backstop:** deleting a `Completed` game with no existing record upserts one from the game before deleting; deleting a non-completed game writes no record; deleting a `Completed` game whose record already exists does not double-write.
 - **Domain:** `CompleteGame()` raises `GameCompletedEvent` with the enriched payload (profileId, difficulty, completedAt, stats).
@@ -297,7 +306,8 @@ Backend: AutoFixture + explicit `GameCompletion`/`SudokuGame` fixtures at known 
 
 ## 11. Risks & Considerations
 
-- **Completion-write reliability (mitigated):** The client deletes the full game document shortly after completion. The primary write (`GameCompletedEventHandler`) plus the **delete-time backstop** (a `Completed` game cannot be deleted without a record existing first) means a win survives even if the completion event is missed. Both writes are idempotent by `gameId`. Residual edge case: the game is completed but the client never issues the delete (e.g., crash) *and* the event write failed — then a completed doc lingers (harmless, excluded from reads) until re-deleted. Failed writes should still be logged/alertable. Server-side delete-on-completion was rejected because the client's `makeMove` does PUT-then-GET and the follow-up GET would 404.
+- **Domain event dispatch is unimplemented (prerequisite):** No runtime code dispatches domain events today — the dispatcher is registered but never invoked, so `GameCompletedEventHandler` would never fire as-is. This feature must wire dispatch (§4 Prerequisite). It is foundational (activates all stubbed handlers) and therefore broader than stats; the currently-stubbed handlers are log-only no-ops, so the blast radius is small, but it should be reviewed as such. Decision point: `DomainEventDispatcher` rethrows on handler failure — wired into `SaveAsync`, a failing `GameCompletedEventHandler` would fail the completing move. Given the idempotent write + delete-time backstop, prefer having this handler **log-and-not-throw** (or the dispatcher swallow-and-log) so a stats hiccup never blocks gameplay; the backstop then guarantees eventual capture.
+- **Completion-write reliability (mitigated):** The client deletes the full game document shortly after completion. The primary write (`GameCompletedEventHandler`, once dispatch is wired) plus the **delete-time backstop** (a `Completed` game cannot be deleted without a record existing first) means a win survives even if the event handler is skipped or fails. Both writes are idempotent by `gameId`. Residual edge case: the game is completed but the client never issues the delete (e.g., crash) *and* the event write failed — then a completed doc lingers (harmless, excluded from reads) until re-deleted. Failed writes should still be logged/alertable. Server-side delete-on-completion was rejected because the client's `makeMove` does PUT-then-GET and the follow-up GET would 404.
 - **Denominator is retention-dependent:** "Games played" = wins + currently-existing non-completed games. If a player deletes an in-progress or abandoned game, it drops out of the denominator. Accepted as consistent with "a deleted game is gone"; win rate includes in-progress games (per the agreed definition). Showing separate Played/Won/Win-rate tiles makes the relationship transparent.
 - **Container provisioning:** A new `game-completions` Cosmos container is required — cheap given the `profiles` container precedent (`AutoCreateContainers` in dev; infra provisioning in prod). The single-container `type`-discriminator alternative was considered and not chosen (mixes read models with aggregates, forces type-filtering on every game query).
 - **Event-signature change:** Enriching `GameCompletedEvent` touches its declaration, `CompleteGame()`, the handler, and any tests referencing the old shape — a contained, compile-checked change.
@@ -308,16 +318,17 @@ Backend: AutoFixture + explicit `GameCompletion`/`SudokuGame` fixtures at known 
 
 ## 12. Implementation Plan
 
-1. **Domain:** Enrich `GameCompletedEvent` (add `ProfileId`, `Difficulty`, `CompletedAt`); update `CompleteGame()` to pass them.
-2. **Application:** Add `GameCompletion` read model and `IGameCompletionRepository` (`GetByProfileIdAsync`, `GetByGameIdAsync`, `UpsertAsync`).
-3. **Infrastructure:** Implement `GameCompletedEventHandler` to map the event → `GameCompletion` → `UpsertAsync`; add `CosmosDbGameCompletionRepository` + `GameCompletionDocument`; register in DI; provision the `game-completions` container.
-4. **Application (backstop):** In `DeleteGameCommandHandler`, when the game being deleted is `Completed`, upsert a completion record (idempotent) before `DeleteAsync`.
-5. **Application (read):** Add `PlayerStatsDto`/`DifficultyStatsDto`, `GetPlayerStatsQuery`, `GetPlayerStatsQueryHandler` (§6 aggregation).
-6. **API:** Add `StatsController` with `GET api/players/{profileId}/stats`.
-7. **Backend tests:** Handler-write, backstop, domain-event, query-aggregation, and controller tests; verify ≥80% coverage.
-8. **Frontend:** Add `PlayerStatsModel`/`DifficultyStatsModel`, `apiClient.getPlayerStats`, `useStatsService`, `StatsPage` (three KPI tiles) + styles, `/stats` route, Home "Stats" card.
-9. **Frontend tests:** `StatsPage.test.tsx`; run `npm run lint` and `npm run build`.
-10. **Validate end-to-end:** Run API + React; complete several games across difficulties; confirm a completion record is written, the solved game is still removed from the list, and `/stats` numbers match the completions.
+1. **Infrastructure (prerequisite):** Wire domain event dispatch in `CosmosDbGameRepository.SaveAsync` — dispatch `game.DomainEvents` via `IDomainEventDispatcher`, then `ClearDomainEvents()`; confirm a stubbed handler now fires. Decide dispatcher failure policy (log-and-continue vs. rethrow) per §11.
+2. **Domain:** Enrich `GameCompletedEvent` (add `ProfileId`, `Difficulty`, `CompletedAt`); update `CompleteGame()` to pass them.
+3. **Application:** Add `GameCompletion` read model and `IGameCompletionRepository` (`GetByProfileIdAsync`, `GetByGameIdAsync`, `UpsertAsync`).
+4. **Infrastructure:** Implement `GameCompletedEventHandler` to map the event → `GameCompletion` → `UpsertAsync`; add `CosmosDbGameCompletionRepository` + `GameCompletionDocument`; register in DI; provision the `game-completions` container.
+5. **Application (backstop):** In `DeleteGameCommandHandler`, when the game being deleted is `Completed`, upsert a completion record (idempotent) before `DeleteAsync`.
+6. **Application (read):** Add `PlayerStatsDto`/`DifficultyStatsDto`, `GetPlayerStatsQuery`, `GetPlayerStatsQueryHandler` (§6 aggregation).
+7. **API:** Add `StatsController` with `GET api/players/{profileId}/stats`.
+8. **Backend tests:** Event-dispatch wiring, handler-write, backstop, domain-event, query-aggregation, and controller tests; verify ≥80% coverage.
+9. **Frontend:** Add `PlayerStatsModel`/`DifficultyStatsModel`, `apiClient.getPlayerStats`, `useStatsService`, `StatsPage` (three KPI tiles) + styles, `/stats` route, Home "Stats" card.
+10. **Frontend tests:** `StatsPage.test.tsx`; run `npm run lint` and `npm run build`.
+11. **Validate end-to-end:** Run API + React; complete several games across difficulties; confirm the event handler writes a completion record, the solved game is still removed from the list, and `/stats` numbers match the completions.
 
 ---
 
@@ -325,6 +336,7 @@ Backend: AutoFixture + explicit `GameCompletion`/`SudokuGame` fixtures at known 
 
 None outstanding. The following were raised during design and resolved:
 
+- **Domain event dispatch is unimplemented** (found in PR review) → **wire dispatch in `CosmosDbGameRepository.SaveAsync`** (dispatch + `ClearDomainEvents`) as a prerequisite (§4); this activates all stubbed handlers. Prefer the completion handler **log-and-not-throw** so a stats failure never blocks the completing move, with the delete-time backstop guaranteeing eventual capture.
 - **Completion durability / delete ordering** → **Event-handler write + delete-time backstop**, keeping the client-driven delete. Server-side delete-on-completion was rejected (the client's `makeMove` PUT-then-GET would 404).
 - **Storage** → **Dedicated `game-completions` Cosmos container** (partition key `/profileId`), not a `type` discriminator on the games container.
 - **Zero-duration wins** → **Include as-is** in average/best; `PlayDuration` is reliably populated from moves, so `00:00:00` should be vanishingly rare.
