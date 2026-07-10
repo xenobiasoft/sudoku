@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Date** | 2026-07-09 |
-| **Status** | **Cutover complete (2026-07-10 00:08 UTC).** Production serves from `cosmos-sudoku-prod2` (serverless). Phases 0-3 done. Phase 4 (watch first hour) in progress. Phase 6 (delete old account) gated on 1-2 weeks clean — **irreversible**. |
+| **Status** | **Cutover complete (2026-07-10 00:08 UTC).** Production serves from `cosmos-sudoku-prod2` (serverless), confirmed on the new account after the #357 deploy with zero failed Cosmos calls. Phases 0-4 done; Phase 7 code cleanup shipped (#357). Remaining: delete stale App Config keys in `appcs-xenobiasoft-prod`, then Phase 6 (delete old account) — gated on 1-2 weeks clean, **irreversible**. |
 | **Rollback** | Key Vault secret `ConnectionStrings--CosmosDb`, prior version `b0f8e2ef9b554bdfae1c0f18db1f4892` (points at `cosmos-sudoku-prod`). Restore it and restart the API. Valid only until Phase 6 deletes the old account. |
 | **Owner** | Project maintainer |
 | **Related** | [ADR-004 — Cosmos DB as persistence backend](../adr/ADR-004-cosmosdb.md), [.claude/rules/rbac-role-assignments.md](../../.claude/rules/rbac-role-assignments.md) |

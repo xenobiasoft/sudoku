@@ -84,7 +84,7 @@ The `UseCosmosDb` environment variable is currently set to `"true"` in `Sudoku.A
 
 - **Audit trail loss**: The blob revision strategy provided an implicit append-only game history. Cosmos DB upsert overwrites the document; point-in-time history is not preserved. If audit history is required in the future, it must be added explicitly (e.g., via a separate event log container or Cosmos DB Change Feed to a history container).
 - **Azure dependency**: Cosmos DB is an Azure-exclusive managed service. Non-Azure deployments require the Cosmos DB emulator or a compatibility layer.
-- **Cost model**: Cosmos DB is billed per Request Unit (RU). Specification-based queries that trigger full container scans (see [ADR-003](ADR-003-specification-pattern.md)) will consume disproportionate RUs until predicate pushdown is implemented.
+- **Cost model**: Cosmos DB is billed per Request Unit (RU). The production account runs in **serverless** capacity mode (see the 2026-07-10 amendment below), so RUs are billed per request with no provisioned floor — a good fit for this app's low, bursty traffic. Specification-based queries that trigger full container scans (see [ADR-003](ADR-003-specification-pattern.md)) will consume disproportionate RUs until predicate pushdown is implemented; under serverless this shows up directly as request charges rather than throttling against a provisioned limit.
 
 ### Rules Enforced by This Decision
 
@@ -92,6 +92,18 @@ The `UseCosmosDb` environment variable is currently set to `"true"` in `Sudoku.A
 2. **`AzureBlobGameRepository` must not be re-registered as `IGameRepository`.** The class is retained in `Sudoku.Infrastructure` for potential repurposing (see [ADR-006](ADR-006-blob-storage-repurpose.md)).
 3. **The `UseCosmosDb` toggle is deprecated.** New code must not branch on this value. It will be removed in a follow-up cleanup.
 4. **New query methods added to `IGameRepository` must use parameterized Cosmos DB SQL** rather than in-memory filtering.
+
+---
+
+## Amendment — 2026-07-10: Account rename and serverless switch
+
+The production Cosmos account was migrated off the free tier. Because the free-tier discount can only be selected at account creation and cannot be toggled on an existing account, this required standing up a new account and copying the data over rather than an in-place change.
+
+- **Account name:** production now runs on **`cosmos-sudoku-prod2`**, not `cosmos-sudoku-prod`. Cosmos account names are immutable, so the `2` suffix is permanent. The database (`sudoku`) and containers (`games`, `profiles`) are unchanged.
+- **Capacity mode:** the new account uses **Serverless** instead of the previous 400 RU/s × 2 provisioned throughput. Serverless bills per request with no provisioned floor, which suits this app's low, bursty workload far better than a flat provisioned cost once the free-tier discount is gone.
+- **Cutover:** completed 2026-07-10 00:08 UTC via a brief maintenance window (stop writes, single copy, repoint the Key Vault connection string, restart). The old `cosmos-sudoku-prod` account is retained temporarily as a rollback path and decommissioned only after a clean-operation window.
+
+Full detail, including the finding that the API authenticates by account key rather than managed identity, is in the [Cosmos DB tier-migration runbook](../runbooks/cosmos-db-tier-migration.md).
 
 ---
 
