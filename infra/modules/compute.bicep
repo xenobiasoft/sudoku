@@ -7,7 +7,6 @@ param swaCustomDomainName string = ''
 param enableSwaCustomDomain bool = false
 param appInsightsConnectionString string
 param keyVaultUri string
-param cosmosDbEndpoint string
 
 var corsAllowedOrigins = enableSwaCustomDomain ? [
   'https://${swaCustomDomainName}'
@@ -111,8 +110,10 @@ resource apiAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
     APPLICATIONINSIGHTS_CONNECTION_STRING: appInsightsConnectionString
     ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
     ConnectionStrings__AzureKeyVault: keyVaultUri
+    // Suppresses container auto-creation only; it does not select credentials.
+    // The Cosmos account and its key come from the ConnectionStrings--CosmosDb
+    // Key Vault secret. See docs/runbooks/cosmos-db-tier-migration.md.
     CosmosDb__UseManagedIdentity: 'true'
-    CosmosDb__AccountEndpoint: cosmosDbEndpoint
   }
 }
 

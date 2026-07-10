@@ -149,7 +149,6 @@ module compute 'modules/compute.bicep' = {
     enableSwaCustomDomain: enableSwaCustomDomain
     appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString
     keyVaultUri: keyvault.outputs.keyVaultUri
-    cosmosDbEndpoint: storage.outputs.cosmosDbEndpoint
   }
 }
 
@@ -176,7 +175,6 @@ module functions 'modules/functions.bicep' = {
     storageAccountName: storage.outputs.storageAccountName
     appInsightsConnectionString: monitoring.outputs.appInsightsConnectionString
     keyVaultUri: keyvault.outputs.keyVaultUri
-    cosmosDbEndpoint: storage.outputs.cosmosDbEndpoint
   }
 }
 
