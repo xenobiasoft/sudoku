@@ -3,7 +3,8 @@
 | Field | Value |
 |---|---|
 | **Date** | 2026-07-09 |
-| **Status** | Merged to `main` (PR #353). Phase 0 complete. Phases 1-2 executed automatically by CI's `deploy-infra` job on merge. Phases 3-7 not yet run. |
+| **Status** | **Cutover complete (2026-07-10 00:08 UTC).** Production serves from `cosmos-sudoku-prod2` (serverless). Phases 0-3 done. Phase 4 (watch first hour) in progress. Phase 6 (delete old account) gated on 1-2 weeks clean — **irreversible**. |
+| **Rollback** | Key Vault secret `ConnectionStrings--CosmosDb`, prior version `b0f8e2ef9b554bdfae1c0f18db1f4892` (points at `cosmos-sudoku-prod`). Restore it and restart the API. Valid only until Phase 6 deletes the old account. |
 | **Owner** | Project maintainer |
 | **Related** | [ADR-004 — Cosmos DB as persistence backend](../adr/ADR-004-cosmosdb.md), [.claude/rules/rbac-role-assignments.md](../../.claude/rules/rbac-role-assignments.md) |
 
@@ -116,7 +117,13 @@ Cosmos data-plane role assignments propagate slowly, typically a few minutes. Ve
 az cosmosdb sql role assignment list --account-name cosmos-sudoku-prod2 -g rg-xenobiasoft-sudoku-prod-westus2 -o table
 ```
 
-## Phase 3 — Cutover (single copy)
+## Phase 3 — Cutover (single copy) ✅ complete 2026-07-10
+
+Executed 2026-07-10 00:05-00:09 UTC. API stopped, 9 documents copied (`games` 5, `profiles` 4) with `--prune` reporting 0 orphans, Key Vault secret repointed at `cosmos-sudoku-prod2`, API restarted. Verified: `Initializing CosmosDB at endpoint: https://cosmos-sudoku-prod2.documents.azure.com/` at 00:08:55, all Cosmos dependency calls on the new account at 100% success, old-account traffic stopped at 00:01:28. Total downtime ≈ 4 minutes.
+
+One correction learned the hard way: both `query_items` calls in the migration script need `enable_cross_partition_query=True`. Omitting it fails with `Cross partition query is required but disabled` — the sync SDK does not infer it (only the async client does). The first dry-run against production caught this; see PR #355.
+
+---
 
 This app has one real user and a few dozen documents. There is no concurrent traffic to race and no meaningful copy duration, which removes the reason for a bulk-copy-then-delta-sync sequence: **stop writes, copy once, cut over.** Expect a minute or two of API downtime, at whatever time you like.
 
