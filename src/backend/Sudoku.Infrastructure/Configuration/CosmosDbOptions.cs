@@ -1,5 +1,3 @@
-using Microsoft.Azure.Cosmos;
-
 namespace Sudoku.Infrastructure.Configuration;
 
 public class CosmosDbOptions
@@ -8,10 +6,15 @@ public class CosmosDbOptions
 
     public string ContainerName { get; set; } = "games";
     public string DatabaseName { get; set; } = "sudoku";
-    public bool DisableSslValidation { get; set; }
+
+    /// <summary>
+    /// Does NOT select credentials. Cosmos authentication comes entirely from the
+    /// connection string that <c>AddAzureCosmosClient("CosmosDb")</c> resolves. This
+    /// flag only suppresses container auto-creation, which the data-plane RBAC used
+    /// with managed identity is not permitted to perform.
+    /// </summary>
     public bool UseManagedIdentity { get; set; }
-    public string? AccountEndpoint { get; set; }
-    public ConnectionMode ConnectionMode { get; set; } = ConnectionMode.Gateway;
+
     public bool AutoCreateContainers { get; set; }
     public string ContainerPartitionKeyPath { get; set; } = "/id";
 }

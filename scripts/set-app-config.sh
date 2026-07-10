@@ -41,25 +41,13 @@ push_production() {
     # -------------------------------------------------------------------------
     # Cosmos DB
     # -------------------------------------------------------------------------
-    set_key "$LABEL" "UseCosmosDb"                   "true"
+    # The account and its key come from the ConnectionStrings--CosmosDb Key Vault
+    # secret, which is what AddAzureCosmosClient("CosmosDb") resolves. No key here
+    # controls which Cosmos account the API talks to.
     set_key "$LABEL" "CosmosDb:DatabaseName"         "sudoku"
-    set_key "$LABEL" "CosmosDb:DisableSslValidation" "false"
     set_key "$LABEL" "CosmosDb:AutoCreateContainers" "false"
-    # NOTE: this does NOT select credentials. CosmosDbOptions.UseManagedIdentity
-    # is read only by CosmosDbService to gate container auto-creation. The API
-    # actually authenticates with the account key embedded in the Key Vault
-    # secret below.
+    # Suppresses container auto-creation only; does not select credentials.
     set_key "$LABEL" "CosmosDb:UseManagedIdentity"   "true"
-    # NOTE: this key is NOT what points the CosmosClient at an account. Nothing
-    # reads CosmosDbOptions.AccountEndpoint; the client is built by Aspire's
-    # AddAzureCosmosClient("CosmosDb"), which resolves ConnectionStrings:CosmosDb
-    # from the Key Vault secret ConnectionStrings--CosmosDb. That secret holds a
-    # full AccountEndpoint=...;AccountKey=... connection string and is what a
-    # tier migration must change.
-    # Kept in sync here only so the value isn't misleadingly stale.
-    # See docs/runbooks/cosmos-db-tier-migration.md.
-    set_key "$LABEL" "CosmosDb:AccountEndpoint"      "https://cosmos-sudoku-prod2.documents.azure.com:443/"
-    set_key "$LABEL" "CosmosDb:ConnectionMode"       "Direct"
 
     # -------------------------------------------------------------------------
     # Azure Storage
@@ -120,13 +108,11 @@ push_development() {
     # -------------------------------------------------------------------------
     # Cosmos DB (same account as prod, separate container for dev data)
     # -------------------------------------------------------------------------
-    set_key "$LABEL" "UseCosmosDb"                   "true"
+    # Local dev points at the Cosmos emulator via ConnectionStrings:CosmosDb in
+    # appsettings.Development.json, not via any key here.
     set_key "$LABEL" "CosmosDb:DatabaseName"         "sudoku"
-    set_key "$LABEL" "CosmosDb:DisableSslValidation" "true"
     set_key "$LABEL" "CosmosDb:AutoCreateContainers" "true"
     set_key "$LABEL" "CosmosDb:UseManagedIdentity"   "false"
-    set_key "$LABEL" "CosmosDb:AccountEndpoint"      "https://localhost:8081/"
-    set_key "$LABEL" "CosmosDb:ConnectionMode"       "Gateway"
 
     # -------------------------------------------------------------------------
     # Azure Storage

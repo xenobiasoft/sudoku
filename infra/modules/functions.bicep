@@ -45,7 +45,6 @@ param storageAccountName string
 
 param appInsightsConnectionString string
 param keyVaultUri string
-param cosmosDbEndpoint string
 
 @description('Memory allocated per Flex Consumption instance, in MB. 2048 or 4096.')
 @allowed([
@@ -165,8 +164,8 @@ resource functionAppSettings 'Microsoft.Web/sites/config@2024-04-01' = {
 
     // Application configuration (mirrors the API app)
     ConnectionStrings__AzureKeyVault: keyVaultUri
+    // Suppresses container auto-creation only; it does not select credentials.
     CosmosDb__UseManagedIdentity: 'true'
-    CosmosDb__AccountEndpoint: cosmosDbEndpoint
 
     // Application blob storage (Sudoku.Infrastructure AddBlobStorageClient).
     // Distinct from AzureWebJobsStorage (the Functions host runtime store):
