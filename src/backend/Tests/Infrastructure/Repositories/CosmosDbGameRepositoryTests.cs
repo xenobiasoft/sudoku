@@ -3,6 +3,8 @@ using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
+using Sudoku.Domain.Events;
+using Sudoku.Infrastructure.EventHandling;
 using Sudoku.Infrastructure.Models;
 using Sudoku.Infrastructure.Repositories;
 using Sudoku.Infrastructure.Services;
@@ -14,10 +16,12 @@ namespace UnitTests.Infrastructure.Repositories;
 public class CosmosDbGameRepositoryTests : MoqBaseTestByAbstraction<CosmosDbGameRepository, IGameRepository>
 {
     private readonly Mock<ICosmosDbService> _mockCosmosDbService;
+    private readonly Mock<IDomainEventDispatcher> _mockEventDispatcher;
 
     public CosmosDbGameRepositoryTests()
     {
         _mockCosmosDbService = Container.ResolveMock<ICosmosDbService>().AsMoq();
+        _mockEventDispatcher = Container.ResolveMock<IDomainEventDispatcher>().AsMoq();
     }
 
     protected override void AddContainerCustomizations(Container container)
@@ -161,5 +165,94 @@ public class CosmosDbGameRepositoryTests : MoqBaseTestByAbstraction<CosmosDbGame
 
         // Assert
         _mockCosmosDbService.VerifyUpsertItemAsync(game.Id, displayName.Value, difficulty, Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveAsync_ShouldDispatchAccumulatedDomainEvents()
+    {
+        // Arrange
+        var game = GameFactory.CreateEmptyGame();
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SaveAsync(game);
+
+        // Assert
+        _mockEventDispatcher.VerifyDispatched<GameCreatedEvent>(Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveAsync_ShouldClearDomainEventsAfterDispatching()
+    {
+        // Arrange
+        var game = GameFactory.CreateEmptyGame();
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SaveAsync(game);
+
+        // Assert
+        game.DomainEvents.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task SaveAsync_WhenSavedTwice_DoesNotRedispatchTheSameEvents()
+    {
+        // Arrange
+        var game = GameFactory.CreateEmptyGame();
+        var sut = ResolveSut();
+        await sut.SaveAsync(game);
+
+        // Act
+        await sut.SaveAsync(game);
+
+        // Assert
+        _mockEventDispatcher.VerifyDispatchedEventCount(0, Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveAsync_WhenDispatcherThrows_DoesNotThrow()
+    {
+        // Arrange
+        var game = GameFactory.CreateEmptyGame();
+        _mockEventDispatcher.SetupDispatchThrows(new InvalidOperationException("Handler blew up"));
+        var sut = ResolveSut();
+
+        // Act
+        var saveAsync = async () => await sut.SaveAsync(game);
+
+        // Assert
+        await saveAsync.Should().NotThrowAsync();
+    }
+
+    [Fact]
+    public async Task SaveAsync_WhenDispatcherThrows_LogsError()
+    {
+        // Arrange
+        var game = GameFactory.CreateEmptyGame();
+        _mockEventDispatcher.SetupDispatchThrows(new InvalidOperationException("Handler blew up"));
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SaveAsync(game);
+
+        // Assert
+        Logger.ErrorLogs().ContainsMessage($"Error dispatching domain events for game {game.Id.Value}");
+    }
+
+    [Fact]
+    public async Task SaveAsync_WhenUpsertThrows_DoesNotDispatchDomainEvents()
+    {
+        // Arrange
+        var game = GameFactory.CreateEmptyGame();
+        _mockCosmosDbService.SetupUpsertThrows(new InvalidOperationException("Cosmos is down"));
+        var sut = ResolveSut();
+
+        // Act
+        var saveAsync = async () => await sut.SaveAsync(game);
+
+        // Assert
+        await saveAsync.Should().ThrowAsync<InvalidOperationException>();
+        _mockEventDispatcher.VerifyDispatched<GameCreatedEvent>(Times.Never);
     }
 }

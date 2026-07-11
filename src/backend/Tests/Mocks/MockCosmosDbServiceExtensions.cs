@@ -35,6 +35,13 @@ public static class MockCosmosDbServiceExtensions
                 .ReturnsAsync(documents);
         }
 
+        public void SetupUpsertThrows(Exception ex)
+        {
+            mock
+                .Setup(x => x.UpsertItemAsync(It.IsAny<SudokuGameDocument>(), It.IsAny<string?>()))
+                .ThrowsAsync(ex);
+        }
+
         public void VerifyDeleteItemAsync(string gameId, Func<Times> times)
         {
             mock.Verify(x => x.DeleteItemAsync<SudokuGameDocument>(
