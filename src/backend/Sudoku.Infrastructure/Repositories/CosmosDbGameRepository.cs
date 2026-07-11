@@ -4,12 +4,16 @@ using Sudoku.Application.Specifications;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
+using Sudoku.Infrastructure.EventHandling;
 using Sudoku.Infrastructure.Mappers;
 using Sudoku.Infrastructure.Services;
 
 namespace Sudoku.Infrastructure.Repositories;
 
-public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<CosmosDbGameRepository> logger) : IGameRepository
+public class CosmosDbGameRepository(
+    ICosmosDbService cosmosDbService,
+    IDomainEventDispatcher eventDispatcher,
+    ILogger<CosmosDbGameRepository> logger) : IGameRepository
 {
     public async Task<SudokuGame?> GetByIdAsync(GameId id)
     {
@@ -97,6 +101,27 @@ public class CosmosDbGameRepository(ICosmosDbService cosmosDbService, ILogger<Co
         {
             logger.LogError(ex, "Error saving game {GameId} to CosmosDB", game.Id.Value);
             throw;
+        }
+
+        await DispatchDomainEventsAsync(game);
+    }
+
+    private async Task DispatchDomainEventsAsync(SudokuGame game)
+    {
+        var domainEvents = game.DomainEvents.ToList();
+
+        // Clear before dispatching: a handler fault must not leave events queued
+        // for re-dispatch on the game's next save.
+        game.ClearDomainEvents();
+
+        try
+        {
+            await eventDispatcher.DispatchAsync(domainEvents);
+        }
+        catch (Exception ex)
+        {
+            // The game is already persisted, so a handler fault must not fail the caller.
+            logger.LogError(ex, "Error dispatching domain events for game {GameId}", game.Id.Value);
         }
     }
 

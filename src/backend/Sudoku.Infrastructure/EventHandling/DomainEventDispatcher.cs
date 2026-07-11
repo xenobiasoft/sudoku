@@ -10,7 +10,7 @@ public class DomainEventDispatcher(IServiceProvider serviceProvider, ILogger<Dom
     {
         try
         {
-            logger.LogInformation("Dispatching domain event: {EventType}", domainEvent.GetType().Name);
+            logger.LogDebug("Dispatching domain event: {EventType}", domainEvent.GetType().Name);
 
             var handlerType = typeof(IDomainEventHandler<>).MakeGenericType(domainEvent.GetType());
             var handlers = serviceProvider.GetServices(handlerType);
@@ -24,7 +24,7 @@ public class DomainEventDispatcher(IServiceProvider serviceProvider, ILogger<Dom
                 await task;
             }
 
-            logger.LogInformation("Successfully dispatched domain event: {EventType}", domainEvent.GetType().Name);
+            logger.LogDebug("Successfully dispatched domain event: {EventType}", domainEvent.GetType().Name);
         }
         catch (Exception ex)
         {
