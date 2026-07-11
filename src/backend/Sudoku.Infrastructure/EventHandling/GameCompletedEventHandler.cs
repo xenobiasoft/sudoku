@@ -1,21 +1,28 @@
 using Microsoft.Extensions.Logging;
+using Sudoku.Application.Interfaces;
+using Sudoku.Application.Models;
 using Sudoku.Domain.Events;
 
 namespace Sudoku.Infrastructure.EventHandling;
 
-public class GameCompletedEventHandler(ILogger<GameCompletedEventHandler> logger) : IDomainEventHandler<GameCompletedEvent>
+public class GameCompletedEventHandler(
+    IGameCompletionRepository completionRepository,
+    ILogger<GameCompletedEventHandler> logger) : IDomainEventHandler<GameCompletedEvent>
 {
     public async Task HandleAsync(GameCompletedEvent domainEvent)
     {
-        logger.LogInformation("Game completed: {GameId}", domainEvent.GameId.Value);
+        // GameStatistics is mutable and captured on the event by reference, so read it now.
+        var completion = new GameCompletion(
+            domainEvent.GameId.ToString(),
+            domainEvent.ProfileId.ToString(),
+            domainEvent.Difficulty.Name,
+            domainEvent.Statistics.PlayDuration,
+            domainEvent.CompletedAt);
 
-        // Here you could:
-        // - Send completion notifications
-        // - Update player statistics
-        // - Award achievements
-        // - Send to leaderboards
-        // - Trigger analytics
+        await completionRepository.UpsertAsync(completion);
 
-        await Task.CompletedTask;
+        logger.LogInformation(
+            "Recorded completion for game {GameId} (profile {ProfileId}, {Difficulty})",
+            completion.GameId, completion.ProfileId, completion.Difficulty);
     }
 }

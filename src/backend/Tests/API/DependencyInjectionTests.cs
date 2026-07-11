@@ -168,6 +168,7 @@ public class DependencyInjectionTests
         {
             typeof(IMediator),
             typeof(IGameRepository),
+            typeof(IGameCompletionRepository),
             typeof(IPuzzleRepository),
             typeof(IPuzzleGenerator),
             typeof(IPuzzleSolver),

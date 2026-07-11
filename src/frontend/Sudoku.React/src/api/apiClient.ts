@@ -1,4 +1,4 @@
-import type { GameModel, ProfileModel } from '../types';
+import type { GameModel, PlayerStatsModel, ProfileModel } from '../types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -64,6 +64,9 @@ export const apiClient = {
 
   getGames: (profileId: string): Promise<GameModel[]> =>
     request(`/api/players/${profileId}/games`),
+
+  getPlayerStats: (profileId: string): Promise<PlayerStatsModel> =>
+    request(`/api/players/${profileId}/stats`),
 
   getGame: (profileId: string, gameId: string): Promise<GameModel> =>
     request(`/api/players/${profileId}/games/${gameId}`),

@@ -6,6 +6,7 @@ import CreateProfilePage from './pages/CreateProfilePage';
 import ProfilePage from './pages/ProfilePage';
 import SelectDifficultyPage from './pages/SelectDifficultyPage';
 import GameListPage from './pages/GameListPage';
+import StatsPage from './pages/StatsPage';
 import { ThemeProvider } from './hooks/ThemeProvider';
 import './App.css';
 
@@ -21,6 +22,7 @@ export default function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/select-difficulty" element={<SelectDifficultyPage />} />
           <Route path="/games" element={<GameListPage />} />
+          <Route path="/stats" element={<StatsPage />} />
         </Routes>
       </BrowserRouter>
     </ThemeProvider>

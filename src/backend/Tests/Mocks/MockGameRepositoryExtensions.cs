@@ -19,6 +19,13 @@ public static class MockGameRepositoryExtensions
                 .ReturnsAsync(game);
         }
 
+        public void SetupGetById(SudokuGame game)
+        {
+            mock
+                .Setup(x => x.GetByIdAsync(It.IsAny<GameId>()))
+                .ReturnsAsync(game);
+        }
+
         public void SetupGameNotFound()
         {
             mock
@@ -113,6 +120,11 @@ public static class MockGameRepositoryExtensions
         public void VerifySaveNeverCalled()
         {
             mock.Verify(x => x.SaveAsync(It.IsAny<SudokuGame>()), Times.Never);
+        }
+
+        public void VerifyDeleteNeverCalled()
+        {
+            mock.Verify(x => x.DeleteAsync(It.IsAny<GameId>()), Times.Never);
         }
     }
 }

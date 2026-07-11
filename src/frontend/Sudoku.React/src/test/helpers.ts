@@ -1,4 +1,4 @@
-import type { CellModel, GameModel, GameStatisticsModel } from '../types';
+import type { CellModel, DifficultyStatsModel, GameModel, GameStatisticsModel, PlayerStatsModel } from '../types';
 
 export function makeCell(overrides: Partial<CellModel> = {}): CellModel {
   return {
@@ -33,6 +33,32 @@ export function make81Cells(overrides: Partial<CellModel>[] = []): CellModel[] {
     }
   }
   return cells;
+}
+
+export function makeDifficultyStats(overrides: Partial<DifficultyStatsModel> = {}): DifficultyStatsModel {
+  return {
+    difficulty: 'Easy',
+    gamesPlayed: 0,
+    gamesWon: 0,
+    averageSolveTime: null,
+    bestSolveTime: null,
+    ...overrides,
+  };
+}
+
+export function makePlayerStats(overrides: Partial<PlayerStatsModel> = {}): PlayerStatsModel {
+  return {
+    gamesPlayed: 0,
+    gamesWon: 0,
+    winRate: 0,
+    byDifficulty: [
+      makeDifficultyStats({ difficulty: 'Easy' }),
+      makeDifficultyStats({ difficulty: 'Medium' }),
+      makeDifficultyStats({ difficulty: 'Hard' }),
+      makeDifficultyStats({ difficulty: 'Expert' }),
+    ],
+    ...overrides,
+  };
 }
 
 export function makeGame(overrides: Partial<GameModel> = {}): GameModel {
