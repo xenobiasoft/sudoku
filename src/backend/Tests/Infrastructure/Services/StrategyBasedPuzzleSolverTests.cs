@@ -3,6 +3,7 @@ using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Services;
+using Sudoku.Infrastructure.Services.Strategies;
 using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Services;
@@ -61,6 +62,27 @@ public class StrategyBasedPuzzleSolverTests : MoqBaseTestByAbstraction<StrategyB
         result.Should().NotBeNull();
         result.IsValid().Should().BeTrue();
         result.GetEmptyCellCount().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task SolvePuzzle_WhenBruteForceCannotFillAnyCell_TerminatesAndLogsWarningOnce()
+    {
+        // Arrange
+        // With no strategies, only the brute-force fallback runs. The grid is valid
+        // (duplicate-free) but unsolvable: every empty cell has zero candidates. Before
+        // the fix, brute force always reported progress, so the loop never exited and
+        // re-logged the same warning forever. Correct code makes one pass and stops; the
+        // short guard fails fast (instead of hanging CI) if the loop is reintroduced.
+        var puzzle = PuzzleFactory.GetUnsolvableStuckPuzzle();
+        var sut = new StrategyBasedPuzzleSolver(Array.Empty<SolverStrategy>(), _puzzleRepository.Object, Logger);
+
+        // Act
+        var solveTask = sut.SolvePuzzle(puzzle!);
+        var finished = await Task.WhenAny(solveTask, Task.Delay(TimeSpan.FromSeconds(2)));
+
+        // Assert
+        finished.Should().BeSameAs(solveTask, "the solver must terminate when no cell can be filled");
+        Logger.WarningLogs().Count(m => m.Contains("No cell with possible values found")).Should().Be(1);
     }
 
     [Fact]
