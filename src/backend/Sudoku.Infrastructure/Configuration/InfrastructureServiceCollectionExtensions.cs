@@ -82,7 +82,7 @@ public static class InfrastructureServiceCollectionExtensions
         private IServiceCollection AddPuzzleServices()
         {
             services.AddScoped<IPuzzleGenerator, UniqueSolutionPuzzleGenerator>();
-            services.AddScoped<IPuzzleSolver, StrategyBasedPuzzleSolver>();
+            services.AddScoped<IPuzzleSolver, BitwiseBacktrackingPuzzleSolver>();
 
             typeof(SolverStrategy).Assembly
                 .GetTypes()

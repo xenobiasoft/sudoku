@@ -37,9 +37,10 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
                     break;
                 }
 
-                changesMade = await ApplyStrategies();
+                var strategiesMadeChanges = await ApplyStrategies();
+                var bruteForceMadeChanges = TryBruteForceMethod();
 
-                changesMade = TryBruteForceMethod();
+                changesMade = strategiesMadeChanges || bruteForceMadeChanges;
             }
             catch (InvalidPuzzleException)
             {
@@ -81,12 +82,11 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
     {
         logger.LogDebug("Solving with BruteForce technique");
         _puzzle.PopulatePossibleValues();
-        SetCellWithFewestPossibleValues();
 
-        return true;
+        return SetCellWithFewestPossibleValues();
     }
 
-    private void SetCellWithFewestPossibleValues()
+    private bool SetCellWithFewestPossibleValues()
     {
         var rnd = Random.Shared;
         var cell = _puzzle.Cells
@@ -97,12 +97,14 @@ public class StrategyBasedPuzzleSolver(IEnumerable<SolverStrategy> strategies, I
         if (cell == null)
         {
             logger.LogWarning("No cell with possible values found, puzzle might be solved or invalid.");
-            return;
+            return false;
         }
 
         var value = cell.PossibleValues.ElementAt(rnd.Next(cell.PossibleValues.Count));
         logger.LogDebug("Setting cell at ({Row}, {Column}) to {Value}", cell.Row, cell.Column, value);
         cell.SetValue(value);
+
+        return true;
     }
 
     private Task SaveAsync()

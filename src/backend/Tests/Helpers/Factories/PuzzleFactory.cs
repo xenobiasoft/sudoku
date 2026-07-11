@@ -39,6 +39,16 @@ public static class PuzzleFactory
         return PopulateCells(SolvedPuzzle);
     }
 
+    /// <summary>
+    /// A duplicate-free (valid) but unsolvable grid: every empty cell has zero candidates,
+    /// so a solver can make no progress. Used to prove the solver terminates instead of
+    /// looping forever re-logging "no cell with possible values".
+    /// </summary>
+    public static SudokuPuzzle GetUnsolvableStuckPuzzle()
+    {
+        return PopulateCells(UnsolvableStuckPuzzle);
+    }
+
     public static int?[,] RotateGrid(int?[,] values)
     {
         var grid = new int?[9, 9];
@@ -142,6 +152,19 @@ public static class PuzzleFactory
         { null, 6, null, null, null, null, 2, 8, null },
         { null, null, null, 4, 1, 9, null, null, 5 },
         { null, null, null, null, 8, null, null, 7 ,9}
+    };
+
+    private static readonly int?[,] UnsolvableStuckPuzzle =
+    {
+        { 3, 4, 5, 6, 7, 8, 9, 1, 2 },
+        { 9, 6, 7, 3, 4, 1, 5, 8, null }, // (1,8) has no legal value
+        { 2, 8, 1, 5, 9, null, 4, 3, 6 }, // (2,5) has no legal value
+        { 4, 1, 2, 7, 8, 5, 6, 9, 3 },
+        { 6, 3, 8, 9, 1, 2, 7, 4, 5 },
+        { 7, 5, 9, 4, 3, 6, 1, 2, 8 },
+        { 1, 7, 3, 8, 5, 9, 2, 6, 4 },
+        { 8, 9, 4, 2, 6, 3, null, 5, 7 }, // (7,6) has no legal value
+        { 5, 2, 6, 1, null, 4, 8, null, 9 } // (8,4) and (8,7) have no legal value
     };
 
     private static readonly int?[,] SolvedPuzzle =
