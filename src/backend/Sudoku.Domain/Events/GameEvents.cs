@@ -10,7 +10,12 @@ public record GamePausedEvent(GameId GameId) : DomainEvent;
 
 public record GameResumedEvent(GameId GameId) : DomainEvent;
 
-public record GameCompletedEvent(GameId GameId, GameStatistics Statistics) : DomainEvent;
+public record GameCompletedEvent(
+    GameId GameId,
+    ProfileId ProfileId,
+    GameDifficulty Difficulty,
+    GameStatistics Statistics,
+    DateTime CompletedAt) : DomainEvent;
 
 public record GameAbandonedEvent(GameId GameId) : DomainEvent;
 

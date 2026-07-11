@@ -73,6 +73,7 @@ public static class InfrastructureServiceCollectionExtensions
         {
             services.AddScoped<ICosmosDbService, CosmosDbService>();
             services.AddScoped<IGameRepository, CosmosDbGameRepository>();
+            services.AddScoped<IGameCompletionRepository, CosmosDbGameCompletionRepository>();
             services.AddScoped<IUserProfileRepository, CosmosDbUserProfileRepository>();
             services.AddScoped<IPuzzleRepository, InMemoryPuzzleRepository>();
 

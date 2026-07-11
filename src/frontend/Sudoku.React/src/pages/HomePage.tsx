@@ -69,6 +69,20 @@ export default function HomePage() {
           <button
             type="button"
             className={styles.card}
+            onClick={() => navigate('/stats')}
+            disabled={!isInitialized}
+            aria-disabled={!isInitialized}
+          >
+            <span className={styles.cardText}>
+              <span className={styles.cardTitle}>Stats</span>
+              <span className={styles.cardSubtitle}>Track your progress</span>
+            </span>
+            <i className={`fa-solid fa-arrow-right ${styles.arrowAccent}`} />
+          </button>
+
+          <button
+            type="button"
+            className={styles.card}
             onClick={() => navigate(isInitialized ? '/profile' : '/create-profile')}
           >
             <span className={styles.cardText}>

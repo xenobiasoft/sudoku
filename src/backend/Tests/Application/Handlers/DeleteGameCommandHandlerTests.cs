@@ -4,8 +4,10 @@ using Microsoft.Extensions.Logging;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
 using Sudoku.Application.Interfaces;
+using Sudoku.Application.Models;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
+using UnitTests.Helpers.Factories;
 using Handler = Sudoku.Application.Handlers.DeleteGameCommandHandler;
 
 namespace UnitTests.Application.Handlers;
@@ -14,11 +16,13 @@ namespace UnitTests.Application.Handlers;
 public class DeleteGameCommandHandlerTests : MoqBaseTestByAbstraction<Handler, ICommandHandler<DeleteGameCommand>>
 {
     private readonly Mock<IGameRepository> _mockGameRepository;
+    private readonly Mock<IGameCompletionRepository> _mockCompletionRepository;
     private readonly Mock<ILogger<Handler>> _mockLogger;
 
     public DeleteGameCommandHandlerTests()
     {
         _mockGameRepository = Container.ResolveMock<IGameRepository>().AsMoq();
+        _mockCompletionRepository = Container.ResolveMock<IGameCompletionRepository>().AsMoq();
         _mockLogger = Container.ResolveMock<ILogger<Handler>>().AsMoq();
     }
 
@@ -43,6 +47,84 @@ public class DeleteGameCommandHandlerTests : MoqBaseTestByAbstraction<Handler, I
 
         // Assert
         result.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Handle_WhenGameIsCompletedAndHasNoRecord_UpsertsCompletionRecordBeforeDeleting()
+    {
+        // Arrange — the backstop: a won game must never be deleted without its win being recorded.
+        var game = GameFactory.CreateCompletedGame();
+        _mockGameRepository.SetupGetById(game);
+        _mockCompletionRepository.SetupCompletionNotFound();
+        var sut = ResolveSut();
+
+        // Act
+        await sut.Handle(new DeleteGameCommand(game.Id.ToString()), CancellationToken.None);
+
+        // Assert
+        _mockCompletionRepository.VerifyUpserted(
+            new GameCompletion(
+                game.Id.ToString(),
+                game.ProfileId.ToString(),
+                game.Difficulty.Name,
+                game.Statistics.PlayDuration,
+                game.CompletedAt!.Value),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_WhenGameIsCompletedAndRecordAlreadyExists_DoesNotWriteAgain()
+    {
+        // Arrange — the event handler already recorded this win
+        var game = GameFactory.CreateCompletedGame();
+        _mockGameRepository.SetupGetById(game);
+        _mockCompletionRepository.SetupCompletionExists(new GameCompletion(
+            game.Id.ToString(),
+            game.ProfileId.ToString(),
+            game.Difficulty.Name,
+            game.Statistics.PlayDuration,
+            game.CompletedAt!.Value));
+        var sut = ResolveSut();
+
+        // Act
+        await sut.Handle(new DeleteGameCommand(game.Id.ToString()), CancellationToken.None);
+
+        // Assert
+        _mockCompletionRepository.VerifyNeverUpserted();
+    }
+
+    [Fact]
+    public async Task Handle_WhenGameIsNotCompleted_DoesNotWriteACompletionRecord()
+    {
+        // Arrange
+        var game = GameFactory.CreateGameInProgress();
+        _mockGameRepository.SetupGetById(game);
+        _mockCompletionRepository.SetupCompletionNotFound();
+        var sut = ResolveSut();
+
+        // Act
+        await sut.Handle(new DeleteGameCommand(game.Id.ToString()), CancellationToken.None);
+
+        // Assert
+        _mockCompletionRepository.VerifyNeverUpserted();
+    }
+
+    [Fact]
+    public async Task Handle_WhenGameIsCompletedAndCompletionWriteFails_DoesNotDeleteTheGame()
+    {
+        // Arrange — abandoning the delete preserves the game document so the win can be retried.
+        var game = GameFactory.CreateCompletedGame();
+        _mockGameRepository.SetupGetById(game);
+        _mockCompletionRepository.SetupCompletionNotFound();
+        _mockCompletionRepository.SetupUpsertThrows(new InvalidOperationException("Cosmos is down"));
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.Handle(new DeleteGameCommand(game.Id.ToString()), CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        _mockGameRepository.VerifyDeleteNeverCalled();
     }
 
     private static SudokuGame CreateTestGame()

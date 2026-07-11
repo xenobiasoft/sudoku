@@ -285,6 +285,46 @@ resource profilesThroughput 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/
   }
 }
 
+// Slim, append-only record of every won game (id = gameId, so writes are idempotent).
+// Outlives the full game document, which the client deletes on solve.
+resource gameCompletionsContainer 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers@2024-05-15' = {
+  parent: sudokuDatabase
+  name: 'game-completions'
+  properties: {
+    resource: {
+      id: 'game-completions'
+      partitionKey: {
+        paths: ['/profileId']
+        kind: 'Hash'
+        version: 2
+      }
+      indexingPolicy: {
+        indexingMode: 'consistent'
+        automatic: true
+        includedPaths: [{ path: '/*' }]
+        excludedPaths: [{ path: '/"_etag"/?' }]
+      }
+      uniqueKeyPolicy: {
+        uniqueKeys: []
+      }
+      conflictResolutionPolicy: {
+        mode: 'LastWriterWins'
+        conflictResolutionPath: '/_ts'
+      }
+    }
+  }
+}
+
+resource gameCompletionsThroughput 'Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers/throughputSettings@2024-05-15' = if (!cosmosDbServerless) {
+  parent: gameCompletionsContainer
+  name: 'default'
+  properties: {
+    resource: {
+      throughput: 400
+    }
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Event Grid system topic — source of BlobDeleted events on this account.
 // The eventSubscription that routes BlobDeleted → PuzzleReplenishFunction

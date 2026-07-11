@@ -49,3 +49,20 @@ export interface GameModel {
   cells: CellModel[];
   moveHistory: MoveHistoryModel[];
 }
+
+export interface DifficultyStatsModel {
+  difficulty: string;
+  gamesPlayed: number;
+  gamesWon: number;
+  /** "HH:MM:SS", or null when the player has no wins at this difficulty. */
+  averageSolveTime: string | null;
+  bestSolveTime: string | null;
+}
+
+export interface PlayerStatsModel {
+  gamesPlayed: number;
+  gamesWon: number;
+  /** 0–1. Zero when the player has no games. */
+  winRate: number;
+  byDifficulty: DifficultyStatsModel[];
+}

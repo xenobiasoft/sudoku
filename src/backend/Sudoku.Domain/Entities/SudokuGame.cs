@@ -472,10 +472,12 @@ public class SudokuGame : AggregateRoot
 
     public void CompleteGame()
     {
-        Status = GameStatusEnum.Completed;
-        CompletedAt = DateTime.UtcNow;
+        var completedAt = DateTime.UtcNow;
 
-        AddDomainEvent(new GameCompletedEvent(Id, Statistics));
+        Status = GameStatusEnum.Completed;
+        CompletedAt = completedAt;
+
+        AddDomainEvent(new GameCompletedEvent(Id, ProfileId, Difficulty, Statistics, completedAt));
     }
 }
 

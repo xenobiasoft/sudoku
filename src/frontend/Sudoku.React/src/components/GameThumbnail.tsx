@@ -1,4 +1,5 @@
 import type { GameModel } from '../types';
+import { formatDuration } from '../utils/timeUtils';
 import styles from './GameThumbnail.module.css';
 
 interface GameThumbnailProps {
@@ -7,17 +8,10 @@ interface GameThumbnailProps {
   onDelete: (game: GameModel) => void;
 }
 
-function formatDuration(playDuration: string | undefined): string {
-  if (!playDuration) return '00:00';
-  const [h = 0, m = 0, s = 0] = playDuration.split(':').map(Number);
-  const pad = (v: number) => v.toString().padStart(2, '0');
-  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
-}
-
 export default function GameThumbnail({ game, onSelect, onDelete }: GameThumbnailProps) {
   const rows = Array.from({ length: 9 }, (_, r) => r);
   const cols = Array.from({ length: 9 }, (_, c) => c);
-  const meta = `${formatDuration(game.statistics?.playDuration)} · ${game.statistics?.totalMoves ?? 0} moves`;
+  const meta = `${formatDuration(game.statistics?.playDuration, '00:00')} · ${game.statistics?.totalMoves ?? 0} moves`;
 
   return (
     <div className={styles.savedGameCard}>
