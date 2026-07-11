@@ -27,7 +27,11 @@ public class CosmosDbGameCompletionRepository(
             var queryDefinition = new QueryDefinition(sqlQuery).WithParameter("@profileId", profileId.ToString());
             var documents = new List<GameCompletionDocument>();
 
-            using var iterator = _container!.GetItemQueryIterator<GameCompletionDocument>(queryDefinition);
+            // A player's completions all live in their own partition, so scope the query to it
+            // rather than letting Cosmos fan out cross-partition.
+            var queryOptions = new QueryRequestOptions { PartitionKey = new PartitionKey(profileId.ToString()) };
+
+            using var iterator = _container!.GetItemQueryIterator<GameCompletionDocument>(queryDefinition, requestOptions: queryOptions);
             while (iterator.HasMoreResults)
             {
                 var response = await iterator.ReadNextAsync();

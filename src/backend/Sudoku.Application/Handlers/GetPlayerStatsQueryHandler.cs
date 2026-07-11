@@ -78,13 +78,19 @@ public class GetPlayerStatsQueryHandler(
         var won = wins.Count;
         var played = won + active;
 
+        // Truncated to whole seconds: a raw tick average lands on sub-second precision
+        // (averaging 1s and 2s gives 1.5s), which System.Text.Json emits as
+        // "00:00:01.5000000" — breaking the "HH:MM:SS" contract the clients parse.
         TimeSpan? averageSolveTime = won == 0
             ? null
-            : TimeSpan.FromTicks((long)wins.Average(win => win.PlayDuration.Ticks));
+            : TruncateToSeconds(TimeSpan.FromTicks((long)wins.Average(win => win.PlayDuration.Ticks)));
         TimeSpan? bestSolveTime = won == 0
             ? null
-            : wins.Min(win => win.PlayDuration);
+            : TruncateToSeconds(wins.Min(win => win.PlayDuration));
 
         return new DifficultyStatsDto(difficulty.Name, played, won, averageSolveTime, bestSolveTime);
     }
+
+    private static TimeSpan TruncateToSeconds(TimeSpan value) =>
+        TimeSpan.FromSeconds(Math.Floor(value.TotalSeconds));
 }

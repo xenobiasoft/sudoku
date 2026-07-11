@@ -107,6 +107,26 @@ public class GetPlayerStatsQueryHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WhenAverageLandsOnSubSecondPrecision_TruncatesItToWholeSeconds()
+    {
+        // Arrange — averaging 1s and 2s gives 1.5s, which System.Text.Json would emit as
+        // "00:00:01.5000000", breaking the "HH:MM:SS" contract the clients parse.
+        _mockCompletionRepository.SetupGetByProfileId([
+            Completion("Hard", TimeSpan.FromSeconds(1)),
+            Completion("Hard", TimeSpan.FromSeconds(2))
+        ]);
+        _mockGameRepository.SetupGetByProfileId([]);
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.Handle(new GetPlayerStatsQuery(_profileId), CancellationToken.None);
+
+        // Assert
+        result.Value.ByDifficulty.Single(d => d.Difficulty == "Hard")
+            .AverageSolveTime.Should().Be(TimeSpan.FromSeconds(1));
+    }
+
+    [Fact]
     public async Task Handle_WithNoWinsAtADifficulty_ReturnsNullSolveTimesForThatDifficulty()
     {
         // Arrange — an in-progress Expert game, but no Expert win

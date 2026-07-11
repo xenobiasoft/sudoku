@@ -10,6 +10,19 @@ describe('formatDuration', () => {
     expect(formatDuration('01:06:12')).toBe('1:06:12');
   });
 
+  // .NET serializes TimeSpan in the "c" format, so these are shapes the backend really emits.
+  it('truncates the fractional seconds .NET emits for sub-second precision', () => {
+    expect(formatDuration('00:00:01.5000000')).toBe('00:01');
+  });
+
+  it('folds the day prefix .NET emits past 24h into the hours segment', () => {
+    expect(formatDuration('1.01:00:00')).toBe('25:00:00');
+  });
+
+  it('handles a day prefix and fractional seconds together', () => {
+    expect(formatDuration('2.03:04:05.1234567')).toBe('51:04:05');
+  });
+
   it('returns an em dash for a null duration', () => {
     expect(formatDuration(null)).toBe('—');
   });
