@@ -39,7 +39,7 @@ public class CreateGameCommandHandler(
 
             await gameRepository.SaveAsync(game);
 
-            logger.LogInformation("Created game {GameId} for profile {ProfileId} with difficulty {Difficulty}",
+            logger.LogDebug("Created game {GameId} for profile {ProfileId} with difficulty {Difficulty}",
                 game.Id.Value, profileId.Value, difficulty.Name);
             return Result<string>.Success(game.Id.Value.ToString());
         }

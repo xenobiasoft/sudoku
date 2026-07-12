@@ -31,7 +31,7 @@ public class DeleteGameCommandHandler(
 
             await gameRepository.DeleteAsync(gameId);
 
-            logger.LogInformation("Deleted game with ID: {GameId}", gameId.Value);
+            logger.LogDebug("Deleted game with ID: {GameId}", gameId.Value);
             return Result.Success();
         }
         catch (DomainException ex)

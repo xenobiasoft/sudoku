@@ -25,7 +25,7 @@ public class ResetGameCommandHandler(IGameRepository gameRepository, ILogger<Res
             
             await gameRepository.SaveAsync(game);
             
-            logger.LogInformation("Reset game with ID: {GameId}", gameId.Value);
+            logger.LogDebug("Reset game with ID: {GameId}", gameId.Value);
             return Result.Success();
         }
         catch (DomainException ex)

@@ -25,7 +25,7 @@ public class AbandonGameCommandHandler(IGameRepository gameRepository, ILogger<A
 
             await gameRepository.SaveAsync(game);
 
-            logger.LogInformation("Abandoned game with ID: {GameId}", gameId.Value);
+            logger.LogDebug("Abandoned game with ID: {GameId}", gameId.Value);
             return Result.Success();
         }
         catch (DomainException ex)

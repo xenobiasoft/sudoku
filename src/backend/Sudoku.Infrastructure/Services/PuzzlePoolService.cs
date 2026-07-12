@@ -15,7 +15,7 @@ public class PuzzlePoolService(IPuzzleBlobStorage puzzleBlobStorage, ILogger<Puz
             count++;
         }
 
-        logger.LogInformation("Pool size for {Difficulty}: {Count}", difficulty.Name, count);
+        logger.LogDebug("Pool size for {Difficulty}: {Count}", difficulty.Name, count);
         return count;
     }
 

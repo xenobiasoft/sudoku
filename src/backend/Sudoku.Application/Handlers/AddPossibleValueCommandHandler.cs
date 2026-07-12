@@ -25,7 +25,7 @@ public class AddPossibleValueCommandHandler(IGameRepository gameRepository, ILog
 
             await gameRepository.SaveAsync(game);
 
-            logger.LogInformation("Added possible value {Value} to game {GameId} at [{Row},{Column}]", 
+            logger.LogDebug("Added possible value {Value} to game {GameId} at [{Row},{Column}]",
                 request.Value, gameId.Value, request.Row, request.Column);
             return Result.Success();
         }

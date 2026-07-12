@@ -18,7 +18,7 @@ public class GetPlayerGamesQueryHandler(IGameRepository gameRepository, ILogger<
             var games = await gameRepository.GetByProfileIdAsync(profileId);
             var gameDtos = games.Select(GameDto.FromGame).ToList();
 
-            logger.LogInformation("Retrieved {Count} games for profile {ProfileId}", gameDtos.Count, profileId.Value);
+            logger.LogDebug("Retrieved {Count} games for profile {ProfileId}", gameDtos.Count, profileId.Value);
             return Result<List<GameDto>>.Success(gameDtos);
         }
         catch (DomainException ex)

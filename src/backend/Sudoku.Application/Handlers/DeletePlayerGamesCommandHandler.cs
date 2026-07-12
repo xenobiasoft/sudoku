@@ -22,7 +22,7 @@ public class DeletePlayerGamesCommandHandler(IGameRepository gameRepository, ILo
                 await gameRepository.DeleteAsync(game.Id);
             }
 
-            logger.LogInformation("Deleted {Count} games for profile {ProfileId}", games.Count(), profileId.Value);
+            logger.LogDebug("Deleted {Count} games for profile {ProfileId}", games.Count(), profileId.Value);
             return Result.Success();
         }
         catch (DomainException ex)

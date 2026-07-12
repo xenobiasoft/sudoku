@@ -50,7 +50,7 @@ public class UndoLastMoveCommandHandlerTests : MoqBaseTestByAbstraction<UndoLast
     }
 
     [Fact]
-    public async Task Handle_LogsInformationWhenSuccessful()
+    public async Task Handle_LogsDebugWhenSuccessful()
     {
         // Arrange
         var sut = ResolveSut();
@@ -59,7 +59,7 @@ public class UndoLastMoveCommandHandlerTests : MoqBaseTestByAbstraction<UndoLast
         await sut.Handle(_cmd, CancellationToken.None);
 
         // Assert
-        Logger.InformationLogs().ContainsMessage("Undid last move for game with ID");
+        Logger.DebugLogs().ContainsMessage("Undid last move for game with ID");
     }
 
     [Fact]

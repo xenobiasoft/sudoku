@@ -24,7 +24,7 @@ public class GetGameQueryHandler(IGameRepository gameRepository, ILogger<GetGame
 
             var gameDto = GameDto.FromGame(game);
 
-            logger.LogInformation("Retrieved game {GameId}", gameId.Value);
+            logger.LogDebug("Retrieved game {GameId}", gameId.Value);
             return Result<GameDto>.Success(gameDto);
         }
         catch (DomainException ex)

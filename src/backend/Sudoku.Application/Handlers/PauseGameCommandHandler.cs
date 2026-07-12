@@ -25,7 +25,7 @@ public class PauseGameCommandHandler(IGameRepository gameRepository, ILogger<Pau
 
             await gameRepository.SaveAsync(game);
 
-            logger.LogInformation("Paused game with ID: {GameId}", gameId.Value);
+            logger.LogDebug("Paused game with ID: {GameId}", gameId.Value);
             return Result.Success();
         }
         catch (DomainException ex)

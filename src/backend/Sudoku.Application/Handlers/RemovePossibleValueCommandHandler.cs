@@ -25,7 +25,7 @@ public class RemovePossibleValueCommandHandler(IGameRepository gameRepository, I
 
             await gameRepository.SaveAsync(game);
 
-            logger.LogInformation("Removed possible value {Value} from game {GameId} at [{Row},{Column}]",
+            logger.LogDebug("Removed possible value {Value} from game {GameId} at [{Row},{Column}]",
                 request.Value, gameId.Value, request.Row, request.Column);
             return Result.Success();
         }

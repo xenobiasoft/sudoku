@@ -38,7 +38,7 @@ public class ValidateGameQueryHandlerTests : MoqBaseTestByAbstraction<ValidateGa
     }
 
     [Fact]
-    public async Task Handle_LogsInformationWithValidationResult()
+    public async Task Handle_LogsDebugWithValidationResult()
     {
         // Arrange
         _mockGameRepository.SetupGameStarted();
@@ -48,8 +48,8 @@ public class ValidateGameQueryHandlerTests : MoqBaseTestByAbstraction<ValidateGa
         await sut.Handle(_query, CancellationToken.None);
 
         // Assert
-        Logger.InformationLogs().ContainsMessage("Validated game with ID");
-        Logger.InformationLogs().ContainsMessage("IsValid: True");
+        Logger.DebugLogs().ContainsMessage("Validated game with ID");
+        Logger.DebugLogs().ContainsMessage("IsValid: True");
     }
 
     [Fact]

@@ -25,7 +25,7 @@ public class ClearPossibleValuesCommandHandler(IGameRepository gameRepository, I
 
             await gameRepository.SaveAsync(game);
 
-            logger.LogInformation("Cleared possible values for game {GameId} at [{Row},{Column}]",
+            logger.LogDebug("Cleared possible values for game {GameId} at [{Row},{Column}]",
                 gameId.Value, request.Row, request.Column);
             return Result.Success();
         }

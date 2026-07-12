@@ -49,7 +49,7 @@ public class ResetGameCommandHandlerTests : MoqBaseTestByAbstraction<ResetGameCo
     }
 
     [Fact]
-    public async Task Handle_LogsInformationWhenSuccessful()
+    public async Task Handle_LogsDebugWhenSuccessful()
     {
         // Arrange
         var sut = ResolveSut();
@@ -58,7 +58,7 @@ public class ResetGameCommandHandlerTests : MoqBaseTestByAbstraction<ResetGameCo
         await sut.Handle(_cmd, CancellationToken.None);
 
         // Assert
-        Logger.InformationLogs().ContainsMessage("Reset game with ID");
+        Logger.DebugLogs().ContainsMessage("Reset game with ID");
     }
 
     [Fact]

@@ -29,7 +29,7 @@ public class ValidateGameQueryHandler(IGameRepository gameRepository, ILogger<Va
                 Errors: validationResult.Errors
             );
             
-            logger.LogInformation("Validated game with ID: {GameId}, IsValid: {IsValid}", gameId.Value, validationResult.IsValid);
+            logger.LogDebug("Validated game with ID: {GameId}, IsValid: {IsValid}", gameId.Value, validationResult.IsValid);
             return Result<ValidationResultDto>.Success(resultDto);
         }
         catch (DomainException ex)

@@ -25,7 +25,7 @@ public class ResumeGameCommandHandler(IGameRepository gameRepository, ILogger<Re
 
             await gameRepository.SaveAsync(game);
 
-            logger.LogInformation("Resumed game with ID: {GameId}", gameId.Value);
+            logger.LogDebug("Resumed game with ID: {GameId}", gameId.Value);
             return Result.Success();
         }
         catch (DomainException ex)
