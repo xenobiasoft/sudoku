@@ -29,11 +29,12 @@ beforeEach(() => {
 });
 
 describe('SelectDifficultyPage', () => {
-  it('renders three difficulty cards', () => {
+  it('renders four difficulty cards', () => {
     renderPage();
     expect(screen.getByRole('button', { name: /Easy/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Medium/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Hard/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Expert/i })).toBeInTheDocument();
   });
 
   it('navigates to /new/Easy when Easy is clicked', async () => {
@@ -55,6 +56,13 @@ describe('SelectDifficultyPage', () => {
     renderPage();
     await user.click(screen.getByRole('button', { name: /Hard/i }));
     expect(mockNavigate).toHaveBeenCalledWith('/new/Hard');
+  });
+
+  it('navigates to /new/Expert when Expert is clicked', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole('button', { name: /Expert/i }));
+    expect(mockNavigate).toHaveBeenCalledWith('/new/Expert');
   });
 
   it('navigates to / when the header back affordance is clicked', async () => {
