@@ -9,12 +9,16 @@ namespace Sudoku.Infrastructure.Services;
 /// <summary>
 /// An <see cref="IPuzzleGenerator"/> that guarantees every generated puzzle has exactly
 /// one solution. It builds a complete grid with <see cref="BitwiseSolverEngine"/>, then
-/// digs holes symmetrically, keeping a removal only while the puzzle still has a unique
-/// solution (verified via <see cref="BitwiseSolverEngine.CountSolutions"/>).
+/// digs holes, keeping a removal only while the puzzle still has a unique solution
+/// (verified via <see cref="BitwiseSolverEngine.CountSolutions"/>).
+///
+/// Digging runs in two passes: symmetric mirrored pairs first (an aesthetic), then single
+/// cells to reach the target. The second pass is what lets the deeper difficulties actually
+/// hit their band — a symmetric-only dig stalls around 50 empty cells, which would leave
+/// Expert indistinguishable from Hard.
 ///
 /// Empty-cell targets per difficulty mirror the legacy <see cref="PuzzleGenerator"/> so the
-/// two are directly comparable. The target is a ceiling: if uniqueness can't be preserved
-/// all the way to it, generation stops at the last unique state.
+/// two are directly comparable.
 /// </summary>
 public class UniqueSolutionPuzzleGenerator : IPuzzleGenerator
 {
@@ -65,10 +69,23 @@ public class UniqueSolutionPuzzleGenerator : IPuzzleGenerator
 
     private static void DigHoles(int[] grid, int targetEmpty)
     {
-        var positions = ShuffledPositions();
-        var removed = 0;
+        var removed = DigPass(grid, targetEmpty, removed: 0, symmetric: true);
 
-        foreach (var index in positions)
+        // A symmetric pass alone plateaus around 50 empty cells: near the uniqueness limit,
+        // clearing a mirrored pair costs uniqueness roughly twice as often as clearing one
+        // cell, so every surviving pair gets rejected while single cells would still come
+        // out. That leaves the deeper targets permanently short. Symmetry is only an
+        // aesthetic; the clue count is what makes a puzzle hard — so finish one cell at a
+        // time. Shallower difficulties reach their target in the pass above and skip this.
+        if (removed < targetEmpty)
+        {
+            DigPass(grid, targetEmpty, removed, symmetric: false);
+        }
+    }
+
+    private static int DigPass(int[] grid, int targetEmpty, int removed, bool symmetric)
+    {
+        foreach (var index in ShuffledPositions())
         {
             var remaining = targetEmpty - removed;
             if (remaining <= 0)
@@ -85,7 +102,7 @@ public class UniqueSolutionPuzzleGenerator : IPuzzleGenerator
 
             // Remove a symmetric pair when there's room for two; otherwise a single cell.
             // Bounding the group by 'remaining' guarantees we never exceed the target.
-            var group = (index == mirror || grid[mirror] == 0 || remaining < 2)
+            var group = (!symmetric || index == mirror || grid[mirror] == 0 || remaining < 2)
                 ? new[] { index }
                 : new[] { index, mirror };
 
@@ -108,6 +125,8 @@ public class UniqueSolutionPuzzleGenerator : IPuzzleGenerator
                 }
             }
         }
+
+        return removed;
     }
 
     private static SudokuPuzzle BuildPuzzle(int[] grid, GameDifficulty difficulty)

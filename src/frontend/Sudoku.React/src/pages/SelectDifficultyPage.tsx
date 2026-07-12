@@ -8,6 +8,7 @@ const DIFFICULTIES = [
   { name: 'Easy', subtitle: 'A gentle warm-up', dots: '·' },
   { name: 'Medium', subtitle: 'A steady challenge', dots: '··' },
   { name: 'Hard', subtitle: 'For a clear mind', dots: '···' },
+  { name: 'Expert', subtitle: 'For the deep end', dots: '····' },
 ] as const;
 
 export default function SelectDifficultyPage() {
