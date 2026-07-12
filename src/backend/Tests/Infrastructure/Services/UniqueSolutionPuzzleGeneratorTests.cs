@@ -63,14 +63,45 @@ public class UniqueSolutionPuzzleGeneratorTests : MoqBaseTestByAbstraction<Uniqu
         var emptyCells = puzzle.GetEmptyCellCount();
         var (min, max) = ExpectedEmptyBand(difficulty);
 
-        // Target is a ceiling; uniqueness may stop digging early, so allow a lower-bound margin.
         emptyCells.Should().BeLessThanOrEqualTo(max);
         emptyCells.Should().BeGreaterThanOrEqualTo(min - LowerBandMargin);
     }
 
-    // Uniqueness can occasionally halt digging a few cells short of the target; this margin
-    // keeps the band assertion stable without weakening the uniqueness guarantee above.
-    private const int LowerBandMargin = 6;
+    [Fact]
+    public async Task GeneratePuzzleAsync_Expert_DigsPastTheHardBand()
+    {
+        var sut = ResolveSut();
+        var (expertFloor, _) = ExpectedEmptyBand(GameDifficulty.Expert);
+
+        var emptyCells = await GenerateEmptyCellCounts(sut, GameDifficulty.Expert);
+
+        // Regression guard. A symmetric-only dig stalls around 50 empty cells, which left
+        // Expert sitting inside Hard's band (50-53) — the player got a Hard puzzle wearing
+        // an Expert label. Note "Expert digs deeper than Hard on average" would NOT catch
+        // that (it was already true while the bug was live); only clearing the band floor
+        // does. Averaged over a sample so the rare one-cell shortfall can't flake the run.
+        emptyCells.Average().Should().BeGreaterThanOrEqualTo(expertFloor);
+    }
+
+    private static async Task<List<int>> GenerateEmptyCellCounts(IPuzzleGenerator generator, GameDifficulty difficulty)
+    {
+        var counts = new List<int>();
+
+        for (var i = 0; i < SampleSize; i++)
+        {
+            var puzzle = await generator.GeneratePuzzleAsync(difficulty);
+            counts.Add(puzzle.GetEmptyCellCount());
+        }
+
+        return counts;
+    }
+
+    private const int SampleSize = 10;
+
+    // Digging stops at the last state that still has a unique solution, which very
+    // occasionally lands one cell short of the target floor (measured: ~0.2% of Expert
+    // puzzles). This margin absorbs that without letting a genuinely under-dug puzzle pass.
+    private const int LowerBandMargin = 1;
 
     private static (int Min, int Max) ExpectedEmptyBand(GameDifficulty difficulty) => difficulty.Name switch
     {
