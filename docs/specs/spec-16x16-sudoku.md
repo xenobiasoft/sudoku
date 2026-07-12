@@ -252,7 +252,7 @@ sequenceDiagram
 
 ## 12. Implementation Plan
 
-Five phases, each building green and independently shippable; nothing is user-visible until Phase 5.
+Six phases, each building green and independently shippable; nothing is user-visible until Phase 5.
 
 1. **Domain parameterization** — `BoardSize` VO; thread through `Cell`/`SudokuPuzzle`/`SudokuGame`/events; hint allowance from `Size.MaxHints`; every existing call site passes `BoardSize.Nine`. Pure refactor — the existing test suite proves no 9x9 regression.
 2. **Solver + generator** — engine size inference, grid mapper, `UniqueSolutionPuzzleGenerator(size)`, legacy `PuzzleGenerator` guard, 16x16 solver fixtures. **Measure real 16x16 generation times here** — this decides whether the Expert band ships as specified or tuned down.
