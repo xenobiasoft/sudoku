@@ -27,7 +27,7 @@ public class GetPlayerGamesByStatusQueryHandler(IGameRepository gameRepository, 
 
             var gameDtos = games.Select(GameDto.FromGame).ToList();
 
-            logger.LogInformation("Retrieved {Count} games with status {Status} for profile {ProfileId}",
+            logger.LogDebug("Retrieved {Count} games with status {Status} for profile {ProfileId}",
                 gameDtos.Count, gameStatus, profileId.Value);
             return Result<List<GameDto>>.Success(gameDtos);
         }

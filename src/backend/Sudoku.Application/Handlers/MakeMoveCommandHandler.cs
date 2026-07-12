@@ -26,7 +26,7 @@ public class MakeMoveCommandHandler(IGameRepository gameRepository, ILogger<Make
 
             await gameRepository.SaveAsync(game);
 
-            logger.LogInformation("Made move for game {GameId} at [{Row},{Column}] with value {Value}", 
+            logger.LogDebug("Made move for game {GameId} at [{Row},{Column}] with value {Value}",
                 gameId.Value, request.Row, request.Column, request.Value);
             return Result.Success();
         }

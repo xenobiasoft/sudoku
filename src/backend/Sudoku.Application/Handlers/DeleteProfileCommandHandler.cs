@@ -34,7 +34,7 @@ public class DeleteProfileCommandHandler(
 
             await profileRepository.DeleteAsync(profile.Id);
 
-            logger.LogInformation("Deleted profile {ProfileId} with alias {Alias}", profile.Id, alias.Value);
+            logger.LogDebug("Deleted profile {ProfileId} with alias {Alias}", profile.Id, alias.Value);
             return Result.Success();
         }
         catch (DomainException ex)

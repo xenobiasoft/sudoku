@@ -27,7 +27,7 @@ public class CreateProfileCommandHandler(
             var profile = Domain.Entities.UserProfile.Create(playerAlias);
             await profileRepository.SaveAsync(profile);
 
-            logger.LogInformation("Created profile {ProfileId} for alias {Alias}", profile.Id, playerAlias.Value);
+            logger.LogDebug("Created profile {ProfileId} for alias {Alias}", profile.Id, playerAlias.Value);
             return Result<ProfileDto>.Success(ProfileDto.FromProfile(profile));
         }
         catch (DomainException ex)

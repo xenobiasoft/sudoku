@@ -40,7 +40,7 @@ public class UpdateProfileAliasCommandHandler(
             profile.UpdateAlias(newAlias);
             await profileRepository.SaveAsync(profile);
 
-            logger.LogInformation("Updated alias from {OldAlias} to {NewAlias} for profile {ProfileId}",
+            logger.LogDebug("Updated alias from {OldAlias} to {NewAlias} for profile {ProfileId}",
                 oldAlias.Value, newAlias.Value, profile.Id);
             return Result<ProfileDto>.Success(ProfileDto.FromProfile(profile));
         }

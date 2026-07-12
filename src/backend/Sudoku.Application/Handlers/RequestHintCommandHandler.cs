@@ -34,7 +34,7 @@ public class RequestHintCommandHandler(
 
             await gameRepository.SaveAsync(game);
 
-            logger.LogInformation("Revealed hint for game {GameId} at [{Row},{Column}] with value {Value}",
+            logger.LogDebug("Revealed hint for game {GameId} at [{Row},{Column}] with value {Value}",
                 gameId.Value, row, column, value);
             return Result.Success();
         }

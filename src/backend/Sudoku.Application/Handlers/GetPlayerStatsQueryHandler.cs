@@ -47,7 +47,7 @@ public class GetPlayerStatsQueryHandler(
                 .Select(difficulty => BuildDifficultyStats(difficulty, completions, activeGames))
                 .ToList();
 
-            logger.LogInformation(
+            logger.LogDebug(
                 "Retrieved stats for profile {ProfileId}: {GamesPlayed} played, {GamesWon} won",
                 profileId.Value, gamesPlayed, gamesWon);
 

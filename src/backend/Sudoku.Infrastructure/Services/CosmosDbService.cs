@@ -26,7 +26,7 @@ public class CosmosDbService(CosmosClient cosmosClient, IOptions<CosmosDbOptions
         }
         catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
-            logger.LogInformation("Item with ID {Id} not found for deletion in CosmosDB", id);
+            logger.LogDebug("Item with ID {Id} not found for deletion in CosmosDB", id);
             // Don't throw exception for item not found during delete
         }
         catch (Exception ex)

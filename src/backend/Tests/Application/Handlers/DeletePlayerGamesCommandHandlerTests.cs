@@ -49,7 +49,7 @@ public class DeletePlayerGamesCommandHandlerTests : MoqBaseTestByAbstraction<Del
     }
 
     [Fact]
-    public async Task Handle_LogsInformationWithGameCount()
+    public async Task Handle_LogsDebugWithGameCount()
     {
         // Arrange
         var profileId = Guid.NewGuid().ToString();
@@ -66,7 +66,7 @@ public class DeletePlayerGamesCommandHandlerTests : MoqBaseTestByAbstraction<Del
         await sut.Handle(command, CancellationToken.None);
 
         // Assert
-        Logger.InformationLogs().ContainsMessage("Deleted 2 games for profile");
+        Logger.DebugLogs().ContainsMessage("Deleted 2 games for profile");
     }
 
     [Fact]

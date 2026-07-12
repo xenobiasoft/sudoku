@@ -25,7 +25,7 @@ public class StartGameCommandHandler(IGameRepository gameRepository, ILogger<Sta
 
             await gameRepository.SaveAsync(game);
 
-            logger.LogInformation("Started game with ID: {GameId}", gameId.Value);
+            logger.LogDebug("Started game with ID: {GameId}", gameId.Value);
             return Result.Success();
         }
         catch (DomainException ex)

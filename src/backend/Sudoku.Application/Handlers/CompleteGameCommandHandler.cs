@@ -25,7 +25,7 @@ public class CompleteGameCommandHandler(IGameRepository gameRepository, ILogger<
 
             await gameRepository.SaveAsync(game);
 
-            logger.LogInformation("Completed game with ID: {GameId}", gameId.Value);
+            logger.LogDebug("Completed game with ID: {GameId}", gameId.Value);
             return Result.Success();
         }
         catch (DomainException ex)

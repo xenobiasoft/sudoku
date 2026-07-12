@@ -25,7 +25,7 @@ public class UndoLastMoveCommandHandler(IGameRepository gameRepository, ILogger<
             
             await gameRepository.SaveAsync(game);
             
-            logger.LogInformation("Undid last move for game with ID: {GameId}", gameId.Value);
+            logger.LogDebug("Undid last move for game with ID: {GameId}", gameId.Value);
             return Result.Success();
         }
         catch (NoMoveHistoryException ex)
