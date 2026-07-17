@@ -1,8 +1,10 @@
+using DepenMock.Attributes;
 using Sudoku.Domain.ValueObjects;
 using UnitTests.Helpers;
 
 namespace UnitTests.Domain;
 
+[LogOutput(LogOutputTiming.Always)]
 public class GameStatisticsTests : MoqBaseTestByType<GameStatistics>
 {
     [Fact]

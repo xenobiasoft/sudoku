@@ -1,9 +1,11 @@
+using DepenMock.Attributes;
 using Sudoku.Domain.Events;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.EventHandling;
 
 namespace UnitTests.Infrastructure.EventHandling;
 
+[LogOutput(LogOutputTiming.Always)]
 public class MoveMadeEventHandlerTests : MoqBaseTestByAbstraction<MoveMadeEventHandler, IDomainEventHandler<MoveMadeEvent>>
 {
     [Fact]

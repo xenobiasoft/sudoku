@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using DepenMock.Moq;
 using MediatR;
 using Sudoku.Application.DTOs;
@@ -5,6 +6,7 @@ using Sudoku.Domain.ValueObjects;
 
 namespace UnitTests.API;
 
+[LogOutput(LogOutputTiming.Always)]
 public abstract class BaseGameControllerTests<TControllerType> : MoqBaseTestByType<TControllerType> where TControllerType : class
 {
     protected readonly Mock<IMediator> MockMediator;

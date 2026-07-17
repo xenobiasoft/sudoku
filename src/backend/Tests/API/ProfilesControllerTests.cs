@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using DepenMock.Moq;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -11,6 +12,7 @@ using Sudoku.Application.Queries;
 
 namespace UnitTests.API;
 
+[LogOutput(LogOutputTiming.Always)]
 public class ProfilesControllerTests : MoqBaseTestByType<ProfilesController>
 {
     private readonly Mock<IMediator> _mockMediator;

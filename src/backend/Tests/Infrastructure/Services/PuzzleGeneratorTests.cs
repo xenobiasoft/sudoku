@@ -1,4 +1,5 @@
-﻿using DepenMock.Moq;
+﻿using DepenMock.Attributes;
+using DepenMock.Moq;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
@@ -8,6 +9,7 @@ using PuzzleFactory = UnitTests.Helpers.Factories.PuzzleFactory;
 
 namespace UnitTests.Infrastructure.Services;
 
+[LogOutput(LogOutputTiming.Always)]
 public class PuzzleGeneratorTests : MoqBaseTestByAbstraction<PuzzleGenerator, IPuzzleGenerator>
 {
     public PuzzleGeneratorTests()

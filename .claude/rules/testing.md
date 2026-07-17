@@ -21,20 +21,27 @@ Use the pattern: `[MethodName]_[Scenario]_[ExpectedResult]`
 - Inherit from `BaseTestByType` otherwise
 - Resolve SUT via `ResolveSut()`
 - Resolve mocks in the constructor via `Container.ResolveMock<T>()` and store as private fields
+- Every test class must carry `[LogOutput(LogOutputTiming.Always)]` above the class declaration, with `using DepenMock.Attributes;` in the using block, so captured log output is always emitted for diagnostics
 
 ```csharp
-[Test]
-public void MakeMove_ValidMove_RaisesEvent()
+using DepenMock.Attributes;
+
+[LogOutput(LogOutputTiming.Always)]
+public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
 {
-    // Arrange
-    var sut = ResolveSut();
-    var initialEventCount = sut.DomainEvents.Count;
+    [Test]
+    public void MakeMove_ValidMove_RaisesEvent()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        var initialEventCount = sut.DomainEvents.Count;
 
-    // Act
-    sut.MakeMove(0, 0, 5);
+        // Act
+        sut.MakeMove(0, 0, 5);
 
-    // Assert
-    sut.DomainEvents.Count.Should().Be(initialEventCount + 1);
+        // Assert
+        sut.DomainEvents.Count.Should().Be(initialEventCount + 1);
+    }
 }
 ```
 

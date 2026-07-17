@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
@@ -5,6 +6,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Domain;
 
+[LogOutput(LogOutputTiming.Always)]
 public class SudokuGameMoveHistoryTests : MoqBaseTestByType<SudokuGame>
 {
     [Fact]

@@ -1,7 +1,9 @@
+using DepenMock.Attributes;
 using Sudoku.Application.Common;
 
 namespace UnitTests.Application.Common;
 
+[LogOutput(LogOutputTiming.Always)]
 public class ResultTests : MoqBaseTestByType<Result>
 {
     [Fact]

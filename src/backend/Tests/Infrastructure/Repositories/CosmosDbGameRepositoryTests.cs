@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using DepenMock.Moq;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
@@ -13,6 +14,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Repositories;
 
+[LogOutput(LogOutputTiming.Always)]
 public class CosmosDbGameRepositoryTests : MoqBaseTestByAbstraction<CosmosDbGameRepository, IGameRepository>
 {
     private readonly Mock<ICosmosDbService> _mockCosmosDbService;

@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Services;
@@ -5,6 +6,7 @@ using Sudoku.Infrastructure.Services.Solvers;
 
 namespace UnitTests.Infrastructure.Services;
 
+[LogOutput(LogOutputTiming.Always)]
 public class UniqueSolutionPuzzleGeneratorTests : MoqBaseTestByAbstraction<UniqueSolutionPuzzleGenerator, IPuzzleGenerator>
 {
     public static IEnumerable<object[]> Difficulties =>

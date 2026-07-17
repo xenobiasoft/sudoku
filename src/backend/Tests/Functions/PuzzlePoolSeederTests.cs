@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using DepenMock.Moq;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.ValueObjects;
@@ -5,6 +6,7 @@ using Sudoku.Functions.Services;
 
 namespace UnitTests.Functions;
 
+[LogOutput(LogOutputTiming.Always)]
 public class PuzzlePoolSeederTests : MoqBaseTestByAbstraction<PuzzlePoolSeeder, IPuzzlePoolSeeder>
 {
     private readonly Mock<IPuzzlePoolService> _mockPuzzlePoolService;

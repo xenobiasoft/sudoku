@@ -1,9 +1,11 @@
-﻿using Sudoku.Domain.ValueObjects;
+﻿using DepenMock.Attributes;
+using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Services.Strategies;
 using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Services.Strategies;
 
+[LogOutput(LogOutputTiming.Always)]
 public class SinglesInColumnsStrategyTests : MoqBaseTestByAbstraction<SinglesInColumnsStrategy, SolverStrategy>
 {
 	[Fact]

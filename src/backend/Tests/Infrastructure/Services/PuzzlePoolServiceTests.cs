@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using DepenMock.Moq;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.ValueObjects;
@@ -6,6 +7,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Services;
 
+[LogOutput(LogOutputTiming.Always)]
 public class PuzzlePoolServiceTests : MoqBaseTestByAbstraction<PuzzlePoolService, IPuzzlePoolService>
 {
     private readonly Mock<IPuzzleBlobStorage> _mockBlobStorage;

@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using DepenMock.Moq;
 using Sudoku.Application.Commands;
 using Sudoku.Application.Common;
@@ -7,6 +8,7 @@ using Sudoku.Domain.Exceptions;
 
 namespace UnitTests.Application.Handlers;
 
+[LogOutput(LogOutputTiming.Always)]
 public class ResumeGameCommandHandlerTests : MoqBaseTestByAbstraction<ResumeGameCommandHandler, ICommandHandler<ResumeGameCommand>>
 {
     private readonly Mock<IGameRepository> _mockGameRepository;
