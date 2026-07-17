@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using DepenMock.Moq;
 using Sudoku.Application.Interfaces;
 using Sudoku.Application.Models;
@@ -7,6 +8,7 @@ using Sudoku.Infrastructure.EventHandling;
 
 namespace UnitTests.Infrastructure.EventHandling;
 
+[LogOutput(LogOutputTiming.Always)]
 public class GameCompletedEventHandlerTests : MoqBaseTestByAbstraction<GameCompletedEventHandler, IDomainEventHandler<GameCompletedEvent>>
 {
     private readonly Mock<IGameCompletionRepository> _mockCompletionRepository;

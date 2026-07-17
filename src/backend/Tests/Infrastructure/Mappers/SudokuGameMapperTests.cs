@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Mappers;
 using Sudoku.Infrastructure.Models;
@@ -5,6 +6,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Mappers;
 
+[LogOutput(LogOutputTiming.Always)]
 public class SudokuGameMapperTests : MoqBaseTestByType<SudokuGameDocument>
 {
     [Theory]

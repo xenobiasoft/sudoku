@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using DepenMock.Moq;
 using Microsoft.Azure.Functions.Worker;
 using Sudoku.Functions.Functions;
@@ -5,6 +6,7 @@ using Sudoku.Functions.Services;
 
 namespace UnitTests.Functions;
 
+[LogOutput(LogOutputTiming.Always)]
 public class PuzzlePoolSeedFunctionTests : MoqBaseTestByType<PuzzlePoolSeedFunction>
 {
     private readonly Mock<IPuzzlePoolSeeder> _mockSeeder;

@@ -1,4 +1,5 @@
-﻿using DepenMock.Moq;
+﻿using DepenMock.Attributes;
+using DepenMock.Moq;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
@@ -8,6 +9,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Services;
 
+[LogOutput(LogOutputTiming.Always)]
 public class StrategyBasedPuzzleSolverTests : MoqBaseTestByAbstraction<StrategyBasedPuzzleSolver, IPuzzleSolver>
 {
     private const string Alias = "SudokuSolverAlias";

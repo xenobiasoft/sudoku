@@ -21,20 +21,27 @@ Use the pattern: `[MethodName]_[Scenario]_[ExpectedResult]`
 - Inherit from `BaseTestByType` otherwise
 - Resolve SUT via `ResolveSut()`
 - Resolve mocks in the constructor via `Container.ResolveMock<T>()` and store as private fields
+- Every test class must carry `[LogOutput(LogOutputTiming.Always)]` above the class declaration, with `using DepenMock.Attributes;` in the using block, so captured log output is always emitted for diagnostics. This attribute is inherited (`AttributeUsage(Inherited = true)`), so a shared abstract test base (e.g. `BaseGameControllerTests<T>`) only needs it once — concrete subclasses pick it up automatically and should not redeclare it
 
 ```csharp
-[Test]
-public void MakeMove_ValidMove_RaisesEvent()
+using DepenMock.Attributes;
+
+[LogOutput(LogOutputTiming.Always)]
+public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
 {
-    // Arrange
-    var sut = ResolveSut();
-    var initialEventCount = sut.DomainEvents.Count;
+    [Fact]
+    public void MakeMove_ValidMove_RaisesEvent()
+    {
+        // Arrange
+        var sut = ResolveSut();
+        var initialEventCount = sut.DomainEvents.Count;
 
-    // Act
-    sut.MakeMove(0, 0, 5);
+        // Act
+        sut.MakeMove(0, 0, 5);
 
-    // Assert
-    sut.DomainEvents.Count.Should().Be(initialEventCount + 1);
+        // Assert
+        sut.DomainEvents.Count.Should().Be(initialEventCount + 1);
+    }
 }
 ```
 
@@ -43,7 +50,7 @@ public void MakeMove_ValidMove_RaisesEvent()
 Never mock `ILogger`. Use the `Logger` property from the base class:
 
 ```csharp
-[Test]
+[Fact]
 public void MakeMove_ValidMove_LogsInformation()
 {
     var sut = ResolveSut();

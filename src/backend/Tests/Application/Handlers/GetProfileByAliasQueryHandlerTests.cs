@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using DepenMock.Moq;
 using Sudoku.Application.Common;
 using Sudoku.Application.DTOs;
@@ -9,6 +10,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Application.Handlers;
 
+[LogOutput(LogOutputTiming.Always)]
 public class GetProfileByAliasQueryHandlerTests : MoqBaseTestByAbstraction<GetProfileByAliasQueryHandler, IQueryHandler<GetProfileByAliasQuery, ProfileDto?>>
 {
     private readonly Mock<IUserProfileRepository> _mockProfileRepository;

@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.Enums;
 using Sudoku.Domain.Events;
@@ -6,6 +7,7 @@ using Sudoku.Domain.ValueObjects;
 
 namespace UnitTests.Domain;
 
+[LogOutput(LogOutputTiming.Always)]
 public class SudokuGamePossibleValuesTests : MoqBaseTestByType<SudokuGame>
 {
     private readonly ProfileId _profileId = ProfileId.New();

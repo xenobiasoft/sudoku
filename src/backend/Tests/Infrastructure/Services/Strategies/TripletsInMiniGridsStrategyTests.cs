@@ -1,10 +1,12 @@
-﻿using Sudoku.Domain.Entities;
+﻿using DepenMock.Attributes;
+using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Services.Strategies;
 using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Infrastructure.Services.Strategies;
 
+[LogOutput(LogOutputTiming.Always)]
 public class TripletsInMiniGridsStrategyTests : MoqBaseTestByAbstraction<TripletsInMiniGridsStrategy, SolverStrategy>
 {
     [Fact]

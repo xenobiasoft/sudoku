@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using DepenMock.Moq;
 using Sudoku.Domain.Events;
 using Sudoku.Infrastructure.EventHandling;
@@ -5,6 +6,7 @@ using UnitTests.Helpers.Builders;
 
 namespace UnitTests.Infrastructure.EventHandling;
 
+[LogOutput(LogOutputTiming.Always)]
 public class DomainEventDispatcherTests : MoqBaseTestByAbstraction<DomainEventDispatcher, IDomainEventDispatcher>
 {
     private readonly Mock<IServiceProvider> _mockServiceProvider;

@@ -1,9 +1,11 @@
+using DepenMock.Attributes;
 using Sudoku.Application.DTOs;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
 
 namespace UnitTests.Application.DTOs;
 
+[LogOutput(LogOutputTiming.Always)]
 public class GameDtoTests : MoqBaseTestByType<GameDto>
 {
     [Fact]

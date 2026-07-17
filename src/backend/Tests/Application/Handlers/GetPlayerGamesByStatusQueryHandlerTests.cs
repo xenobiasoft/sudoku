@@ -1,3 +1,4 @@
+using DepenMock.Attributes;
 using DepenMock.Moq;
 using Sudoku.Application.Common;
 using Sudoku.Application.DTOs;
@@ -11,6 +12,7 @@ using UnitTests.Helpers.Factories;
 
 namespace UnitTests.Application.Handlers;
 
+[LogOutput(LogOutputTiming.Always)]
 public class GetPlayerGamesByStatusQueryHandlerTests : MoqBaseTestByAbstraction<GetPlayerGamesByStatusQueryHandler, IQueryHandler<GetPlayerGamesByStatusQuery, List<GameDto>>>
 {
     private readonly Mock<IGameRepository> _mockGameRepository;
