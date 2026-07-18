@@ -140,7 +140,7 @@ if the **sut** implements an interface or inherits from a base class. Otherwise,
 The **sut** should be resolved using the method `ResolveSut()`. All mocks should be resolved in the constructor of the test and added as a private class variable using the method `Container.ResolveMock<>()`.
 
 ```csharp
-[Test]
+[Fact]
 public void MakeMove_ValidMove_RaisesEvent()
 {
     // Arrange
@@ -154,7 +154,7 @@ public void MakeMove_ValidMove_RaisesEvent()
     sut.DomainEvents.Count.Should().Be(initialEventCount + 1);
 }
 
-[Test]
+[Fact]
 public void MakeMove_ValidMove_UpdatesCell()
 {
     // Arrange
@@ -177,7 +177,7 @@ Testing logging can be accomplished by using the `Logger` object that is a prope
 - `Logger.CriticalLogs()` for critical logs
 
 ```csharp
-[Test]
+[Fact]
 public void MakeMove_ValidMove_LogsInformation()
 {
     // Arrange
