@@ -131,6 +131,7 @@ sequenceDiagram
 - **`Cell`** — gains a `BoardSize` parameter on the private ctor and all factories (`Create`/`CreateFixed`/`CreateEmpty`/`CreateHint`), **no default value** so every call site is compiler-forced to decide. The `0..8` position guards and `1..9` value guards (ctor, both `SetValue` overloads, `AddPossibleValue`, `RemovePossibleValue`) become `Size`-derived. `DeepCopy` passes the size through. Record equality now includes size — semantically correct: `(0,0,5)` on a 9x9 board is not the same value as on a 16x16 board.
 - **`SudokuPuzzle`** — `BoardSize Size` property; `Create(puzzleId, difficulty, size, cells)`. The `81` count check, `< 9` loops, `/3`/`*3` box math in `GetMiniGridCells`, `Enumerable.Range(1, 9)` in `PopulatePossibleValues`, and `MinimumCluesForUniqueSolution` all become size-derived.
 - **`SudokuGame`** — `BoardSize Size` from its puzzle; `Reconstitute` gains a size parameter; `ValidateGame`/`IsValidPuzzle`/`IsValidForBox` loops and box-label math parameterized; hint path constructs `Cell.CreateHint` with the game's size; hint allowance checks `Size.MaxHints` instead of the flat constant.
+  - *Note (verified):* `Reconstitute` is the correct method name — it is the rehydration factory used by `SudokuGameMapper.ToDomain`, distinct from `Create` (new games). Both are present as `static SudokuGame` factories today; only these two gain the size parameter.
 
 **DTOs / API Contracts**
 
@@ -176,6 +177,8 @@ sequenceDiagram
 | `GameCreatedEvent` | + `BoardSize Size` | Telemetry/logging parity (handler logs difficulty today) | Logging handler |
 | `GameCompletedEvent` | + `BoardSize Size` | **Required** — `GameCompletedEventHandler` builds `GameCompletion` purely from event data; per-size stats are impossible without it | `GameCompletedEventHandler` → `GameCompletionDocument.GridSize` |
 | `MoveMadeEvent`, hint/possible-value/undo events | none | Coordinate/value-based, size-agnostic | — |
+
+*Note (verified — no event persistence concern):* Domain events are dispatched **in-memory only** via `IDomainEventDispatcher` after persistence; there is no event store and events are never serialized to Cosmos/blob. Adding `BoardSize Size` to `GameCreatedEvent`/`GameCompletedEvent` therefore carries no wire/back-compat risk. The only *persisted* artifact on the completion path is `GameCompletion` → `GameCompletionDocument` (covered by FR-10's `gridSize` default). Concretely, `GameCompletedEventHandler` builds `GameCompletion` from event fields, so it must thread `domainEvent.Size` into the new `GameCompletion.GridSize` — that handler is the one place the new event field is read.
 
 ---
 
@@ -247,6 +250,7 @@ sequenceDiagram
 - **Concurrent dequeue duplication:** the pool's optimistic dequeue can hand the same grid to two players; already accepted for 9x9, and the smaller 16x16 pool (5) raises the odds slightly — accepted at current scale.
 - **Cell record equality change:** adding `BoardSize` to `Cell` changes record equality/hash semantics; any code comparing cells across contexts must construct them with the right size (the compiler-forced parameter makes silent mix-ups unlikely).
 - **Breaking-change surface:** none externally — the new query param, DTO field, and document field are all additive/defaulted.
+- **Stale config key (housekeeping):** `scripts/set-app-config.sh` sets `Sudoku:Game:MaxHintsPerGame = 3` (in two labels), but no backend code reads it — the hint allowance is the hard-coded `GameStatistics.MaxHints` const today. The key is already orphaned; once FR-11 makes the allowance per-size via `BoardSize.MaxHints`, a single scalar config key becomes actively misleading. During Phase 1, delete the `MaxHintsPerGame` entries from `set-app-config.sh` (both labels) rather than leave a dangling value that implies a configurable single limit.
 
 ---
 
@@ -254,7 +258,7 @@ sequenceDiagram
 
 Six phases, each building green and independently shippable; nothing is user-visible until Phase 5.
 
-1. **Domain parameterization** — `BoardSize` VO; thread through `Cell`/`SudokuPuzzle`/`SudokuGame`/events; hint allowance from `Size.MaxHints`; every existing call site passes `BoardSize.Nine`. Pure refactor — the existing test suite proves no 9x9 regression.
+1. **Domain parameterization** — `BoardSize` VO; thread through `Cell`/`SudokuPuzzle`/`SudokuGame`/events; hint allowance from `Size.MaxHints`; every existing call site passes `BoardSize.Nine`. Also remove the orphaned `Sudoku:Game:MaxHintsPerGame` entries from `scripts/set-app-config.sh` (see §11). Pure refactor — the existing test suite proves no 9x9 regression.
 2. **Solver + generator** — engine size inference, grid mapper, `UniqueSolutionPuzzleGenerator(size)`, legacy `PuzzleGenerator` guard, 16x16 solver fixtures. **Measure real 16x16 generation times here** — this decides whether the Expert band ships as specified or tuned down.
 3. **Persistence + pool** — `gridSize` on the three documents, mapper threading, uniform blob path scheme, `IPuzzlePoolService` size axis, seeder targets + time budget, back-compat verification against a real pre-change document.
 4. **API + application** — `CreateGameCommand.Size`, controller query param + 400/503 mapping, `GameDto.Size`, stats grouping by size.
