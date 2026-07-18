@@ -2,47 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Commands
-
-### Build & Run
-```bash
-# Build entire solution
-dotnet build
-
-# Run REST API
-dotnet run --project src/backend/Sudoku.Api
-
-# Run React frontend (requires API running separately)
-cd src/frontend/Sudoku.React
-npm install
-npm run dev
-```
-
-### Testing
-```bash
-# Run all tests
-dotnet test
-
-# Run a single test class
-dotnet test --filter "FullyQualifiedName~SudokuGameTests"
-
-# Run a single test method
-dotnet test --filter "FullyQualifiedName~SudokuGameTests.MakeMoveValidMoveRaisesEvent"
-
-# Watch mode
-dotnet watch test
-
-# React tests
-npm run test           # run once
-npm run test:watch     # watch mode
-npm run test:coverage  # with coverage
-```
-
-### Linting
-```bash
-npm run lint           # React frontend only
-```
-
 ## Architecture
 
 This solution follows **Clean Architecture** with **DDD** and **CQRS** across six backend projects and one frontend project.
