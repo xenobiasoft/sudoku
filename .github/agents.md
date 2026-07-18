@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This is a modern Sudoku game built with .NET, Blazor, and C# following Clean Architecture principles. The project emphasizes Test-Driven Development (TDD), domain-driven design, and maintainable code structure.
+This is a modern Sudoku game built with .NET and C# on the backend and a React/Vite (TypeScript) frontend, following Clean Architecture principles. The project emphasizes Test-Driven Development (TDD), domain-driven design, and maintainable code structure.
 
 ## Architecture & Project Structure
 
@@ -20,7 +20,6 @@ Sudoku.sln
 │   ├── Sudoku.ServiceDefaults/       # Default service configurations
 │   └── Tests/                        # Unit and integration tests
 └── src/frontend/
-    ├── Sudoku.Blazor/                # Blazor Server presentation layer
     └── Sudoku.React/                 # React/Vite SPA (TypeScript)
 ```
 
@@ -253,44 +252,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGameApplicationService, GameApplicationService>();
 
         return services;
-    }
-}
-```
-
-## Blazor Component Guidelines
-
-### Component Structure
-
-```csharp
-@page "/game/{GameId}"
-@using Sudoku.Application
-@inject IGameApplicationService GameService
-
-<PageTitle>Sudoku Game</PageTitle>
-
-<div class="sudoku-board">
-    @if (game != null)
-    {
-        <SudokuBoard Game="@game" OnMoveMade="HandleMoveMade" />
-    }
-</div>
-
-@code {
-    [Parameter] public string GameId { get; set; } = string.Empty;
-    private GameDto? game;
-
-    protected override async Task OnInitializedAsync()
-    {
-        var result = await GameService.GetGameAsync(GameId);
-        if (result.IsSuccess)
-        {
-            game = result.Value;
-        }
-    }
-
-    private async Task HandleMoveMade(int row, int column, int value)
-    {
-        // Handle move logic
     }
 }
 ```
