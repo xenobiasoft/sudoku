@@ -86,15 +86,17 @@ public static class GameFactory
         return game;
     }
 
-    private static SudokuGame CreateGame(IEnumerable<Cell> cells, ProfileId? profileId = null, PlayerAlias? displayName = null, GameDifficulty? difficulty = null)
+    private static SudokuGame CreateGame(IEnumerable<Cell> cells, ProfileId? profileId = null, PlayerAlias? displayName = null, GameDifficulty? difficulty = null, BoardSize? size = null)
     {
         var withDifficulty = difficulty ?? GameDifficulty.Easy;
         var withProfileId = profileId ?? ProfileId.New();
         var withDisplayName = displayName ?? PlayerAlias.Create("DefaultPlayer");
+        var withSize = size ?? BoardSize.Nine;
         var game = SudokuGame.Create(
             withProfileId,
             withDisplayName,
             withDifficulty,
+            withSize,
             cells);
 
         return game;

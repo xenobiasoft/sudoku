@@ -81,7 +81,7 @@ public class AzureBlobPuzzleRepository(
     private static SudokuPuzzle MapToPuzzle(SudokuPuzzleDocument document)
     {
         var difficulty = GameDifficulty.FromName(document.Difficulty);
-        var cells = document.Cells.Select(c => Cell.Create(c.Row, c.Column, c.Value, c.IsFixed));
-        return SudokuPuzzle.Create(document.PuzzleId, difficulty, cells);
+        var cells = document.Cells.Select(c => Cell.Create(c.Row, c.Column, BoardSize.Nine, c.Value, c.IsFixed));
+        return SudokuPuzzle.Create(document.PuzzleId, difficulty, BoardSize.Nine, cells);
     }
 }

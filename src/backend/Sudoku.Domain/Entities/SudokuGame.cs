@@ -9,6 +9,7 @@ public class SudokuGame : AggregateRoot
     public ProfileId ProfileId { get; private set; }
     public PlayerAlias DisplayName { get; private set; }
     public GameDifficulty Difficulty { get; private set; }
+    public BoardSize Size { get; private set; }
     public GameStatusEnum Status { get; private set; }
     public GameStatistics Statistics { get; private set; }
     public DateTime CreatedAt { get; private set; }
@@ -23,7 +24,7 @@ public class SudokuGame : AggregateRoot
         _moveHistory = [];
     }
 
-    public static SudokuGame Create(ProfileId profileId, PlayerAlias displayName, GameDifficulty difficulty, IEnumerable<Cell> initialCells)
+    public static SudokuGame Create(ProfileId profileId, PlayerAlias displayName, GameDifficulty difficulty, BoardSize size, IEnumerable<Cell> initialCells)
     {
         var game = new SudokuGame
         {
@@ -31,6 +32,7 @@ public class SudokuGame : AggregateRoot
             ProfileId = profileId,
             DisplayName = displayName,
             Difficulty = difficulty,
+            Size = size,
             Status = GameStatusEnum.NotStarted,
             Statistics = GameStatistics.Create(),
             CreatedAt = DateTime.UtcNow
@@ -38,7 +40,7 @@ public class SudokuGame : AggregateRoot
 
         game._cells.AddRange(initialCells);
 
-        game.AddDomainEvent(new GameCreatedEvent(game.Id, profileId, displayName, difficulty));
+        game.AddDomainEvent(new GameCreatedEvent(game.Id, profileId, displayName, difficulty, size));
         return game;
     }
 
@@ -47,6 +49,7 @@ public class SudokuGame : AggregateRoot
         ProfileId profileId,
         PlayerAlias displayName,
         GameDifficulty difficulty,
+        BoardSize size,
         GameStatusEnum statusEnum,
         GameStatistics statistics,
         IEnumerable<Cell> cells,
@@ -62,6 +65,7 @@ public class SudokuGame : AggregateRoot
             ProfileId = profileId,
             DisplayName = displayName,
             Difficulty = difficulty,
+            Size = size,
             Status = statusEnum,
             Statistics = statistics,
             CreatedAt = createdAt,
@@ -133,7 +137,7 @@ public class SudokuGame : AggregateRoot
             throw new GameNotInProgressException($"Cannot reveal a hint in {Status} state");
         }
 
-        if (Statistics.HintsUsed >= GameStatistics.MaxHints)
+        if (Statistics.HintsUsed >= Size.MaxHints)
         {
             throw new HintLimitReachedException();
         }
@@ -149,7 +153,7 @@ public class SudokuGame : AggregateRoot
             ?? throw new NoAvailableCellsForHintException();
 
         var index = _cells.FindIndex(c => c.Row == target.Row && c.Column == target.Column);
-        _cells[index] = Cell.CreateHint(target.Row, target.Column, correctValue);
+        _cells[index] = Cell.CreateHint(target.Row, target.Column, correctValue, Size);
 
         Statistics.RecordHint();
 
@@ -261,7 +265,7 @@ public class SudokuGame : AggregateRoot
 
             if (cell.IsHint)
             {
-                _cells[i] = Cell.CreateEmpty(cell.Row, cell.Column);
+                _cells[i] = Cell.CreateEmpty(cell.Row, cell.Column, Size);
             }
             else
             {
@@ -292,7 +296,7 @@ public class SudokuGame : AggregateRoot
         var isValid = true;
 
         // Validate rows
-        for (int row = 0; row < 9; row++)
+        for (int row = 0; row < Size.Size; row++)
         {
             var rowValues = _cells.Where(c => c.Row == row && c.HasValue)
                                  .Select(c => c.Value!.Value)
@@ -306,7 +310,7 @@ public class SudokuGame : AggregateRoot
         }
 
         // Validate columns
-        for (int column = 0; column < 9; column++)
+        for (int column = 0; column < Size.Size; column++)
         {
             var columnValues = _cells.Where(c => c.Column == column && c.HasValue)
                                     .Select(c => c.Value!.Value)
@@ -319,20 +323,20 @@ public class SudokuGame : AggregateRoot
             }
         }
 
-        // Validate 3x3 boxes
-        for (int boxRow = 0; boxRow < 9; boxRow += 3)
+        // Validate boxes
+        for (int boxRow = 0; boxRow < Size.Size; boxRow += Size.BoxSize)
         {
-            for (int boxColumn = 0; boxColumn < 9; boxColumn += 3)
+            for (int boxColumn = 0; boxColumn < Size.Size; boxColumn += Size.BoxSize)
             {
-                var boxValues = _cells.Where(c => c.Row >= boxRow && c.Row < boxRow + 3 &&
-                                                 c.Column >= boxColumn && c.Column < boxColumn + 3 &&
+                var boxValues = _cells.Where(c => c.Row >= boxRow && c.Row < boxRow + Size.BoxSize &&
+                                                 c.Column >= boxColumn && c.Column < boxColumn + Size.BoxSize &&
                                                  c.HasValue)
                                      .Select(c => c.Value!.Value)
                                      .ToList();
 
                 if (boxValues.Count != boxValues.Distinct().Count())
                 {
-                    errors.Add($"Box at position ({boxRow / 3 + 1}, {boxColumn / 3 + 1}) contains duplicate values");
+                    errors.Add($"Box at position ({boxRow / Size.BoxSize + 1}, {boxColumn / Size.BoxSize + 1}) contains duplicate values");
                     isValid = false;
                 }
             }
@@ -421,46 +425,46 @@ public class SudokuGame : AggregateRoot
 
     private bool IsValidForBox(int row, int column, int value)
     {
-        var boxRow = row / 3 * 3;
-        var boxColumn = column / 3 * 3;
+        var boxRow = row / Size.BoxSize * Size.BoxSize;
+        var boxColumn = column / Size.BoxSize * Size.BoxSize;
 
-        return _cells.Where(c => c.Row >= boxRow && c.Row < boxRow + 3 && c.Column >= boxColumn && c.Column < boxColumn + 3 && c.HasValue).All(c => c.Value != value);
+        return _cells.Where(c => c.Row >= boxRow && c.Row < boxRow + Size.BoxSize && c.Column >= boxColumn && c.Column < boxColumn + Size.BoxSize && c.HasValue).All(c => c.Value != value);
     }
 
     private bool IsValidPuzzle()
     {
-        for (int row = 0; row < 9; row++)
+        for (int row = 0; row < Size.Size; row++)
         {
             var rowValues = _cells.Where(c => c.Row == row && c.HasValue)
                                  .Select(c => c.Value!.Value)
                                  .ToList();
-            if (rowValues.Count != 9 || rowValues.Distinct().Count() != 9)
+            if (rowValues.Count != Size.Size || rowValues.Distinct().Count() != Size.Size)
             {
                 return false;
             }
         }
 
-        for (int column = 0; column < 9; column++)
+        for (int column = 0; column < Size.Size; column++)
         {
             var columnValues = _cells.Where(c => c.Column == column && c.HasValue)
                                     .Select(c => c.Value!.Value)
                                     .ToList();
-            if (columnValues.Count != 9 || columnValues.Distinct().Count() != 9)
+            if (columnValues.Count != Size.Size || columnValues.Distinct().Count() != Size.Size)
             {
                 return false;
             }
         }
 
-        for (int boxRow = 0; boxRow < 9; boxRow += 3)
+        for (int boxRow = 0; boxRow < Size.Size; boxRow += Size.BoxSize)
         {
-            for (int boxColumn = 0; boxColumn < 9; boxColumn += 3)
+            for (int boxColumn = 0; boxColumn < Size.Size; boxColumn += Size.BoxSize)
             {
-                var boxValues = _cells.Where(c => c.Row >= boxRow && c.Row < boxRow + 3 &&
-                                                 c.Column >= boxColumn && c.Column < boxColumn + 3 &&
+                var boxValues = _cells.Where(c => c.Row >= boxRow && c.Row < boxRow + Size.BoxSize &&
+                                                 c.Column >= boxColumn && c.Column < boxColumn + Size.BoxSize &&
                                                  c.HasValue)
                                      .Select(c => c.Value!.Value)
                                      .ToList();
-                if (boxValues.Count != 9 || boxValues.Distinct().Count() != 9)
+                if (boxValues.Count != Size.Size || boxValues.Distinct().Count() != Size.Size)
                 {
                     return false;
                 }
@@ -477,7 +481,7 @@ public class SudokuGame : AggregateRoot
         Status = GameStatusEnum.Completed;
         CompletedAt = completedAt;
 
-        AddDomainEvent(new GameCompletedEvent(Id, ProfileId, Difficulty, Statistics, completedAt));
+        AddDomainEvent(new GameCompletedEvent(Id, ProfileId, Difficulty, Statistics, completedAt, Size));
     }
 }
 

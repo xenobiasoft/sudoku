@@ -73,12 +73,12 @@ public static class PuzzleFactory
         {
             for (var row = 0; row < 9; row++)
             {
-                var cell = Cell.Create(row, col, values[row, col]);
+                var cell = Cell.Create(row, col, BoardSize.Nine, values[row, col]);
                 cells[index++] = cell;
             }
         }
 
-        return SudokuPuzzle.Create(Guid.NewGuid().ToString(), GameDifficulty.Easy, cells);
+        return SudokuPuzzle.Create(Guid.NewGuid().ToString(), GameDifficulty.Easy, BoardSize.Nine, cells);
     }
 
     private static readonly int?[,] EasyPuzzle = {

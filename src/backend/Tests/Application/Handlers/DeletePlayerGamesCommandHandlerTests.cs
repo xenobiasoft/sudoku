@@ -25,6 +25,7 @@ public class DeletePlayerGamesCommandHandlerTests : MoqBaseTestByAbstraction<Del
         container.AddCustomizations(new PlayerAliasGenerator());
         container.AddCustomizations(new GameDifficultyGenerator());
         container.AddCustomizations(new CellGenerator());
+        container.AddCustomizations(new BoardSizeGenerator());
     }
 
     [Fact]

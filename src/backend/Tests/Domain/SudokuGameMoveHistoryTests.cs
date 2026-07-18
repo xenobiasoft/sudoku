@@ -91,6 +91,7 @@ public class SudokuGameMoveHistoryTests : MoqBaseTestByType<SudokuGame>
             ProfileId.New(),
             PlayerAlias.Create("TestPlayer"),
             GameDifficulty.Easy,
+            BoardSize.Nine,
             GameStatusEnum.InProgress,
             GameStatistics.Create(),
             cells,
@@ -114,6 +115,7 @@ public class SudokuGameMoveHistoryTests : MoqBaseTestByType<SudokuGame>
             ProfileId.New(),
             PlayerAlias.Create("TestPlayer"),
             GameDifficulty.Easy,
+            BoardSize.Nine,
             cells
         );
     }

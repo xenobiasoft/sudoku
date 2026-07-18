@@ -12,7 +12,7 @@ public class SudokuPuzzleTests : MoqBaseTestByType<SudokuPuzzle>
     {
         // Arrange
         var cells = CreateTestCells();
-        var originalPuzzle = SudokuPuzzle.Create("test-puzzle-123", GameDifficulty.Medium, cells);
+        var originalPuzzle = SudokuPuzzle.Create("test-puzzle-123", GameDifficulty.Medium, BoardSize.Nine, cells);
 
         // Act
         var clonedPuzzle = originalPuzzle.Clone() as SudokuPuzzle;
@@ -30,7 +30,7 @@ public class SudokuPuzzleTests : MoqBaseTestByType<SudokuPuzzle>
     {
         // Arrange
         var cells = CreateTestCells();
-        var originalPuzzle = SudokuPuzzle.Create("test-puzzle-456", GameDifficulty.Hard, cells);
+        var originalPuzzle = SudokuPuzzle.Create("test-puzzle-456", GameDifficulty.Hard, BoardSize.Nine, cells);
         originalPuzzle.PopulatePossibleValues();
 
         // Act
@@ -57,7 +57,7 @@ public class SudokuPuzzleTests : MoqBaseTestByType<SudokuPuzzle>
     {
         // Arrange
         var cells = CreateTestCells();
-        var originalPuzzle = SudokuPuzzle.Create("test-puzzle-789", GameDifficulty.Easy, cells);
+        var originalPuzzle = SudokuPuzzle.Create("test-puzzle-789", GameDifficulty.Easy, BoardSize.Nine, cells);
         var clonedPuzzle = originalPuzzle.Clone() as SudokuPuzzle;
 
         // Act
@@ -75,7 +75,7 @@ public class SudokuPuzzleTests : MoqBaseTestByType<SudokuPuzzle>
     {
         // Arrange
         var cells = CreateTestCells();
-        var originalPuzzle = SudokuPuzzle.Create("test-puzzle-abc", GameDifficulty.Expert, cells);
+        var originalPuzzle = SudokuPuzzle.Create("test-puzzle-abc", GameDifficulty.Expert, BoardSize.Nine, cells);
         
         // Add some possible values to an empty cell
         var emptyCell = originalPuzzle.GetCell(1, 1);
@@ -102,7 +102,7 @@ public class SudokuPuzzleTests : MoqBaseTestByType<SudokuPuzzle>
     {
         // Arrange
         var cells = CreateTestCells();
-        var originalPuzzle = SudokuPuzzle.Create("test-puzzle-def", GameDifficulty.Medium, cells);
+        var originalPuzzle = SudokuPuzzle.Create("test-puzzle-def", GameDifficulty.Medium, BoardSize.Nine, cells);
 
         // Act
         var clonedPuzzle = originalPuzzle.Clone() as SudokuPuzzle;
@@ -125,17 +125,17 @@ public class SudokuPuzzleTests : MoqBaseTestByType<SudokuPuzzle>
                 if (row == 0 && col == 0)
                 {
                     // Add a fixed cell
-                    cells.Add(Cell.CreateFixed(row, col, 5));
+                    cells.Add(Cell.CreateFixed(row, col, 5, BoardSize.Nine));
                 }
                 else if (row == 2 && col == 3)
                 {
                     // Add another fixed cell
-                    cells.Add(Cell.CreateFixed(row, col, 8));
+                    cells.Add(Cell.CreateFixed(row, col, 8, BoardSize.Nine));
                 }
                 else
                 {
                     // Add empty cells
-                    cells.Add(Cell.CreateEmpty(row, col));
+                    cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
                 }
             }
         }

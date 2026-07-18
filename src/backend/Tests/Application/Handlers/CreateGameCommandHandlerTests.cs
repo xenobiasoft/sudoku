@@ -191,10 +191,10 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         {
             for (var j = 0; j < 9; j++)
             {
-                cells.Add(Cell.CreateEmpty(i, j));
+                cells.Add(Cell.CreateEmpty(i, j, BoardSize.Nine));
             }
         }
 
-        return SudokuPuzzle.Create("test-puzzle-id", GameDifficulty.Medium, cells);
+        return SudokuPuzzle.Create("test-puzzle-id", GameDifficulty.Medium, BoardSize.Nine, cells);
     }
 }

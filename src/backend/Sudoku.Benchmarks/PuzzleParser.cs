@@ -24,10 +24,10 @@ public static class PuzzleParser
             var ch = board[i];
 
             cells.Add(ch is >= '1' and <= '9'
-                ? Cell.CreateFixed(row, column, ch - '0')
-                : Cell.CreateEmpty(row, column));
+                ? Cell.CreateFixed(row, column, ch - '0', BoardSize.Nine)
+                : Cell.CreateEmpty(row, column, BoardSize.Nine));
         }
 
-        return SudokuPuzzle.Create(GameId.New(), difficulty, cells);
+        return SudokuPuzzle.Create(GameId.New(), difficulty, BoardSize.Nine, cells);
     }
 }

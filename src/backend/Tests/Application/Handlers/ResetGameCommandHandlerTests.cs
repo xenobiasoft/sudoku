@@ -33,6 +33,7 @@ public class ResetGameCommandHandlerTests : MoqBaseTestByAbstraction<ResetGameCo
         container.AddCustomizations(new CellGenerator());
         container.AddCustomizations(new GameDifficultyGenerator());
         container.AddCustomizations(new PlayerAliasGenerator());
+        container.AddCustomizations(new BoardSizeGenerator());
     }
 
     [Fact]

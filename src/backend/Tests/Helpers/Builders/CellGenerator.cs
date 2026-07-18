@@ -14,6 +14,7 @@ public class CellGenerator : ISpecimenBuilder
             return Cell.Create(
                 _rnd.Next(0, 9),
                 _rnd.Next(0, 9),
+                BoardSize.Nine,
                 _rnd.Next(1, 10)
             );
         }

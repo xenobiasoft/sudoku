@@ -4,7 +4,7 @@ namespace UnitTests.Helpers.Factories;
 
 public static class CellsFactory
 {
-    public static IEnumerable<Cell> CreateCompletedCells()
+    public static IEnumerable<Cell> CreateCompletedCells(BoardSize? size = null)
     {
         int?[,] completedCells = {
             {5, 3, 4, 6, 7, 8, 9, 1, 2},
@@ -18,17 +18,17 @@ public static class CellsFactory
             {3, 4, 5, 2, 8, 6, 1, 7, 9}
         };
 
-        return GetCells(completedCells);
+        return GetCells(completedCells, size ?? BoardSize.Nine);
     }
 
-    public static IEnumerable<Cell> CreateEmptyCells()
+    public static IEnumerable<Cell> CreateEmptyCells(BoardSize? size = null)
     {
         var emptyCells = new int?[9, 9];
 
-        return GetCells(emptyCells);
+        return GetCells(emptyCells, size ?? BoardSize.Nine);
     }
 
-    public static IEnumerable<Cell> CreateIncompleteCells()
+    public static IEnumerable<Cell> CreateIncompleteCells(BoardSize? size = null)
     {
         int?[,] partiallyCompleted = {
             {null, 3, 4, 6, 7, 8, 9, 1, 2},
@@ -42,10 +42,10 @@ public static class CellsFactory
             {3, 4, 5, 2, 8, 6, 1, 7, 9}
         };
 
-        return GetCells(partiallyCompleted);
+        return GetCells(partiallyCompleted, size ?? BoardSize.Nine);
     }
 
-    public static IEnumerable<Cell> CreateInvalidCells()
+    public static IEnumerable<Cell> CreateInvalidCells(BoardSize? size = null)
     {
         int?[,] partiallyCompleted = {
             {null, 3, 4, 6, 7, 8, 9, 1, 2},
@@ -59,10 +59,10 @@ public static class CellsFactory
             {3, 4, 5, 2, 8, 6, 1, 7, 9}
         };
 
-        return GetCells(partiallyCompleted);
+        return GetCells(partiallyCompleted, size ?? BoardSize.Nine);
     }
 
-    private static IEnumerable<Cell> GetCells(int?[,] cellValues)
+    private static IEnumerable<Cell> GetCells(int?[,] cellValues, BoardSize size)
     {
         var cells = new List<Cell>();
 
@@ -71,7 +71,7 @@ public static class CellsFactory
             for (var col = 0; col < 9; col++)
             {
                 var cellValue = cellValues[row, col];
-                cells.Add(Cell.Create(row, col, cellValue, cellValue.HasValue));
+                cells.Add(Cell.Create(row, col, size, cellValue, cellValue.HasValue));
             }
         }
 

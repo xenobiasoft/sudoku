@@ -16,6 +16,7 @@ public class SudokuGameGenerator : ISpecimenBuilder
                 ProfileId.New(),
                 context.Create<PlayerAlias>(),
                 context.Create<GameDifficulty>(),
+                BoardSize.Nine,
                 cells
             );
         }

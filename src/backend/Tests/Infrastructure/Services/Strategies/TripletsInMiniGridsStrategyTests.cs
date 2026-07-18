@@ -238,13 +238,13 @@ public class TripletsInMiniGridsStrategyTests : MoqBaseTestByAbstraction<Triplet
         {
             for (var col = 0; col < 9; col++)
             {
-                var cell = Cell.CreateEmpty(row, col);
+                var cell = Cell.CreateEmpty(row, col, BoardSize.Nine);
                 cell.PossibleValues.UnionWith([1, 2, 3, 4, 5, 6, 7, 8, 9]);
                 cells.Add(cell);
             }
         }
 
-        var puzzle = SudokuPuzzle.Create(Guid.NewGuid().ToString(), GameDifficulty.Expert, cells);
+        var puzzle = SudokuPuzzle.Create(Guid.NewGuid().ToString(), GameDifficulty.Expert, BoardSize.Nine, cells);
         return puzzle;
     }
 

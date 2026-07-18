@@ -26,7 +26,7 @@ public abstract class BaseGameControllerTests<TControllerType> : MoqBaseTestByTy
             "TestPlayer",
             difficulty,
             "NotStarted",
-            new GameStatisticsDto(0, 0, 0, 0, GameStatistics.MaxHints, TimeSpan.Zero, 0.0),
+            new GameStatisticsDto(0, 0, 0, 0, BoardSize.Nine.MaxHints, TimeSpan.Zero, 0.0),
             DateTime.UtcNow,
             null,
             null,

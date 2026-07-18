@@ -49,7 +49,7 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
         var cells = GenerateEmptyCells();
 
         // Act
-        var sut = SudokuGame.Create(profileId, displayName, difficulty, cells);
+        var sut = SudokuGame.Create(profileId, displayName, difficulty, BoardSize.Nine, cells);
 
         // Assert
         sut.Id.Should().NotBeNull();
@@ -71,7 +71,7 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
         var cells = GenerateEmptyCells();
 
         // Act
-        var sut = SudokuGame.Create(profileId, displayName, GameDifficulty.Easy, cells);
+        var sut = SudokuGame.Create(profileId, displayName, GameDifficulty.Easy, BoardSize.Nine, cells);
 
         // Assert
         sut.ProfileId.Should().Be(profileId);
@@ -86,7 +86,7 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
         var cells = GenerateEmptyCells();
 
         // Act
-        var sut = SudokuGame.Create(profileId, displayName, GameDifficulty.Easy, cells);
+        var sut = SudokuGame.Create(profileId, displayName, GameDifficulty.Easy, BoardSize.Nine, cells);
 
         // Assert
         sut.DisplayName.Should().Be(displayName);
@@ -101,7 +101,7 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
         var cells = GenerateEmptyCells();
 
         // Act
-        var sut = SudokuGame.Create(profileId, displayName, GameDifficulty.Easy, cells);
+        var sut = SudokuGame.Create(profileId, displayName, GameDifficulty.Easy, BoardSize.Nine, cells);
 
         // Assert
         var evt = sut.DomainEvents.OfType<GameCreatedEvent>().Single();
@@ -155,7 +155,7 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
         // Arrange
         var sut = CreateGameWithCells(new[]
         {
-            Cell.CreateFixed(0, 0, 5)
+            Cell.CreateFixed(0, 0, 5, BoardSize.Nine)
         });
         sut.StartGame();
 
@@ -172,7 +172,7 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
         // Arrange
         var sut = CreateGameWithCells(new[]
         {
-            Cell.CreateFixed(0, 0, 5)
+            Cell.CreateFixed(0, 0, 5, BoardSize.Nine)
         });
         sut.StartGame();
 
@@ -202,8 +202,8 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
         // Arrange
         var sut = CreateGameWithCells(new[]
         {
-            Cell.Create(0, 0, 5, false),
-            Cell.Create(0, 1, null, false)
+            Cell.Create(0, 0, BoardSize.Nine, 5, false),
+            Cell.Create(0, 1, BoardSize.Nine, null, false)
         });
         sut.StartGame();
 
@@ -222,7 +222,7 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
         // Arrange
         var sut = CreateGameWithCells(new[]
         {
-            Cell.Create(0, 0, 5, false)
+            Cell.Create(0, 0, BoardSize.Nine, 5, false)
         });
         sut.StartGame();
 
@@ -240,7 +240,7 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
         // Arrange
         var sut = CreateGameWithCells(new[]
         {
-            Cell.Create(0, 0, 5, false)
+            Cell.Create(0, 0, BoardSize.Nine, 5, false)
         });
         sut.StartGame();
         var initialEventCount = sut.DomainEvents.Count;
@@ -400,7 +400,7 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
             }
         }
 
-        return SudokuGame.Create(profileId, displayName, difficulty, cells);
+        return SudokuGame.Create(profileId, displayName, difficulty, BoardSize.Nine, cells);
     }
 
     private IEnumerable<Cell> GenerateEmptyCells()
@@ -410,7 +410,7 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         return cells;

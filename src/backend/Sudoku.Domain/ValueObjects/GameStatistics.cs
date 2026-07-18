@@ -2,9 +2,6 @@ namespace Sudoku.Domain.ValueObjects;
 
 public record GameStatistics
 {
-    /// <summary>Maximum number of hints a player may use per game (all difficulties).</summary>
-    public const int MaxHints = 3;
-
     public int TotalMoves { get; private set; }
     public int ValidMoves { get; private set; }
     public int InvalidMoves { get; private set; }
@@ -59,7 +56,8 @@ public record GameStatistics
 
     public double AccuracyPercentage => TotalMoves > 0 ? (double)ValidMoves / TotalMoves * 100 : 0;
 
-    public int HintsRemaining => Math.Max(0, MaxHints - HintsUsed);
+    /// <summary>Hints remaining, given the calling game's board-size allowance (<see cref="BoardSize.MaxHints"/>).</summary>
+    public int HintsRemainingFor(BoardSize size) => Math.Max(0, size.MaxHints - HintsUsed);
 
     public bool HasMoves => TotalMoves > 0;
 }
