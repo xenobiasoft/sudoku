@@ -68,7 +68,6 @@ push_production() {
     # Sudoku Game Settings
     # -------------------------------------------------------------------------
     set_key "$LABEL" "Sudoku:Game:DefaultDifficulty"                         "Medium"
-    set_key "$LABEL" "Sudoku:Game:MaxHintsPerGame"                           "3"
     set_key "$LABEL" "Sudoku:Game:AutoSaveIntervalSeconds"                   "30"
     set_key "$LABEL" "Sudoku:Game:EnableStatistics"                          "true"
     set_key "$LABEL" "Sudoku:UI:DefaultTheme"                                "Light"
@@ -131,7 +130,6 @@ push_development() {
     # Sudoku Game Settings (same as production)
     # -------------------------------------------------------------------------
     set_key "$LABEL" "Sudoku:Game:DefaultDifficulty"                         "Medium"
-    set_key "$LABEL" "Sudoku:Game:MaxHintsPerGame"                           "3"
     set_key "$LABEL" "Sudoku:Game:AutoSaveIntervalSeconds"                   "30"
     set_key "$LABEL" "Sudoku:Game:EnableStatistics"                          "true"
     set_key "$LABEL" "Sudoku:UI:DefaultTheme"                                "Light"

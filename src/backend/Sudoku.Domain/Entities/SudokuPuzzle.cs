@@ -9,18 +9,20 @@ public class SudokuPuzzle : ICloneable
 
     public string PuzzleId { get; }
     public GameDifficulty Difficulty { get; }
+    public BoardSize Size { get; }
     public IReadOnlyList<Cell> Cells => _cells.AsReadOnly();
 
-    private SudokuPuzzle(string puzzleId, GameDifficulty difficulty, IEnumerable<Cell> cells)
+    private SudokuPuzzle(string puzzleId, GameDifficulty difficulty, BoardSize size, IEnumerable<Cell> cells)
     {
         PuzzleId = puzzleId;
         Difficulty = difficulty;
+        Size = size;
         _cells = cells.ToList();
     }
 
-    public static SudokuPuzzle Create(string puzzleId, GameDifficulty difficulty, IEnumerable<Cell> cells)
+    public static SudokuPuzzle Create(string puzzleId, GameDifficulty difficulty, BoardSize size, IEnumerable<Cell> cells)
     {
-        var puzzle = new SudokuPuzzle(puzzleId, difficulty, cells);
+        var puzzle = new SudokuPuzzle(puzzleId, difficulty, size, cells);
 
         if (!puzzle.IsValid())
         {
@@ -37,14 +39,14 @@ public class SudokuPuzzle : ICloneable
 
     public bool IsValid()
     {
-        if (_cells.Count != 81)
+        if (_cells.Count != Size.CellCount)
         {
             return false;
         }
 
-        for (var row = 0; row < 9; row++)
+        for (var row = 0; row < Size.Size; row++)
         {
-            for (var column = 0; column < 9; column++)
+            for (var column = 0; column < Size.Size; column++)
             {
                 if (!_cells.Any(c => c.Row == row && c.Column == column))
                 {
@@ -59,7 +61,7 @@ public class SudokuPuzzle : ICloneable
     private bool IsValidSudoku()
     {
         // Check rows
-        for (var row = 0; row < 9; row++)
+        for (var row = 0; row < Size.Size; row++)
         {
             var usedValues = new HashSet<int>();
             var rowCells = GetRowCells(row).Where(c => c.HasValue);
@@ -73,8 +75,8 @@ public class SudokuPuzzle : ICloneable
             }
         }
 
-        // Check columns  
-        for (var column = 0; column < 9; column++)
+        // Check columns
+        for (var column = 0; column < Size.Size; column++)
         {
             var usedValues = new HashSet<int>();
             var columnCells = GetColumnCells(column).Where(c => c.HasValue);
@@ -88,10 +90,10 @@ public class SudokuPuzzle : ICloneable
             }
         }
 
-        // Check 3x3 boxes
-        for (var boxRow = 0; boxRow < 3; boxRow++)
+        // Check boxes
+        for (var boxRow = 0; boxRow < Size.BoxSize; boxRow++)
         {
-            for (var boxColumn = 0; boxColumn < 3; boxColumn++)
+            for (var boxColumn = 0; boxColumn < Size.BoxSize; boxColumn++)
             {
                 var usedValues = new HashSet<int>();
                 var boxCells = GetMiniGridCells(boxRow, boxColumn).Where(c => c.HasValue);
@@ -109,14 +111,12 @@ public class SudokuPuzzle : ICloneable
         return true;
     }
 
-    private const int MinimumCluesForUniqueSolution = 17; // Based on Sudoku rules, 17 is the minimum number of clues required for a puzzle to have a unique solution.
-
     public bool HasUniqueSolution()
     {
         // This is a simplified check - in a real implementation, you'd want a more sophisticated solver
         // For now, we'll assume that puzzles with a reasonable number of fixed cells have unique solutions
         var fixedCells = _cells.Count(c => c.IsFixed);
-        return fixedCells >= MinimumCluesForUniqueSolution;
+        return fixedCells >= Size.MinimumClues;
     }
 
     public int GetFixedCellCount() => _cells.Count(c => c.IsFixed);
@@ -135,8 +135,8 @@ public class SudokuPuzzle : ICloneable
 
     public IEnumerable<Cell> GetMiniGridCells(int boxRow, int boxColumn)
     {
-        return _cells.Where(c => c.Row >= boxRow * 3 && c.Row < (boxRow + 1) * 3 &&
-                                 c.Column >= boxColumn * 3 && c.Column < (boxColumn + 1) * 3)
+        return _cells.Where(c => c.Row >= boxRow * Size.BoxSize && c.Row < (boxRow + 1) * Size.BoxSize &&
+                                 c.Column >= boxColumn * Size.BoxSize && c.Column < (boxColumn + 1) * Size.BoxSize)
                      .OrderBy(c => c.Row).ThenBy(c => c.Column);
     }
 
@@ -151,13 +151,13 @@ public class SudokuPuzzle : ICloneable
             }
             var rowValues = GetRowCells(cell.Row).Where(c => c.HasValue).Select(c => c.Value!.Value).ToHashSet();
             var columnValues = GetColumnCells(cell.Column).Where(c => c.HasValue).Select(c => c.Value!.Value).ToHashSet();
-            var miniGridValues = GetMiniGridCells(cell.Row / 3, cell.Column / 3)
+            var miniGridValues = GetMiniGridCells(cell.Row / Size.BoxSize, cell.Column / Size.BoxSize)
                 .Where(c => c.HasValue)
                 .Select(c => c.Value!.Value)
                 .ToHashSet();
             var usedValues = rowValues.Union(columnValues).Union(miniGridValues);
             cell.PossibleValues.Clear();
-            cell.PossibleValues.AddRange(Enumerable.Range(1, 9).Where(v => !usedValues.Contains(v)).ToList());
+            cell.PossibleValues.AddRange(Size.AllValues.Where(v => !usedValues.Contains(v)).ToList());
         }
     }
 
@@ -169,8 +169,8 @@ public class SudokuPuzzle : ICloneable
     {
         // Deep clone all cells
         var clonedCells = _cells.Select(cell => cell.DeepCopy()).ToList();
-        
+
         // Create a new puzzle instance using the private constructor
-        return new SudokuPuzzle(PuzzleId, Difficulty, clonedCells);
+        return new SudokuPuzzle(PuzzleId, Difficulty, Size, clonedCells);
     }
 }

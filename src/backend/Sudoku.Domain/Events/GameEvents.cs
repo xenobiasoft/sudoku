@@ -1,6 +1,6 @@
 namespace Sudoku.Domain.Events;
 
-public record GameCreatedEvent(GameId GameId, ProfileId ProfileId, PlayerAlias DisplayName, GameDifficulty Difficulty) : DomainEvent;
+public record GameCreatedEvent(GameId GameId, ProfileId ProfileId, PlayerAlias DisplayName, GameDifficulty Difficulty, BoardSize Size) : DomainEvent;
 
 public record GameStartedEvent(GameId GameId) : DomainEvent;
 
@@ -15,7 +15,8 @@ public record GameCompletedEvent(
     ProfileId ProfileId,
     GameDifficulty Difficulty,
     GameStatistics Statistics,
-    DateTime CompletedAt) : DomainEvent;
+    DateTime CompletedAt,
+    BoardSize Size) : DomainEvent;
 
 public record GameAbandonedEvent(GameId GameId) : DomainEvent;
 

@@ -138,7 +138,7 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
         dto.Statistics.ValidMoves.Should().Be(game.Statistics.ValidMoves);
         dto.Statistics.InvalidMoves.Should().Be(game.Statistics.InvalidMoves);
         dto.Statistics.HintsUsed.Should().Be(game.Statistics.HintsUsed);
-        dto.Statistics.HintsRemaining.Should().Be(game.Statistics.HintsRemaining);
+        dto.Statistics.HintsRemaining.Should().Be(game.Statistics.HintsRemainingFor(game.Size));
         dto.Statistics.PlayDuration.Should().Be(game.Statistics.PlayDuration);
         dto.Statistics.AccuracyPercentage.Should().Be(game.Statistics.AccuracyPercentage);
     }
@@ -189,10 +189,10 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
         {
             for (int j = 0; j < 9; j++)
             {
-                cells.Add(Cell.CreateEmpty(i, j));
+                cells.Add(Cell.CreateEmpty(i, j, BoardSize.Nine));
             }
         }
 
-        return SudokuGame.Create(withProfileId, displayName, difficulty, cells);
+        return SudokuGame.Create(withProfileId, displayName, difficulty, BoardSize.Nine, cells);
     }
 }

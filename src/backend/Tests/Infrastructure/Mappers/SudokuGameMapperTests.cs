@@ -43,6 +43,6 @@ public class SudokuGameMapperTests : MoqBaseTestByType<SudokuGameDocument>
         // Assert
         restored.GetCell(row, column).IsHint.Should().BeTrue();
         restored.Statistics.HintsUsed.Should().Be(1);
-        restored.Statistics.HintsRemaining.Should().Be(game.Statistics.HintsRemaining);
+        restored.Statistics.HintsRemainingFor(restored.Size).Should().Be(game.Statistics.HintsRemainingFor(game.Size));
     }
 }

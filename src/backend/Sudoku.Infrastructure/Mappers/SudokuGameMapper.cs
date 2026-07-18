@@ -53,6 +53,7 @@ public static class SudokuGameMapper
             profileId,
             displayName,
             difficulty,
+            BoardSize.Nine,
             document.Status,
             document.Statistics.ToDomain(),
             document.Cells.Select(ToDomain).ToList(),
@@ -82,7 +83,7 @@ public static class SudokuGameMapper
 
     private static Cell ToDomain(this CellDocument document)
     {
-        var cell = Cell.Create(document.Row, document.Column, document.Value, document.IsFixed, document.IsHint);
+        var cell = Cell.Create(document.Row, document.Column, BoardSize.Nine, document.Value, document.IsFixed, document.IsHint);
 
         // Set possible values using reflection since there's no public setter
         var cellType = typeof(Cell);

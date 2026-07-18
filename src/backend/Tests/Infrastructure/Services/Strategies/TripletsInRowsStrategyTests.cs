@@ -206,11 +206,11 @@ public class TripletsInRowsStrategyTests : MoqBaseTestByAbstraction<TripletsInRo
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
 
         puzzle.PopulatePossibleValues();
 
@@ -242,11 +242,11 @@ public class TripletsInRowsStrategyTests : MoqBaseTestByAbstraction<TripletsInRo
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
 
         puzzle.PopulatePossibleValues();
 
@@ -282,11 +282,11 @@ public class TripletsInRowsStrategyTests : MoqBaseTestByAbstraction<TripletsInRo
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
         
         // Hidden triplets: numbers 7,8,9 appear only in cells (0,0), (0,1), (0,2)
         puzzle.GetCell(0, 0).PossibleValues.UnionWith([1, 4, 7, 8]);
@@ -312,11 +312,11 @@ public class TripletsInRowsStrategyTests : MoqBaseTestByAbstraction<TripletsInRo
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
 
         // Create a scenario where hidden triplets 2, 6, 9 appear only in cells (2,1), (2,3), (2,4)
         // but each cell also has other values that should be removed
@@ -354,11 +354,11 @@ public class TripletsInRowsStrategyTests : MoqBaseTestByAbstraction<TripletsInRo
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
         
         // No triplets - just random possible values
         puzzle.GetCell(0, 0).PossibleValues.UnionWith([1, 2]);
@@ -378,11 +378,11 @@ public class TripletsInRowsStrategyTests : MoqBaseTestByAbstraction<TripletsInRo
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        return SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        return SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
     }
 
     private SudokuPuzzle CreatePuzzleWithSomeCellsSet()
@@ -393,11 +393,11 @@ public class TripletsInRowsStrategyTests : MoqBaseTestByAbstraction<TripletsInRo
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
         
         // Set some cells in row 0
         puzzle.GetCell(0, 0).SetValue(5);
@@ -421,11 +421,11 @@ public class TripletsInRowsStrategyTests : MoqBaseTestByAbstraction<TripletsInRo
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
         
         // Create a scenario where triplet removal will cause an invalid state
         // Set up naked triplets in row 0: cells (0,0), (0,1), (0,3) with values [1,2,3]
@@ -447,11 +447,11 @@ public class TripletsInRowsStrategyTests : MoqBaseTestByAbstraction<TripletsInRo
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
 
         puzzle.PopulatePossibleValues();
 
@@ -488,11 +488,11 @@ public class TripletsInRowsStrategyTests : MoqBaseTestByAbstraction<TripletsInRo
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
 
         puzzle.PopulatePossibleValues();
 
@@ -519,11 +519,11 @@ public class TripletsInRowsStrategyTests : MoqBaseTestByAbstraction<TripletsInRo
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
 
         // Set some cells with values in row 0
         puzzle.GetCell(0, 0).SetValue(9);

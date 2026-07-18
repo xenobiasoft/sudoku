@@ -93,6 +93,7 @@ public class GameCompletedEventHandlerTests : MoqBaseTestByAbstraction<GameCompl
             ProfileId.New(),
             difficulty,
             statistics,
-            DateTime.UtcNow);
+            DateTime.UtcNow,
+            BoardSize.Nine);
     }
 }

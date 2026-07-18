@@ -35,7 +35,7 @@ public class CreateGameCommandHandler(
                 return Result<string>.Failure($"No puzzle available for difficulty: {difficulty.Name}");
             }
 
-            var game = SudokuGame.Create(profileId, displayName, difficulty, puzzle.Cells);
+            var game = SudokuGame.Create(profileId, displayName, difficulty, BoardSize.Nine, puzzle.Cells);
 
             await gameRepository.SaveAsync(game);
 

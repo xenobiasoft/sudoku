@@ -682,7 +682,7 @@ public class AzureBlobGameRepositoryTests : MoqBaseTestByAbstraction<AzureBlobGa
         var displayName = PlayerAlias.Create("TestPlayer");
         var diff = difficulty ?? GameDifficulty.Medium;
         var cells = CellsFactory.CreateEmptyCells();
-        return SudokuGame.Create(pid, displayName, diff, cells);
+        return SudokuGame.Create(pid, displayName, diff, BoardSize.Nine, cells);
     }
 
     private static string GetBlobPath(string profileId, GameId gameId, string revision)

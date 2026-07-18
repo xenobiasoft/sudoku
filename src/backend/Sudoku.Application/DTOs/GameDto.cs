@@ -25,7 +25,7 @@ public record GameDto(
             game.DisplayName.Value,
             game.Difficulty.Name,
             game.Status.ToString(),
-            GameStatisticsDto.FromGameStatistics(game.Statistics),
+            GameStatisticsDto.FromGameStatistics(game.Statistics, game.Size),
             game.CreatedAt,
             game.StartedAt,
             game.CompletedAt,
@@ -45,14 +45,14 @@ public record GameStatisticsDto(
     TimeSpan PlayDuration,
     double AccuracyPercentage)
 {
-    public static GameStatisticsDto FromGameStatistics(GameStatistics statistics)
+    public static GameStatisticsDto FromGameStatistics(GameStatistics statistics, BoardSize size)
     {
         return new GameStatisticsDto(
             statistics.TotalMoves,
             statistics.ValidMoves,
             statistics.InvalidMoves,
             statistics.HintsUsed,
-            statistics.HintsRemaining,
+            statistics.HintsRemainingFor(size),
             statistics.PlayDuration,
             statistics.AccuracyPercentage
         );

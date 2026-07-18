@@ -30,9 +30,9 @@ public static class BitwiseSolverGridMapper
         var cells = puzzle.Cells.Select(cell =>
         {
             var value = grid[cell.Row * 9 + cell.Column];
-            return Cell.Create(cell.Row, cell.Column, value == 0 ? null : value, cell.IsFixed);
+            return Cell.Create(cell.Row, cell.Column, puzzle.Size, value == 0 ? null : value, cell.IsFixed);
         }).ToList();
 
-        return SudokuPuzzle.Create(puzzle.PuzzleId, puzzle.Difficulty, cells);
+        return SudokuPuzzle.Create(puzzle.PuzzleId, puzzle.Difficulty, puzzle.Size, cells);
     }
 }

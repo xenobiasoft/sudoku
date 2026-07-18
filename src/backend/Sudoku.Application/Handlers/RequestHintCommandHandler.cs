@@ -54,10 +54,10 @@ public class RequestHintCommandHandler(
     {
         var cells = game.GetCells()
             .Select(c => c.IsLocked
-                ? Cell.CreateFixed(c.Row, c.Column, c.Value!.Value)
-                : Cell.CreateEmpty(c.Row, c.Column))
+                ? Cell.CreateFixed(c.Row, c.Column, c.Value!.Value, game.Size)
+                : Cell.CreateEmpty(c.Row, c.Column, game.Size))
             .ToList();
 
-        return SudokuPuzzle.Create(game.Id.Value.ToString(), game.Difficulty, cells);
+        return SudokuPuzzle.Create(game.Id.Value.ToString(), game.Difficulty, game.Size, cells);
     }
 }

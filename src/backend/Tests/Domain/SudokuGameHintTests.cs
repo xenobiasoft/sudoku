@@ -52,7 +52,7 @@ public class SudokuGameHintTests : MoqBaseTestByType<SudokuGame>
 
         // Assert
         sut.Statistics.HintsUsed.Should().Be(1);
-        sut.Statistics.HintsRemaining.Should().Be(GameStatistics.MaxHints - 1);
+        sut.Statistics.HintsRemainingFor(sut.Size).Should().Be(BoardSize.Nine.MaxHints - 1);
     }
 
     [Fact]
@@ -102,7 +102,7 @@ public class SudokuGameHintTests : MoqBaseTestByType<SudokuGame>
     {
         // Arrange
         var sut = CreateStartedEmptyGame();
-        for (var i = 0; i < GameStatistics.MaxHints; i++)
+        for (var i = 0; i < BoardSize.Nine.MaxHints; i++)
         {
             sut.RevealHint(Solution);
         }
@@ -164,11 +164,11 @@ public class SudokuGameHintTests : MoqBaseTestByType<SudokuGame>
         // Arrange - a board with a single empty cell and a matching solution
         var completed = CellsFactory.CreateCompletedCells().ToList();
         var cells = completed
-            .Select(c => c.Row == 0 && c.Column == 0 ? Cell.CreateEmpty(0, 0) : c)
+            .Select(c => c.Row == 0 && c.Column == 0 ? Cell.CreateEmpty(0, 0, BoardSize.Nine) : c)
             .ToList();
         var sut = GameFactory.CreateGameWithCells(cells);
         sut.StartGame();
-        var solution = SudokuPuzzle.Create("solution", GameDifficulty.Easy, CellsFactory.CreateCompletedCells().ToList());
+        var solution = SudokuPuzzle.Create("solution", GameDifficulty.Easy, BoardSize.Nine, CellsFactory.CreateCompletedCells().ToList());
 
         // Act
         sut.RevealHint(solution);

@@ -17,7 +17,7 @@ public class CellTests : MoqBaseTestByType<Cell>
         bool isFixed = true;
 
         // Act
-        var cell = Cell.Create(row, column, value, isFixed);
+        var cell = Cell.Create(row, column, BoardSize.Nine, value, isFixed);
 
         // Assert
         cell.Row.Should().Be(row);
@@ -36,7 +36,7 @@ public class CellTests : MoqBaseTestByType<Cell>
         int value = 7;
 
         // Act
-        var cell = Cell.CreateFixed(row, column, value);
+        var cell = Cell.CreateFixed(row, column, value, BoardSize.Nine);
 
         // Assert
         cell.Row.Should().Be(row);
@@ -54,7 +54,7 @@ public class CellTests : MoqBaseTestByType<Cell>
         int column = 5;
 
         // Act
-        var cell = Cell.CreateEmpty(row, column);
+        var cell = Cell.CreateEmpty(row, column, BoardSize.Nine);
 
         // Assert
         cell.Row.Should().Be(row);
@@ -71,7 +71,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void Create_WithInvalidRow_ThrowsInvalidCellPositionException(int row, int column)
     {
         // Act
-        Action act = () => Cell.Create(row, column);
+        Action act = () => Cell.Create(row, column, BoardSize.Nine);
 
         // Assert
         act.Should().Throw<InvalidCellPositionException>()
@@ -85,7 +85,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void Create_WithInvalidColumn_ThrowsInvalidCellPositionException(int row, int column)
     {
         // Act
-        Action act = () => Cell.Create(row, column);
+        Action act = () => Cell.Create(row, column, BoardSize.Nine);
 
         // Assert
         act.Should().Throw<InvalidCellPositionException>()
@@ -99,7 +99,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void Create_WithInvalidValue_ThrowsInvalidCellValueException(int value)
     {
         // Act
-        Action act = () => Cell.Create(5, 5, value);
+        Action act = () => Cell.Create(5, 5, BoardSize.Nine, value);
 
         // Assert
         act.Should().Throw<InvalidCellValueException>()
@@ -110,7 +110,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void SetValue_OnNonFixedCell_UpdatesValue()
     {
         // Arrange
-        var cell = Cell.Create(5, 5);
+        var cell = Cell.Create(5, 5, BoardSize.Nine);
 
         // Act
         cell.SetValue(7);
@@ -124,7 +124,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void SetValue_OnFixedCell_ThrowsCellIsFixedException()
     {
         // Arrange
-        var cell = Cell.CreateFixed(5, 5, 7);
+        var cell = Cell.CreateFixed(5, 5, 7, BoardSize.Nine);
 
         // Act
         Action act = () => cell.SetValue(8);
@@ -141,7 +141,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void SetValue_WithInvalidValue_ThrowsInvalidCellValueException(int value)
     {
         // Arrange
-        var cell = Cell.Create(5, 5);
+        var cell = Cell.Create(5, 5, BoardSize.Nine);
 
         // Act
         Action act = () => cell.SetValue(value);
@@ -155,7 +155,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void SetValue_WithNullableInt_OnNonFixedCell_UpdatesValue()
     {
         // Arrange
-        var cell = Cell.Create(5, 5);
+        var cell = Cell.Create(5, 5, BoardSize.Nine);
 
         // Act
         cell.SetValue((int?)7);
@@ -169,7 +169,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void SetValue_WithNullableInt_OnFixedCell_ThrowsCellIsFixedException()
     {
         // Arrange
-        var cell = Cell.CreateFixed(5, 5, 7);
+        var cell = Cell.CreateFixed(5, 5, 7, BoardSize.Nine);
 
         // Act
         Action act = () => cell.SetValue((int?)8);
@@ -183,7 +183,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void SetValue_WithNullValue_ClearsValue()
     {
         // Arrange
-        var cell = Cell.Create(5, 5, 7);
+        var cell = Cell.Create(5, 5, BoardSize.Nine, 7);
 
         // Act
         cell.SetValue((int?)null);
@@ -197,7 +197,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void SetValue_WithNullValue_OnFixedCell_ThrowsCellIsFixedException()
     {
         // Arrange
-        var cell = Cell.CreateFixed(5, 5, 7);
+        var cell = Cell.CreateFixed(5, 5, 7, BoardSize.Nine);
 
         // Act
         Action act = () => cell.SetValue((int?)null);
@@ -214,7 +214,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void SetValue_WithNullableInt_WithInvalidValue_ThrowsInvalidCellValueException(int value)
     {
         // Arrange
-        var cell = Cell.Create(5, 5);
+        var cell = Cell.Create(5, 5, BoardSize.Nine);
 
         // Act
         Action act = () => cell.SetValue((int?)value);
@@ -228,7 +228,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void ClearValue_OnNonFixedCell_ClearsValue()
     {
         // Arrange
-        var cell = Cell.Create(5, 5, 7);
+        var cell = Cell.Create(5, 5, BoardSize.Nine, 7);
 
         // Act
         cell.ClearValue();
@@ -242,7 +242,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void ClearValue_OnFixedCell_ThrowsCellIsFixedException()
     {
         // Arrange
-        var cell = Cell.CreateFixed(5, 5, 7);
+        var cell = Cell.CreateFixed(5, 5, 7, BoardSize.Nine);
 
         // Act
         Action act = () => cell.ClearValue();
@@ -256,7 +256,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void ToString_WithValue_ReturnsValueAsString()
     {
         // Arrange
-        var cell = Cell.Create(5, 5, 7);
+        var cell = Cell.Create(5, 5, BoardSize.Nine, 7);
 
         // Act
         var result = cell.ToString();
@@ -269,7 +269,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void ToString_WithoutValue_ReturnsDot()
     {
         // Arrange
-        var cell = Cell.CreateEmpty(5, 5);
+        var cell = Cell.CreateEmpty(5, 5, BoardSize.Nine);
 
         // Act
         var result = cell.ToString();
@@ -284,7 +284,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void AddPossibleValue_OnEmptyCell_AddsPossibleValue()
     {
         // Arrange
-        var cell = Cell.CreateEmpty(5, 5);
+        var cell = Cell.CreateEmpty(5, 5, BoardSize.Nine);
 
         // Act
         cell.AddPossibleValue(7);
@@ -297,7 +297,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void AddPossibleValue_WithExistingValue_DoesNotAddDuplicate()
     {
         // Arrange
-        var cell = Cell.CreateEmpty(5, 5);
+        var cell = Cell.CreateEmpty(5, 5, BoardSize.Nine);
         cell.AddPossibleValue(7);
 
         // Act
@@ -311,7 +311,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void AddPossibleValue_WithMultipleValues_AddsPossibleValues()
     {
         // Arrange
-        var cell = Cell.CreateEmpty(5, 5);
+        var cell = Cell.CreateEmpty(5, 5, BoardSize.Nine);
 
         // Act
         cell.AddPossibleValue(3);
@@ -330,7 +330,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void AddPossibleValue_WithInvalidValue_ThrowsInvalidCellValueException(int value)
     {
         // Arrange
-        var cell = Cell.CreateEmpty(5, 5);
+        var cell = Cell.CreateEmpty(5, 5, BoardSize.Nine);
 
         // Act
         Action act = () => cell.AddPossibleValue(value);
@@ -344,7 +344,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void AddPossibleValue_OnFixedCell_ThrowsCellIsFixedException()
     {
         // Arrange
-        var cell = Cell.CreateFixed(5, 5, 7);
+        var cell = Cell.CreateFixed(5, 5, 7, BoardSize.Nine);
 
         // Act
         Action act = () => cell.AddPossibleValue(3);
@@ -358,7 +358,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void AddPossibleValue_OnCellWithValue_ThrowsCellAlreadyHasValueException()
     {
         // Arrange
-        var cell = Cell.Create(5, 5, 7);
+        var cell = Cell.Create(5, 5, BoardSize.Nine, 7);
 
         // Act
         Action act = () => cell.AddPossibleValue(3);
@@ -372,7 +372,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void RemovePossibleValue_WithExistingValue_RemovesPossibleValue()
     {
         // Arrange
-        var cell = Cell.CreateEmpty(5, 5);
+        var cell = Cell.CreateEmpty(5, 5, BoardSize.Nine);
         cell.AddPossibleValue(3);
         cell.AddPossibleValue(7);
 
@@ -387,7 +387,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void RemovePossibleValue_WithNonExistingValue_DoesNothing()
     {
         // Arrange
-        var cell = Cell.CreateEmpty(5, 5);
+        var cell = Cell.CreateEmpty(5, 5, BoardSize.Nine);
         cell.AddPossibleValue(7);
 
         // Act
@@ -404,7 +404,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void RemovePossibleValue_WithInvalidValue_ThrowsInvalidCellValueException(int value)
     {
         // Arrange
-        var cell = Cell.CreateEmpty(5, 5);
+        var cell = Cell.CreateEmpty(5, 5, BoardSize.Nine);
         cell.AddPossibleValue(7);
 
         // Act
@@ -419,7 +419,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void RemovePossibleValue_OnFixedCell_ThrowsCellIsFixedException()
     {
         // Arrange
-        var cell = Cell.CreateFixed(5, 5, 7);
+        var cell = Cell.CreateFixed(5, 5, 7, BoardSize.Nine);
 
         // Act
         Action act = () => cell.RemovePossibleValue(3);
@@ -433,7 +433,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void ClearPossibleValues_WithValues_ClearsPossibleValues()
     {
         // Arrange
-        var cell = Cell.CreateEmpty(5, 5);
+        var cell = Cell.CreateEmpty(5, 5, BoardSize.Nine);
         cell.AddPossibleValue(3);
         cell.AddPossibleValue(7);
         cell.AddPossibleValue(9);
@@ -449,7 +449,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void ClearPossibleValues_WithNoValues_DoesNothing()
     {
         // Arrange
-        var cell = Cell.CreateEmpty(5, 5);
+        var cell = Cell.CreateEmpty(5, 5, BoardSize.Nine);
 
         // Act
         cell.ClearPossibleValues();
@@ -462,7 +462,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void ClearPossibleValues_OnFixedCell_ThrowsCellIsFixedException()
     {
         // Arrange
-        var cell = Cell.CreateFixed(5, 5, 7);
+        var cell = Cell.CreateFixed(5, 5, 7, BoardSize.Nine);
 
         // Act
         Action act = () => cell.ClearPossibleValues();
@@ -476,7 +476,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void SetValue_ClearsPossibleValues()
     {
         // Arrange
-        var cell = Cell.CreateEmpty(5, 5);
+        var cell = Cell.CreateEmpty(5, 5, BoardSize.Nine);
         cell.AddPossibleValue(3);
         cell.AddPossibleValue(7);
 
@@ -492,7 +492,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void SetValue_WithNullableInt_ClearsPossibleValuesWhenValueIsSet()
     {
         // Arrange
-        var cell = Cell.CreateEmpty(5, 5);
+        var cell = Cell.CreateEmpty(5, 5, BoardSize.Nine);
         cell.AddPossibleValue(3);
         cell.AddPossibleValue(7);
 
@@ -508,7 +508,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void SetValue_WithNullableInt_DoesNotClearPossibleValuesWhenValueIsNull()
     {
         // Arrange
-        var cell = Cell.Create(5, 5, 9);
+        var cell = Cell.Create(5, 5, BoardSize.Nine, 9);
         cell.SetValue((int?)null);
         cell.AddPossibleValue(3);
         cell.AddPossibleValue(7);
@@ -526,7 +526,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void DeepCopy_CreatesDeepCopy()
     {
         // Arrange
-        var originalCell = Cell.Create(3, 4, 7, true);
+        var originalCell = Cell.Create(3, 4, BoardSize.Nine, 7, true);
         originalCell.PossibleValues.Add(1);
         originalCell.PossibleValues.Add(2);
 
@@ -548,7 +548,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void DeepCopy_EmptyCell_CreatesDeepCopy()
     {
         // Arrange
-        var originalCell = Cell.CreateEmpty(2, 6);
+        var originalCell = Cell.CreateEmpty(2, 6, BoardSize.Nine);
         originalCell.AddPossibleValue(1);
         originalCell.AddPossibleValue(5);
         originalCell.AddPossibleValue(9);
@@ -571,7 +571,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void DeepCopy_ModifyingClonedCell_DoesNotAffectOriginal()
     {
         // Arrange
-        var originalCell = Cell.CreateEmpty(1, 1);
+        var originalCell = Cell.CreateEmpty(1, 1, BoardSize.Nine);
         originalCell.AddPossibleValue(3);
         originalCell.AddPossibleValue(7);
         var clonedCell = originalCell.DeepCopy();
@@ -590,7 +590,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void CreateHint_CreatesLockedCellWithValue()
     {
         // Act
-        var cell = Cell.CreateHint(3, 4, 7);
+        var cell = Cell.CreateHint(3, 4, 7, BoardSize.Nine);
 
         // Assert
         cell.Value.Should().Be(7);
@@ -604,7 +604,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void SetValue_OnHintCell_ThrowsCellIsFixedException()
     {
         // Arrange
-        var cell = Cell.CreateHint(3, 4, 7);
+        var cell = Cell.CreateHint(3, 4, 7, BoardSize.Nine);
 
         // Act
         Action act = () => cell.SetValue(9);
@@ -617,7 +617,7 @@ public class CellTests : MoqBaseTestByType<Cell>
     public void DeepCopy_PreservesIsHint()
     {
         // Arrange
-        var cell = Cell.CreateHint(3, 4, 7);
+        var cell = Cell.CreateHint(3, 4, 7, BoardSize.Nine);
 
         // Act
         var clone = cell.DeepCopy();

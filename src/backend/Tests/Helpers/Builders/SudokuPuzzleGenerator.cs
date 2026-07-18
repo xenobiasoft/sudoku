@@ -15,6 +15,7 @@ public class SudokuPuzzleGenerator : ISpecimenBuilder
             return SudokuPuzzle.Create(
                 context.Create<PlayerAlias>(),
                 context.Create<GameDifficulty>(),
+                BoardSize.Nine,
                 cells
             );
         }

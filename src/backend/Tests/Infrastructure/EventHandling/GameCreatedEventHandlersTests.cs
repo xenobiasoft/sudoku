@@ -16,7 +16,7 @@ public class GameCreatedEventHandlerTests : MoqBaseTestByAbstraction<GameCreated
         var profileId = ProfileId.New();
         var displayName = PlayerAlias.Create("TestPlayer");
         var difficulty = GameDifficulty.Medium;
-        var domainEvent = new GameCreatedEvent(gameId, profileId, displayName, difficulty);
+        var domainEvent = new GameCreatedEvent(gameId, profileId, displayName, difficulty, BoardSize.Nine);
 
         var sut = ResolveSut();
 
@@ -35,7 +35,7 @@ public class GameCreatedEventHandlerTests : MoqBaseTestByAbstraction<GameCreated
         var profileId = ProfileId.New();
         var displayName = PlayerAlias.Create("TestPlayer");
         var difficulty = GameDifficulty.Hard;
-        var domainEvent = new GameCreatedEvent(gameId, profileId, displayName, difficulty);
+        var domainEvent = new GameCreatedEvent(gameId, profileId, displayName, difficulty, BoardSize.Nine);
 
         var sut = ResolveSut();
 
@@ -54,7 +54,7 @@ public class GameCreatedEventHandlerTests : MoqBaseTestByAbstraction<GameCreated
         var profileId = ProfileId.New();
         var displayName = PlayerAlias.Create("TestPlayer");
         var difficulty = GameDifficulty.Expert;
-        var domainEvent = new GameCreatedEvent(gameId, profileId, displayName, difficulty);
+        var domainEvent = new GameCreatedEvent(gameId, profileId, displayName, difficulty, BoardSize.Nine);
 
         var sut = ResolveSut();
 
@@ -73,7 +73,7 @@ public class GameCreatedEventHandlerTests : MoqBaseTestByAbstraction<GameCreated
         var profileId = ProfileId.New();
         var displayName = PlayerAlias.Create("DifferentPlayer");
         var difficulty = GameDifficulty.Easy;
-        var domainEvent = new GameCreatedEvent(gameId, profileId, displayName, difficulty);
+        var domainEvent = new GameCreatedEvent(gameId, profileId, displayName, difficulty, BoardSize.Nine);
 
         var sut = ResolveSut();
 

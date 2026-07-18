@@ -40,9 +40,9 @@ public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
     private async Task<SudokuPuzzle> GenerateEmptyPuzzleAsync()
     {
         var cells = Enumerable.Range(0, 81)
-            .Select(i => Cell.CreateEmpty(i / 9, i % 9))
+            .Select(i => Cell.CreateEmpty(i / 9, i % 9, BoardSize.Nine))
             .ToList();
-        var puzzle = SudokuPuzzle.Create(GameId.New(), GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create(GameId.New(), GameDifficulty.Easy, BoardSize.Nine, cells);
         return await Task.FromResult(puzzle);
     }
 
@@ -84,11 +84,11 @@ public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
     private SudokuPuzzle LockCompletedCells(SudokuPuzzle puzzle)
     {
         var cells = puzzle.Cells.Select(cell => cell.Value.HasValue
-                ? Cell.CreateFixed(cell.Row, cell.Column, cell.Value.Value)
-                : Cell.CreateEmpty(cell.Row, cell.Column))
+                ? Cell.CreateFixed(cell.Row, cell.Column, cell.Value.Value, puzzle.Size)
+                : Cell.CreateEmpty(cell.Row, cell.Column, puzzle.Size))
             .ToList();
 
-        return SudokuPuzzle.Create(puzzle.PuzzleId, puzzle.Difficulty, cells);
+        return SudokuPuzzle.Create(puzzle.PuzzleId, puzzle.Difficulty, puzzle.Size, cells);
     }
 
     private (int Row, int Col)[] GetRandomCellCoordinates()

@@ -159,7 +159,7 @@ public class CosmosDbGameRepositoryTests : MoqBaseTestByAbstraction<CosmosDbGame
         var displayName = PlayerAlias.Create("TestPlayer");
         var difficulty = GameDifficulty.Easy;
         var cells = CellsFactory.CreateEmptyCells();
-        var game = SudokuGame.Create(profileId, displayName, difficulty, cells);
+        var game = SudokuGame.Create(profileId, displayName, difficulty, BoardSize.Nine, cells);
         var sut = ResolveSut();
 
         // Act

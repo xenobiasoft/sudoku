@@ -191,10 +191,10 @@ public class GetGameQueryHandlerTests : MoqBaseTestByAbstraction<GetGameQueryHan
         {
             for (int j = 0; j < 9; j++)
             {
-                cells.Add(Cell.CreateEmpty(i, j));
+                cells.Add(Cell.CreateEmpty(i, j, BoardSize.Nine));
             }
         }
 
-        return SudokuGame.Create(profileId, displayName, difficulty, cells);
+        return SudokuGame.Create(profileId, displayName, difficulty, BoardSize.Nine, cells);
     }
 }

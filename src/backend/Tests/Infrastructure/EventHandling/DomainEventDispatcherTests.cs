@@ -20,6 +20,7 @@ public class DomainEventDispatcherTests : MoqBaseTestByAbstraction<DomainEventDi
     {
         container.AddCustomizations(new PlayerAliasGenerator());
         container.AddCustomizations(new GameDifficultyGenerator());
+        container.AddCustomizations(new BoardSizeGenerator());
     }
 
     [Fact]

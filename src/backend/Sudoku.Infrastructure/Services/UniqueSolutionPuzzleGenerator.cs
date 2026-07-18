@@ -136,12 +136,12 @@ public class UniqueSolutionPuzzleGenerator : IPuzzleGenerator
             {
                 int row = i / 9, column = i % 9;
                 return grid[i] == 0
-                    ? Cell.CreateEmpty(row, column)
-                    : Cell.CreateFixed(row, column, grid[i]);
+                    ? Cell.CreateEmpty(row, column, BoardSize.Nine)
+                    : Cell.CreateFixed(row, column, grid[i], BoardSize.Nine);
             })
             .ToList();
 
-        return SudokuPuzzle.Create(GameId.New(), difficulty, cells);
+        return SudokuPuzzle.Create(GameId.New(), difficulty, BoardSize.Nine, cells);
     }
 
     private static int GetTargetEmptyCount(GameDifficulty difficulty) => difficulty.Name switch

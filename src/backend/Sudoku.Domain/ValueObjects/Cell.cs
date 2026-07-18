@@ -9,6 +9,7 @@ public record Cell
     public int? Value { get; private set; }
     public bool IsFixed { get; }
     public bool IsHint { get; }
+    public BoardSize Size { get; }
     public bool HasValue => Value.HasValue;
 
     /// <summary>
@@ -18,21 +19,21 @@ public record Cell
     public bool IsLocked => IsFixed || IsHint;
     public HashSet<int> PossibleValues { get; private set; } = new();
 
-    private Cell(int row, int column, int? value, bool isFixed, bool isHint = false)
+    private Cell(int row, int column, int? value, bool isFixed, BoardSize size, bool isHint = false)
     {
-        if (row < 0 || row > 8)
+        if (row < 0 || row > size.Size - 1)
         {
-            throw new InvalidCellPositionException($"Row must be between 0 and 8, got: {row}");
+            throw new InvalidCellPositionException($"Row must be between 0 and {size.Size - 1}, got: {row}");
         }
 
-        if (column < 0 || column > 8)
+        if (column < 0 || column > size.Size - 1)
         {
-            throw new InvalidCellPositionException($"Column must be between 0 and 8, got: {column}");
+            throw new InvalidCellPositionException($"Column must be between 0 and {size.Size - 1}, got: {column}");
         }
 
-        if (value.HasValue && (value.Value < 1 || value.Value > 9))
+        if (value.HasValue && (value.Value < 1 || value.Value > size.Size))
         {
-            throw new InvalidCellValueException($"Cell value must be between 1 and 9, got: {value.Value}");
+            throw new InvalidCellValueException($"Cell value must be between 1 and {size.Size}, got: {value.Value}");
         }
 
         Row = row;
@@ -40,30 +41,31 @@ public record Cell
         Value = value;
         IsFixed = isFixed;
         IsHint = isHint;
+        Size = size;
     }
 
-    public static Cell Create(int row, int column, int? value = null, bool isFixed = false, bool isHint = false)
+    public static Cell Create(int row, int column, BoardSize size, int? value = null, bool isFixed = false, bool isHint = false)
     {
-        return new Cell(row, column, value, isFixed, isHint);
+        return new Cell(row, column, value, isFixed, size, isHint);
     }
 
-    public static Cell CreateFixed(int row, int column, int value)
+    public static Cell CreateFixed(int row, int column, int value, BoardSize size)
     {
-        return new Cell(row, column, value, true);
+        return new Cell(row, column, value, true, size);
     }
 
-    public static Cell CreateEmpty(int row, int column)
+    public static Cell CreateEmpty(int row, int column, BoardSize size)
     {
-        return new Cell(row, column, null, false);
+        return new Cell(row, column, null, false, size);
     }
 
     /// <summary>
     /// Creates a cell revealed by a hint: it holds the correct value and is locked so the player
     /// cannot change it, but it is distinct from an original clue (<see cref="IsFixed"/> stays false).
     /// </summary>
-    public static Cell CreateHint(int row, int column, int value)
+    public static Cell CreateHint(int row, int column, int value, BoardSize size)
     {
-        return new Cell(row, column, value, isFixed: false, isHint: true);
+        return new Cell(row, column, value, isFixed: false, size, isHint: true);
     }
 
     public void SetValue(int value)
@@ -73,9 +75,9 @@ public record Cell
             throw new CellIsFixedException($"Cannot modify fixed cell at position ({Row}, {Column})");
         }
 
-        if (value < 1 || value > 9)
+        if (value < 1 || value > Size.Size)
         {
-            throw new InvalidCellValueException($"Cell value must be between 1 and 9, got: {value}");
+            throw new InvalidCellValueException($"Cell value must be between 1 and {Size.Size}, got: {value}");
         }
 
         Value = value;
@@ -91,9 +93,9 @@ public record Cell
 
         if (value.HasValue)
         {
-            if (value.Value < 1 || value.Value > 9)
+            if (value.Value < 1 || value.Value > Size.Size)
             {
-                throw new InvalidCellValueException($"Cell value must be between 1 and 9, got: {value.Value}");
+                throw new InvalidCellValueException($"Cell value must be between 1 and {Size.Size}, got: {value.Value}");
             }
         }
 
@@ -127,9 +129,9 @@ public record Cell
             throw new CellAlreadyHasValueException($"Cannot add possible values to cell with a definite value at position ({Row}, {Column})");
         }
 
-        if (value < 1 || value > 9)
+        if (value < 1 || value > Size.Size)
         {
-            throw new InvalidCellValueException($"Possible value must be between 1 and 9, got: {value}");
+            throw new InvalidCellValueException($"Possible value must be between 1 and {Size.Size}, got: {value}");
         }
 
         if (!PossibleValues.Contains(value))
@@ -145,9 +147,9 @@ public record Cell
             throw new CellIsFixedException($"Cannot modify fixed cell at position ({Row}, {Column})");
         }
 
-        if (value < 1 || value > 9)
+        if (value < 1 || value > Size.Size)
         {
-            throw new InvalidCellValueException($"Possible value must be between 1 and 9, got: {value}");
+            throw new InvalidCellValueException($"Possible value must be between 1 and {Size.Size}, got: {value}");
         }
 
         PossibleValues.Remove(value);
@@ -170,13 +172,13 @@ public record Cell
 
     public Cell DeepCopy()
     {
-        var clonedCell = new Cell(Row, Column, Value, IsFixed, IsHint);
+        var clonedCell = new Cell(Row, Column, Value, IsFixed, Size, IsHint);
 
         foreach (var possibleValue in PossibleValues)
         {
             clonedCell.PossibleValues.Add(possibleValue);
         }
-        
+
         return clonedCell;
     }
 }

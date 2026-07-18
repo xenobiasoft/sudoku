@@ -18,7 +18,7 @@ public class GameStatisticsTests : MoqBaseTestByType<GameStatistics>
         statistics.ValidMoves.Should().Be(0);
         statistics.InvalidMoves.Should().Be(0);
         statistics.HintsUsed.Should().Be(0);
-        statistics.HintsRemaining.Should().Be(GameStatistics.MaxHints);
+        statistics.HintsRemainingFor(BoardSize.Nine).Should().Be(BoardSize.Nine.MaxHints);
         statistics.PlayDuration.Should().Be(TimeSpan.Zero);
         statistics.LastMoveAt.Should().BeNull();
         statistics.AccuracyPercentage.Should().Be(0);
@@ -36,7 +36,7 @@ public class GameStatisticsTests : MoqBaseTestByType<GameStatistics>
 
         // Assert
         statistics.HintsUsed.Should().Be(1);
-        statistics.HintsRemaining.Should().Be(GameStatistics.MaxHints - 1);
+        statistics.HintsRemainingFor(BoardSize.Nine).Should().Be(BoardSize.Nine.MaxHints - 1);
     }
 
     [Fact]
@@ -46,14 +46,14 @@ public class GameStatisticsTests : MoqBaseTestByType<GameStatistics>
         var statistics = GameStatistics.Create();
 
         // Act
-        for (var i = 0; i < GameStatistics.MaxHints; i++)
+        for (var i = 0; i < BoardSize.Nine.MaxHints; i++)
         {
             statistics.RecordHint();
         }
 
         // Assert
-        statistics.HintsUsed.Should().Be(GameStatistics.MaxHints);
-        statistics.HintsRemaining.Should().Be(0);
+        statistics.HintsUsed.Should().Be(BoardSize.Nine.MaxHints);
+        statistics.HintsRemainingFor(BoardSize.Nine).Should().Be(0);
     }
 
     [Fact]

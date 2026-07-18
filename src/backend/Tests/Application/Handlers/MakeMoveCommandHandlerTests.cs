@@ -236,9 +236,9 @@ public class MakeMoveCommandHandlerTests : MoqBaseTestByAbstraction<MakeMoveComm
         var profileId = ProfileId.New();
         var displayName = PlayerAlias.Create("TestPlayer");
         var difficulty = GameDifficulty.Medium;
-        var cells = InitializeCells((i, j) => Cell.CreateEmpty(i, j));
+        var cells = InitializeCells((i, j) => Cell.CreateEmpty(i, j, BoardSize.Nine));
 
-        var game = SudokuGame.Create(profileId, displayName, difficulty, cells);
+        var game = SudokuGame.Create(profileId, displayName, difficulty, BoardSize.Nine, cells);
         game.StartGame();
         return game;
     }
@@ -255,12 +255,12 @@ public class MakeMoveCommandHandlerTests : MoqBaseTestByAbstraction<MakeMoveComm
             for (int j = 0; j < 9; j++)
             {
                 // Create a cell with value 5 at position (0, 1) to create a duplicate scenario
-                var cell = i == 0 && j == 1 ? Cell.Create(i, j, 5, false) : Cell.CreateEmpty(i, j);
+                var cell = i == 0 && j == 1 ? Cell.Create(i, j, BoardSize.Nine, 5, false) : Cell.CreateEmpty(i, j, BoardSize.Nine);
                 cells.Add(cell);
             }
         }
 
-        var game = SudokuGame.Create(profileId, displayName, difficulty, cells);
+        var game = SudokuGame.Create(profileId, displayName, difficulty, BoardSize.Nine, cells);
         game.StartGame();
         return game;
     }

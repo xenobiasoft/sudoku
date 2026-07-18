@@ -165,11 +165,11 @@ public class TripletsInColumnsStrategyTests : MoqBaseTestByAbstraction<TripletsI
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
 
         puzzle.PopulatePossibleValues();
 
@@ -223,11 +223,11 @@ public class TripletsInColumnsStrategyTests : MoqBaseTestByAbstraction<TripletsI
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
         
         // Hidden triplets: numbers 7,8,9 appear only in cells (0,0), (1,0), (2,0)
         puzzle.GetCell(0, 0).PossibleValues.UnionWith([1, 4, 7, 8]);
@@ -275,11 +275,11 @@ public class TripletsInColumnsStrategyTests : MoqBaseTestByAbstraction<TripletsI
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
         
         // No triplets - just random possible values
         puzzle.GetCell(0, 0).PossibleValues.UnionWith([1, 2]);
@@ -299,11 +299,11 @@ public class TripletsInColumnsStrategyTests : MoqBaseTestByAbstraction<TripletsI
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        return SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        return SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
     }
 
     private SudokuPuzzle CreatePuzzleWithSomeCellsSet()
@@ -314,11 +314,11 @@ public class TripletsInColumnsStrategyTests : MoqBaseTestByAbstraction<TripletsI
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
         
         // Set some cells
         puzzle.GetCell(0, 0).SetValue(5);
@@ -342,11 +342,11 @@ public class TripletsInColumnsStrategyTests : MoqBaseTestByAbstraction<TripletsI
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
         
         // Naked triplets
         puzzle.GetCell(3, 0).PossibleValues.UnionWith([1, 2, 3]);
@@ -367,11 +367,11 @@ public class TripletsInColumnsStrategyTests : MoqBaseTestByAbstraction<TripletsI
         {
             for (var col = 0; col < 9; col++)
             {
-                cells.Add(Cell.CreateEmpty(row, col));
+                cells.Add(Cell.CreateEmpty(row, col, BoardSize.Nine));
             }
         }
         
-        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, cells);
+        var puzzle = SudokuPuzzle.Create("test", GameDifficulty.Easy, BoardSize.Nine, cells);
 
         puzzle.PopulatePossibleValues();
 
