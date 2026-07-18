@@ -1,4 +1,13 @@
 {
+  "permissions": {
+    "allow": [
+      "mcp__azure-appinsights__query_logs",
+      "Bash(dotnet test *)",
+      "Bash(dotnet test)",
+      "Bash(dotnet build *)",
+      "Bash(dotnet build)"
+    ]
+  },
   "hooks": {
     "Notification": [
       {
