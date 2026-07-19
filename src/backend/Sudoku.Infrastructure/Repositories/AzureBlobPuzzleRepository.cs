@@ -16,7 +16,7 @@ public class AzureBlobPuzzleRepository(
 
     public async Task<SudokuPuzzle> CreateAsync(GameDifficulty difficulty)
     {
-        var puzzle = await puzzleGenerator.GeneratePuzzleAsync(difficulty);
+        var puzzle = await puzzleGenerator.GeneratePuzzleAsync(difficulty, BoardSize.Nine);
         var document = MapToDocument(puzzle);
         var blobName = $"{difficulty.Name.ToLowerInvariant()}/{puzzle.PuzzleId}.json";
         await storageService.SaveAsync(Container, blobName, document);

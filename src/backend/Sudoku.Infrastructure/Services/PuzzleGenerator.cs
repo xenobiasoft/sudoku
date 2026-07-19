@@ -17,8 +17,14 @@ public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
     private const int EXPERT_EMPTY_MIN = 54;
     private const int EXPERT_EMPTY_MAX = 58;
 
-    public async Task<SudokuPuzzle> GeneratePuzzleAsync(GameDifficulty difficulty)
+    public async Task<SudokuPuzzle> GeneratePuzzleAsync(GameDifficulty difficulty, BoardSize size)
     {
+        if (size != BoardSize.Nine)
+        {
+            throw new NotSupportedException(
+                $"The legacy {nameof(PuzzleGenerator)} only supports {BoardSize.Nine}; {size} is not supported.");
+        }
+
         var puzzle = await GenerateEmptyPuzzleAsync().ConfigureAwait(false);
 
         try
@@ -27,7 +33,7 @@ public class PuzzleGenerator(IPuzzleSolver puzzleSolver) : IPuzzleGenerator
         }
         catch (InvalidPuzzleException)
         {
-            return await GeneratePuzzleAsync(difficulty);
+            return await GeneratePuzzleAsync(difficulty, size);
         }
 
         puzzle = CreateEmptyCells(puzzle, difficulty);

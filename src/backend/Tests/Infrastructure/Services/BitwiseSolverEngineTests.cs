@@ -48,6 +48,15 @@ public class BitwiseSolverEngineTests
     }
 
     [Fact]
+    public void Solve_GridContainsOutOfRangeValue_ReturnsFalse()
+    {
+        var grid = new int[81];
+        grid[0] = 10; // not a valid 9x9 value
+
+        BitwiseSolverEngine.Solve(grid).Should().BeFalse();
+    }
+
+    [Fact]
     public void CountSolutions_UniquePuzzle_ReturnsOne()
     {
         var grid = ToGrid(UniquePuzzle);

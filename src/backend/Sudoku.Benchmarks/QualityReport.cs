@@ -41,7 +41,7 @@ public static class QualityReport
 
         for (var i = 0; i < samples; i++)
         {
-            var puzzle = generator.GeneratePuzzleAsync(difficulty).GetAwaiter().GetResult();
+            var puzzle = generator.GeneratePuzzleAsync(difficulty, BoardSize.Nine).GetAwaiter().GetResult();
             var grid = BitwiseSolverGridMapper.ToGrid(puzzle);
 
             if (BitwiseSolverEngine.CountSolutions(grid, cap: 2) == 1)

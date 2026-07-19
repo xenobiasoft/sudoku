@@ -3,18 +3,17 @@ using System.Numerics;
 namespace Sudoku.Infrastructure.Services.Solvers;
 
 /// <summary>
-/// A fast, allocation-light Sudoku engine operating on a flat <c>int[81]</c> grid
-/// (0 = empty, 1-9 = value). Uses per row/column/box candidate bitmasks (bits 1-9)
-/// with minimum-remaining-values (MRV) cell selection and backtracking.
+/// A fast, allocation-light Sudoku engine operating on a flat <c>int[]</c> grid
+/// (0 = empty, 1-N = value), where the board size is inferred from the grid length:
+/// <c>81</c> (9x9, 3x3 boxes) or <c>256</c> (16x16, 4x4 boxes). Uses per row/column/box
+/// candidate bitmasks (bits 1-size) with minimum-remaining-values (MRV) cell selection
+/// and backtracking.
 ///
 /// This is intentionally free of domain types, DI, async, and randomness so it can be
 /// reused as both a solver and a uniqueness checker, and is trivially benchmarkable.
 /// </summary>
 public static class BitwiseSolverEngine
 {
-    // Bits 1..9 set (bit 0 is unused so a value maps directly to its bit index).
-    private const int FullMask = 0b11_1111_1110;
-
     /// <summary>
     /// Solves the grid in place, returning <c>true</c> if a solution was found.
     /// Returns the first solution discovered (MRV order). If the grid is already
@@ -22,11 +21,14 @@ public static class BitwiseSolverEngine
     /// </summary>
     public static bool Solve(int[] grid)
     {
-        var rows = new int[9];
-        var cols = new int[9];
-        var boxes = new int[9];
+        var (size, boxSize) = ResolveDimensions(grid);
+        var rows = new int[size];
+        var cols = new int[size];
+        var boxes = new int[size];
+        var fullMask = BuildFullMask(size);
 
-        return BuildMasks(grid, rows, cols, boxes) && SolveRecursive(grid, rows, cols, boxes);
+        return BuildMasks(grid, rows, cols, boxes, size, boxSize)
+            && SolveRecursive(grid, rows, cols, boxes, size, boxSize, fullMask);
     }
 
     /// <summary>
@@ -36,25 +38,42 @@ public static class BitwiseSolverEngine
     /// </summary>
     public static int CountSolutions(int[] grid, int cap = 2)
     {
+        var (size, boxSize) = ResolveDimensions(grid);
         var working = (int[])grid.Clone();
-        var rows = new int[9];
-        var cols = new int[9];
-        var boxes = new int[9];
+        var rows = new int[size];
+        var cols = new int[size];
+        var boxes = new int[size];
+        var fullMask = BuildFullMask(size);
 
-        if (!BuildMasks(working, rows, cols, boxes))
+        if (!BuildMasks(working, rows, cols, boxes, size, boxSize))
         {
             return 0;
         }
 
         var count = 0;
-        CountRecursive(working, rows, cols, boxes, cap, ref count);
+        CountRecursive(working, rows, cols, boxes, size, boxSize, fullMask, cap, ref count);
 
         return count;
     }
 
-    private static bool BuildMasks(int[] grid, int[] rows, int[] cols, int[] boxes)
+    /// <summary>
+    /// Infers the board size and box size from the grid length: 81 -> 9 (3x3 boxes),
+    /// 256 -> 16 (4x4 boxes). Any other length is not a supported board shape.
+    /// </summary>
+    private static (int Size, int BoxSize) ResolveDimensions(int[] grid) => grid.Length switch
     {
-        for (var i = 0; i < 81; i++)
+        81 => (9, 3),
+        256 => (16, 4),
+        _ => throw new ArgumentException(
+            $"Unsupported grid length: {grid.Length}. Expected 81 (9x9) or 256 (16x16).", nameof(grid))
+    };
+
+    /// <summary>Bits 1..size set (bit 0 is unused so a value maps directly to its bit index).</summary>
+    private static int BuildFullMask(int size) => (1 << (size + 1)) - 2;
+
+    private static bool BuildMasks(int[] grid, int[] rows, int[] cols, int[] boxes, int size, int boxSize)
+    {
+        for (var i = 0; i < grid.Length; i++)
         {
             var value = grid[i];
             if (value == 0)
@@ -62,8 +81,13 @@ public static class BitwiseSolverEngine
                 continue;
             }
 
+            if (value < 1 || value > size)
+            {
+                return false; // Out-of-range value -> inconsistent grid.
+            }
+
             var bit = 1 << value;
-            int r = i / 9, c = i % 9, b = (r / 3) * 3 + c / 3;
+            int r = i / size, c = i % size, b = (r / boxSize) * boxSize + c / boxSize;
 
             // A bit already set in any unit means a duplicate -> inconsistent grid.
             if (((rows[r] | cols[c] | boxes[b]) & bit) != 0)
@@ -79,9 +103,9 @@ public static class BitwiseSolverEngine
         return true;
     }
 
-    private static bool SolveRecursive(int[] grid, int[] rows, int[] cols, int[] boxes)
+    private static bool SolveRecursive(int[] grid, int[] rows, int[] cols, int[] boxes, int size, int boxSize, int fullMask)
     {
-        var (index, candidates) = SelectMostConstrainedCell(grid, rows, cols, boxes);
+        var (index, candidates) = SelectMostConstrainedCell(grid, rows, cols, boxes, size, boxSize, fullMask);
 
         if (index == -1)
         {
@@ -93,7 +117,7 @@ public static class BitwiseSolverEngine
             return false; // A cell has no candidates -> dead end.
         }
 
-        int r = index / 9, c = index % 9, b = (r / 3) * 3 + c / 3;
+        int r = index / size, c = index % size, b = (r / boxSize) * boxSize + c / boxSize;
 
         while (candidates != 0)
         {
@@ -106,7 +130,7 @@ public static class BitwiseSolverEngine
             cols[c] |= bit;
             boxes[b] |= bit;
 
-            if (SolveRecursive(grid, rows, cols, boxes))
+            if (SolveRecursive(grid, rows, cols, boxes, size, boxSize, fullMask))
             {
                 return true;
             }
@@ -120,14 +144,14 @@ public static class BitwiseSolverEngine
         return false;
     }
 
-    private static void CountRecursive(int[] grid, int[] rows, int[] cols, int[] boxes, int cap, ref int count)
+    private static void CountRecursive(int[] grid, int[] rows, int[] cols, int[] boxes, int size, int boxSize, int fullMask, int cap, ref int count)
     {
         if (count >= cap)
         {
             return;
         }
 
-        var (index, candidates) = SelectMostConstrainedCell(grid, rows, cols, boxes);
+        var (index, candidates) = SelectMostConstrainedCell(grid, rows, cols, boxes, size, boxSize, fullMask);
 
         if (index == -1)
         {
@@ -140,7 +164,7 @@ public static class BitwiseSolverEngine
             return; // dead end
         }
 
-        int r = index / 9, c = index % 9, b = (r / 3) * 3 + c / 3;
+        int r = index / size, c = index % size, b = (r / boxSize) * boxSize + c / boxSize;
 
         while (candidates != 0 && count < cap)
         {
@@ -153,7 +177,7 @@ public static class BitwiseSolverEngine
             cols[c] |= bit;
             boxes[b] |= bit;
 
-            CountRecursive(grid, rows, cols, boxes, cap, ref count);
+            CountRecursive(grid, rows, cols, boxes, size, boxSize, fullMask, cap, ref count);
 
             grid[index] = 0;
             rows[r] &= ~bit;
@@ -167,21 +191,21 @@ public static class BitwiseSolverEngine
     /// candidate bitmask, or (-1, 0) when the grid is full. A returned mask of 0 signals a
     /// dead end (an empty cell with no legal value).
     /// </summary>
-    private static (int Index, int Candidates) SelectMostConstrainedCell(int[] grid, int[] rows, int[] cols, int[] boxes)
+    private static (int Index, int Candidates) SelectMostConstrainedCell(int[] grid, int[] rows, int[] cols, int[] boxes, int size, int boxSize, int fullMask)
     {
         var bestIndex = -1;
         var bestCandidates = 0;
         var bestCount = int.MaxValue;
 
-        for (var i = 0; i < 81; i++)
+        for (var i = 0; i < grid.Length; i++)
         {
             if (grid[i] != 0)
             {
                 continue;
             }
 
-            int r = i / 9, c = i % 9, b = (r / 3) * 3 + c / 3;
-            var candidates = FullMask & ~(rows[r] | cols[c] | boxes[b]);
+            int r = i / size, c = i % size, b = (r / boxSize) * boxSize + c / boxSize;
+            var candidates = fullMask & ~(rows[r] | cols[c] | boxes[b]);
             var count = BitOperations.PopCount((uint)candidates);
 
             if (count < bestCount)

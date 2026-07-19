@@ -1,4 +1,4 @@
-﻿using Sudoku.Application.Interfaces;
+using Sudoku.Application.Interfaces;
 using Sudoku.Domain.Entities;
 using Sudoku.Domain.ValueObjects;
 
@@ -10,24 +10,24 @@ public static class MockPuzzleGeneratorExtensions
     {
         public void SetupGeneratePuzzleAsyncReturns(SudokuPuzzle puzzle)
         {
-            mock.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
+            mock.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>(), It.IsAny<BoardSize>()))
                 .ReturnsAsync(puzzle);
         }
 
         public void SetupGeneratePuzzleAsyncReturnsNull()
         {
-            mock.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()))
+            mock.Setup(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>(), It.IsAny<BoardSize>()))
                 .ReturnsAsync((SudokuPuzzle)null!);
         }
 
-        public void VerifyGeneratePuzzleAsyncCalledOnce(GameDifficulty difficulty)
+        public void VerifyGeneratePuzzleAsyncCalledOnce(GameDifficulty difficulty, BoardSize size)
         {
-            mock.Verify(x => x.GeneratePuzzleAsync(difficulty), Times.Once);
+            mock.Verify(x => x.GeneratePuzzleAsync(difficulty, size), Times.Once);
         }
 
         public void VerifyGeneratePuzzleAsyncNeverCalled()
         {
-            mock.Verify(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>()), Times.Never);
+            mock.Verify(x => x.GeneratePuzzleAsync(It.IsAny<GameDifficulty>(), It.IsAny<BoardSize>()), Times.Never);
         }
     }
 }

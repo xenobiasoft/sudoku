@@ -27,7 +27,7 @@ public class CreateGameCommandHandler(
             if (puzzle is null)
             {
                 logger.LogWarning("Puzzle pool empty for {Difficulty}, falling back to on-demand generation", difficulty.Name);
-                puzzle = await puzzleGenerator.GeneratePuzzleAsync(difficulty);
+                puzzle = await puzzleGenerator.GeneratePuzzleAsync(difficulty, BoardSize.Nine);
             }
 
             if (puzzle is null)
