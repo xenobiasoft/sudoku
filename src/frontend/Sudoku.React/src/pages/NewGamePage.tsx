@@ -91,9 +91,14 @@ export default function NewGamePage() {
       <Layout hideHeader>
         <div className={styles.loadingContainer}>
           <p className={styles.message}>Preparing puzzles — try again in a moment</p>
-          <button type="button" className={styles.retryButton} onClick={handleRetry}>
-            Retry
-          </button>
+          <div className={styles.actions}>
+            <button type="button" className={styles.retryButton} onClick={handleRetry}>
+              Retry
+            </button>
+            <button type="button" className={styles.homeButton} onClick={() => navigate('/')}>
+              Back to home
+            </button>
+          </div>
         </div>
       </Layout>
     );

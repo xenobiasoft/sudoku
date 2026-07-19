@@ -152,7 +152,23 @@ describe('NewGamePage', () => {
       expect(screen.getByText(/Preparing puzzles/i)).toBeInTheDocument();
     });
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /back to home/i })).toBeInTheDocument();
     expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it('navigates home when "Back to home" is clicked on a 503 pool-empty response', async () => {
+    const mockCreateGame = vi.fn().mockRejectedValue(new ApiError('HTTP 503', 503, 30));
+    mockUseGameService.mockReturnValue({
+      savedGames: [], isLoading: false, error: null, isLoaded: false,
+      loadGames: vi.fn(), deleteGame: vi.fn(), createGame: mockCreateGame, clearCache: vi.fn(), refreshGames: vi.fn(),
+    });
+    const user = userEvent.setup();
+    renderNewGamePage('Expert', 16);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /back to home/i })).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole('button', { name: /back to home/i }));
+    expect(mockNavigate).toHaveBeenCalledWith('/');
   });
 
   it('retries game creation when the retry button is clicked', async () => {
