@@ -76,6 +76,15 @@ public class BitwiseSolverEngineSixteenTests
     }
 
     [Fact]
+    public void Solve_SixteenGridContainsOutOfRangeValue_ReturnsFalse()
+    {
+        var grid = new int[256];
+        grid[0] = 17; // not a valid 16x16 value
+
+        BitwiseSolverEngine.Solve(grid).Should().BeFalse();
+    }
+
+    [Fact]
     public void CountSolutions_UnderConstrainedSixteenPuzzle_ReturnsMoreThanOne()
     {
         BitwiseSolverEngine.CountSolutions(UnderConstrainedGrid, cap: 2).Should().BeGreaterThan(1);

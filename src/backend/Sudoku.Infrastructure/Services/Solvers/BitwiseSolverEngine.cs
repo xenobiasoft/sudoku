@@ -81,6 +81,11 @@ public static class BitwiseSolverEngine
                 continue;
             }
 
+            if (value < 1 || value > size)
+            {
+                return false; // Out-of-range value -> inconsistent grid.
+            }
+
             var bit = 1 << value;
             int r = i / size, c = i % size, b = (r / boxSize) * boxSize + c / boxSize;
 
