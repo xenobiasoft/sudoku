@@ -22,6 +22,7 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
         dto.ProfileId.Should().Be(game.ProfileId.ToString());
         dto.DisplayName.Should().Be(game.DisplayName.Value);
         dto.Difficulty.Should().Be(game.Difficulty.Name);
+        dto.Size.Should().Be(game.Size.Size);
         dto.Status.Should().Be(game.Status.ToString());
         dto.CreatedAt.Should().Be(game.CreatedAt);
         dto.StartedAt.Should().Be(game.StartedAt);
@@ -151,6 +152,7 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
         var profileId = Guid.NewGuid().ToString();
         var displayName = "TestPlayer";
         var difficulty = "Medium";
+        var size = 9;
         var status = "InProgress";
         var statistics = new GameStatisticsDto(10, 8, 2, 1, 2, TimeSpan.FromMinutes(5), 80.0);
         var createdAt = DateTime.UtcNow.AddMinutes(-10);
@@ -161,13 +163,14 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
         var moveHistory = new List<MoveHistoryDto>();
 
         // Act
-        var dto = new GameDto(id, profileId, displayName, difficulty, status, statistics, createdAt, startedAt, completedAt, pausedAt, cells, moveHistory);
+        var dto = new GameDto(id, profileId, displayName, difficulty, size, status, statistics, createdAt, startedAt, completedAt, pausedAt, cells, moveHistory);
 
         // Assert
         dto.Id.Should().Be(id);
         dto.ProfileId.Should().Be(profileId);
         dto.DisplayName.Should().Be(displayName);
         dto.Difficulty.Should().Be(difficulty);
+        dto.Size.Should().Be(size);
         dto.Status.Should().Be(status);
         dto.Statistics.Should().Be(statistics);
         dto.CreatedAt.Should().Be(createdAt);
@@ -178,21 +181,35 @@ public class GameDtoTests : MoqBaseTestByType<GameDto>
         dto.MoveHistory.Should().BeEquivalentTo(moveHistory);
     }
 
-    private static SudokuGame CreateTestGame(ProfileId? profileId = null)
+    [Fact]
+    public void FromGame_With16x16Game_RoundTripsSizeCorrectly()
+    {
+        // Arrange
+        var game = CreateTestGame(size: BoardSize.Sixteen);
+
+        // Act
+        var dto = GameDto.FromGame(game);
+
+        // Assert
+        dto.Size.Should().Be(16);
+    }
+
+    private static SudokuGame CreateTestGame(ProfileId? profileId = null, BoardSize? size = null)
     {
         var withProfileId = profileId ?? ProfileId.New();
+        var withSize = size ?? BoardSize.Nine;
         var displayName = PlayerAlias.Create("TestPlayer");
         var difficulty = GameDifficulty.Medium;
         var cells = new List<Cell>();
 
-        for (int i = 0; i < 9; i++)
+        for (int i = 0; i < withSize.Size; i++)
         {
-            for (int j = 0; j < 9; j++)
+            for (int j = 0; j < withSize.Size; j++)
             {
-                cells.Add(Cell.CreateEmpty(i, j, BoardSize.Nine));
+                cells.Add(Cell.CreateEmpty(i, j, withSize));
             }
         }
 
-        return SudokuGame.Create(withProfileId, displayName, difficulty, BoardSize.Nine, cells);
+        return SudokuGame.Create(withProfileId, displayName, difficulty, withSize, cells);
     }
 }

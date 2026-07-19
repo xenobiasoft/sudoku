@@ -79,9 +79,9 @@ public class StatsControllerTests : BaseGameControllerTests<StatsController>
         WinRate: 2d / 3d,
         ByDifficulty:
         [
-            new DifficultyStatsDto("Easy", 2, 2, TimeSpan.FromMinutes(6), TimeSpan.FromMinutes(4)),
-            new DifficultyStatsDto("Medium", 1, 0, null, null),
-            new DifficultyStatsDto("Hard", 0, 0, null, null),
-            new DifficultyStatsDto("Expert", 0, 0, null, null)
+            new DifficultyStatsDto("Easy", 2, 2, TimeSpan.FromMinutes(6), TimeSpan.FromMinutes(4), 9),
+            new DifficultyStatsDto("Medium", 1, 0, null, null, 9),
+            new DifficultyStatsDto("Hard", 0, 0, null, null, 9),
+            new DifficultyStatsDto("Expert", 0, 0, null, null, 9)
         ]);
 }

@@ -25,6 +25,14 @@ public class GetPlayerStatsQueryHandler(
         GameDifficulty.Expert
     ];
 
+    // Fixed order so a (size, difficulty) combination the player has never touched still
+    // renders a row; 9x9 first for readability.
+    private static readonly BoardSize[] Sizes =
+    [
+        BoardSize.Nine,
+        BoardSize.Sixteen
+    ];
+
     public async Task<Result<PlayerStatsDto>> Handle(GetPlayerStatsQuery request, CancellationToken cancellationToken)
     {
         try
@@ -43,8 +51,8 @@ public class GetPlayerStatsQueryHandler(
             var gamesPlayed = gamesWon + activeGames.Count;
             var winRate = gamesPlayed == 0 ? 0 : (double)gamesWon / gamesPlayed;
 
-            var byDifficulty = Difficulties
-                .Select(difficulty => BuildDifficultyStats(difficulty, completions, activeGames))
+            var byDifficulty = Sizes
+                .SelectMany(size => Difficulties.Select(difficulty => BuildDifficultyStats(size, difficulty, completions, activeGames)))
                 .ToList();
 
             logger.LogDebug(
@@ -66,14 +74,16 @@ public class GetPlayerStatsQueryHandler(
     }
 
     private static DifficultyStatsDto BuildDifficultyStats(
+        BoardSize size,
         GameDifficulty difficulty,
         IEnumerable<GameCompletion> completions,
         IEnumerable<SudokuGame> activeGames)
     {
         var wins = completions
-            .Where(completion => string.Equals(completion.Difficulty, difficulty.Name, StringComparison.OrdinalIgnoreCase))
+            .Where(completion => string.Equals(completion.Difficulty, difficulty.Name, StringComparison.OrdinalIgnoreCase)
+                && completion.GridSize == size.Size)
             .ToList();
-        var active = activeGames.Count(game => game.Difficulty == difficulty);
+        var active = activeGames.Count(game => game.Difficulty == difficulty && game.Size == size);
 
         var won = wins.Count;
         var played = won + active;
@@ -88,7 +98,7 @@ public class GetPlayerStatsQueryHandler(
             ? null
             : TruncateToSeconds(wins.Min(win => win.PlayDuration));
 
-        return new DifficultyStatsDto(difficulty.Name, played, won, averageSolveTime, bestSolveTime);
+        return new DifficultyStatsDto(difficulty.Name, played, won, averageSolveTime, bestSolveTime, size.Size);
     }
 
     private static TimeSpan TruncateToSeconds(TimeSpan value) =>

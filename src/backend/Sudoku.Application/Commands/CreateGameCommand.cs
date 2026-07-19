@@ -5,4 +5,5 @@ namespace Sudoku.Application.Commands;
 public record CreateGameCommand(
     string ProfileId,
     string DisplayName,
-    string Difficulty) : ICommand<string>;
+    string Difficulty,
+    int Size = 9) : ICommand<string>;

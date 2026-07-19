@@ -21,13 +21,20 @@ public class CreateGameCommandHandler(
             var profileId = ProfileId.From(request.ProfileId);
             var displayName = PlayerAlias.Create(request.DisplayName);
             var difficulty = GameDifficulty.FromName(request.Difficulty);
+            var size = BoardSize.FromValue(request.Size);
 
-            var puzzle = await puzzlePoolService.DequeueAsync(BoardSize.Nine, difficulty);
+            var puzzle = await puzzlePoolService.DequeueAsync(size, difficulty);
 
             if (puzzle is null)
             {
+                if (size == BoardSize.Sixteen)
+                {
+                    logger.LogWarning("16x16 puzzle pool empty for {Difficulty}; no inline fallback available", difficulty.Name);
+                    return Result<string>.Failure("No 16x16 puzzles available, try again shortly.", GameErrorCodes.PuzzlePoolEmpty);
+                }
+
                 logger.LogWarning("Puzzle pool empty for {Difficulty}, falling back to on-demand generation", difficulty.Name);
-                puzzle = await puzzleGenerator.GeneratePuzzleAsync(difficulty, BoardSize.Nine);
+                puzzle = await puzzleGenerator.GeneratePuzzleAsync(difficulty, size);
             }
 
             if (puzzle is null)
@@ -35,7 +42,7 @@ public class CreateGameCommandHandler(
                 return Result<string>.Failure($"No puzzle available for difficulty: {difficulty.Name}");
             }
 
-            var game = SudokuGame.Create(profileId, displayName, difficulty, BoardSize.Nine, puzzle.Cells);
+            var game = SudokuGame.Create(profileId, displayName, difficulty, size, puzzle.Cells);
 
             await gameRepository.SaveAsync(game);
 

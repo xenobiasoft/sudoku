@@ -184,17 +184,97 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         result.Error.Should().Be(domainException.Message);
     }
 
-    private static SudokuPuzzle CreateTestPuzzle()
+    [Fact]
+    public async Task Handle_When16x16PoolHasPuzzle_UsesPuzzleFromPoolAndSkipsGenerator()
     {
+        // Arrange
+        var puzzle = CreateTestPuzzle(BoardSize.Sixteen);
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Medium", 16);
+
+        _mockPuzzlePoolService.SetupDequeueReturns(puzzle);
+        _mockGameRepository.Setup(x => x.SaveAsync(It.IsAny<SudokuGame>())).Returns(Task.CompletedTask);
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        _mockPuzzlePoolService.VerifyDequeueCalledOnce();
+        _mockPuzzleGenerator.VerifyGeneratePuzzleAsyncNeverCalled();
+    }
+
+    [Fact]
+    public async Task Handle_When16x16PoolEmpty_ReturnsFailureWithPoolEmptyErrorCodeAndDoesNotCallGenerator()
+    {
+        // Arrange
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Expert", 16);
+
+        _mockPuzzlePoolService.SetupDequeueReturnsEmpty();
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().Be(GameErrorCodes.PuzzlePoolEmpty);
+        _mockPuzzleGenerator.VerifyGeneratePuzzleAsyncNeverCalled();
+        _mockGameRepository.VerifySaveNeverCalled();
+    }
+
+    [Fact]
+    public async Task Handle_With9x9PoolEmpty_StillFallsBackToGenerator()
+    {
+        // Arrange — regression: 9x9 keeps its on-demand fallback even with the size-aware path
+        var difficulty = GameDifficulty.Medium;
+        var puzzle = CreateTestPuzzle(BoardSize.Nine);
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Medium", 9);
+
+        _mockPuzzlePoolService.SetupDequeueReturnsEmpty();
+        _mockPuzzleGenerator.SetupGeneratePuzzleAsyncReturns(puzzle);
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
+        _mockPuzzleGenerator.VerifyGeneratePuzzleAsyncCalledOnce(difficulty, BoardSize.Nine);
+    }
+
+    [Fact]
+    public async Task Handle_WithInvalidSize_ReturnsFailureWithNoErrorCode()
+    {
+        // Arrange
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Medium", 7);
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.ErrorCode.Should().BeNull();
+        _mockPuzzlePoolService.VerifyDequeueNotCalled();
+    }
+
+    private static SudokuPuzzle CreateTestPuzzle(BoardSize? size = null)
+    {
+        var boardSize = size ?? BoardSize.Nine;
         var cells = new List<Cell>();
-        for (var i = 0; i < 9; i++)
+        for (var i = 0; i < boardSize.Size; i++)
         {
-            for (var j = 0; j < 9; j++)
+            for (var j = 0; j < boardSize.Size; j++)
             {
-                cells.Add(Cell.CreateEmpty(i, j, BoardSize.Nine));
+                cells.Add(Cell.CreateEmpty(i, j, boardSize));
             }
         }
 
-        return SudokuPuzzle.Create("test-puzzle-id", GameDifficulty.Medium, BoardSize.Nine, cells);
+        return SudokuPuzzle.Create("test-puzzle-id", GameDifficulty.Medium, boardSize, cells);
     }
 }
