@@ -17,47 +17,76 @@ namespace Sudoku.Infrastructure.Services;
 /// hit their band — a symmetric-only dig stalls around 50 empty cells, which would leave
 /// Expert indistinguishable from Hard.
 ///
-/// Empty-cell targets per difficulty mirror the legacy <see cref="PuzzleGenerator"/> so the
-/// two are directly comparable.
+/// Empty-cell targets per difficulty mirror the legacy <see cref="PuzzleGenerator"/> for 9x9
+/// so the two are directly comparable. The 16x16 Easy/Medium bands are the proportional
+/// scale-ups from FR-5 in the 16x16 spec, verified fast (well under a second for Easy, low
+/// tens of seconds worst-case for Medium). The 16x16 Hard/Expert bands were tuned DOWN from
+/// the spec's proportional estimate (Hard 158-168, Expert 171-183) after Phase 2 measurement
+/// showed digging past ~160 empty cells costs minutes per removal and can stall before
+/// reaching the target at all within a single dig pass (uniqueness re-verification on a
+/// near-minimal 256-cell grid is combinatorially expensive, and the achievable ceiling for a
+/// single greedy pass is seed-dependent) — see the Phase 2 implementation notes for measured
+/// timings. The tuned bands below keep worst-case generation within the user-approved ~2
+/// minute budget (per the spec's §11 policy: tune the band down rather than optimize the
+/// generator further) while preserving a monotonically increasing difficulty progression.
 /// </summary>
 public class UniqueSolutionPuzzleGenerator : IPuzzleGenerator
 {
-    private const int EASY_EMPTY_MIN = 40;
-    private const int EASY_EMPTY_MAX = 45;
-    private const int MEDIUM_EMPTY_MIN = 46;
-    private const int MEDIUM_EMPTY_MAX = 49;
-    private const int HARD_EMPTY_MIN = 50;
-    private const int HARD_EMPTY_MAX = 53;
-    private const int EXPERT_EMPTY_MIN = 54;
-    private const int EXPERT_EMPTY_MAX = 58;
+    private const int NINE_EASY_EMPTY_MIN = 40;
+    private const int NINE_EASY_EMPTY_MAX = 45;
+    private const int NINE_MEDIUM_EMPTY_MIN = 46;
+    private const int NINE_MEDIUM_EMPTY_MAX = 49;
+    private const int NINE_HARD_EMPTY_MIN = 50;
+    private const int NINE_HARD_EMPTY_MAX = 53;
+    private const int NINE_EXPERT_EMPTY_MIN = 54;
+    private const int NINE_EXPERT_EMPTY_MAX = 58;
 
-    public Task<SudokuPuzzle> GeneratePuzzleAsync(GameDifficulty difficulty)
+    private const int SIXTEEN_EASY_EMPTY_MIN = 126;
+    private const int SIXTEEN_EASY_EMPTY_MAX = 142;
+    private const int SIXTEEN_MEDIUM_EMPTY_MIN = 145;
+    private const int SIXTEEN_MEDIUM_EMPTY_MAX = 155;
+
+    // Tuned down from the spec's proportional estimate of 158-168 (see the Phase 2
+    // measurement notes above): 158 measured ~45s, but the band's upper end was seed-
+    // dependent and could take minutes or fail to be reached in a single dig pass.
+    private const int SIXTEEN_HARD_EMPTY_MIN = 156;
+    private const int SIXTEEN_HARD_EMPTY_MAX = 162;
+
+    // Tuned down from the spec's proportional estimate of 171-183 (see the Phase 2
+    // measurement notes above): that range was not reliably reachable within the ~2 minute
+    // budget with the current single-pass dig algorithm. This band sits just past Hard's,
+    // deliberately conservative given the steep, seed-dependent cost curve observed near
+    // the practical dig ceiling for 16x16.
+    private const int SIXTEEN_EXPERT_EMPTY_MIN = 163;
+    private const int SIXTEEN_EXPERT_EMPTY_MAX = 170;
+
+    public Task<SudokuPuzzle> GeneratePuzzleAsync(GameDifficulty difficulty, BoardSize size)
     {
-        var grid = GenerateFullSolution();
-        var targetEmpty = GetTargetEmptyCount(difficulty);
+        var grid = GenerateFullSolution(size);
+        var targetEmpty = GetTargetEmptyCount(difficulty, size);
 
-        DigHoles(grid, targetEmpty);
+        DigHoles(grid, targetEmpty, size);
 
-        return Task.FromResult(BuildPuzzle(grid, difficulty));
+        return Task.FromResult(BuildPuzzle(grid, difficulty, size));
     }
 
-    private static int[] GenerateFullSolution()
+    private static int[] GenerateFullSolution(BoardSize size)
     {
-        var grid = new int[81];
+        var grid = new int[size.CellCount];
 
-        // Seeding the three diagonal boxes is always conflict-free (they share no row,
-        // column, or box), and the random fill is what gives each generated puzzle a
-        // different solution once the solver completes the rest.
-        for (var box = 0; box < 3; box++)
+        // Seeding the diagonal boxes is always conflict-free (they share no row, column, or
+        // box), and the random fill is what gives each generated puzzle a different solution
+        // once the solver completes the rest.
+        for (var box = 0; box < size.BoxSize; box++)
         {
-            var values = ShuffledOneToNine();
+            var values = ShuffledOneToSize(size);
             var k = 0;
 
-            for (var r = box * 3; r < box * 3 + 3; r++)
+            for (var r = box * size.BoxSize; r < box * size.BoxSize + size.BoxSize; r++)
             {
-                for (var c = box * 3; c < box * 3 + 3; c++)
+                for (var c = box * size.BoxSize; c < box * size.BoxSize + size.BoxSize; c++)
                 {
-                    grid[r * 9 + c] = values[k++];
+                    grid[r * size.Size + c] = values[k++];
                 }
             }
         }
@@ -67,25 +96,25 @@ public class UniqueSolutionPuzzleGenerator : IPuzzleGenerator
         return grid;
     }
 
-    private static void DigHoles(int[] grid, int targetEmpty)
+    private static void DigHoles(int[] grid, int targetEmpty, BoardSize size)
     {
-        var removed = DigPass(grid, targetEmpty, removed: 0, symmetric: true);
+        var removed = DigPass(grid, targetEmpty, removed: 0, symmetric: true, size);
 
-        // A symmetric pass alone plateaus around 50 empty cells: near the uniqueness limit,
-        // clearing a mirrored pair costs uniqueness roughly twice as often as clearing one
-        // cell, so every surviving pair gets rejected while single cells would still come
-        // out. That leaves the deeper targets permanently short. Symmetry is only an
-        // aesthetic; the clue count is what makes a puzzle hard — so finish one cell at a
+        // A symmetric pass alone plateaus well short of the deeper targets: near the
+        // uniqueness limit, clearing a mirrored pair costs uniqueness roughly twice as often
+        // as clearing one cell, so every surviving pair gets rejected while single cells would
+        // still come out. That leaves the deeper targets permanently short. Symmetry is only
+        // an aesthetic; the clue count is what makes a puzzle hard — so finish one cell at a
         // time. Shallower difficulties reach their target in the pass above and skip this.
         if (removed < targetEmpty)
         {
-            DigPass(grid, targetEmpty, removed, symmetric: false);
+            DigPass(grid, targetEmpty, removed, symmetric: false, size);
         }
     }
 
-    private static int DigPass(int[] grid, int targetEmpty, int removed, bool symmetric)
+    private static int DigPass(int[] grid, int targetEmpty, int removed, bool symmetric, BoardSize size)
     {
-        foreach (var index in ShuffledPositions())
+        foreach (var index in ShuffledPositions(size))
         {
             var remaining = targetEmpty - removed;
             if (remaining <= 0)
@@ -98,7 +127,7 @@ public class UniqueSolutionPuzzleGenerator : IPuzzleGenerator
                 continue; // already cleared (e.g. as a mirror)
             }
 
-            var mirror = 80 - index;
+            var mirror = size.CellCount - 1 - index;
 
             // Remove a symmetric pair when there's room for two; otherwise a single cell.
             // Bounding the group by 'remaining' guarantees we never exceed the target.
@@ -129,40 +158,55 @@ public class UniqueSolutionPuzzleGenerator : IPuzzleGenerator
         return removed;
     }
 
-    private static SudokuPuzzle BuildPuzzle(int[] grid, GameDifficulty difficulty)
+    private static SudokuPuzzle BuildPuzzle(int[] grid, GameDifficulty difficulty, BoardSize size)
     {
-        var cells = Enumerable.Range(0, 81)
+        var cells = Enumerable.Range(0, size.CellCount)
             .Select(i =>
             {
-                int row = i / 9, column = i % 9;
+                int row = i / size.Size, column = i % size.Size;
                 return grid[i] == 0
-                    ? Cell.CreateEmpty(row, column, BoardSize.Nine)
-                    : Cell.CreateFixed(row, column, grid[i], BoardSize.Nine);
+                    ? Cell.CreateEmpty(row, column, size)
+                    : Cell.CreateFixed(row, column, grid[i], size);
             })
             .ToList();
 
-        return SudokuPuzzle.Create(GameId.New(), difficulty, BoardSize.Nine, cells);
+        return SudokuPuzzle.Create(GameId.New(), difficulty, size, cells);
     }
 
-    private static int GetTargetEmptyCount(GameDifficulty difficulty) => difficulty.Name switch
+    private static int GetTargetEmptyCount(GameDifficulty difficulty, BoardSize size)
     {
-        "Easy" => RandomGenerator.RandomNumber(EASY_EMPTY_MIN, EASY_EMPTY_MAX),
-        "Medium" => RandomGenerator.RandomNumber(MEDIUM_EMPTY_MIN, MEDIUM_EMPTY_MAX),
-        "Hard" => RandomGenerator.RandomNumber(HARD_EMPTY_MIN, HARD_EMPTY_MAX),
-        "Expert" => RandomGenerator.RandomNumber(EXPERT_EMPTY_MIN, EXPERT_EMPTY_MAX),
-        _ => 0
-    };
+        if (size == BoardSize.Sixteen)
+        {
+            return difficulty.Name switch
+            {
+                "Easy" => RandomGenerator.RandomNumber(SIXTEEN_EASY_EMPTY_MIN, SIXTEEN_EASY_EMPTY_MAX),
+                "Medium" => RandomGenerator.RandomNumber(SIXTEEN_MEDIUM_EMPTY_MIN, SIXTEEN_MEDIUM_EMPTY_MAX),
+                "Hard" => RandomGenerator.RandomNumber(SIXTEEN_HARD_EMPTY_MIN, SIXTEEN_HARD_EMPTY_MAX),
+                "Expert" => RandomGenerator.RandomNumber(SIXTEEN_EXPERT_EMPTY_MIN, SIXTEEN_EXPERT_EMPTY_MAX),
+                _ => 0
+            };
+        }
 
-    private static int[] ShuffledOneToNine()
+        return difficulty.Name switch
+        {
+            "Easy" => RandomGenerator.RandomNumber(NINE_EASY_EMPTY_MIN, NINE_EASY_EMPTY_MAX),
+            "Medium" => RandomGenerator.RandomNumber(NINE_MEDIUM_EMPTY_MIN, NINE_MEDIUM_EMPTY_MAX),
+            "Hard" => RandomGenerator.RandomNumber(NINE_HARD_EMPTY_MIN, NINE_HARD_EMPTY_MAX),
+            "Expert" => RandomGenerator.RandomNumber(NINE_EXPERT_EMPTY_MIN, NINE_EXPERT_EMPTY_MAX),
+            _ => 0
+        };
+    }
+
+    private static int[] ShuffledOneToSize(BoardSize size)
     {
-        var values = Enumerable.Range(1, 9).ToArray();
+        var values = Enumerable.Range(1, size.Size).ToArray();
         Shuffle(values);
         return values;
     }
 
-    private static int[] ShuffledPositions()
+    private static int[] ShuffledPositions(BoardSize size)
     {
-        var positions = Enumerable.Range(0, 81).ToArray();
+        var positions = Enumerable.Range(0, size.CellCount).ToArray();
         Shuffle(positions);
         return positions;
     }

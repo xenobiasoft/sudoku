@@ -35,7 +35,7 @@ public class AzureBlobPuzzleRepositoryTests : MoqBaseTestByAbstraction<AzureBlob
         var expectedBlobName = $"{difficulty.Name.ToLowerInvariant()}/{puzzle.PuzzleId}.json";
 
         _mockPuzzleGenerator
-            .Setup(x => x.GeneratePuzzleAsync(difficulty))
+            .Setup(x => x.GeneratePuzzleAsync(difficulty, BoardSize.Nine))
             .ReturnsAsync(puzzle);
 
         // Act
@@ -44,7 +44,7 @@ public class AzureBlobPuzzleRepositoryTests : MoqBaseTestByAbstraction<AzureBlob
         // Assert
         result.Should().NotBeNull();
         result.PuzzleId.Should().Be(puzzle.PuzzleId);
-        _mockPuzzleGenerator.VerifyGeneratePuzzleAsyncCalledOnce(difficulty);
+        _mockPuzzleGenerator.VerifyGeneratePuzzleAsyncCalledOnce(difficulty, BoardSize.Nine);
         _mockStorageService.VerifySavesBlob<SudokuPuzzleDocument>(PuzzleContainer, expectedBlobName);
     }
 

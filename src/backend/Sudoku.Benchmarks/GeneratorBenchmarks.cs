@@ -28,8 +28,8 @@ public class GeneratorBenchmarks
     }
 
     [Benchmark(Baseline = true)]
-    public Task<SudokuPuzzle> OldGenerator() => _oldGenerator.GeneratePuzzleAsync(SelectedDifficulty);
+    public Task<SudokuPuzzle> OldGenerator() => _oldGenerator.GeneratePuzzleAsync(SelectedDifficulty, BoardSize.Nine);
 
     [Benchmark]
-    public Task<SudokuPuzzle> NewGenerator() => _newGenerator.GeneratePuzzleAsync(SelectedDifficulty);
+    public Task<SudokuPuzzle> NewGenerator() => _newGenerator.GeneratePuzzleAsync(SelectedDifficulty, BoardSize.Nine);
 }

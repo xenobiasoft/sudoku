@@ -161,7 +161,7 @@ jobs:
         run: dotnet restore
 
       - name: Run tests with coverage
-        run: dotnet test --configuration Release --no-restore --verbosity normal --logger trx --results-directory TestResults --collect:"XPlat Code Coverage" --settings coverlet.runsettings
+        run: dotnet test --configuration Release --no-restore --verbosity normal --filter "Category!=SlowGeneration" --logger trx --results-directory TestResults --collect:"XPlat Code Coverage" --settings coverlet.runsettings
 
       - name: Generate coverage report
         uses: danielpalme/ReportGenerator-GitHub-Action@5

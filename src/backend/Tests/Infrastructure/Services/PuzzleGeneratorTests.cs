@@ -33,7 +33,7 @@ public class PuzzleGeneratorTests : MoqBaseTestByAbstraction<PuzzleGenerator, IP
         var sut = ResolveSut();
 
         // Act
-        var puzzle = await sut.GeneratePuzzleAsync(gameDifficulty);
+        var puzzle = await sut.GeneratePuzzleAsync(gameDifficulty, BoardSize.Nine);
 
         // Assert
         puzzle.AssertHasExpectedNumberEmptyCells(minEmptyCells, maxEmptyCells);
@@ -47,7 +47,7 @@ public class PuzzleGeneratorTests : MoqBaseTestByAbstraction<PuzzleGenerator, IP
         var sut = ResolveSut();
 
         // Act
-        await sut.GeneratePuzzleAsync(GameDifficulty.Easy);
+        await sut.GeneratePuzzleAsync(GameDifficulty.Easy, BoardSize.Nine);
 
         // Assert
         puzzleSolver.VerifyCallsSolvePuzzle(Times.Once);
@@ -60,7 +60,7 @@ public class PuzzleGeneratorTests : MoqBaseTestByAbstraction<PuzzleGenerator, IP
         var sut = ResolveSut();
 
         // Act
-        var puzzle = await sut.GeneratePuzzleAsync(GameDifficulty.Easy);
+        var puzzle = await sut.GeneratePuzzleAsync(GameDifficulty.Easy, BoardSize.Nine);
 
         // Assert
         puzzle.AssertPopulatedCellsLocked();
@@ -75,9 +75,22 @@ public class PuzzleGeneratorTests : MoqBaseTestByAbstraction<PuzzleGenerator, IP
         var sut = ResolveSut();
 
         // Act
-        await sut.GeneratePuzzleAsync(GameDifficulty.Easy);
+        await sut.GeneratePuzzleAsync(GameDifficulty.Easy, BoardSize.Nine);
 
         // Assert
         mockSolver.VerifyRetriesPuzzleGeneration();
+    }
+
+    [Fact]
+    public async Task GeneratePuzzleAsync_WithSixteenSize_ThrowsNotSupportedException()
+    {
+        // Arrange
+        var sut = ResolveSut();
+
+        // Act
+        var act = () => sut.GeneratePuzzleAsync(GameDifficulty.Easy, BoardSize.Sixteen);
+
+        // Assert
+        await act.Should().ThrowAsync<NotSupportedException>();
     }
 }

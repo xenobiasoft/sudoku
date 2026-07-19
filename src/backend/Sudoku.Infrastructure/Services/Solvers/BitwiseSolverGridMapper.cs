@@ -4,18 +4,19 @@ using Sudoku.Domain.ValueObjects;
 namespace Sudoku.Infrastructure.Services.Solvers;
 
 /// <summary>
-/// Converts between the domain <see cref="SudokuPuzzle"/> and the flat <c>int[81]</c> grid
-/// used by <see cref="BitwiseSolverEngine"/> (row-major, 0 = empty, 1-9 = value).
+/// Converts between the domain <see cref="SudokuPuzzle"/> and the flat <c>int[]</c> grid
+/// used by <see cref="BitwiseSolverEngine"/> (row-major, 0 = empty, 1-N = value), sized from
+/// <see cref="BoardSize.CellCount"/>.
 /// </summary>
 public static class BitwiseSolverGridMapper
 {
     public static int[] ToGrid(SudokuPuzzle puzzle)
     {
-        var grid = new int[81];
+        var grid = new int[puzzle.Size.CellCount];
 
         foreach (var cell in puzzle.Cells)
         {
-            grid[cell.Row * 9 + cell.Column] = cell.Value ?? 0;
+            grid[cell.Row * puzzle.Size.Size + cell.Column] = cell.Value ?? 0;
         }
 
         return grid;
@@ -29,7 +30,7 @@ public static class BitwiseSolverGridMapper
     {
         var cells = puzzle.Cells.Select(cell =>
         {
-            var value = grid[cell.Row * 9 + cell.Column];
+            var value = grid[cell.Row * puzzle.Size.Size + cell.Column];
             return Cell.Create(cell.Row, cell.Column, puzzle.Size, value == 0 ? null : value, cell.IsFixed);
         }).ToList();
 

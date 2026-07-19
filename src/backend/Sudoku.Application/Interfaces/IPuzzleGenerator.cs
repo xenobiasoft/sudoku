@@ -5,5 +5,5 @@ namespace Sudoku.Application.Interfaces;
 
 public interface IPuzzleGenerator
 {
-    Task<SudokuPuzzle> GeneratePuzzleAsync(GameDifficulty difficulty);
+    Task<SudokuPuzzle> GeneratePuzzleAsync(GameDifficulty difficulty, BoardSize size);
 }
