@@ -59,9 +59,9 @@ public static class GameFactory
         return CreateGame(cells);
     }
 
-    public static SudokuGame CreateGameWithDifficulty(GameDifficulty difficulty)
+    public static SudokuGame CreateGameWithDifficulty(GameDifficulty difficulty, BoardSize? size = null)
     {
-        var game = CreateGame(CellsFactory.CreateIncompleteCells(), difficulty: difficulty);
+        var game = CreateGame(CellsFactory.CreateIncompleteCells(), difficulty: difficulty, size: size);
 
         game.StartGame();
 

@@ -11,4 +11,5 @@ public record DifficultyStatsDto(
     int GamesPlayed,
     int GamesWon,
     TimeSpan? AverageSolveTime,
-    TimeSpan? BestSolveTime);
+    TimeSpan? BestSolveTime,
+    int Size);

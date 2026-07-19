@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Models;
 using Sudoku.Application.Commands;
+using Sudoku.Application.Common;
 using Sudoku.Application.DTOs;
 using Sudoku.Application.Queries;
 
@@ -16,12 +17,14 @@ public class GamesController(IMediator mediator) : BaseGameController(mediator)
     /// </summary>
     /// <param name="profileId">The profile ID of the player</param>
     /// <param name="difficulty">The difficulty level of the game</param>
+    /// <param name="size">The board size (9 or 16); optional, defaults to 9</param>
     /// <returns>Location of the created game</returns>
     [HttpPost("{difficulty}")]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult> CreateGameAsync(string profileId, string difficulty)
+    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+    public async Task<ActionResult> CreateGameAsync(string profileId, string difficulty, [FromQuery] int size = 9)
     {
         if (string.IsNullOrWhiteSpace(profileId) || string.IsNullOrWhiteSpace(difficulty))
         {
@@ -34,10 +37,16 @@ public class GamesController(IMediator mediator) : BaseGameController(mediator)
             return NotFound($"Profile '{profileId}' not found.");
         }
 
-        var result = await Mediator.Send(new CreateGameCommand(profileId, profileResult.Value.Alias, difficulty));
+        var result = await Mediator.Send(new CreateGameCommand(profileId, profileResult.Value.Alias, difficulty, size));
 
         if (!result.IsSuccess)
         {
+            if (result.ErrorCode == GameErrorCodes.PuzzlePoolEmpty)
+            {
+                Response.Headers.Append("Retry-After", "30");
+                return StatusCode(StatusCodes.Status503ServiceUnavailable, result.Error);
+            }
+
             return BadRequest(result.Error);
         }
 

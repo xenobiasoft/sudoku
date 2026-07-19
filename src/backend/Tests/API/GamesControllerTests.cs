@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Sudoku.Api.Controllers;
 using Sudoku.Application.Commands;
@@ -257,6 +258,62 @@ public class GamesControllerTests : BaseGameControllerTests<GamesController>
         // Assert
         var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
         badRequestResult.Value.Should().Be(errorMessage);
+    }
+
+    [Fact]
+    public async Task CreateGameAsync_WithSizeParameter_PassesSizeToCommand()
+    {
+        // Arrange
+        var profileId = Guid.NewGuid().ToString();
+        var gameId = Guid.NewGuid().ToString();
+        var profileDto = new ProfileDto(profileId, "TestPlayer", DateTime.UtcNow, DateTime.UtcNow);
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetProfileByIdQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<ProfileDto?>.Success(profileDto));
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<CreateGameCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<string>.Success(gameId));
+
+        // Act
+        await Sut.CreateGameAsync(profileId, "Hard", 16);
+
+        // Assert
+        MockMediator.Verify(x => x.Send(
+            It.Is<CreateGameCommand>(c => c.Size == 16),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateGameAsync_When16x16PoolEmpty_Returns503WithRetryAfterHeader()
+    {
+        // Arrange
+        var profileId = Guid.NewGuid().ToString();
+        var errorMessage = "No 16x16 puzzles available, try again shortly.";
+        var profileDto = new ProfileDto(profileId, "TestPlayer", DateTime.UtcNow, DateTime.UtcNow);
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<GetProfileByIdQuery>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<ProfileDto?>.Success(profileDto));
+
+        MockMediator
+            .Setup(x => x.Send(It.IsAny<CreateGameCommand>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<string>.Failure(errorMessage, GameErrorCodes.PuzzlePoolEmpty));
+
+        Sut.ControllerContext = new ControllerContext
+        {
+            HttpContext = new DefaultHttpContext()
+        };
+
+        // Act
+        var result = await Sut.CreateGameAsync(profileId, "Expert", 16);
+
+        // Assert
+        var objectResult = result.Should().BeOfType<ObjectResult>().Subject;
+        objectResult.StatusCode.Should().Be(StatusCodes.Status503ServiceUnavailable);
+        objectResult.Value.Should().Be(errorMessage);
+        Sut.ControllerContext.HttpContext.Response.Headers["Retry-After"].ToString().Should().Be("30");
     }
 
     #endregion

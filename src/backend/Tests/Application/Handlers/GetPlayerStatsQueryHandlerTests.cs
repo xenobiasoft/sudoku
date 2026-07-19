@@ -98,7 +98,7 @@ public class GetPlayerStatsQueryHandlerTests
         var result = await sut.Handle(new GetPlayerStatsQuery(_profileId), CancellationToken.None);
 
         // Assert
-        result.Value.ByDifficulty.Single(d => d.Difficulty == "Medium")
+        result.Value.ByDifficulty.Single(d => d.Difficulty == "Medium" && d.Size == 9)
             .Should().BeEquivalentTo(new
             {
                 GamesPlayed = 2,
@@ -124,7 +124,7 @@ public class GetPlayerStatsQueryHandlerTests
         var result = await sut.Handle(new GetPlayerStatsQuery(_profileId), CancellationToken.None);
 
         // Assert
-        result.Value.ByDifficulty.Single(d => d.Difficulty == "Hard")
+        result.Value.ByDifficulty.Single(d => d.Difficulty == "Hard" && d.Size == 9)
             .AverageSolveTime.Should().Be(TimeSpan.FromSeconds(1));
     }
 
@@ -140,7 +140,7 @@ public class GetPlayerStatsQueryHandlerTests
         var result = await sut.Handle(new GetPlayerStatsQuery(_profileId), CancellationToken.None);
 
         // Assert
-        result.Value.ByDifficulty.Single(d => d.Difficulty == "Expert")
+        result.Value.ByDifficulty.Single(d => d.Difficulty == "Expert" && d.Size == 9)
             .Should().BeEquivalentTo(new
             {
                 GamesPlayed = 1,
@@ -151,9 +151,9 @@ public class GetPlayerStatsQueryHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WithAnyPlayer_ReturnsAllFourDifficultiesInFixedOrder()
+    public async Task Handle_WithAnyPlayer_ReturnsAllEightSizeDifficultyRowsInFixedOrder()
     {
-        // Arrange
+        // Arrange — 9x9 x 4 difficulties, then 16x16 x 4 difficulties
         _mockCompletionRepository.SetupGetByProfileId([]);
         _mockGameRepository.SetupGetByProfileId([]);
         var sut = ResolveSut();
@@ -162,8 +162,66 @@ public class GetPlayerStatsQueryHandlerTests
         var result = await sut.Handle(new GetPlayerStatsQuery(_profileId), CancellationToken.None);
 
         // Assert
-        result.Value.ByDifficulty.Select(d => d.Difficulty)
-            .Should().Equal("Easy", "Medium", "Hard", "Expert");
+        result.Value.ByDifficulty.Select(d => (d.Size, d.Difficulty))
+            .Should().Equal(
+                (9, "Easy"), (9, "Medium"), (9, "Hard"), (9, "Expert"),
+                (16, "Easy"), (16, "Medium"), (16, "Hard"), (16, "Expert"));
+    }
+
+    [Fact]
+    public async Task Handle_With16x16Completion_CountsItUnder16x16RowOnly()
+    {
+        // Arrange
+        _mockCompletionRepository.SetupGetByProfileId([Completion("Medium", TimeSpan.FromMinutes(5), gridSize: 16)]);
+        _mockGameRepository.SetupGetByProfileId([]);
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.Handle(new GetPlayerStatsQuery(_profileId), CancellationToken.None);
+
+        // Assert
+        result.Value.ByDifficulty.Single(d => d.Difficulty == "Medium" && d.Size == 16)
+            .Should().BeEquivalentTo(new { GamesPlayed = 1, GamesWon = 1 });
+        result.Value.ByDifficulty.Single(d => d.Difficulty == "Medium" && d.Size == 9)
+            .Should().BeEquivalentTo(new { GamesPlayed = 0, GamesWon = 0 });
+    }
+
+    [Fact]
+    public async Task Handle_With16x16ActiveGame_CountsItUnder16x16RowOnly()
+    {
+        // Arrange
+        _mockCompletionRepository.SetupGetByProfileId([]);
+        _mockGameRepository.SetupGetByProfileId([
+            GameFactory.CreateGameWithDifficulty(GameDifficulty.Hard, BoardSize.Sixteen)
+        ]);
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.Handle(new GetPlayerStatsQuery(_profileId), CancellationToken.None);
+
+        // Assert
+        result.Value.ByDifficulty.Single(d => d.Difficulty == "Hard" && d.Size == 16)
+            .Should().BeEquivalentTo(new { GamesPlayed = 1, GamesWon = 0 });
+        result.Value.ByDifficulty.Single(d => d.Difficulty == "Hard" && d.Size == 9)
+            .Should().BeEquivalentTo(new { GamesPlayed = 0, GamesWon = 0 });
+    }
+
+    [Fact]
+    public async Task Handle_WithLegacyCompletionMissingGridSize_CountsItAs9x9()
+    {
+        // Arrange — a legacy GameCompletionDocument with no gridSize deserializes as GridSize == 9
+        _mockCompletionRepository.SetupGetByProfileId([Completion("Easy", TimeSpan.FromMinutes(5), gridSize: 9)]);
+        _mockGameRepository.SetupGetByProfileId([]);
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.Handle(new GetPlayerStatsQuery(_profileId), CancellationToken.None);
+
+        // Assert
+        result.Value.ByDifficulty.Single(d => d.Difficulty == "Easy" && d.Size == 9)
+            .Should().BeEquivalentTo(new { GamesPlayed = 1, GamesWon = 1 });
+        result.Value.ByDifficulty.Single(d => d.Difficulty == "Easy" && d.Size == 16)
+            .Should().BeEquivalentTo(new { GamesPlayed = 0, GamesWon = 0 });
     }
 
     [Fact]
@@ -240,6 +298,6 @@ public class GetPlayerStatsQueryHandlerTests
         result.Error.Should().Be($"An unexpected error occurred: {exceptionMessage}");
     }
 
-    private GameCompletion Completion(string difficulty, TimeSpan playDuration) =>
-        new(Guid.NewGuid().ToString(), _profileId, difficulty, playDuration, DateTime.UtcNow, 9);
+    private GameCompletion Completion(string difficulty, TimeSpan playDuration, int gridSize = 9) =>
+        new(Guid.NewGuid().ToString(), _profileId, difficulty, playDuration, DateTime.UtcNow, gridSize);
 }
