@@ -18,7 +18,13 @@ public class PuzzleReplenishFunction(IPuzzlePoolService puzzlePoolService, ILogg
         var sizeSegment = segments?.Length > 0 ? segments[0] : null;
         var difficultyName = segments?.Length > 1 ? segments[1].ToLowerInvariant() : null;
 
-        if (string.IsNullOrEmpty(sizeSegment) || string.IsNullOrEmpty(difficultyName))
+        if (string.IsNullOrEmpty(sizeSegment))
+        {
+            logger.LogWarning("Could not parse board size from event subject: {Subject}", eventGridEvent.Subject);
+            return;
+        }
+
+        if (string.IsNullOrEmpty(difficultyName))
         {
             logger.LogWarning("Could not parse difficulty from event subject: {Subject}", eventGridEvent.Subject);
             return;
@@ -52,12 +58,16 @@ public class PuzzleReplenishFunction(IPuzzlePoolService puzzlePoolService, ILogg
 
     private static BoardSize ParseSize(string sizeSegment)
     {
-        var value = sizeSegment.Split('x', 'X').FirstOrDefault();
-        if (!int.TryParse(value, out var size))
+        var parts = sizeSegment.Split('x', 'X');
+
+        if (parts.Length != 2
+            || !int.TryParse(parts[0], out var width)
+            || !int.TryParse(parts[1], out var height)
+            || width != height)
         {
             throw new InvalidBoardSizeException($"Invalid board size segment: {sizeSegment}");
         }
 
-        return BoardSize.FromValue(size);
+        return BoardSize.FromValue(width);
     }
 }

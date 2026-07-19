@@ -122,8 +122,57 @@ public class PuzzleReplenishFunctionTests : MoqBaseTestByType<PuzzleReplenishFun
         // Act
         await _sut.Run(eventGridEvent);
 
+        // Assert: the leading "/" makes the first path segment empty, so the board-size
+        // segment is what's actually missing here, not the difficulty. Prior to this fix the
+        // warning always blamed "difficulty" regardless of which segment was actually absent.
+        Logger.WarningLogs().AssertContains("Could not parse board size from event subject: /no-blobs-segment/here");
+    }
+
+    [Fact]
+    public async Task Run_WithMissingDifficultySegment_LogsDifficultySpecificWarning()
+    {
+        // Arrange
+        var eventGridEvent = CreateEventGridEvent("/blobServices/default/containers/sudoku-puzzles/blobs/9x9");
+
+        // Act
+        await _sut.Run(eventGridEvent);
+
         // Assert
-        Logger.WarningLogs().AssertContains("Could not parse difficulty from event subject: /no-blobs-segment/here");
+        Logger.WarningLogs().AssertContains("Could not parse difficulty from event subject");
+    }
+
+    [Theory]
+    [InlineData("16")]
+    [InlineData("16x9")]
+    [InlineData("16x16x16")]
+    public async Task Run_WithMalformedSizeSegment_DoesNotSeed(string sizeSegment)
+    {
+        // Arrange
+        var subject = $"/blobServices/default/containers/sudoku-puzzles/blobs/{sizeSegment}/easy/puzzle.json";
+        var eventGridEvent = CreateEventGridEvent(subject);
+
+        // Act
+        await _sut.Run(eventGridEvent);
+
+        // Assert
+        _mockPuzzlePoolService.VerifySeedNeverCalled();
+    }
+
+    [Theory]
+    [InlineData("16")]
+    [InlineData("16x9")]
+    [InlineData("16x16x16")]
+    public async Task Run_WithMalformedSizeSegment_LogsWarning(string sizeSegment)
+    {
+        // Arrange
+        var subject = $"/blobServices/default/containers/sudoku-puzzles/blobs/{sizeSegment}/easy/puzzle.json";
+        var eventGridEvent = CreateEventGridEvent(subject);
+
+        // Act
+        await _sut.Run(eventGridEvent);
+
+        // Assert
+        Logger.WarningLogs().AssertContains("Unknown board size");
     }
 
     private static EventGridEvent CreateEventGridEvent(string subject) =>

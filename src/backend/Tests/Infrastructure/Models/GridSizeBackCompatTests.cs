@@ -1,5 +1,6 @@
-using Newtonsoft.Json;
+using System.Text.Json;
 using Sudoku.Infrastructure.Models;
+using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace UnitTests.Infrastructure.Models;
 
@@ -87,20 +88,30 @@ public class GridSizeBackCompatTests
         document!.GridSize.Should().Be(16);
     }
 
+    // SudokuPuzzleDocument is blob-stored via AzureStorageService, which serializes with
+    // System.Text.Json using JsonNamingPolicy.CamelCase (not Newtonsoft, and not PascalCase) --
+    // see AzureStorageService's _jsonOptions. These two fixtures deserialize with the same
+    // serializer/options and camelCase keys so they are representative of a real stored blob,
+    // rather than merely proving Newtonsoft's case-insensitive matching happens to also work.
+    private static readonly JsonSerializerOptions BlobJsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     [Fact]
     public void SudokuPuzzleDocument_WhenGridSizeAbsentFromJson_DeserializesAsNine()
     {
         // Arrange
         const string json = """
             {
-              "PuzzleId": "puzzle-1",
-              "Difficulty": "easy",
-              "Cells": []
+              "puzzleId": "puzzle-1",
+              "difficulty": "easy",
+              "cells": []
             }
             """;
 
         // Act
-        var document = JsonConvert.DeserializeObject<SudokuPuzzleDocument>(json);
+        var document = JsonSerializer.Deserialize<SudokuPuzzleDocument>(json, BlobJsonOptions);
 
         // Assert
         document.Should().NotBeNull();
@@ -113,15 +124,15 @@ public class GridSizeBackCompatTests
         // Arrange
         const string json = """
             {
-              "PuzzleId": "puzzle-1",
-              "Difficulty": "easy",
-              "GridSize": 16,
-              "Cells": []
+              "puzzleId": "puzzle-1",
+              "difficulty": "easy",
+              "gridSize": 16,
+              "cells": []
             }
             """;
 
         // Act
-        var document = JsonConvert.DeserializeObject<SudokuPuzzleDocument>(json);
+        var document = JsonSerializer.Deserialize<SudokuPuzzleDocument>(json, BlobJsonOptions);
 
         // Assert
         document.Should().NotBeNull();
