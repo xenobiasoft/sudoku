@@ -48,7 +48,8 @@ export interface GameModel {
   pausedAt: string | null;
   cells: CellModel[];
   moveHistory: MoveHistoryModel[];
-  size: number;
+  /** Absent on game state cached before this field existed — derive via deriveSize(cells) when missing. */
+  size?: number;
 }
 
 export interface DifficultyStatsModel {

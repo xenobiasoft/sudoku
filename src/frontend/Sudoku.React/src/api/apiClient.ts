@@ -73,8 +73,11 @@ export const apiClient = {
       headers: { 'Content-Type': 'application/json' },
     });
     if (!res.ok) {
+      // Retry-After can be delta-seconds ("30") or an HTTP-date; only the numeric
+      // form is meaningful here, so normalize anything else (including NaN) to undefined.
       const retryAfterHeader = res.headers.get('Retry-After');
-      const retryAfterSeconds = retryAfterHeader ? parseInt(retryAfterHeader, 10) : undefined;
+      const parsedRetryAfter = retryAfterHeader ? parseInt(retryAfterHeader, 10) : NaN;
+      const retryAfterSeconds = Number.isNaN(parsedRetryAfter) ? undefined : parsedRetryAfter;
       throw new ApiError(`HTTP ${res.status}: ${res.statusText}`, res.status, retryAfterSeconds);
     }
     const location = res.headers.get('Location');

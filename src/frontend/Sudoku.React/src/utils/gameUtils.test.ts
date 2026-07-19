@@ -219,8 +219,10 @@ describe('16x16 (boxSize 4) behavior', () => {
     expect(invalid).toHaveLength(0);
   });
 
-  it('isSolved requires 256 cells for a 16x16 board', () => {
-    expect(isSolved(makeCells(16))).toBe(false);
+  it('isSolved rejects a 16x16-shaped cell collection with the wrong cell count', () => {
+    // One cell short of 256 — must be rejected by the cell-count guard itself,
+    // not merely because the board happens to be unsolved.
+    expect(isSolved(makeCells(16).slice(0, 255))).toBe(false);
   });
 
   function find16Index(row: number, col: number): number {

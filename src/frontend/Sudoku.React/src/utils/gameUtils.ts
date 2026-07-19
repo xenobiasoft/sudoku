@@ -3,6 +3,9 @@ import type { CellModel } from '../types';
 /** Supported board cell counts (9x9 = 81, 16x16 = 256). */
 const SUPPORTED_CELL_COUNTS = [81, 256];
 
+/** Supported board sizes. */
+const SUPPORTED_SIZES = [9, 16];
+
 export function getCell(cells: CellModel[], row: number, col: number): CellModel | undefined {
   return cells.find(c => c.row === row && c.column === col);
 }
@@ -18,13 +21,27 @@ export function getColumnCells(cells: CellModel[], col: number): CellModel[] {
 /**
  * Derives the board size (9 or 16) from a cell collection. This is the documented
  * fallback for cached game state predating the `size` field on `GameModel`.
+ * Falls back to 9 (with a console warning) for an unexpected cell count, rather
+ * than returning a non-integer size that would corrupt downstream box/row math.
  */
 export function deriveSize(cells: CellModel[]): number {
+  if (!SUPPORTED_CELL_COUNTS.includes(cells.length)) {
+    console.warn(`deriveSize: unexpected cell count ${cells.length}, defaulting to size 9`);
+    return 9;
+  }
   return Math.sqrt(cells.length);
 }
 
-/** Derives the box size (3 for 9x9, 4 for 16x16) from the board size. */
+/**
+ * Derives the box size (3 for 9x9, 4 for 16x16) from the board size. Falls back
+ * to 3 (with a console warning) for an unsupported size, for the same reason as
+ * `deriveSize` above.
+ */
 export function getBoxSize(size: number): number {
+  if (!SUPPORTED_SIZES.includes(size)) {
+    console.warn(`getBoxSize: unexpected size ${size}, defaulting to boxSize 3`);
+    return 3;
+  }
   return Math.sqrt(size);
 }
 

@@ -7,6 +7,8 @@ import { ApiError } from '../api/apiClient';
 import Layout from '../components/Layout';
 import styles from './NewGamePage.module.css';
 
+const SUPPORTED_SIZES = [9, 16];
+
 interface AttemptCreateGameParams {
   profileId: string;
   difficulty: string;
@@ -51,7 +53,8 @@ export default function NewGamePage() {
   const [poolEmpty, setPoolEmpty] = useState(false);
 
   const sizeParam = searchParams.get('size');
-  const size = sizeParam ? parseInt(sizeParam, 10) : 9;
+  const parsedSize = sizeParam ? parseInt(sizeParam, 10) : 9;
+  const size = SUPPORTED_SIZES.includes(parsedSize) ? parsedSize : 9;
 
   useEffect(() => {
     if (!isInitialized || !profileId || !difficulty) {
