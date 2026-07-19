@@ -48,10 +48,12 @@ export interface GameModel {
   pausedAt: string | null;
   cells: CellModel[];
   moveHistory: MoveHistoryModel[];
+  size: number;
 }
 
 export interface DifficultyStatsModel {
   difficulty: string;
+  size: number;
   gamesPlayed: number;
   gamesWon: number;
   /** "HH:MM:SS", or null when the player has no wins at this difficulty. */

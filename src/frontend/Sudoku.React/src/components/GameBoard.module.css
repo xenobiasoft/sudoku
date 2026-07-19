@@ -5,8 +5,8 @@
 
 .board {
   display: grid;
-  grid-template-columns: repeat(9, 1fr);
-  grid-template-rows: repeat(9, 1fr);
+  grid-template-columns: repeat(var(--grid-size, 9), 1fr);
+  grid-template-rows: repeat(var(--grid-size, 9), 1fr);
   width: 100%;
   max-width: 440px;
   aspect-ratio: 1 / 1;
@@ -15,6 +15,10 @@
   overflow: hidden;
   background-color: var(--surface);
   box-shadow: 0 10px 34px var(--shadow);
+}
+
+.boardLarge {
+  max-width: 640px;
 }
 
 .board:focus {

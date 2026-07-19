@@ -6,8 +6,10 @@ import {
   getMiniGridCells,
   isSolved,
   validateCells,
+  deriveSize,
+  getBoxSize,
 } from './gameUtils';
-import { makeCell, make81Cells } from '../test/helpers';
+import { makeCell, make81Cells, makeCells } from '../test/helpers';
 
 describe('getCell', () => {
   it('returns the matching cell', () => {
@@ -153,4 +155,75 @@ describe('isSolved', () => {
     }
     expect(isSolved(cells)).toBe(true);
   });
+});
+
+describe('deriveSize', () => {
+  it('derives 9 from 81 cells', () => {
+    expect(deriveSize(make81Cells())).toBe(9);
+  });
+
+  it('derives 16 from 256 cells', () => {
+    expect(deriveSize(makeCells(16))).toBe(16);
+  });
+});
+
+describe('getBoxSize', () => {
+  it('derives 3 for a 9x9 board', () => {
+    expect(getBoxSize(9)).toBe(3);
+  });
+
+  it('derives 4 for a 16x16 board', () => {
+    expect(getBoxSize(16)).toBe(4);
+  });
+});
+
+describe('16x16 (boxSize 4) behavior', () => {
+  it('getMiniGridCells returns 16 cells for a 4x4 block', () => {
+    const cells = makeCells(16);
+    const block = getMiniGridCells(cells, 0, 0);
+    expect(block).toHaveLength(16);
+    block.forEach(c => {
+      expect(c.row).toBeGreaterThanOrEqual(0);
+      expect(c.row).toBeLessThan(4);
+      expect(c.column).toBeGreaterThanOrEqual(0);
+      expect(c.column).toBeLessThan(4);
+    });
+  });
+
+  it('getMiniGridCells returns cells for an inner 4x4 block', () => {
+    const cells = makeCells(16);
+    const block = getMiniGridCells(cells, 9, 9);
+    expect(block).toHaveLength(16);
+    block.forEach(c => {
+      expect(c.row).toBeGreaterThanOrEqual(8);
+      expect(c.row).toBeLessThan(12);
+      expect(c.column).toBeGreaterThanOrEqual(8);
+      expect(c.column).toBeLessThan(12);
+    });
+  });
+
+  it('validateCells flags duplicates within a 4x4 box on a 16x16 board', () => {
+    const cells = makeCells(16);
+    cells[0] = makeCell({ row: 0, column: 0, value: 11, hasValue: true });
+    cells[find16Index(3, 3)] = makeCell({ row: 3, column: 3, value: 11, hasValue: true });
+    const invalid = validateCells(cells);
+    expect(invalid.some(c => c.row === 0 && c.column === 0)).toBe(true);
+    expect(invalid.some(c => c.row === 3 && c.column === 3)).toBe(true);
+  });
+
+  it('validateCells does not flag the same value in different rows/columns/boxes on a 16x16 board', () => {
+    const cells = makeCells(16);
+    cells[find16Index(0, 0)] = makeCell({ row: 0, column: 0, value: 16, hasValue: true });
+    cells[find16Index(4, 4)] = makeCell({ row: 4, column: 4, value: 16, hasValue: true });
+    const invalid = validateCells(cells);
+    expect(invalid).toHaveLength(0);
+  });
+
+  it('isSolved requires 256 cells for a 16x16 board', () => {
+    expect(isSolved(makeCells(16))).toBe(false);
+  });
+
+  function find16Index(row: number, col: number): number {
+    return row * 16 + col;
+  }
 });

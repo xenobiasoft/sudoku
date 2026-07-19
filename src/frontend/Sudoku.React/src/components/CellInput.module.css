@@ -94,3 +94,22 @@
   align-items: center;
   justify-content: center;
 }
+
+/* 16x16 non-positional wrapped pencil marks — a positional 4x4 grid at ~30px
+   cell size is illegible, so only the noted candidates render as a compact
+   wrapped row of symbols. */
+.pencilValuesWrapped {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+  gap: 1px;
+  pointer-events: none;
+  color: var(--ink-soft);
+  font-size: clamp(6px, 1.6vw, 7px);
+  font-weight: 500;
+  overflow: hidden;
+}

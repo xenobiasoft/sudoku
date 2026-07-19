@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePlayerService } from '../hooks/usePlayerService';
 import Layout from '../components/Layout';
@@ -14,6 +14,7 @@ const DIFFICULTIES = [
 export default function SelectDifficultyPage() {
   const navigate = useNavigate();
   const { isNewPlayer } = usePlayerService();
+  const [selectedSize, setSelectedSize] = useState<9 | 16>(9);
 
   useEffect(() => {
     if (isNewPlayer) navigate('/');
@@ -24,13 +25,33 @@ export default function SelectDifficultyPage() {
       <div className={styles.container}>
         <h1 className={styles.title}>Select difficulty</h1>
         <p className={styles.subtitle}>how much quiet do you want?</p>
+
+        <div className={styles.sizeToggle} role="group" aria-label="Board size">
+          <button
+            type="button"
+            className={`${styles.sizeOption} ${selectedSize === 9 ? styles.sizeOptionActive : ''}`}
+            aria-pressed={selectedSize === 9}
+            onClick={() => setSelectedSize(9)}
+          >
+            Classic 9×9
+          </button>
+          <button
+            type="button"
+            className={`${styles.sizeOption} ${selectedSize === 16 ? styles.sizeOptionActive : ''}`}
+            aria-pressed={selectedSize === 16}
+            onClick={() => setSelectedSize(16)}
+          >
+            Giant 16×16
+          </button>
+        </div>
+
         <div className={styles.options}>
           {DIFFICULTIES.map(({ name, subtitle, dots }) => (
             <button
               key={name}
               type="button"
               className={styles.card}
-              onClick={() => navigate(`/new/${name}`)}
+              onClick={() => navigate(`/new/${name}?size=${selectedSize}`)}
             >
               <span className={styles.cardText}>
                 <span className={styles.cardTitle}>{name}</span>

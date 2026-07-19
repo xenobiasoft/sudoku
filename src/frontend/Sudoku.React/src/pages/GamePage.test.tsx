@@ -3,7 +3,7 @@ import { render, screen, waitFor, fireEvent, within } from '@testing-library/rea
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import GamePage from './GamePage';
-import { makeGame, make81Cells, makeCell } from '../test/helpers';
+import { makeGame, make81Cells, makeCell, makeCells } from '../test/helpers';
 
 vi.mock('../api/apiClient', () => ({
   apiClient: {
@@ -329,6 +329,31 @@ describe('GamePage - keyboard navigation', () => {
     // No error should occur
     expect(grid).toBeInTheDocument();
   });
+
+  it('clamps arrow-key navigation to size - 1 on a 16x16 board', async () => {
+    const cells = makeCells(16);
+    // Select the bottom-right cell (row 15, column 15) and confirm ArrowDown/ArrowRight don't crash past bounds.
+    const game = makeGame({ cells, size: 16 });
+    vi.mocked(useGameService).mockReturnValue({
+      savedGames: [], isLoading: false, error: null, isLoaded: false,
+      loadGames: vi.fn(), deleteGame: vi.fn(), createGame: vi.fn(), clearCache: vi.fn(), refreshGames: vi.fn(),
+      currentGame: game, isGameLoading: false, gameError: null,
+      getGame: vi.fn(), pauseGame: vi.fn(), resumeGame: vi.fn(), makeMove: vi.fn(), undoMove: vi.fn(), requestHint: vi.fn(), resetGame: vi.fn(),
+      addPossibleValue: vi.fn(), removePossibleValue: vi.fn(), clearPossibleValues: vi.fn(), clearCurrentGame: vi.fn(),
+    });
+    renderGamePage();
+    await waitFor(() => {
+      expect(screen.getByRole('grid')).toBeInTheDocument();
+    });
+    const grid = screen.getByRole('grid');
+    const inputs = within(grid).getAllByRole('button');
+    // The last button in row-major order is (row 15, column 15).
+    await userEvent.click(inputs[255]);
+    fireEvent.keyDown(grid, { key: 'ArrowDown' });
+    fireEvent.keyDown(grid, { key: 'ArrowRight' });
+    // No error should occur; selection stays clamped within the 16x16 board.
+    expect(grid).toBeInTheDocument();
+  });
 });
 
 describe('GamePage - number input', () => {
@@ -358,6 +383,55 @@ describe('GamePage - number input', () => {
       expect(mockMakeMove).toHaveBeenCalledWith(
         'test-player', game.id, 0, 0, 5, expect.any(String)
       );
+    });
+  });
+
+  it('rejects letter input on a 9x9 board (does not call makeMove)', async () => {
+    const cells = make81Cells();
+    cells[0] = makeCell({ row: 0, column: 0, isFixed: false, hasValue: false });
+    const game = makeGame({ cells });
+    const mockMakeMove = vi.fn();
+    vi.mocked(useGameService).mockReturnValue({
+      savedGames: [], isLoading: false, error: null, isLoaded: false,
+      loadGames: vi.fn(), deleteGame: vi.fn(), createGame: vi.fn(), clearCache: vi.fn(), refreshGames: vi.fn(),
+      currentGame: game, isGameLoading: false, gameError: null,
+      getGame: vi.fn(), pauseGame: vi.fn(), resumeGame: vi.fn(), makeMove: mockMakeMove, undoMove: vi.fn(), requestHint: vi.fn(), resetGame: vi.fn(),
+      addPossibleValue: vi.fn(), removePossibleValue: vi.fn(), clearPossibleValues: vi.fn(), clearCurrentGame: vi.fn(),
+    });
+    renderGamePage();
+    await waitFor(() => {
+      expect(screen.getByRole('grid')).toBeInTheDocument();
+    });
+    const grid = screen.getByRole('grid');
+    const inputs = within(grid).getAllByRole('button');
+    await userEvent.click(inputs[0]);
+    fireEvent.keyDown(grid, { key: 'a' });
+    expect(mockMakeMove).not.toHaveBeenCalled();
+  });
+
+  it('maps a letter keypress to its numeric value on a 16x16 board', async () => {
+    const cells = makeCells(16);
+    cells[0] = makeCell({ row: 0, column: 0, isFixed: false, hasValue: false });
+    const game = makeGame({ cells, size: 16 });
+    const updatedGame = makeGame({ cells, size: 16 });
+    const mockMakeMove = vi.fn().mockResolvedValue(updatedGame);
+    vi.mocked(useGameService).mockReturnValue({
+      savedGames: [], isLoading: false, error: null, isLoaded: false,
+      loadGames: vi.fn(), deleteGame: vi.fn(), createGame: vi.fn(), clearCache: vi.fn(), refreshGames: vi.fn(),
+      currentGame: game, isGameLoading: false, gameError: null,
+      getGame: vi.fn(), pauseGame: vi.fn(), resumeGame: vi.fn(), makeMove: mockMakeMove, undoMove: vi.fn(), requestHint: vi.fn(), resetGame: vi.fn(),
+      addPossibleValue: vi.fn(), removePossibleValue: vi.fn(), clearPossibleValues: vi.fn(), clearCurrentGame: vi.fn(),
+    });
+    renderGamePage();
+    await waitFor(() => {
+      expect(screen.getByRole('grid')).toBeInTheDocument();
+    });
+    const grid = screen.getByRole('grid');
+    const inputs = within(grid).getAllByRole('button');
+    await userEvent.click(inputs[0]);
+    fireEvent.keyDown(grid, { key: 'g' });
+    await waitFor(() => {
+      expect(mockMakeMove).toHaveBeenCalledWith('test-player', game.id, 0, 0, 16, expect.any(String));
     });
   });
 

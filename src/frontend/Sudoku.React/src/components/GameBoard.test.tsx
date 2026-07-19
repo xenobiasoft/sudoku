@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import GameBoard from './GameBoard';
-import { make81Cells, makeCell } from '../test/helpers';
+import { make81Cells, makeCell, makeCells } from '../test/helpers';
 
 function renderBoard(overrides: Partial<React.ComponentProps<typeof GameBoard>> = {}) {
   const defaults = {
@@ -46,5 +46,19 @@ describe('GameBoard', () => {
     renderBoard({ onKeyDown });
     fireEvent.keyDown(screen.getByRole('grid'), { key: '5' });
     expect(onKeyDown).toHaveBeenCalled();
+  });
+});
+
+describe('GameBoard at size 16', () => {
+  it('renders 256 cell buttons', () => {
+    renderBoard({ cells: makeCells(16), size: 16 });
+    expect(screen.getAllByRole('button')).toHaveLength(256);
+  });
+
+  it('renders letter-symbol cell values', () => {
+    const cells = makeCells(16);
+    cells[0] = makeCell({ row: 0, column: 0, value: 16, hasValue: true, isFixed: true });
+    renderBoard({ cells, size: 16 });
+    expect(screen.getByText('G')).toBeInTheDocument();
   });
 });

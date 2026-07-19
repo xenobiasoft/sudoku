@@ -11,8 +11,8 @@
 
 .sudokuThumbnail {
   display: grid;
-  grid-template-columns: repeat(9, 1fr);
-  grid-template-rows: repeat(9, 1fr);
+  grid-template-columns: repeat(var(--grid-size, 9), 1fr);
+  grid-template-rows: repeat(var(--grid-size, 9), 1fr);
   width: 88px;
   height: 88px;
   min-width: 88px;
@@ -23,6 +23,17 @@
   background-color: var(--surface);
   cursor: pointer;
   font-size: 7px;
+}
+
+/* 16x16 renders size x size with thinner lines and a smaller font — 256
+   cells at thumbnail scale need finer grid lines to stay legible. */
+.sudokuThumbnailLarge {
+  font-size: 4px;
+}
+
+.sudokuThumbnailLarge .cell {
+  border-right-width: 0.25px;
+  border-bottom-width: 0.25px;
 }
 
 .cell {

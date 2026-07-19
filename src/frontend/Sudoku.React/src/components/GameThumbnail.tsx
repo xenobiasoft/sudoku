@@ -1,5 +1,8 @@
+import type { CSSProperties } from 'react';
 import type { GameModel } from '../types';
 import { formatDuration } from '../utils/timeUtils';
+import { deriveSize } from '../utils/gameUtils';
+import { valueToSymbol } from '../utils/symbols';
 import styles from './GameThumbnail.module.css';
 
 interface GameThumbnailProps {
@@ -9,15 +12,21 @@ interface GameThumbnailProps {
 }
 
 export default function GameThumbnail({ game, onSelect, onDelete }: GameThumbnailProps) {
-  const rows = Array.from({ length: 9 }, (_, r) => r);
-  const cols = Array.from({ length: 9 }, (_, c) => c);
+  const size = game.size ?? deriveSize(game.cells);
+  const rows = Array.from({ length: size }, (_, r) => r);
+  const cols = Array.from({ length: size }, (_, c) => c);
   const meta = `${formatDuration(game.statistics?.playDuration, '00:00')} · ${game.statistics?.totalMoves ?? 0} moves`;
+  const thumbnailStyle = { '--grid-size': size } as CSSProperties;
+  const thumbnailClass = size === 16
+    ? `${styles.sudokuThumbnail} ${styles.sudokuThumbnailLarge}`
+    : styles.sudokuThumbnail;
 
   return (
     <div className={styles.savedGameCard}>
       <button
         type="button"
-        className={styles.sudokuThumbnail}
+        className={thumbnailClass}
+        style={thumbnailStyle}
         onClick={() => onSelect(game)}
         title={`${game.difficulty} - ${game.status}`}
       >
@@ -27,7 +36,7 @@ export default function GameThumbnail({ game, onSelect, onDelete }: GameThumbnai
             const cellClass = cell?.isFixed ? `${styles.cell} ${styles.given}` : `${styles.cell} ${styles.entry}`;
             return (
               <span key={`${r}-${c}`} className={cellClass}>
-                {cell?.value ?? ''}
+                {cell?.value != null ? valueToSymbol(cell.value) : ''}
               </span>
             );
           })

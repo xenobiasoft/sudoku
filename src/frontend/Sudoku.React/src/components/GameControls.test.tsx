@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import GameControls from './GameControls';
-import { make81Cells } from '../test/helpers';
+import { make81Cells, makeCells } from '../test/helpers';
 
 function renderControls(overrides: Partial<React.ComponentProps<typeof GameControls>> = {}) {
   const defaults = {
@@ -110,5 +110,42 @@ describe('GameControls', () => {
     renderControls({ onTogglePencil });
     await user.click(screen.getByRole('button', { name: /pencil/i }));
     expect(onTogglePencil).toHaveBeenCalledOnce();
+  });
+});
+
+describe('GameControls at size 16', () => {
+  it('renders 16 buttons with letter labels A-G for values 10-16', () => {
+    renderControls({ cells: makeCells(16), size: 16 });
+    for (let n = 1; n <= 9; n++) {
+      expect(screen.getByRole('button', { name: n.toString() })).toBeInTheDocument();
+    }
+    ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach(letter => {
+      expect(screen.getByRole('button', { name: letter })).toBeInTheDocument();
+    });
+  });
+
+  it('does not render letter buttons at size 9', () => {
+    renderControls();
+    ['A', 'B', 'C', 'D', 'E', 'F', 'G'].forEach(letter => {
+      expect(screen.queryByRole('button', { name: letter })).not.toBeInTheDocument();
+    });
+  });
+
+  it('calls onNumberClick with the numeric value when a letter button is clicked', async () => {
+    const user = userEvent.setup();
+    const onNumberClick = vi.fn();
+    renderControls({ cells: makeCells(16), size: 16, onNumberClick });
+    await user.click(screen.getByRole('button', { name: 'G' }));
+    expect(onNumberClick).toHaveBeenCalledWith(16);
+  });
+
+  it('shows the remaining count out of 16 for a value', () => {
+    const cells = makeCells(16);
+    [0, 1, 2].forEach(i => {
+      cells[i] = { ...cells[i], value: 16, hasValue: true };
+    });
+    renderControls({ cells, size: 16 });
+    const gButton = screen.getByRole('button', { name: 'G' });
+    expect(gButton).toHaveTextContent('13');
   });
 });

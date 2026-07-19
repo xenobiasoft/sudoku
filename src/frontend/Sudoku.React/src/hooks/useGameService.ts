@@ -10,7 +10,7 @@ export interface UseGameServiceReturn {
   isLoaded: boolean;
   loadGames: (profileId: string, forceRefresh?: boolean) => Promise<void>;
   deleteGame: (profileId: string, gameId: string) => Promise<void>;
-  createGame: (profileId: string, difficulty: string) => Promise<GameModel>;
+  createGame: (profileId: string, difficulty: string, size?: number) => Promise<GameModel>;
   clearCache: () => void;
   refreshGames: (profileId: string) => Promise<void>;
 
@@ -141,7 +141,7 @@ export function useGameService(): UseGameServiceReturn {
     await loadGames(profileId, true);
   }, [loadGames]);
 
-  const createGame = useCallback(async (profileId: string, difficulty: string): Promise<GameModel> => {
+  const createGame = useCallback(async (profileId: string, difficulty: string, size = 9): Promise<GameModel> => {
     if (!profileId) {
       throw new Error('Profile ID is required');
     }
@@ -150,7 +150,7 @@ export function useGameService(): UseGameServiceReturn {
 
     try {
       // Create the game via API
-      const newGame = await apiClient.createGame(profileId, difficulty);
+      const newGame = await apiClient.createGame(profileId, difficulty, size);
 
       // Update localStorage cache with the new game
       const cachedGames = localStorage.getItem('savedGames');

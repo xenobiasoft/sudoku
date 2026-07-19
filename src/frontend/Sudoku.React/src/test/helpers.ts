@@ -24,20 +24,23 @@ export function makeStats(overrides: Partial<GameStatisticsModel> = {}): GameSta
   };
 }
 
-export function make81Cells(overrides: Partial<CellModel>[] = []): CellModel[] {
+export function makeCells(size = 9, overrides: Partial<CellModel>[] = []): CellModel[] {
   const cells: CellModel[] = [];
-  for (let r = 0; r < 9; r++) {
-    for (let c = 0; c < 9; c++) {
-      const idx = r * 9 + c;
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const idx = r * size + c;
       cells.push(makeCell({ row: r, column: c, ...overrides[idx] }));
     }
   }
   return cells;
 }
 
+export const make81Cells = (overrides: Partial<CellModel>[] = []): CellModel[] => makeCells(9, overrides);
+
 export function makeDifficultyStats(overrides: Partial<DifficultyStatsModel> = {}): DifficultyStatsModel {
   return {
     difficulty: 'Easy',
+    size: 9,
     gamesPlayed: 0,
     gamesWon: 0,
     averageSolveTime: null,
@@ -62,6 +65,7 @@ export function makePlayerStats(overrides: Partial<PlayerStatsModel> = {}): Play
 }
 
 export function makeGame(overrides: Partial<GameModel> = {}): GameModel {
+  const size = overrides.size ?? 9;
   return {
     id: 'game-1',
     profileId: 'profile-1',
@@ -73,8 +77,9 @@ export function makeGame(overrides: Partial<GameModel> = {}): GameModel {
     startedAt: '2024-01-01T00:00:00Z',
     completedAt: null,
     pausedAt: null,
-    cells: make81Cells(),
+    cells: makeCells(size),
     moveHistory: [],
+    size,
     ...overrides,
   };
 }
