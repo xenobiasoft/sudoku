@@ -11,6 +11,19 @@
   gap: 6px;
 }
 
+/* Number pad: 16 keys, 8x2 on desktop, dropping to 4x4 on narrow viewports */
+.numberPad16 {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+
+@media (max-width: 480px) {
+  .numberPad16 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 .numBtn {
   flex: 1;
   display: flex;

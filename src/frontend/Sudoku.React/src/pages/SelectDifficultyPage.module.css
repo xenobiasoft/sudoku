@@ -19,6 +19,35 @@
   margin: 0 0 24px 0;
 }
 
+.sizeToggle {
+  display: flex;
+  gap: 6px;
+  padding: 5px;
+  margin-bottom: 20px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background-color: var(--surface);
+}
+
+.sizeOption {
+  flex: 1;
+  padding: 11px 10px;
+  border: none;
+  border-radius: 9px;
+  background-color: transparent;
+  color: var(--ink-soft);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sizeOptionActive {
+  background-color: var(--accent);
+  color: var(--accent-ink);
+}
+
 .options {
   display: flex;
   flex-direction: column;

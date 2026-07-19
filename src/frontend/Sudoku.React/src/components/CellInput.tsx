@@ -1,4 +1,5 @@
 import type { CellModel } from '../types';
+import { valueToSymbol } from '../utils/symbols';
 import styles from './CellInput.module.css';
 
 interface CellInputProps {
@@ -7,6 +8,8 @@ interface CellInputProps {
   isHighlighted: boolean;
   isSameNumber: boolean;
   isInvalid: boolean;
+  size?: number;
+  boxSize?: number;
   onSelect: () => void;
 }
 
@@ -16,16 +19,20 @@ export default function CellInput({
   isHighlighted,
   isSameNumber,
   isInvalid,
+  size = 9,
+  boxSize = 3,
   onSelect,
 }: CellInputProps) {
   const getCellClass = (): string => {
     const classes = [styles.cell];
 
-    // 3x3 box separators / outer edges
-    if (cell.column === 2 || cell.column === 5) classes.push(styles.boxRight);
-    if (cell.column === 8) classes.push(styles.lastCol);
-    if (cell.row === 2 || cell.row === 5) classes.push(styles.boxBottom);
-    if (cell.row === 8) classes.push(styles.lastRow);
+    // Box separators / outer edges, derived from boxSize
+    const isBoxRightCol = (cell.column + 1) % boxSize === 0 && cell.column !== size - 1;
+    const isBoxBottomRow = (cell.row + 1) % boxSize === 0 && cell.row !== size - 1;
+    if (isBoxRightCol) classes.push(styles.boxRight);
+    if (cell.column === size - 1) classes.push(styles.lastCol);
+    if (isBoxBottomRow) classes.push(styles.boxBottom);
+    if (cell.row === size - 1) classes.push(styles.lastRow);
 
     // Background fill precedence: selected > invalid > same-number > peer highlight
     if (isSelected) classes.push(styles.selected);
@@ -55,16 +62,28 @@ export default function CellInput({
     >
       {cell.hasValue && cell.value !== null ? (
         <span key={cell.value} className={`${styles.digit} ${digitClass} tnum`}>
-          {cell.value}
+          {valueToSymbol(cell.value)}
         </span>
       ) : showPencil ? (
-        <span className={styles.pencilValues}>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-            <span key={n} className={styles.pencilEntry}>
-              {cell.possibleValues.includes(n) ? n : ''}
-            </span>
-          ))}
-        </span>
+        size === 16 ? (
+          <span className={styles.pencilValuesWrapped}>
+            {[...cell.possibleValues]
+              .sort((a, b) => a - b)
+              .map(n => (
+                <span key={n} className={styles.pencilEntry}>
+                  {valueToSymbol(n)}
+                </span>
+              ))}
+          </span>
+        ) : (
+          <span className={styles.pencilValues}>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+              <span key={n} className={styles.pencilEntry}>
+                {cell.possibleValues.includes(n) ? valueToSymbol(n) : ''}
+              </span>
+            ))}
+          </span>
+        )
       ) : null}
     </button>
   );

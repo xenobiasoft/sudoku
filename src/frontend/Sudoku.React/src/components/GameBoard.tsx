@@ -1,5 +1,6 @@
-import { type KeyboardEvent } from 'react';
+import { type CSSProperties, type KeyboardEvent } from 'react';
 import type { CellModel } from '../types';
+import { getBoxSize } from '../utils/gameUtils';
 import CellInput from './CellInput';
 import styles from './GameBoard.module.css';
 
@@ -8,6 +9,7 @@ interface GameBoardProps {
   invalidCells: CellModel[];
   selectedCell: { row: number; column: number } | null;
   pencilMode: boolean;
+  size?: number;
   onCellSelect: (row: number, column: number) => void;
   onKeyDown: (e: KeyboardEvent<HTMLDivElement>) => void;
 }
@@ -16,11 +18,13 @@ export default function GameBoard({
   cells,
   invalidCells,
   selectedCell,
+  size = 9,
   onCellSelect,
   onKeyDown,
 }: GameBoardProps) {
-  const rows = Array.from({ length: 9 }, (_, i) => i);
-  const cols = Array.from({ length: 9 }, (_, i) => i);
+  const boxSize = getBoxSize(size);
+  const rows = Array.from({ length: size }, (_, i) => i);
+  const cols = Array.from({ length: size }, (_, i) => i);
 
   const selectedCellData = selectedCell
     ? cells.find(c => c.row === selectedCell.row && c.column === selectedCell.column)
@@ -32,8 +36,8 @@ export default function GameBoard({
     return (
       selectedCell.row === row ||
       selectedCell.column === col ||
-      (Math.floor(selectedCell.row / 3) === Math.floor(row / 3) &&
-        Math.floor(selectedCell.column / 3) === Math.floor(col / 3))
+      (Math.floor(selectedCell.row / boxSize) === Math.floor(row / boxSize) &&
+        Math.floor(selectedCell.column / boxSize) === Math.floor(col / boxSize))
     );
   };
 
@@ -46,9 +50,18 @@ export default function GameBoard({
     cell.value === selectedValue &&
     !(selectedCell?.row === cell.row && selectedCell?.column === cell.column);
 
+  const boardStyle = { '--grid-size': size, '--box-size': boxSize } as CSSProperties;
+  const boardClass = size === 16 ? `${styles.board} ${styles.boardLarge}` : styles.board;
+
   return (
     <div className={styles.boardOuter}>
-      <div className={styles.board} tabIndex={0} onKeyDown={onKeyDown} role="grid">
+      <div
+        className={boardClass}
+        style={boardStyle}
+        tabIndex={0}
+        onKeyDown={onKeyDown}
+        role="grid"
+      >
         {rows.map(r =>
           cols.map(c => {
             const cell = cells.find(cell => cell.row === r && cell.column === c);
@@ -57,6 +70,8 @@ export default function GameBoard({
               <CellInput
                 key={`${r}-${c}`}
                 cell={cell}
+                size={size}
+                boxSize={boxSize}
                 isSelected={selectedCell?.row === r && selectedCell?.column === c}
                 isHighlighted={isHighlighted(r, c)}
                 isSameNumber={isSameNumber(cell)}

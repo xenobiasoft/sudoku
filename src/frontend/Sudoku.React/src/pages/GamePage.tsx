@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef, type KeyboardEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import type { GameModel } from '../types';
-import { validateCells, isSolved } from '../utils/gameUtils';
+import { validateCells, isSolved, deriveSize } from '../utils/gameUtils';
+import { symbolToValue } from '../utils/symbols';
 import { usePlayerService } from '../hooks/usePlayerService';
 import { useGameService } from '../hooks/useGameService';
 import Layout from '../components/Layout';
@@ -204,13 +205,23 @@ export default function GamePage() {
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (!selectedCell) return;
+    if (!selectedCell || !game) return;
     const { row, column } = selectedCell;
+    const size = game.size ?? deriveSize(game.cells);
 
     if (e.key >= '1' && e.key <= '9') {
       e.preventDefault();
       handleNumberInput(parseInt(e.key));
       return;
+    }
+
+    if (size === 16 && /^[a-gA-G]$/.test(e.key)) {
+      const value = symbolToValue(e.key);
+      if (value !== null) {
+        e.preventDefault();
+        handleNumberInput(value);
+        return;
+      }
     }
 
     if (e.key === '0' || e.key === 'Delete' || e.key === 'Backspace') {
@@ -222,9 +233,9 @@ export default function GamePage() {
     let newRow = row;
     let newCol = column;
     if (e.key === 'ArrowUp') { e.preventDefault(); newRow = Math.max(0, row - 1); }
-    else if (e.key === 'ArrowDown') { e.preventDefault(); newRow = Math.min(8, row + 1); }
+    else if (e.key === 'ArrowDown') { e.preventDefault(); newRow = Math.min(size - 1, row + 1); }
     else if (e.key === 'ArrowLeft') { e.preventDefault(); newCol = Math.max(0, column - 1); }
-    else if (e.key === 'ArrowRight') { e.preventDefault(); newCol = Math.min(8, column + 1); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); newCol = Math.min(size - 1, column + 1); }
 
     if (newRow !== row || newCol !== column) {
       setSelectedCell({ row: newRow, column: newCol });
@@ -294,6 +305,7 @@ export default function GamePage() {
   const difficultyLabel = game.difficulty
     ? game.difficulty.charAt(0).toUpperCase() + game.difficulty.slice(1)
     : '';
+  const size = game.size ?? deriveSize(game.cells);
 
   return (
     <Layout title={difficultyLabel} onBack={handleHome}>
@@ -307,6 +319,7 @@ export default function GamePage() {
           invalidCells={invalidCells}
           selectedCell={selectedCell}
           pencilMode={pencilMode}
+          size={size}
           onCellSelect={(r, c) => setSelectedCell({ row: r, column: c })}
           onKeyDown={handleKeyDown}
         />
@@ -315,6 +328,7 @@ export default function GamePage() {
           pencilMode={pencilMode}
           canUndo={(game.moveHistory?.length ?? 0) > 0}
           hintsRemaining={game.statistics.hintsRemaining}
+          size={size}
           onNumberClick={handleNumberInput}
           onErase={handleErase}
           onUndo={handleUndo}

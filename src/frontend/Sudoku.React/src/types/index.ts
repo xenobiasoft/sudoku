@@ -48,10 +48,13 @@ export interface GameModel {
   pausedAt: string | null;
   cells: CellModel[];
   moveHistory: MoveHistoryModel[];
+  /** Absent on game state cached before this field existed — derive via deriveSize(cells) when missing. */
+  size?: number;
 }
 
 export interface DifficultyStatsModel {
   difficulty: string;
+  size: number;
   gamesPlayed: number;
   gamesWon: number;
   /** "HH:MM:SS", or null when the player has no wins at this difficulty. */

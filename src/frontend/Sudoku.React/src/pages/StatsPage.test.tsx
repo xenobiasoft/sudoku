@@ -141,4 +141,42 @@ describe('StatsPage', () => {
       expect(difficultyRow(difficulty)).toBeInTheDocument();
     });
   });
+
+  it('does not show the 16x16 section when the player has no 16x16 completions', () => {
+    mockUseStatsService.mockReturnValue(statsService({
+      stats: makePlayerStats({ gamesPlayed: 1, gamesWon: 1, winRate: 1 }),
+    }));
+
+    renderPage();
+
+    expect(screen.queryByText(/Giant 16×16/i)).not.toBeInTheDocument();
+  });
+
+  it('shows the 16x16 section when the player has 16x16 completions', () => {
+    mockUseStatsService.mockReturnValue(statsService({
+      stats: makePlayerStats({
+        gamesPlayed: 6,
+        gamesWon: 5,
+        winRate: 5 / 6,
+        byDifficulty: [
+          makeDifficultyStats({ difficulty: 'Easy', size: 9, gamesPlayed: 5, gamesWon: 4 }),
+          makeDifficultyStats({
+            difficulty: 'Expert',
+            size: 16,
+            gamesPlayed: 1,
+            gamesWon: 1,
+            averageSolveTime: '00:45:00',
+            bestSolveTime: '00:45:00',
+          }),
+        ],
+      }),
+    }));
+
+    renderPage();
+
+    expect(screen.getByText(/Giant 16×16/i)).toBeInTheDocument();
+    expect(screen.getByText(/Classic 9×9/i)).toBeInTheDocument();
+    const row = difficultyRow('Expert');
+    expect(within(row).getAllByText('45:00')).toHaveLength(2);
+  });
 });

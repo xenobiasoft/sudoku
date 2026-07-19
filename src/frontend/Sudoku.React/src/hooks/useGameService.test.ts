@@ -41,6 +41,7 @@ const mockGames: GameModel[] = [
     pausedAt: null,
     cells: [],
     moveHistory: [],
+    size: 9,
     statistics: {
       totalMoves: 5,
       invalidMoves: 0,
@@ -61,6 +62,7 @@ const mockGames: GameModel[] = [
     pausedAt: null,
     cells: [],
     moveHistory: [],
+    size: 9,
     statistics: {
       totalMoves: 15,
       invalidMoves: 2,
@@ -81,6 +83,7 @@ const mockGames: GameModel[] = [
     pausedAt: null,
     cells: [],
     moveHistory: [],
+    size: 9,
     statistics: {
       totalMoves: 25,
       invalidMoves: 5,

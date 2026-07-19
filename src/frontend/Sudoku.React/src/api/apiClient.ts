@@ -2,6 +2,23 @@ import type { GameModel, PlayerStatsModel, ProfileModel } from '../types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
 
+/**
+ * Preserves the HTTP status and `Retry-After` header of a failed request —
+ * needed by NewGamePage to distinguish a 503 pool-empty response (16x16) from
+ * other create-game failures.
+ */
+export class ApiError extends Error {
+  status: number;
+  retryAfterSeconds?: number;
+
+  constructor(message: string, status: number, retryAfterSeconds?: number) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.retryAfterSeconds = retryAfterSeconds;
+  }
+}
+
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   console.log(`BASE_URL: ${BASE_URL}, Requesting: ${path}`);
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -50,12 +67,19 @@ export const apiClient = {
   deleteProfile: (alias: string): Promise<{ status: number; data: null }> =>
     requestWithStatus<null>(`/api/profiles/${encodeURIComponent(alias)}`, { method: 'DELETE' }),
 
-  createGame: async (profileId: string, difficulty: string): Promise<GameModel> => {
-    const res = await fetch(`${BASE_URL}/api/players/${profileId}/games/${difficulty}`, {
+  createGame: async (profileId: string, difficulty: string, size = 9): Promise<GameModel> => {
+    const res = await fetch(`${BASE_URL}/api/players/${profileId}/games/${difficulty}?size=${size}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    if (!res.ok) {
+      // Retry-After can be delta-seconds ("30") or an HTTP-date; only the numeric
+      // form is meaningful here, so normalize anything else (including NaN) to undefined.
+      const retryAfterHeader = res.headers.get('Retry-After');
+      const parsedRetryAfter = retryAfterHeader ? parseInt(retryAfterHeader, 10) : NaN;
+      const retryAfterSeconds = Number.isNaN(parsedRetryAfter) ? undefined : parsedRetryAfter;
+      throw new ApiError(`HTTP ${res.status}: ${res.statusText}`, res.status, retryAfterSeconds);
+    }
     const location = res.headers.get('Location');
     const gameId = location?.split('/').pop();
     if (!gameId) throw new Error('No Location header in createGame response');

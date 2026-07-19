@@ -37,32 +37,46 @@ describe('SelectDifficultyPage', () => {
     expect(screen.getByRole('button', { name: /Expert/i })).toBeInTheDocument();
   });
 
-  it('navigates to /new/Easy when Easy is clicked', async () => {
+  it('navigates to /new/Easy?size=9 when Easy is clicked', async () => {
     const user = userEvent.setup();
     renderPage();
     await user.click(screen.getByRole('button', { name: /Easy/i }));
-    expect(mockNavigate).toHaveBeenCalledWith('/new/Easy');
+    expect(mockNavigate).toHaveBeenCalledWith('/new/Easy?size=9');
   });
 
-  it('navigates to /new/Medium when Medium is clicked', async () => {
+  it('navigates to /new/Medium?size=9 when Medium is clicked', async () => {
     const user = userEvent.setup();
     renderPage();
     await user.click(screen.getByRole('button', { name: /Medium/i }));
-    expect(mockNavigate).toHaveBeenCalledWith('/new/Medium');
+    expect(mockNavigate).toHaveBeenCalledWith('/new/Medium?size=9');
   });
 
-  it('navigates to /new/Hard when Hard is clicked', async () => {
+  it('navigates to /new/Hard?size=9 when Hard is clicked', async () => {
     const user = userEvent.setup();
     renderPage();
     await user.click(screen.getByRole('button', { name: /Hard/i }));
-    expect(mockNavigate).toHaveBeenCalledWith('/new/Hard');
+    expect(mockNavigate).toHaveBeenCalledWith('/new/Hard?size=9');
   });
 
-  it('navigates to /new/Expert when Expert is clicked', async () => {
+  it('navigates to /new/Expert?size=9 when Expert is clicked', async () => {
     const user = userEvent.setup();
     renderPage();
     await user.click(screen.getByRole('button', { name: /Expert/i }));
-    expect(mockNavigate).toHaveBeenCalledWith('/new/Expert');
+    expect(mockNavigate).toHaveBeenCalledWith('/new/Expert?size=9');
+  });
+
+  it('defaults to the Classic 9x9 size toggle option', () => {
+    renderPage();
+    expect(screen.getByRole('button', { name: /Classic 9×9/i })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: /Giant 16×16/i })).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('navigates with ?size=16 when Giant 16x16 is selected before picking a difficulty', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole('button', { name: /Giant 16×16/i }));
+    await user.click(screen.getByRole('button', { name: /Expert/i }));
+    expect(mockNavigate).toHaveBeenCalledWith('/new/Expert?size=16');
   });
 
   it('navigates to / when the header back affordance is clicked', async () => {
