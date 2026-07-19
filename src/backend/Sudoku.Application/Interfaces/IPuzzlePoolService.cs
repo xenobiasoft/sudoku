@@ -5,7 +5,7 @@ namespace Sudoku.Application.Interfaces;
 
 public interface IPuzzlePoolService
 {
-    Task<int> GetAvailableCountAsync(GameDifficulty difficulty);
-    Task SeedAsync(GameDifficulty difficulty, int count);
-    Task<SudokuPuzzle?> DequeueAsync(GameDifficulty difficulty);
+    Task<int> GetAvailableCountAsync(BoardSize size, GameDifficulty difficulty);
+    Task SeedAsync(BoardSize size, GameDifficulty difficulty, int count);
+    Task<SudokuPuzzle?> DequeueAsync(BoardSize size, GameDifficulty difficulty);
 }

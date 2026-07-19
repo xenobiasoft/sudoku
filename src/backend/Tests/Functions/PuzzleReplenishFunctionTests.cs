@@ -22,29 +22,33 @@ public class PuzzleReplenishFunctionTests : MoqBaseTestByType<PuzzleReplenishFun
     }
 
     [Theory]
-    [InlineData("easy", "Easy")]
-    [InlineData("medium", "Medium")]
-    [InlineData("hard", "Hard")]
-    [InlineData("expert", "Expert")]
-    public async Task Run_WithValidBlobPath_ParsesDifficultyAndSeedsOneReplacement(string difficultyPrefix, string expectedDifficultyName)
+    [InlineData("9x9", "easy", "Easy")]
+    [InlineData("9x9", "medium", "Medium")]
+    [InlineData("9x9", "hard", "Hard")]
+    [InlineData("9x9", "expert", "Expert")]
+    [InlineData("16x16", "easy", "Easy")]
+    [InlineData("16x16", "expert", "Expert")]
+    public async Task Run_WithValidBlobPath_ParsesSizeAndDifficultyAndSeedsOneReplacement(
+        string sizeSegment, string difficultyPrefix, string expectedDifficultyName)
     {
         // Arrange
+        var expectedSize = BoardSize.FromValue(int.Parse(sizeSegment.Split('x')[0]));
         var expectedDifficulty = GameDifficulty.FromName(expectedDifficultyName);
-        var subject = $"/blobServices/default/containers/sudoku-puzzles/blobs/{difficultyPrefix}/{Guid.NewGuid()}.json";
+        var subject = $"/blobServices/default/containers/sudoku-puzzles/blobs/{sizeSegment}/{difficultyPrefix}/{Guid.NewGuid()}.json";
         var eventGridEvent = CreateEventGridEvent(subject);
 
         // Act
         await _sut.Run(eventGridEvent);
 
         // Assert
-        _mockPuzzlePoolService.VerifySeedCalledOnce(expectedDifficulty, 1);
+        _mockPuzzlePoolService.VerifySeedCalledOnce(expectedSize, expectedDifficulty, 1);
     }
 
     [Fact]
     public async Task Run_WithUnknownDifficultyName_DoesNotSeed()
     {
         // Arrange
-        var subject = "/blobServices/default/containers/sudoku-puzzles/blobs/unknown/puzzle.json";
+        var subject = "/blobServices/default/containers/sudoku-puzzles/blobs/9x9/unknown/puzzle.json";
         var eventGridEvent = CreateEventGridEvent(subject);
 
         // Act
@@ -58,7 +62,7 @@ public class PuzzleReplenishFunctionTests : MoqBaseTestByType<PuzzleReplenishFun
     public async Task Run_WithUnknownDifficultyName_LogsWarning()
     {
         // Arrange
-        var subject = "/blobServices/default/containers/sudoku-puzzles/blobs/unknown/puzzle.json";
+        var subject = "/blobServices/default/containers/sudoku-puzzles/blobs/9x9/unknown/puzzle.json";
         var eventGridEvent = CreateEventGridEvent(subject);
 
         // Act
@@ -66,6 +70,34 @@ public class PuzzleReplenishFunctionTests : MoqBaseTestByType<PuzzleReplenishFun
 
         // Assert
         Logger.WarningLogs().AssertContains("Unknown difficulty");
+    }
+
+    [Fact]
+    public async Task Run_WithUnknownSizeSegment_DoesNotSeed()
+    {
+        // Arrange
+        var subject = "/blobServices/default/containers/sudoku-puzzles/blobs/25x25/easy/puzzle.json";
+        var eventGridEvent = CreateEventGridEvent(subject);
+
+        // Act
+        await _sut.Run(eventGridEvent);
+
+        // Assert
+        _mockPuzzlePoolService.VerifySeedNeverCalled();
+    }
+
+    [Fact]
+    public async Task Run_WithUnknownSizeSegment_LogsWarning()
+    {
+        // Arrange
+        var subject = "/blobServices/default/containers/sudoku-puzzles/blobs/25x25/easy/puzzle.json";
+        var eventGridEvent = CreateEventGridEvent(subject);
+
+        // Act
+        await _sut.Run(eventGridEvent);
+
+        // Assert
+        Logger.WarningLogs().AssertContains("Unknown board size");
     }
 
     [Fact]

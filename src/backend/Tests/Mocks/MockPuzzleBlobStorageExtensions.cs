@@ -10,7 +10,7 @@ public static class MockPuzzleBlobStorageExtensions
     {
         public void SetupCreateAsyncReturns(SudokuPuzzle puzzle)
         {
-            mock.Setup(x => x.CreateAsync(It.IsAny<GameDifficulty>()))
+            mock.Setup(x => x.CreateAsync(It.IsAny<GameDifficulty>(), It.IsAny<BoardSize>()))
                 .ReturnsAsync(puzzle);
         }
 
@@ -44,14 +44,14 @@ public static class MockPuzzleBlobStorageExtensions
                 .ReturnsAsync((SudokuPuzzle)null!);
         }
 
-        public void VerifyCreateAsyncCalledExactly(GameDifficulty difficulty, int times)
+        public void VerifyCreateAsyncCalledExactly(GameDifficulty difficulty, BoardSize size, int times)
         {
-            mock.Verify(x => x.CreateAsync(difficulty), Times.Exactly(times));
+            mock.Verify(x => x.CreateAsync(difficulty, size), Times.Exactly(times));
         }
 
         public void VerifyCreateAsyncNeverCalled()
         {
-            mock.Verify(x => x.CreateAsync(It.IsAny<GameDifficulty>()), Times.Never);
+            mock.Verify(x => x.CreateAsync(It.IsAny<GameDifficulty>(), It.IsAny<BoardSize>()), Times.Never);
         }
 
         public void VerifyDeleteAsyncCalledOnce(string prefix, string puzzleId)
@@ -72,6 +72,11 @@ public static class MockPuzzleBlobStorageExtensions
         public void VerifyLoadAsyncNeverCalled()
         {
             mock.Verify(x => x.LoadAsync(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        public void VerifyGetPuzzleIdsAsyncCalledWith(string prefix)
+        {
+            mock.Verify(x => x.GetPuzzleIdsAsync(prefix), Times.Once);
         }
     }
 }

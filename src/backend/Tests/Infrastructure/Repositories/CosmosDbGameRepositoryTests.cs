@@ -92,7 +92,7 @@ public class CosmosDbGameRepositoryTests : MoqBaseTestByAbstraction<CosmosDbGame
             DisplayName = displayName.Value,
             Difficulty = difficulty,
             Status = GameStatusEnum.NotStarted,
-            Cells = [],
+            Cells = CreateNineByNineCells(),
             CreatedAt = DateTime.UtcNow
         };
         _mockCosmosDbService.GetItemReturnsDocument(gameId, gameDocument);
@@ -125,7 +125,7 @@ public class CosmosDbGameRepositoryTests : MoqBaseTestByAbstraction<CosmosDbGame
                 DisplayName = displayName.Value,
                 Difficulty = GameDifficulty.Easy,
                 Status = GameStatusEnum.NotStarted,
-                Cells = [],
+                Cells = CreateNineByNineCells(),
                 CreatedAt = DateTime.UtcNow.AddMinutes(-10)
             },
             new()
@@ -136,7 +136,7 @@ public class CosmosDbGameRepositoryTests : MoqBaseTestByAbstraction<CosmosDbGame
                 DisplayName = displayName.Value,
                 Difficulty = GameDifficulty.Medium,
                 Status = GameStatusEnum.InProgress,
-                Cells = [],
+                Cells = CreateNineByNineCells(),
                 CreatedAt = DateTime.UtcNow
             }
         };
@@ -256,5 +256,19 @@ public class CosmosDbGameRepositoryTests : MoqBaseTestByAbstraction<CosmosDbGame
         // Assert
         await saveAsync.Should().ThrowAsync<InvalidOperationException>();
         _mockEventDispatcher.VerifyDispatched<GameCreatedEvent>(Times.Never);
+    }
+
+    private static List<CellDocument> CreateNineByNineCells()
+    {
+        var cells = new List<CellDocument>();
+        for (var row = 0; row < 9; row++)
+        {
+            for (var column = 0; column < 9; column++)
+            {
+                cells.Add(new CellDocument { Row = row, Column = column, Value = null, IsFixed = false });
+            }
+        }
+
+        return cells;
     }
 }

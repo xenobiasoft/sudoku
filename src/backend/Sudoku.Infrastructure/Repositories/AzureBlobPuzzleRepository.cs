@@ -14,13 +14,13 @@ public class AzureBlobPuzzleRepository(
 {
     private const string Container = "sudoku-puzzles";
 
-    public async Task<SudokuPuzzle> CreateAsync(GameDifficulty difficulty)
+    public async Task<SudokuPuzzle> CreateAsync(GameDifficulty difficulty, BoardSize size)
     {
-        var puzzle = await puzzleGenerator.GeneratePuzzleAsync(difficulty, BoardSize.Nine);
-        var document = MapToDocument(puzzle);
-        var blobName = $"{difficulty.Name.ToLowerInvariant()}/{puzzle.PuzzleId}.json";
+        var puzzle = await puzzleGenerator.GeneratePuzzleAsync(difficulty, size);
+        var document = MapToDocument(puzzle, size);
+        var blobName = $"{size.Size}x{size.Size}/{difficulty.Name.ToLowerInvariant()}/{puzzle.PuzzleId}.json";
         await storageService.SaveAsync(Container, blobName, document);
-        logger.LogDebug("Stored puzzle {PuzzleId} for {Difficulty}", puzzle.PuzzleId, difficulty.Name);
+        logger.LogDebug("Stored puzzle {PuzzleId} for {Difficulty} ({Size})", puzzle.PuzzleId, difficulty.Name, size);
         return puzzle;
     }
 
@@ -63,11 +63,12 @@ public class AzureBlobPuzzleRepository(
     public Task<SudokuPuzzle> UndoAsync(string alias, string puzzleId) =>
         throw new NotSupportedException();
 
-    private static SudokuPuzzleDocument MapToDocument(SudokuPuzzle puzzle) =>
+    private static SudokuPuzzleDocument MapToDocument(SudokuPuzzle puzzle, BoardSize size) =>
         new()
         {
             PuzzleId = puzzle.PuzzleId,
             Difficulty = puzzle.Difficulty.Name.ToLowerInvariant(),
+            GridSize = size.Size,
             Cells = puzzle.Cells.Select(c => new CellDocument
             {
                 Row = c.Row,
@@ -81,7 +82,8 @@ public class AzureBlobPuzzleRepository(
     private static SudokuPuzzle MapToPuzzle(SudokuPuzzleDocument document)
     {
         var difficulty = GameDifficulty.FromName(document.Difficulty);
-        var cells = document.Cells.Select(c => Cell.Create(c.Row, c.Column, BoardSize.Nine, c.Value, c.IsFixed));
-        return SudokuPuzzle.Create(document.PuzzleId, difficulty, BoardSize.Nine, cells);
+        var size = BoardSize.FromValue(document.GridSize);
+        var cells = document.Cells.Select(c => Cell.Create(c.Row, c.Column, size, c.Value, c.IsFixed));
+        return SudokuPuzzle.Create(document.PuzzleId, difficulty, size, cells);
     }
 }

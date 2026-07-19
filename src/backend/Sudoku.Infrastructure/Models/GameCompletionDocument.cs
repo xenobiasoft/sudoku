@@ -8,6 +8,7 @@ public class GameCompletionDocument
     [JsonProperty("gameId")]       public string GameId { get; set; } = string.Empty;
     [JsonProperty("profileId")]    public string ProfileId { get; set; } = string.Empty;
     [JsonProperty("difficulty")]   public string Difficulty { get; set; } = string.Empty;
+    [JsonProperty("gridSize")]     public int GridSize { get; set; } = 9;
     [JsonProperty("playDuration")] public TimeSpan PlayDuration { get; set; }
     [JsonProperty("completedAt")]  public DateTime CompletedAt { get; set; }
 }

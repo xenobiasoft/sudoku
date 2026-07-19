@@ -7,31 +7,32 @@ namespace Sudoku.Infrastructure.Services;
 
 public class PuzzlePoolService(IPuzzleBlobStorage puzzleBlobStorage, ILogger<PuzzlePoolService> logger) : IPuzzlePoolService
 {
-    public async Task<int> GetAvailableCountAsync(GameDifficulty difficulty)
+    public async Task<int> GetAvailableCountAsync(BoardSize size, GameDifficulty difficulty)
     {
         var count = 0;
-        await foreach (var _ in puzzleBlobStorage.GetPuzzleIdsAsync(difficulty.Name.ToLowerInvariant()))
+        var prefix = BuildPrefix(size, difficulty);
+        await foreach (var _ in puzzleBlobStorage.GetPuzzleIdsAsync(prefix))
         {
             count++;
         }
 
-        logger.LogDebug("Pool size for {Difficulty}: {Count}", difficulty.Name, count);
+        logger.LogDebug("Pool size for {Size} {Difficulty}: {Count}", size, difficulty.Name, count);
         return count;
     }
 
-    public async Task SeedAsync(GameDifficulty difficulty, int count)
+    public async Task SeedAsync(BoardSize size, GameDifficulty difficulty, int count)
     {
         for (var i = 0; i < count; i++)
         {
-            await puzzleBlobStorage.CreateAsync(difficulty);
+            await puzzleBlobStorage.CreateAsync(difficulty, size);
         }
 
-        logger.LogInformation("Seeded {Count} puzzles for {Difficulty}", count, difficulty.Name);
+        logger.LogInformation("Seeded {Count} puzzles for {Size} {Difficulty}", count, size, difficulty.Name);
     }
 
-    public async Task<SudokuPuzzle?> DequeueAsync(GameDifficulty difficulty)
+    public async Task<SudokuPuzzle?> DequeueAsync(BoardSize size, GameDifficulty difficulty)
     {
-        var prefix = difficulty.Name.ToLowerInvariant();
+        var prefix = BuildPrefix(size, difficulty);
         var puzzleIds = new List<string>();
 
         await foreach (var id in puzzleBlobStorage.GetPuzzleIdsAsync(prefix))
@@ -58,4 +59,7 @@ public class PuzzlePoolService(IPuzzleBlobStorage puzzleBlobStorage, ILogger<Puz
         await puzzleBlobStorage.DeleteAsync(prefix, puzzleId);
         return puzzle;
     }
+
+    private static string BuildPrefix(BoardSize size, GameDifficulty difficulty) =>
+        $"{size.Size}x{size.Size}/{difficulty.Name.ToLowerInvariant()}";
 }

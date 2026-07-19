@@ -28,7 +28,8 @@ public class GameCompletedEventHandlerTests : MoqBaseTestByAbstraction<GameCompl
             domainEvent.ProfileId.ToString(),
             "Hard",
             TimeSpan.FromMinutes(12),
-            domainEvent.CompletedAt);
+            domainEvent.CompletedAt,
+            domainEvent.Size.Size);
         var sut = ResolveSut();
 
         // Act

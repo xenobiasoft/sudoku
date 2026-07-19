@@ -70,7 +70,8 @@ public class DeleteGameCommandHandler(
             game.ProfileId.ToString(),
             game.Difficulty.Name,
             game.Statistics.PlayDuration,
-            game.CompletedAt ?? DateTime.UtcNow);
+            game.CompletedAt ?? DateTime.UtcNow,
+            game.Size.Size);
 
         await completionRepository.UpsertAsync(completion);
 

@@ -17,7 +17,8 @@ public class GameCompletedEventHandler(
             domainEvent.ProfileId.ToString(),
             domainEvent.Difficulty.Name,
             domainEvent.Statistics.PlayDuration,
-            domainEvent.CompletedAt);
+            domainEvent.CompletedAt,
+            domainEvent.Size.Size);
 
         await completionRepository.UpsertAsync(completion);
 

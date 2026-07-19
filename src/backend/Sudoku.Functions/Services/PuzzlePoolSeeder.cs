@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Sudoku.Application.Interfaces;
 using Sudoku.Domain.ValueObjects;
@@ -7,36 +8,58 @@ namespace Sudoku.Functions.Services;
 public class PuzzlePoolSeeder(IPuzzlePoolService puzzlePoolService, ILogger<PuzzlePoolSeeder> logger) : IPuzzlePoolSeeder
 {
     public const int TargetPoolSize = 10;
+    public const int TargetPoolSizeSixteen = 5;
 
-    private static readonly GameDifficulty[] Difficulties =
+    /// <summary>
+    /// Headroom under the Azure Functions consumption-plan default timeout (5 minutes), so a
+    /// single invocation always has time to persist/log before the host forcibly terminates it.
+    /// </summary>
+    public static readonly TimeSpan TimeBudget = TimeSpan.FromMinutes(4);
+
+    // Fast/cheap combinations first so a single invocation reliably tops up the 9x9 pools even
+    // if it runs out of budget partway through the slower 16x16 Hard/Expert generation.
+    private static readonly (BoardSize Size, GameDifficulty Difficulty, int Target)[] Combinations =
     [
-        GameDifficulty.Easy,
-        GameDifficulty.Medium,
-        GameDifficulty.Hard,
-        GameDifficulty.Expert
+        (BoardSize.Nine, GameDifficulty.Easy, TargetPoolSize),
+        (BoardSize.Nine, GameDifficulty.Medium, TargetPoolSize),
+        (BoardSize.Nine, GameDifficulty.Hard, TargetPoolSize),
+        (BoardSize.Nine, GameDifficulty.Expert, TargetPoolSize),
+        (BoardSize.Sixteen, GameDifficulty.Easy, TargetPoolSizeSixteen),
+        (BoardSize.Sixteen, GameDifficulty.Medium, TargetPoolSizeSixteen),
+        (BoardSize.Sixteen, GameDifficulty.Hard, TargetPoolSizeSixteen),
+        (BoardSize.Sixteen, GameDifficulty.Expert, TargetPoolSizeSixteen)
     ];
 
     public async Task<int> SeedPoolAsync()
     {
         var totalSeeded = 0;
+        var stopwatch = Stopwatch.StartNew();
 
-        foreach (var difficulty in Difficulties)
+        foreach (var (size, difficulty, target) in Combinations)
         {
-            var currentCount = await puzzlePoolService.GetAvailableCountAsync(difficulty);
-            var needed = TargetPoolSize - currentCount;
+            var currentCount = await puzzlePoolService.GetAvailableCountAsync(size, difficulty);
 
-            if (needed > 0)
+            while (currentCount < target)
             {
-                logger.LogInformation("Seeding {Count} puzzles for {Difficulty} (current: {Current})",
-                    needed, difficulty.Name, currentCount);
-                await puzzlePoolService.SeedAsync(difficulty, needed);
-                totalSeeded += needed;
+                if (stopwatch.Elapsed >= TimeBudget)
+                {
+                    logger.LogInformation(
+                        "Time budget exhausted after seeding {Total} puzzles; stopping for this invocation",
+                        totalSeeded);
+                    return totalSeeded;
+                }
+
+                logger.LogInformation("Seeding 1 puzzle for {Size} {Difficulty} (current: {Current}/{Target})",
+                    size, difficulty.Name, currentCount, target);
+
+                await puzzlePoolService.SeedAsync(size, difficulty, 1);
+
+                totalSeeded++;
+                currentCount++;
             }
-            else
-            {
-                logger.LogInformation("Pool full for {Difficulty} ({Count}/{Target})",
-                    difficulty.Name, currentCount, TargetPoolSize);
-            }
+
+            logger.LogInformation("Pool full for {Size} {Difficulty} ({Count}/{Target})",
+                size, difficulty.Name, currentCount, target);
         }
 
         return totalSeeded;
