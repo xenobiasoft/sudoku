@@ -68,7 +68,8 @@ public class DeleteGameCommandHandlerTests : MoqBaseTestByAbstraction<Handler, I
                 game.ProfileId.ToString(),
                 game.Difficulty.Name,
                 game.Statistics.PlayDuration,
-                game.CompletedAt!.Value),
+                game.CompletedAt!.Value,
+                game.Size.Size),
             Times.Once);
     }
 
@@ -83,7 +84,8 @@ public class DeleteGameCommandHandlerTests : MoqBaseTestByAbstraction<Handler, I
             game.ProfileId.ToString(),
             game.Difficulty.Name,
             game.Statistics.PlayDuration,
-            game.CompletedAt!.Value));
+            game.CompletedAt!.Value,
+            game.Size.Size));
         var sut = ResolveSut();
 
         // Act

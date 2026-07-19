@@ -32,14 +32,14 @@ public class AzureBlobPuzzleRepositoryTests : MoqBaseTestByAbstraction<AzureBlob
         // Arrange
         var difficulty = GameDifficulty.Easy;
         var puzzle = PuzzleFactory.GetPuzzle(difficulty);
-        var expectedBlobName = $"{difficulty.Name.ToLowerInvariant()}/{puzzle.PuzzleId}.json";
+        var expectedBlobName = $"9x9/{difficulty.Name.ToLowerInvariant()}/{puzzle.PuzzleId}.json";
 
         _mockPuzzleGenerator
             .Setup(x => x.GeneratePuzzleAsync(difficulty, BoardSize.Nine))
             .ReturnsAsync(puzzle);
 
         // Act
-        var result = await _sut.CreateAsync(difficulty);
+        var result = await _sut.CreateAsync(difficulty, BoardSize.Nine);
 
         // Assert
         result.Should().NotBeNull();
@@ -57,10 +57,27 @@ public class AzureBlobPuzzleRepositoryTests : MoqBaseTestByAbstraction<AzureBlob
         _mockPuzzleGenerator.SetupGeneratePuzzleAsyncReturns(puzzle);
 
         // Act
-        await _sut.CreateAsync(difficulty);
+        await _sut.CreateAsync(difficulty, BoardSize.Nine);
 
         // Assert
-        _mockStorageService.VerifySavesBlobCheckUsingPartialName<SudokuPuzzleDocument>(PuzzleContainer, "expert/");
+        _mockStorageService.VerifySavesBlobCheckUsingPartialName<SudokuPuzzleDocument>(PuzzleContainer, "9x9/expert/");
+    }
+
+    [Fact]
+    public async Task CreateAsync_ForSixteenBySixteen_SavesBlobWithSizePrefix()
+    {
+        // Arrange
+        var difficulty = GameDifficulty.Easy;
+        var puzzle = PuzzleFactory.GetPuzzle(GameDifficulty.Easy);
+        _mockPuzzleGenerator
+            .Setup(x => x.GeneratePuzzleAsync(difficulty, BoardSize.Sixteen))
+            .ReturnsAsync(puzzle);
+
+        // Act
+        await _sut.CreateAsync(difficulty, BoardSize.Sixteen);
+
+        // Assert
+        _mockStorageService.VerifySavesBlobCheckUsingPartialName<SudokuPuzzleDocument>(PuzzleContainer, "16x16/easy/");
     }
 
     [Fact]

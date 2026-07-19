@@ -1,4 +1,5 @@
 using Sudoku.Domain.Entities;
+using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Models;
 
@@ -15,6 +16,7 @@ public static class SudokuGameMapper
             ProfileId = game.ProfileId.ToString(),
             DisplayName = game.DisplayName.Value,
             Difficulty = game.Difficulty.Name,
+            GridSize = game.Size.Size,
             Status = game.Status,
             Cells = game.GetCells().Select(ToDocument).ToList(),
             Statistics = ToDocument(game.Statistics),
@@ -48,15 +50,22 @@ public static class SudokuGameMapper
             ? GameDifficulty.Easy
             : GameDifficulty.FromName(document.Difficulty);
 
+        var size = BoardSize.FromValue(document.GridSize);
+
+        if (document.Cells.Count != size.CellCount)
+        {
+            throw new InvalidPuzzleException();
+        }
+
         var sudokuGame = SudokuGame.Reconstitute(
             GameId.Create(document.GameId),
             profileId,
             displayName,
             difficulty,
-            BoardSize.Nine,
+            size,
             document.Status,
             document.Statistics.ToDomain(),
-            document.Cells.Select(ToDomain).ToList(),
+            document.Cells.Select(c => c.ToDomain(size)).ToList(),
             document.MoveHistory.Select(m => new MoveHistory(m.Row, m.Column, m.PreviousValue, m.NewValue)),
             document.CreatedAt,
             document.StartedAt,
@@ -81,9 +90,9 @@ public static class SudokuGameMapper
         return cellDocument;
     }
 
-    private static Cell ToDomain(this CellDocument document)
+    private static Cell ToDomain(this CellDocument document, BoardSize size)
     {
-        var cell = Cell.Create(document.Row, document.Column, BoardSize.Nine, document.Value, document.IsFixed, document.IsHint);
+        var cell = Cell.Create(document.Row, document.Column, size, document.Value, document.IsFixed, document.IsHint);
 
         // Set possible values using reflection since there's no public setter
         var cellType = typeof(Cell);

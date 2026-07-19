@@ -22,7 +22,7 @@ public class CreateGameCommandHandler(
             var displayName = PlayerAlias.Create(request.DisplayName);
             var difficulty = GameDifficulty.FromName(request.Difficulty);
 
-            var puzzle = await puzzlePoolService.DequeueAsync(difficulty);
+            var puzzle = await puzzlePoolService.DequeueAsync(BoardSize.Nine, difficulty);
 
             if (puzzle is null)
             {

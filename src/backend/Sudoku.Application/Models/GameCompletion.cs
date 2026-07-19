@@ -10,4 +10,5 @@ public record GameCompletion(
     string ProfileId,
     string Difficulty,
     TimeSpan PlayDuration,
-    DateTime CompletedAt);
+    DateTime CompletedAt,
+    int GridSize);

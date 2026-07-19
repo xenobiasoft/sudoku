@@ -23,6 +23,9 @@ public class SudokuGameDocument
     [JsonConverter(typeof(GameDifficultyStringConverter))]
     public string Difficulty { get; set; } = GameDifficulty.Easy.Name;
 
+    [JsonProperty("gridSize")]
+    public int GridSize { get; set; } = 9;
+
     [JsonProperty("status")]
     public GameStatusEnum Status { get; set; }
 

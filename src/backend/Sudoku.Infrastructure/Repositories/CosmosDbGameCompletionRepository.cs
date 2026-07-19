@@ -94,6 +94,7 @@ public class CosmosDbGameCompletionRepository(
         GameId = completion.GameId,
         ProfileId = completion.ProfileId,
         Difficulty = completion.Difficulty,
+        GridSize = completion.GridSize,
         PlayDuration = completion.PlayDuration,
         CompletedAt = completion.CompletedAt
     };
@@ -103,7 +104,8 @@ public class CosmosDbGameCompletionRepository(
         document.ProfileId,
         document.Difficulty,
         document.PlayDuration,
-        document.CompletedAt);
+        document.CompletedAt,
+        document.GridSize);
 
     private async Task EnsureContainerAsync()
     {

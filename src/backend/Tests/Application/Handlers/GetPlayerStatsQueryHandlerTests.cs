@@ -241,5 +241,5 @@ public class GetPlayerStatsQueryHandlerTests
     }
 
     private GameCompletion Completion(string difficulty, TimeSpan playDuration) =>
-        new(Guid.NewGuid().ToString(), _profileId, difficulty, playDuration, DateTime.UtcNow);
+        new(Guid.NewGuid().ToString(), _profileId, difficulty, playDuration, DateTime.UtcNow, 9);
 }
