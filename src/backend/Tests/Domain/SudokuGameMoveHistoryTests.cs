@@ -79,10 +79,10 @@ public class SudokuGameMoveHistoryTests : MoqBaseTestByType<SudokuGame>
     {
         // Arrange
         var cells = CellsFactory.CreateEmptyCells();
-        var moveHistory = new List<MoveHistory>
+        var moveHistory = new List<GameHistoryEntry>
         {
-            new(0, 0, null, 5),
-            new(1, 1, null, 3)
+            new MoveHistoryEntry(0, 0, null, 5, []),
+            new MoveHistoryEntry(1, 1, null, 3, [])
         };
 
         // Act

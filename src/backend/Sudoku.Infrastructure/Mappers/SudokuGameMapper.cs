@@ -20,15 +20,7 @@ public static class SudokuGameMapper
             Status = game.Status,
             Cells = game.GetCells().Select(ToDocument).ToList(),
             Statistics = ToDocument(game.Statistics),
-            MoveHistory = game.MoveHistory
-                .Select(m => new MoveHistoryDocument
-                {
-                    Row = m.Row,
-                    Column = m.Column,
-                    PreviousValue = m.PreviousValue,
-                    NewValue = m.NewValue
-                })
-                .ToList(),
+            History = game.GetHistory().Select(ToDocument).ToList(),
             CreatedAt = game.CreatedAt,
             StartedAt = game.StartedAt,
             CompletedAt = game.CompletedAt,
@@ -57,6 +49,11 @@ public static class SudokuGameMapper
             throw new InvalidPuzzleException();
         }
 
+        var history = document.History.Count > 0
+            ? document.History.Select(ToDomain)
+            : document.MoveHistory.Select(m =>
+                (GameHistoryEntry)new MoveHistoryEntry(m.Row, m.Column, m.PreviousValue, m.NewValue, []));
+
         var sudokuGame = SudokuGame.Reconstitute(
             GameId.Create(document.GameId),
             profileId,
@@ -66,7 +63,7 @@ public static class SudokuGameMapper
             document.Status,
             document.Statistics.ToDomain(),
             document.Cells.Select(c => c.ToDomain(size)).ToList(),
-            document.MoveHistory.Select(m => new MoveHistory(m.Row, m.Column, m.PreviousValue, m.NewValue)),
+            history,
             document.CreatedAt,
             document.StartedAt,
             document.CompletedAt,
@@ -75,6 +72,57 @@ public static class SudokuGameMapper
 
         return sudokuGame;
     }
+
+    private static GameHistoryEntryDocument ToDocument(GameHistoryEntry entry) => entry switch
+    {
+        MoveHistoryEntry move => new GameHistoryEntryDocument
+        {
+            Type = "Move",
+            Row = move.Row,
+            Column = move.Column,
+            PreviousValue = move.PreviousValue,
+            NewValue = move.NewValue,
+            PeerEliminations = move.PeerEliminations
+                .Select(p => new PeerEliminationDocument { Row = p.Row, Column = p.Column, Value = p.Value })
+                .ToList()
+        },
+        PossibleValueAddedEntry added => new GameHistoryEntryDocument
+        {
+            Type = "Added",
+            Row = added.Row,
+            Column = added.Column,
+            Value = added.Value
+        },
+        PossibleValueRemovedEntry removed => new GameHistoryEntryDocument
+        {
+            Type = "Removed",
+            Row = removed.Row,
+            Column = removed.Column,
+            Value = removed.Value
+        },
+        PossibleValuesClearedEntry cleared => new GameHistoryEntryDocument
+        {
+            Type = "Cleared",
+            Row = cleared.Row,
+            Column = cleared.Column,
+            PreviousValues = cleared.PreviousValues.ToList()
+        },
+        _ => throw new InvalidOperationException($"Unknown history entry type: {entry.GetType().Name}")
+    };
+
+    private static GameHistoryEntry ToDomain(GameHistoryEntryDocument document) => document.Type switch
+    {
+        "Move" => new MoveHistoryEntry(
+            document.Row,
+            document.Column,
+            document.PreviousValue,
+            document.NewValue,
+            document.PeerEliminations.Select(p => new PeerElimination(p.Row, p.Column, p.Value)).ToList()),
+        "Added" => new PossibleValueAddedEntry(document.Row, document.Column, document.Value ?? 0),
+        "Removed" => new PossibleValueRemovedEntry(document.Row, document.Column, document.Value ?? 0),
+        "Cleared" => new PossibleValuesClearedEntry(document.Row, document.Column, document.PreviousValues),
+        _ => throw new InvalidOperationException($"Unknown history entry type: {document.Type}")
+    };
 
     private static CellDocument ToDocument(this Cell cell)
     {

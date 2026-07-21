@@ -3,7 +3,7 @@ namespace Sudoku.Domain.Entities;
 public class SudokuGame : AggregateRoot
 {
     private readonly List<Cell> _cells;
-    private readonly List<MoveHistory> _moveHistory;
+    private readonly List<GameHistoryEntry> _history;
 
     public GameId Id { get; private set; }
     public ProfileId ProfileId { get; private set; }
@@ -16,12 +16,12 @@ public class SudokuGame : AggregateRoot
     public DateTime? StartedAt { get; private set; }
     public DateTime? CompletedAt { get; private set; }
     public DateTime? PausedAt { get; private set; }
-    public List<MoveHistory> MoveHistory => _moveHistory;
+    public IReadOnlyList<MoveHistoryEntry> MoveHistory => _history.OfType<MoveHistoryEntry>().ToList();
 
     private SudokuGame()
     {
         _cells = [];
-        _moveHistory = [];
+        _history = [];
     }
 
     public static SudokuGame Create(ProfileId profileId, PlayerAlias displayName, GameDifficulty difficulty, BoardSize size, IEnumerable<Cell> initialCells)
@@ -53,7 +53,7 @@ public class SudokuGame : AggregateRoot
         GameStatusEnum statusEnum,
         GameStatistics statistics,
         IEnumerable<Cell> cells,
-        IEnumerable<MoveHistory> moveHistory,
+        IEnumerable<GameHistoryEntry> history,
         DateTime createdAt,
         DateTime? startedAt,
         DateTime? completedAt,
@@ -75,7 +75,7 @@ public class SudokuGame : AggregateRoot
         };
 
         game._cells.AddRange(cells);
-        game._moveHistory.AddRange(moveHistory);
+        game._history.AddRange(history);
 
         return game;
     }
@@ -109,19 +109,50 @@ public class SudokuGame : AggregateRoot
         // Check if this is a valid move (only when setting a value, not clearing)
         var isValid = !value.HasValue || IsValidMove(row, column, value.Value);
 
-        // Record move history before making the change
         var previousValue = cell.Value;
-        _moveHistory.Add(new MoveHistory(row, column, previousValue, value));
-
         cell.SetValue(value);
         Statistics.RecordMove(isValid);
 
+        var peerEliminations = value.HasValue
+            ? EliminatePeerCandidates(row, column, value.Value)
+            : [];
+
+        _history.Add(new MoveHistoryEntry(row, column, previousValue, value, peerEliminations));
+
         AddDomainEvent(new MoveMadeEvent(Id, row, column, value, Statistics));
+
+        foreach (var elimination in peerEliminations)
+        {
+            AddDomainEvent(new PossibleValueRemovedEvent(Id, elimination.Row, elimination.Column, elimination.Value));
+        }
 
         if (IsGameComplete())
         {
             CompleteGame();
         }
+    }
+
+    private List<PeerElimination> EliminatePeerCandidates(int row, int column, int value)
+    {
+        var boxRow = row / Size.BoxSize * Size.BoxSize;
+        var boxColumn = column / Size.BoxSize * Size.BoxSize;
+
+        var peers = _cells.Where(c =>
+            (c.Row == row || c.Column == column ||
+             (c.Row >= boxRow && c.Row < boxRow + Size.BoxSize && c.Column >= boxColumn && c.Column < boxColumn + Size.BoxSize)) &&
+            !(c.Row == row && c.Column == column));
+
+        var eliminations = new List<PeerElimination>();
+        foreach (var peer in peers)
+        {
+            if (peer.PossibleValues.Contains(value))
+            {
+                peer.RemovePossibleValue(value);
+                eliminations.Add(new PeerElimination(peer.Row, peer.Column, value));
+            }
+        }
+
+        return eliminations;
     }
 
     /// <summary>
@@ -155,9 +186,16 @@ public class SudokuGame : AggregateRoot
         var index = _cells.FindIndex(c => c.Row == target.Row && c.Column == target.Column);
         _cells[index] = Cell.CreateHint(target.Row, target.Column, correctValue, Size);
 
+        var peerEliminations = EliminatePeerCandidates(target.Row, target.Column, correctValue);
+
         Statistics.RecordHint();
 
         AddDomainEvent(new HintRevealedEvent(Id, target.Row, target.Column, correctValue, Statistics));
+
+        foreach (var elimination in peerEliminations)
+        {
+            AddDomainEvent(new PossibleValueRemovedEvent(Id, elimination.Row, elimination.Column, elimination.Value));
+        }
 
         if (IsGameComplete())
         {
@@ -186,6 +224,7 @@ public class SudokuGame : AggregateRoot
         }
 
         cell.AddPossibleValue(value);
+        _history.Add(new PossibleValueAddedEntry(row, column, value));
         AddDomainEvent(new PossibleValueAddedEvent(Id, row, column, value));
     }
 
@@ -203,6 +242,7 @@ public class SudokuGame : AggregateRoot
         }
 
         cell.RemovePossibleValue(value);
+        _history.Add(new PossibleValueRemovedEntry(row, column, value));
         AddDomainEvent(new PossibleValueRemovedEvent(Id, row, column, value));
     }
 
@@ -219,7 +259,9 @@ public class SudokuGame : AggregateRoot
             throw new CellIsFixedException($"Cannot modify fixed cell at position ({row}, {column})");
         }
 
+        var previousValues = cell.PossibleValues.ToList();
         cell.ClearPossibleValues();
+        _history.Add(new PossibleValuesClearedEntry(row, column, previousValues));
         AddDomainEvent(new PossibleValuesClearedEvent(Id, row, column));
     }
 
@@ -230,21 +272,47 @@ public class SudokuGame : AggregateRoot
             throw new GameNotInProgressException($"Cannot undo move in {Status} state");
         }
 
-        if (_moveHistory.Count == 0)
+        if (_history.Count == 0)
         {
             throw new NoMoveHistoryException();
         }
 
-        var lastMove = _moveHistory[^1];
-        _moveHistory.RemoveAt(_moveHistory.Count - 1);
+        var lastEntry = _history[^1];
+        _history.RemoveAt(_history.Count - 1);
 
-        var cell = GetCell(lastMove.Row, lastMove.Column);
-        cell.SetValue(lastMove.PreviousValue);
+        switch (lastEntry)
+        {
+            case MoveHistoryEntry move:
+                var cell = GetCell(move.Row, move.Column);
+                cell.SetValue(move.PreviousValue);
 
-        // Decrement the move count in statistics
-        Statistics.UndoMove();
+                foreach (var elimination in move.PeerEliminations)
+                {
+                    GetCell(elimination.Row, elimination.Column).AddPossibleValue(elimination.Value);
+                }
 
-        AddDomainEvent(new MoveUndoneEvent(Id, lastMove.Row, lastMove.Column, lastMove.PreviousValue));
+                Statistics.UndoMove();
+                AddDomainEvent(new MoveUndoneEvent(Id, move.Row, move.Column, move.PreviousValue));
+                break;
+
+            case PossibleValueAddedEntry added:
+                GetCell(added.Row, added.Column).RemovePossibleValue(added.Value);
+                AddDomainEvent(new PossibleValueRemovedEvent(Id, added.Row, added.Column, added.Value));
+                break;
+
+            case PossibleValueRemovedEntry removed:
+                GetCell(removed.Row, removed.Column).AddPossibleValue(removed.Value);
+                AddDomainEvent(new PossibleValueAddedEvent(Id, removed.Row, removed.Column, removed.Value));
+                break;
+
+            case PossibleValuesClearedEntry cleared:
+                var clearedCell = GetCell(cleared.Row, cleared.Column);
+                foreach (var previousValue in cleared.PreviousValues)
+                {
+                    clearedCell.AddPossibleValue(previousValue);
+                }
+                break;
+        }
     }
 
     public void ResetGame()
@@ -275,7 +343,7 @@ public class SudokuGame : AggregateRoot
         }
 
         // Clear move history
-        _moveHistory.Clear();
+        _history.Clear();
 
         // Reset statistics but keep the original timestamp
         Statistics = GameStatistics.Create();
@@ -396,6 +464,8 @@ public class SudokuGame : AggregateRoot
 
     public IReadOnlyList<Cell> GetCells() => _cells.AsReadOnly();
 
+    public IReadOnlyList<GameHistoryEntry> GetHistory() => _history.AsReadOnly();
+
     public Cell GetCell(int row, int column)
     {
         return _cells.FirstOrDefault(c => c.Row == row && c.Column == column) ?? throw new CellNotFoundException($"Cell not found at position ({row}, {column})");
@@ -485,6 +555,21 @@ public class SudokuGame : AggregateRoot
     }
 }
 
-public record MoveHistory(int Row, int Column, int? PreviousValue, int? NewValue);
+public abstract record GameHistoryEntry(int Row, int Column);
+
+public sealed record PeerElimination(int Row, int Column, int Value);
+
+public sealed record MoveHistoryEntry(
+    int Row,
+    int Column,
+    int? PreviousValue,
+    int? NewValue,
+    IReadOnlyList<PeerElimination> PeerEliminations) : GameHistoryEntry(Row, Column);
+
+public sealed record PossibleValueAddedEntry(int Row, int Column, int Value) : GameHistoryEntry(Row, Column);
+
+public sealed record PossibleValueRemovedEntry(int Row, int Column, int Value) : GameHistoryEntry(Row, Column);
+
+public sealed record PossibleValuesClearedEntry(int Row, int Column, IReadOnlyList<int> PreviousValues) : GameHistoryEntry(Row, Column);
 
 public record ValidationResult(bool IsValid, List<string> Errors);

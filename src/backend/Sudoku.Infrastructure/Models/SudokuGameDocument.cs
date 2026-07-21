@@ -38,6 +38,9 @@ public class SudokuGameDocument
     [JsonProperty("moveHistory")]
     public List<MoveHistoryDocument> MoveHistory { get; set; } = [];
 
+    [JsonProperty("history")]
+    public List<GameHistoryEntryDocument> History { get; set; } = [];
+
     [JsonProperty("createdAt")]
     public DateTime CreatedAt { get; set; }
 
@@ -93,6 +96,11 @@ public class GameStatisticsDocument
     public DateTime? LastMoveAt { get; set; }
 }
 
+/// <summary>
+/// Legacy shape kept only so pre-existing Cosmos documents (saved before the unified
+/// <see cref="GameHistoryEntryDocument"/> changelog) can still be read. New saves use
+/// <see cref="SudokuGameDocument.History"/> exclusively.
+/// </summary>
 public class MoveHistoryDocument
 {
     [JsonProperty("row")]
@@ -106,4 +114,43 @@ public class MoveHistoryDocument
 
     [JsonProperty("newValue")]
     public int? NewValue { get; set; }
+}
+
+public class GameHistoryEntryDocument
+{
+    [JsonProperty("type")]
+    public string Type { get; set; } = string.Empty;
+
+    [JsonProperty("row")]
+    public int Row { get; set; }
+
+    [JsonProperty("column")]
+    public int Column { get; set; }
+
+    [JsonProperty("previousValue")]
+    public int? PreviousValue { get; set; }
+
+    [JsonProperty("newValue")]
+    public int? NewValue { get; set; }
+
+    [JsonProperty("value")]
+    public int? Value { get; set; }
+
+    [JsonProperty("previousValues")]
+    public List<int> PreviousValues { get; set; } = [];
+
+    [JsonProperty("peerEliminations")]
+    public List<PeerEliminationDocument> PeerEliminations { get; set; } = [];
+}
+
+public class PeerEliminationDocument
+{
+    [JsonProperty("row")]
+    public int Row { get; set; }
+
+    [JsonProperty("column")]
+    public int Column { get; set; }
+
+    [JsonProperty("value")]
+    public int Value { get; set; }
 }
