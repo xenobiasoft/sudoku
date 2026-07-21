@@ -90,7 +90,7 @@ public record MoveHistoryDto(
     int? PreviousValue,
     int? NewValue)
 {
-    public static MoveHistoryDto FromMoveHistory(MoveHistory moveHistory)
+    public static MoveHistoryDto FromMoveHistory(MoveHistoryEntry moveHistory)
     {
         return new MoveHistoryDto(
             moveHistory.Row,

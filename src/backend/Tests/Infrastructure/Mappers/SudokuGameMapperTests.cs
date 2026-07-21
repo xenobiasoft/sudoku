@@ -1,4 +1,5 @@
 using DepenMock.Attributes;
+using Sudoku.Domain.Entities;
 using Sudoku.Domain.Exceptions;
 using Sudoku.Domain.ValueObjects;
 using Sudoku.Infrastructure.Mappers;
@@ -10,6 +11,89 @@ namespace UnitTests.Infrastructure.Mappers;
 [LogOutput(LogOutputTiming.Always)]
 public class SudokuGameMapperTests : MoqBaseTestByType<SudokuGameDocument>
 {
+    [Fact]
+    public void RoundTrip_PreservesMoveHistoryWithPeerEliminations()
+    {
+        // Arrange
+        var game = GameFactory.CreateGameWithCells(CellsFactory.CreateEmptyCells());
+        game.StartGame();
+        game.AddPossibleValue(0, 5, 5);
+        game.MakeMove(0, 0, 5);
+
+        // Act
+        var document = SudokuGameMapper.ToDocument(game);
+        var restored = SudokuGameMapper.ToDomain(document);
+
+        // Assert
+        var moveEntry = restored.GetHistory().OfType<MoveHistoryEntry>().Single(m => m.Row == 0 && m.Column == 0);
+        moveEntry.PeerEliminations.Should().ContainSingle(p => p.Row == 0 && p.Column == 5 && p.Value == 5);
+
+        restored.UndoLastMove();
+        restored.GetCell(0, 0).HasValue.Should().BeFalse();
+        restored.GetCell(0, 5).PossibleValues.Should().Contain(5);
+    }
+
+    [Fact]
+    public void RoundTrip_PreservesPencilMarkEditHistory()
+    {
+        // Arrange
+        var game = GameFactory.CreateGameWithCells(CellsFactory.CreateEmptyCells());
+        game.StartGame();
+        game.AddPossibleValue(2, 2, 7);
+        game.RemovePossibleValue(2, 2, 7);
+        game.AddPossibleValue(3, 3, 4);
+        game.ClearPossibleValues(3, 3);
+        var totalMovesBeforeRoundTrip = game.Statistics.TotalMoves;
+
+        // Act
+        var document = SudokuGameMapper.ToDocument(game);
+        var restored = SudokuGameMapper.ToDomain(document);
+
+        // Assert - undoing the most recent (pencil-mark) entry must not touch move statistics
+        restored.UndoLastMove();
+        restored.GetCell(3, 3).PossibleValues.Should().Contain(4);
+        restored.Statistics.TotalMoves.Should().Be(totalMovesBeforeRoundTrip);
+    }
+
+    [Fact]
+    public void ToDomain_WithLegacyMoveHistoryDocumentAndNoHistoryField_SynthesizesMoveEntriesWithEmptyPeerEliminations()
+    {
+        // Arrange - simulates a document saved before the unified changelog existed
+        var game = GameFactory.CreateGameWithCells(CellsFactory.CreateEmptyCells());
+        game.StartGame();
+        game.MakeMove(0, 0, 5);
+        var document = SudokuGameMapper.ToDocument(game);
+        document.History = [];
+        document.MoveHistory = [new MoveHistoryDocument { Row = 0, Column = 0, PreviousValue = null, NewValue = 5 }];
+
+        // Act
+        var restored = SudokuGameMapper.ToDomain(document);
+
+        // Assert
+        var moveEntry = restored.GetHistory().OfType<MoveHistoryEntry>().Single();
+        moveEntry.Row.Should().Be(0);
+        moveEntry.Column.Should().Be(0);
+        moveEntry.NewValue.Should().Be(5);
+        moveEntry.PeerEliminations.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ToDomain_WithEmptyHistoryAndEmptyLegacyMoveHistory_ReturnsEmptyHistory()
+    {
+        // Arrange
+        var game = GameFactory.CreateGameWithCells(CellsFactory.CreateEmptyCells());
+        game.StartGame();
+        var document = SudokuGameMapper.ToDocument(game);
+        document.History = [];
+        document.MoveHistory = [];
+
+        // Act
+        var restored = SudokuGameMapper.ToDomain(document);
+
+        // Assert
+        restored.GetHistory().Should().BeEmpty();
+    }
+
     [Theory]
     [InlineData("Easy")]
     [InlineData("Medium")]
