@@ -109,6 +109,23 @@ public class SudokuGameTests : MoqBaseTestByType<SudokuGame>
         evt.DisplayName.Should().Be(displayName);
     }
 
+    [Theory]
+    [InlineData(3)]
+    [InlineData(4)]
+    public void Create_WithDifficultyUnsupportedByTheBoardSize_ThrowsUnsupportedDifficultyException(int difficultyValue)
+    {
+        // Arrange
+        var difficulty = GameDifficulty.FromValue(difficultyValue);
+        var cells = GenerateEmptyCells();
+
+        // Act
+        Action act = () => SudokuGame.Create(ProfileId.New(), PlayerAlias.Create("TestPlayer"), difficulty, BoardSize.Sixteen, cells);
+
+        // Assert
+        act.Should().Throw<UnsupportedDifficultyException>()
+            .WithMessage($"{difficulty.Name} is not available for 16x16 boards.");
+    }
+
     [Fact]
     public void IsGameComplete_WithAllCellsFilledCorrectly_ReturnsTrue()
     {

@@ -26,6 +26,11 @@ public class SudokuGame : AggregateRoot
 
     public static SudokuGame Create(ProfileId profileId, PlayerAlias displayName, GameDifficulty difficulty, BoardSize size, IEnumerable<Cell> initialCells)
     {
+        if (!size.Supports(difficulty))
+        {
+            throw new UnsupportedDifficultyException(size, difficulty);
+        }
+
         var game = new SudokuGame
         {
             Id = GameId.New(),

@@ -209,7 +209,7 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
     public async Task Handle_When16x16PoolEmpty_ReturnsFailureWithPoolEmptyErrorCodeAndDoesNotCallGenerator()
     {
         // Arrange
-        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Expert", 16);
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", "Medium", 16);
 
         _mockPuzzlePoolService.SetupDequeueReturnsEmpty();
 
@@ -244,6 +244,48 @@ public class CreateGameCommandHandlerTests : MoqBaseTestByAbstraction<CreateGame
         // Assert
         result.IsSuccess.Should().BeTrue();
         _mockPuzzleGenerator.VerifyGeneratePuzzleAsyncCalledOnce(difficulty, BoardSize.Nine);
+    }
+
+    [Theory]
+    [InlineData("Hard")]
+    [InlineData("Expert")]
+    public async Task Handle_With16x16AndUnsupportedDifficulty_ReturnsFailureAndNeverTouchesThePool(string difficulty)
+    {
+        // Arrange
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", difficulty, 16);
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeFalse();
+        result.Error.Should().Be($"{difficulty} is not available for 16x16 boards.");
+        result.ErrorCode.Should().BeNull();
+        _mockPuzzlePoolService.VerifyDequeueNotCalled();
+        _mockPuzzleGenerator.VerifyGeneratePuzzleAsyncNeverCalled();
+        _mockGameRepository.VerifySaveNeverCalled();
+    }
+
+    [Theory]
+    [InlineData("Hard")]
+    [InlineData("Expert")]
+    public async Task Handle_With9x9AndHigherDifficulties_StillCreatesGame(string difficulty)
+    {
+        // Arrange — regression: the 16x16 restriction must not leak onto the classic board
+        var puzzle = CreateTestPuzzle();
+        var command = new CreateGameCommand(Guid.NewGuid().ToString(), "TestPlayer", difficulty, 9);
+
+        _mockPuzzlePoolService.SetupDequeueReturns(puzzle);
+
+        var sut = ResolveSut();
+
+        // Act
+        var result = await sut.Handle(command, CancellationToken.None);
+
+        // Assert
+        result.IsSuccess.Should().BeTrue();
     }
 
     [Fact]

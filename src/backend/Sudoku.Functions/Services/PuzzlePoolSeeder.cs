@@ -16,18 +16,13 @@ public class PuzzlePoolSeeder(IPuzzlePoolService puzzlePoolService, ILogger<Puzz
     /// </summary>
     public static readonly TimeSpan TimeBudget = TimeSpan.FromMinutes(4);
 
-    // Fast/cheap combinations first so a single invocation reliably tops up the 9x9 pools even
-    // if it runs out of budget partway through the slower 16x16 Hard/Expert generation.
+    // Driven off BoardSize.SupportedDifficulties so the pools stay in step with what players can
+    // actually start. Fast/cheap 9x9 combinations run first so a single invocation reliably tops
+    // those up even if it runs out of budget partway through the slower 16x16 generation.
     private static readonly (BoardSize Size, GameDifficulty Difficulty, int Target)[] Combinations =
     [
-        (BoardSize.Nine, GameDifficulty.Easy, TargetPoolSize),
-        (BoardSize.Nine, GameDifficulty.Medium, TargetPoolSize),
-        (BoardSize.Nine, GameDifficulty.Hard, TargetPoolSize),
-        (BoardSize.Nine, GameDifficulty.Expert, TargetPoolSize),
-        (BoardSize.Sixteen, GameDifficulty.Easy, TargetPoolSizeSixteen),
-        (BoardSize.Sixteen, GameDifficulty.Medium, TargetPoolSizeSixteen),
-        (BoardSize.Sixteen, GameDifficulty.Hard, TargetPoolSizeSixteen),
-        (BoardSize.Sixteen, GameDifficulty.Expert, TargetPoolSizeSixteen)
+        .. BoardSize.Nine.SupportedDifficulties.Select(d => (BoardSize.Nine, d, TargetPoolSize)),
+        .. BoardSize.Sixteen.SupportedDifficulties.Select(d => (BoardSize.Sixteen, d, TargetPoolSizeSixteen))
     ];
 
     public async Task<int> SeedPoolAsync()

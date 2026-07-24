@@ -54,7 +54,7 @@ public class PuzzlePoolSeederTests : MoqBaseTestByAbstraction<PuzzlePoolSeeder, 
     }
 
     [Fact]
-    public async Task SeedPoolAsync_ChecksEachOfTheEightCombinationsExactlyOnce()
+    public async Task SeedPoolAsync_ChecksEachSupportedCombinationExactlyOnce()
     {
         // Arrange
         SetupAllCounts(nineCount: TargetPoolSizeNine, sixteenCount: TargetPoolSizeSixteen);
@@ -71,9 +71,27 @@ public class PuzzlePoolSeederTests : MoqBaseTestByAbstraction<PuzzlePoolSeeder, 
         _mockPuzzlePoolService.VerifyGetAvailableCountCalledOnce(BoardSize.Nine, GameDifficulty.Expert);
         _mockPuzzlePoolService.VerifyGetAvailableCountCalledOnce(BoardSize.Sixteen, GameDifficulty.Easy);
         _mockPuzzlePoolService.VerifyGetAvailableCountCalledOnce(BoardSize.Sixteen, GameDifficulty.Medium);
-        _mockPuzzlePoolService.VerifyGetAvailableCountCalledOnce(BoardSize.Sixteen, GameDifficulty.Hard);
-        _mockPuzzlePoolService.VerifyGetAvailableCountCalledOnce(BoardSize.Sixteen, GameDifficulty.Expert);
     }
+
+    [Theory]
+    [MemberData(nameof(UnsupportedSixteenDifficulties))]
+    public async Task SeedPoolAsync_ForUnsupportedSixteenDifficulty_NeverInspectsOrSeedsThePool(GameDifficulty difficulty)
+    {
+        // Arrange — every pool is empty, so only the unsupported combinations should be skipped
+        SetupAllCounts(nineCount: TargetPoolSizeNine, sixteenCount: 0);
+
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SeedPoolAsync();
+
+        // Assert
+        _mockPuzzlePoolService.VerifyGetAvailableCountNeverCalled(BoardSize.Sixteen, difficulty);
+        _mockPuzzlePoolService.VerifySeedCalledTimes(BoardSize.Sixteen, difficulty, 1, 0);
+    }
+
+    public static TheoryData<GameDifficulty> UnsupportedSixteenDifficulties =>
+        [GameDifficulty.Hard, GameDifficulty.Expert];
 
     [Theory]
     [InlineData(0, 10)]
@@ -116,8 +134,6 @@ public class PuzzlePoolSeederTests : MoqBaseTestByAbstraction<PuzzlePoolSeeder, 
         // Assert
         _mockPuzzlePoolService.VerifySeedCalledTimes(BoardSize.Sixteen, GameDifficulty.Easy, 1, 2);
         _mockPuzzlePoolService.VerifySeedCalledTimes(BoardSize.Sixteen, GameDifficulty.Medium, 1, 0);
-        _mockPuzzlePoolService.VerifySeedCalledTimes(BoardSize.Sixteen, GameDifficulty.Hard, 1, 0);
-        _mockPuzzlePoolService.VerifySeedCalledTimes(BoardSize.Sixteen, GameDifficulty.Expert, 1, 0);
         _mockPuzzlePoolService.VerifySeedCalledTimes(BoardSize.Nine, GameDifficulty.Easy, 1, 0);
     }
 
@@ -146,7 +162,5 @@ public class PuzzlePoolSeederTests : MoqBaseTestByAbstraction<PuzzlePoolSeeder, 
         _mockPuzzlePoolService.SetupGetAvailableCountReturns(BoardSize.Nine, GameDifficulty.Expert, nineCount);
         _mockPuzzlePoolService.SetupGetAvailableCountReturns(BoardSize.Sixteen, GameDifficulty.Easy, sixteenCount);
         _mockPuzzlePoolService.SetupGetAvailableCountReturns(BoardSize.Sixteen, GameDifficulty.Medium, sixteenCount);
-        _mockPuzzlePoolService.SetupGetAvailableCountReturns(BoardSize.Sixteen, GameDifficulty.Hard, sixteenCount);
-        _mockPuzzlePoolService.SetupGetAvailableCountReturns(BoardSize.Sixteen, GameDifficulty.Expert, sixteenCount);
     }
 }

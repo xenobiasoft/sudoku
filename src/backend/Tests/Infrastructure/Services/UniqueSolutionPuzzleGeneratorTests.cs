@@ -17,6 +17,11 @@ public class UniqueSolutionPuzzleGeneratorTests : MoqBaseTestByAbstraction<Uniqu
         [GameDifficulty.Expert],
     ];
 
+    // 16x16 only offers what BoardSize.Sixteen supports; Hard/Expert digging at that size runs
+    // for minutes per puzzle and is no longer reachable from the app.
+    public static IEnumerable<object[]> SixteenDifficulties =>
+        BoardSize.Sixteen.SupportedDifficulties.Select(d => new object[] { d });
+
     [Theory]
     [MemberData(nameof(Difficulties))]
     public async Task GeneratePuzzleAsync_ForAnyDifficulty_ProducesAValidPuzzle(GameDifficulty difficulty)
@@ -90,9 +95,10 @@ public class UniqueSolutionPuzzleGeneratorTests : MoqBaseTestByAbstraction<Uniqu
     // Generation at 16x16 is inherently far more expensive than 9x9 (256 cells vs 81), and
     // gets steeply more expensive as the empty-cell target grows (Phase 2 measurement: see
     // UniqueSolutionPuzzleGenerator's remarks). Easy is fast enough to run unconditionally
-    // as a smoke test; Medium/Hard/Expert are tagged SlowGeneration and excluded from the
-    // default CI run (`--filter Category!=SlowGeneration`) so the fast unit-test suite stays
-    // fast, per the spec's testing-strategy guidance. Run them on demand or nightly.
+    // as a smoke test; Medium is tagged SlowGeneration and excluded from the default CI run
+    // (`--filter Category!=SlowGeneration`) so the fast unit-test suite stays fast, per the
+    // spec's testing-strategy guidance. Run it on demand or nightly. Hard/Expert are not
+    // covered at 16x16 — BoardSize.Sixteen no longer offers them.
 
     [Fact]
     public async Task GeneratePuzzleAsync_SixteenEasy_ProducesAValidUniqueSolutionPuzzleQuickly()
@@ -112,7 +118,7 @@ public class UniqueSolutionPuzzleGeneratorTests : MoqBaseTestByAbstraction<Uniqu
 
     [Theory]
     [Trait("Category", "SlowGeneration")]
-    [MemberData(nameof(Difficulties))]
+    [MemberData(nameof(SixteenDifficulties))]
     public async Task GeneratePuzzleAsync_ForAnySixteenDifficulty_ProducesAValidPuzzle(GameDifficulty difficulty)
     {
         var sut = ResolveSut();
@@ -126,7 +132,7 @@ public class UniqueSolutionPuzzleGeneratorTests : MoqBaseTestByAbstraction<Uniqu
 
     [Theory]
     [Trait("Category", "SlowGeneration")]
-    [MemberData(nameof(Difficulties))]
+    [MemberData(nameof(SixteenDifficulties))]
     public async Task GeneratePuzzleAsync_ForAnySixteenDifficulty_ProducesExactlyOneSolution(GameDifficulty difficulty)
     {
         var sut = ResolveSut();
@@ -139,7 +145,7 @@ public class UniqueSolutionPuzzleGeneratorTests : MoqBaseTestByAbstraction<Uniqu
 
     [Theory]
     [Trait("Category", "SlowGeneration")]
-    [MemberData(nameof(Difficulties))]
+    [MemberData(nameof(SixteenDifficulties))]
     public async Task GeneratePuzzleAsync_ForAnySixteenDifficulty_RemainingCluesAreFixed(GameDifficulty difficulty)
     {
         var sut = ResolveSut();
@@ -152,7 +158,7 @@ public class UniqueSolutionPuzzleGeneratorTests : MoqBaseTestByAbstraction<Uniqu
 
     [Theory]
     [Trait("Category", "SlowGeneration")]
-    [MemberData(nameof(Difficulties))]
+    [MemberData(nameof(SixteenDifficulties))]
     public async Task GeneratePuzzleAsync_ForAnySixteenDifficulty_ClueCountStaysWithinDifficultyBand(GameDifficulty difficulty)
     {
         var sut = ResolveSut();

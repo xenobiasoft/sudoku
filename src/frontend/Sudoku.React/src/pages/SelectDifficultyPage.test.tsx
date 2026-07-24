@@ -75,8 +75,34 @@ describe('SelectDifficultyPage', () => {
     const user = userEvent.setup();
     renderPage();
     await user.click(screen.getByRole('button', { name: /Giant 16×16/i }));
-    await user.click(screen.getByRole('button', { name: /Expert/i }));
-    expect(mockNavigate).toHaveBeenCalledWith('/new/Expert?size=16');
+    await user.click(screen.getByRole('button', { name: /Medium/i }));
+    expect(mockNavigate).toHaveBeenCalledWith('/new/Medium?size=16');
+  });
+
+  it('hides Hard and Expert when Giant 16x16 is selected', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole('button', { name: /Giant 16×16/i }));
+    expect(screen.getByRole('button', { name: /Easy/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Medium/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Hard/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Expert/i })).not.toBeInTheDocument();
+  });
+
+  it('explains the reduced difficulty choice when Giant 16x16 is selected', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole('button', { name: /Giant 16×16/i }));
+    expect(screen.getByText(/Easy and Medium/i)).toBeInTheDocument();
+  });
+
+  it('restores Hard and Expert when switching back to Classic 9x9', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await user.click(screen.getByRole('button', { name: /Giant 16×16/i }));
+    await user.click(screen.getByRole('button', { name: /Classic 9×9/i }));
+    expect(screen.getByRole('button', { name: /Hard/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Expert/i })).toBeInTheDocument();
   });
 
   it('navigates to / when the header back affordance is clicked', async () => {
