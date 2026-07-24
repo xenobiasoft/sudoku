@@ -192,7 +192,7 @@ public class GetPlayerStatsQueryHandlerTests
         // Arrange
         _mockCompletionRepository.SetupGetByProfileId([]);
         _mockGameRepository.SetupGetByProfileId([
-            GameFactory.CreateGameWithDifficulty(GameDifficulty.Hard, BoardSize.Sixteen)
+            GameFactory.CreateLegacyGame(GameDifficulty.Hard, BoardSize.Sixteen)
         ]);
         var sut = ResolveSut();
 

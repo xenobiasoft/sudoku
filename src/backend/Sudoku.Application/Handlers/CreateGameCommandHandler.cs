@@ -23,6 +23,13 @@ public class CreateGameCommandHandler(
             var difficulty = GameDifficulty.FromName(request.Difficulty);
             var size = BoardSize.FromValue(request.Size);
 
+            // Checked before dequeuing so an unsupported request never consumes a pooled puzzle.
+            if (!size.Supports(difficulty))
+            {
+                logger.LogWarning("Rejected game creation: {Difficulty} is not supported for {Size}", difficulty.Name, size);
+                return Result<string>.Failure($"{difficulty.Name} is not available for {size} boards.");
+            }
+
             var puzzle = await puzzlePoolService.DequeueAsync(size, difficulty);
 
             if (puzzle is null)

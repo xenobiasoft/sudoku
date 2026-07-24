@@ -1,4 +1,5 @@
 using Sudoku.Domain.Entities;
+using Sudoku.Domain.Enums;
 using Sudoku.Domain.ValueObjects;
 
 namespace UnitTests.Helpers.Factories;
@@ -66,6 +67,29 @@ public static class GameFactory
         game.StartGame();
 
         return game;
+    }
+
+    /// <summary>
+    /// Rebuilds a game the way a repository does, bypassing the <see cref="SudokuGame.Create"/>
+    /// invariants. Use this for size/difficulty combinations that are no longer offered but may
+    /// still exist in storage from before they were retired (e.g. 16x16 Hard/Expert).
+    /// </summary>
+    public static SudokuGame CreateLegacyGame(GameDifficulty difficulty, BoardSize size)
+    {
+        return SudokuGame.Reconstitute(
+            GameId.New(),
+            ProfileId.New(),
+            PlayerAlias.Create("DefaultPlayer"),
+            difficulty,
+            size,
+            GameStatusEnum.InProgress,
+            GameStatistics.Create(),
+            CellsFactory.CreateIncompleteCells(),
+            [],
+            DateTime.UtcNow,
+            DateTime.UtcNow,
+            null,
+            null);
     }
 
     public static SudokuGame CreateInvalidGame()

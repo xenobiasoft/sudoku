@@ -11,6 +11,10 @@ const DIFFICULTIES = [
   { name: 'Expert', subtitle: 'For the deep end', dots: '····' },
 ] as const;
 
+// Mirrors BoardSize.SupportedDifficulties on the server: generating a Hard or Expert 16x16
+// grid takes minutes, so those combinations are not offered.
+const SIXTEEN_DIFFICULTIES: readonly string[] = ['Easy', 'Medium'];
+
 export default function SelectDifficultyPage() {
   const navigate = useNavigate();
   const { isNewPlayer } = usePlayerService();
@@ -19,6 +23,11 @@ export default function SelectDifficultyPage() {
   useEffect(() => {
     if (isNewPlayer) navigate('/');
   }, [isNewPlayer, navigate]);
+
+  const difficulties =
+    selectedSize === 16
+      ? DIFFICULTIES.filter(({ name }) => SIXTEEN_DIFFICULTIES.includes(name))
+      : DIFFICULTIES;
 
   return (
     <Layout title="New game">
@@ -45,8 +54,12 @@ export default function SelectDifficultyPage() {
           </button>
         </div>
 
+        {selectedSize === 16 && (
+          <p className={styles.sizeNote}>Giant boards come in Easy and Medium.</p>
+        )}
+
         <div className={styles.options}>
-          {DIFFICULTIES.map(({ name, subtitle, dots }) => (
+          {difficulties.map(({ name, subtitle, dots }) => (
             <button
               key={name}
               type="button"

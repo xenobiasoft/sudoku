@@ -55,6 +55,11 @@ public static class MockPuzzlePoolServiceExtensions
             mock.Verify(x => x.GetAvailableCountAsync(size, difficulty), Times.Once);
         }
 
+        public void VerifyGetAvailableCountNeverCalled(BoardSize size, GameDifficulty difficulty)
+        {
+            mock.Verify(x => x.GetAvailableCountAsync(size, difficulty), Times.Never);
+        }
+
         public void VerifySeedCalledOnce(BoardSize size, GameDifficulty difficulty, int expectedCount)
         {
             mock.Verify(x => x.SeedAsync(size, difficulty, expectedCount), Times.Once);
