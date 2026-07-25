@@ -21,7 +21,11 @@ try
     logger.LogInformation("Starting Sudoku Distributed Application...");
 
     var cosmosDb = builder.AddAzureCosmosDB("CosmosDb").RunAsEmulator();
-    var storage = builder.AddAzureStorage("storage").RunAsEmulator();
+
+    // A data volume keeps the seeded puzzle pool across AppHost restarts. Without it the
+    // emulator starts empty every run, and because 16x16 has no on-demand generation
+    // fallback, creating a 16x16 game fails with 503 until the pool is seeded by hand.
+    var storage = builder.AddAzureStorage("storage").RunAsEmulator(emulator => emulator.WithDataVolume());
     var puzzleBlobs = storage.AddBlobs("blobs");
 
     logger.LogInformation("Configuring Sudoku API project...");

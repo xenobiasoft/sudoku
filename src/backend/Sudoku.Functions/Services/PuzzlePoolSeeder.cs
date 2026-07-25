@@ -25,12 +25,12 @@ public class PuzzlePoolSeeder(IPuzzlePoolService puzzlePoolService, ILogger<Puzz
         .. BoardSize.Sixteen.SupportedDifficulties.Select(d => (BoardSize.Sixteen, d, TargetPoolSizeSixteen))
     ];
 
-    public async Task<int> SeedPoolAsync()
+    public async Task<int> SeedPoolAsync(PuzzlePoolSeedFilter? filter = null)
     {
         var totalSeeded = 0;
         var stopwatch = Stopwatch.StartNew();
 
-        foreach (var (size, difficulty, target) in Combinations)
+        foreach (var (size, difficulty, target) in Filter(filter))
         {
             var currentCount = await puzzlePoolService.GetAvailableCountAsync(size, difficulty);
 
@@ -59,4 +59,13 @@ public class PuzzlePoolSeeder(IPuzzlePoolService puzzlePoolService, ILogger<Puzz
 
         return totalSeeded;
     }
+
+    // Filtering the supported matrix rather than building combinations from the filter keeps the
+    // BoardSize.SupportedDifficulties guarantee intact: asking for an unsupported pairing such as
+    // 16x16 Hard simply matches nothing instead of generating a puzzle players can never start.
+    private static IEnumerable<(BoardSize Size, GameDifficulty Difficulty, int Target)> Filter(PuzzlePoolSeedFilter? filter) =>
+        Combinations
+            .Where(c => filter?.Size is null || c.Size == filter.Size)
+            .Where(c => filter?.Difficulty is null || c.Difficulty == filter.Difficulty)
+            .Select(c => (c.Size, c.Difficulty, filter?.Target ?? c.Target));
 }

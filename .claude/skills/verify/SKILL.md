@@ -44,8 +44,22 @@ Skip that and you'll silently land back on the home page and your selectors won'
   concurrency guard, so **every new game POSTs twice and creates two games** in dev. This is
   not difficulty-specific and not a regression — don't chase it as a bug in your change.
   (A production build won't double-invoke.)
-- **A fresh local puzzle pool is empty**, so the first game per difficulty takes the on-demand
-  generation fallback and is slower than prod (where the blob pool is pre-seeded).
+- **A fresh local puzzle pool is empty.** At 9x9 that only costs speed — the first game per
+  difficulty falls back to on-demand generation. **At 16x16 there is no fallback**, so creating
+  a game returns `503 PUZZLE_POOL_EMPTY` and the UI parks on "Preparing puzzles — try again in
+  a moment" forever. Nothing seeds the pool for you locally: the seed Function is a 02:00 timer
+  and the replenish Function is Event Grid, which Azurite never fires. Seed it yourself:
+
+  ```bash
+  # find the port: it's the --port arg on the `func start` process
+  curl -X POST "http://localhost:<funcPort>/api/seed-puzzle-pool?size=16&difficulty=Easy"
+  ```
+
+  Omit the query params to top up the whole matrix (~11s from empty). Local auth is not
+  enforced, so no function key is needed. The emulator now has a data volume, so a seeded pool
+  survives AppHost restarts — but each created game still consumes one puzzle with no
+  replenishment, and StrictMode's double-create burns two per UI run, so re-seed when a
+  previously working flow starts 503ing.
 - Ground truth for a board is the API payload, not the DOM: `GET /api/players/{pid}/games/{id}`
   → count `cells` where `value === null`.
 
