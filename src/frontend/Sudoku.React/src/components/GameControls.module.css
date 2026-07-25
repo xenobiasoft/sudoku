@@ -18,6 +18,19 @@
   gap: 6px;
 }
 
+/* On a widened 16x16 layout the keys get ~75px of column, and the square-ish
+   default ratio would make them 86px tall around a 28px glyph. Flatten them so
+   the pad stays edge-aligned with the board without the dead space. */
+.numberPad16 .numBtn {
+  aspect-ratio: 1 / 0.72;
+}
+
+@media (max-width: 480px) {
+  .numberPad16 .numBtn {
+    aspect-ratio: 1 / 1.15;
+  }
+}
+
 @media (max-width: 480px) {
   .numberPad16 {
     grid-template-columns: repeat(4, 1fr);

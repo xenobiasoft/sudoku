@@ -43,4 +43,29 @@ describe('Layout', () => {
     expect(screen.queryByRole('button', { name: /switch to (dark|light) theme/i })).not.toBeInTheDocument();
     expect(screen.getByText('only child')).toBeInTheDocument();
   });
+
+  it('widens the content column when wide is set', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <Layout wide>
+          <span>wide child</span>
+        </Layout>
+      </MemoryRouter>
+    );
+    // CSS Modules hash class names, so match on the stable prefix.
+    const column = container.querySelector('[class*="column"]');
+    expect(column?.className).toMatch(/columnWide/);
+  });
+
+  it('does not widen the content column by default', () => {
+    const { container } = render(
+      <MemoryRouter>
+        <Layout>
+          <span>narrow child</span>
+        </Layout>
+      </MemoryRouter>
+    );
+    const column = container.querySelector('[class*="column"]');
+    expect(column?.className).not.toMatch(/columnWide/);
+  });
 });
