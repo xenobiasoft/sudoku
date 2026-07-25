@@ -5,8 +5,12 @@
 
 .board {
   display: grid;
-  grid-template-columns: repeat(var(--grid-size, 9), 1fr);
-  grid-template-rows: repeat(var(--grid-size, 9), 1fr);
+  /* minmax(0, ...) rather than a bare 1fr: a 1fr track floors at the item's
+     min-content size, and a cell's min-content (font + aspect-ratio) exceeds
+     1/16th of the board. At 16x16 that pushed the grid past its own square
+     box and `overflow: hidden` silently clipped the last rows and columns. */
+  grid-template-columns: repeat(var(--grid-size, 9), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--grid-size, 9), minmax(0, 1fr));
   width: 100%;
   max-width: 440px;
   aspect-ratio: 1 / 1;

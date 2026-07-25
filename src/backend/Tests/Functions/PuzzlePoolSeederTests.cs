@@ -154,6 +154,84 @@ public class PuzzlePoolSeederTests : MoqBaseTestByAbstraction<PuzzlePoolSeeder, 
         totalSeeded.Should().Be(expectedTotal);
     }
 
+    [Fact]
+    public async Task SeedPoolAsync_WithSizeFilter_OnlySeedsThatBoardSize()
+    {
+        // Arrange — every pool empty so an unfiltered run would touch all six combinations
+        SetupAllCounts(nineCount: 0, sixteenCount: 0);
+
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SeedPoolAsync(new PuzzlePoolSeedFilter(BoardSize.Sixteen));
+
+        // Assert
+        _mockPuzzlePoolService.VerifySeedCalledTimes(BoardSize.Sixteen, GameDifficulty.Easy, 1, TargetPoolSizeSixteen);
+        _mockPuzzlePoolService.VerifySeedCalledTimes(BoardSize.Nine, GameDifficulty.Easy, 1, 0);
+    }
+
+    [Fact]
+    public async Task SeedPoolAsync_WithSizeAndDifficultyFilter_OnlySeedsThatCombination()
+    {
+        // Arrange
+        SetupAllCounts(nineCount: 0, sixteenCount: 0);
+
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SeedPoolAsync(new PuzzlePoolSeedFilter(BoardSize.Sixteen, GameDifficulty.Easy));
+
+        // Assert
+        _mockPuzzlePoolService.VerifySeedCalledTimes(BoardSize.Sixteen, GameDifficulty.Easy, 1, TargetPoolSizeSixteen);
+        _mockPuzzlePoolService.VerifySeedCalledTimes(BoardSize.Sixteen, GameDifficulty.Medium, 1, 0);
+    }
+
+    [Fact]
+    public async Task SeedPoolAsync_WithTargetOverride_SeedsUpToTheOverriddenTarget()
+    {
+        // Arrange
+        SetupAllCounts(nineCount: 0, sixteenCount: 0);
+
+        var sut = ResolveSut();
+
+        // Act
+        await sut.SeedPoolAsync(new PuzzlePoolSeedFilter(BoardSize.Sixteen, GameDifficulty.Easy, Target: 2));
+
+        // Assert
+        _mockPuzzlePoolService.VerifySeedCalledTimes(BoardSize.Sixteen, GameDifficulty.Easy, 1, 2);
+    }
+
+    [Theory]
+    [MemberData(nameof(UnsupportedSixteenDifficulties))]
+    public async Task SeedPoolAsync_WithFilterForUnsupportedCombination_SeedsNothing(GameDifficulty difficulty)
+    {
+        // Arrange — the filter narrows the supported matrix, it never widens it
+        SetupAllCounts(nineCount: 0, sixteenCount: 0);
+
+        var sut = ResolveSut();
+
+        // Act
+        var totalSeeded = await sut.SeedPoolAsync(new PuzzlePoolSeedFilter(BoardSize.Sixteen, difficulty));
+
+        // Assert
+        totalSeeded.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task SeedPoolAsync_WithNullFilter_SeedsTheWholeSupportedMatrix()
+    {
+        // Arrange
+        SetupAllCounts(nineCount: 0, sixteenCount: 0);
+
+        var sut = ResolveSut();
+
+        // Act
+        var totalSeeded = await sut.SeedPoolAsync(null);
+
+        // Assert
+        totalSeeded.Should().Be((TargetPoolSizeNine * 4) + (TargetPoolSizeSixteen * 2));
+    }
+
     private void SetupAllCounts(int nineCount, int sixteenCount)
     {
         _mockPuzzlePoolService.SetupGetAvailableCountReturns(BoardSize.Nine, GameDifficulty.Easy, nineCount);

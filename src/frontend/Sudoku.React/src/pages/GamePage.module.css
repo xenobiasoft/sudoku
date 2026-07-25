@@ -6,3 +6,9 @@
   max-width: 440px;
   animation: sd-fadeup 0.4s ease both;
 }
+
+/* Lets .boardLarge's 640px cap actually apply — at 440px the 16x16 grid was
+   squeezed to 25px cells. Pairs with Layout's `wide` column. */
+.gameViewLarge {
+  max-width: 640px;
+}

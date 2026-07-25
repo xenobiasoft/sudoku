@@ -15,6 +15,13 @@
   min-height: 100vh;
 }
 
+/* 16x16 needs room for 16 legible cells. 640px of board + .main's 28px side
+   padding; below ~622px viewport the padding clamps down and `width: 100%`
+   takes over, so narrow screens are unaffected. */
+.columnWide {
+  max-width: 696px;
+}
+
 .header {
   display: flex;
   align-items: center;

@@ -13,9 +13,11 @@ interface LayoutProps {
   onBack?: () => void;
   /** Label for the back affordance (default "Home"). */
   backLabel?: string;
+  /** Widen the content column for dense content (the 16x16 board). */
+  wide?: boolean;
 }
 
-export default function Layout({ children, hideHeader = false, title, onBack, backLabel = 'Home' }: LayoutProps) {
+export default function Layout({ children, hideHeader = false, title, onBack, backLabel = 'Home', wide = false }: LayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
@@ -25,7 +27,7 @@ export default function Layout({ children, hideHeader = false, title, onBack, ba
 
   return (
     <div className={styles.page}>
-      <div className={styles.column}>
+      <div className={wide ? `${styles.column} ${styles.columnWide}` : styles.column}>
         {!hideHeader && (
           <header className={styles.header}>
             <div className={styles.left}>

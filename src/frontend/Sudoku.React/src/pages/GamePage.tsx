@@ -306,10 +306,11 @@ export default function GamePage() {
     ? game.difficulty.charAt(0).toUpperCase() + game.difficulty.slice(1)
     : '';
   const size = game.size ?? deriveSize(game.cells);
+  const isLargeBoard = size === 16;
 
   return (
-    <Layout title={difficultyLabel} onBack={handleHome}>
-      <div className={styles.gameView}>
+    <Layout title={difficultyLabel} onBack={handleHome} wide={isLargeBoard}>
+      <div className={isLargeBoard ? `${styles.gameView} ${styles.gameViewLarge}` : styles.gameView}>
         <GameStats
           statistics={game.statistics}
           elapsedSeconds={elapsedSeconds}
