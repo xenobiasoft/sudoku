@@ -111,8 +111,9 @@ resource apiAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
     ApplicationInsightsAgent_EXTENSION_VERSION: '~3'
     ConnectionStrings__AzureKeyVault: keyVaultUri
     // Suppresses container auto-creation only; it does not select credentials.
-    // The Cosmos account and its key come from the ConnectionStrings--CosmosDb
-    // Key Vault secret. See docs/runbooks/cosmos-db-tier-migration.md.
+    // The Cosmos endpoint comes from the ConnectionStrings--CosmosDb Key Vault
+    // secret (a bare URI since 2026-07-27; credentials are the app's managed
+    // identity). See docs/runbooks/cosmos-db-tier-migration.md.
     CosmosDb__UseManagedIdentity: 'true'
   }
 }

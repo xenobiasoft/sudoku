@@ -176,8 +176,9 @@ resource cosmosDbAccount 'Microsoft.DocumentDB/databaseAccounts@2024-05-15' = {
     enableAnalyticalStorage: false
     enableBurstCapacity: false
     enablePartitionMerge: false
-    // Must stay false: the API authenticates with the account key embedded in
-    // the ConnectionStrings--CosmosDb Key Vault secret, not managed identity.
+    // Was pinned false while the API used an embedded account key. Since the
+    // 2026-07-27 switch to managed identity nothing depends on key auth, so
+    // true is now available as a hardening change (deliberate, not cleanup).
     disableLocalAuth: false
     disableKeyBasedMetadataWriteAccess: false
     minimalTlsVersion: 'Tls12'
