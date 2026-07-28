@@ -3,8 +3,8 @@
 | Field        | Value                                                                                                                                                                                                                                                                                                                                                                                                |
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Date**     | 2026-07-09                                                                                                                                                                                                                                                                                                                                                                                           |
-| **Status**   | **Cutover complete (2026-07-10 00:08 UTC).** Production serves from `cosmos-sudoku-prod2` (serverless), confirmed on the new account after the #357 deploy with zero failed Cosmos calls. Phases 0-4 done; Phase 7 code cleanup shipped (#357). Remaining: delete stale App Config keys in `appcs-xenobiasoft-prod`, then Phase 6 (delete old account) — gated on 1-2 weeks clean, **irreversible**. |
-| **Rollback** | Key Vault secret `ConnectionStrings--CosmosDb`, prior version `b0f8e2ef9b554bdfae1c0f18db1f4892` (points at `cosmos-sudoku-prod`). Restore it and restart the API. Valid only until Phase 6 deletes the old account.                                                                                                                                                                                 |
+| **Status**   | **Complete and closed — all phases done.** Cutover 2026-07-10 00:08 UTC; old account `cosmos-sudoku-prod` deleted 2026-07-27 (Phase 6); cleanup finished 2026-07-27 (Phase 7). Production runs on `cosmos-sudoku-prod2`, serverless, off the free tier, authenticating with **managed identity** — the account key is gone from Key Vault. No rollback path remains. This runbook is now a historical record; the account-key warnings in the sections below are superseded and marked as such.                                                              |
+| **Rollback** | ~~Key Vault secret `ConnectionStrings--CosmosDb`, prior version `b0f8e2ef9b554bdfae1c0f18db1f4892`.~~ **No longer available** — Phase 6 deleted `cosmos-sudoku-prod` on 2026-07-27 and its access key with it. Recovery is now a restore of `cosmos-sudoku-prod2` from its periodic backups.                                                                                                                                                                                 |
 | **Owner**    | Project maintainer                                                                                                                                                                                                                                                                                                                                                                                   |
 | **Related**  | [ADR-004 — Cosmos DB as persistence backend](../adr/ADR-004-cosmosdb.md), [.claude/rules/rbac-role-assignments.md](../../.claude/rules/rbac-role-assignments.md)                                                                                                                                                                                                                                     |
 
@@ -29,13 +29,15 @@ The `CosmosClient` is constructed by Aspire's `builder.AddAzureCosmosClient("Cos
 
 ### The API authenticates with an account key, not managed identity
 
-Phase 0 confirmed the secret holds a **full connection string** of the form `AccountEndpoint=…;AccountKey=…`. Three consequences:
+> **⚠️ Superseded 2026-07-27 (Phase 7).** The API now authenticates with **managed identity**: `ConnectionStrings--CosmosDb` holds a bare endpoint URI and `DefaultAzureCredential` supplies the credential. This section describes the state during the migration and is retained because it explains why Phase 3.4 was written the way it was. The bullets below marked struck-through are no longer true.
 
-- **`CosmosDb:UseManagedIdentity = true` in App Configuration is misleading.** It does not select credentials. `CosmosDbOptions.UseManagedIdentity` is read in exactly one place — `CosmosDbService.cs:182` — where it gates _container auto-creation_. Cosmos authentication is whatever the connection string implies, and it implies key auth.
-- **The Cosmos data-plane RBAC grants in `scripts/assign-roles.sh` are vestigial for the API.** They're harmless, and `Sudoku.Functions` may still depend on them, so leave them in place. But they are not what lets the API read and write.
-- **`disableLocalAuth` must stay `false` on the new account** (it is — `storage.bicep:170`). Setting it `true` would break the API instantly, since key auth would be refused.
+Phase 0 confirmed the secret held a **full connection string** of the form `AccountEndpoint=…;AccountKey=…`. Three consequences at the time:
 
-Phase 3.4 must therefore carry the **new account's key**, not just its endpoint. And because the key is embedded in the secret, rotating either account's keys out-of-band will break the app until the secret is updated.
+- **`CosmosDb:UseManagedIdentity = true` in App Configuration is misleading.** It does not select credentials — this remains true even now that credentials _are_ managed identity. `CosmosDbOptions.UseManagedIdentity` is read in exactly one place — `CosmosDbService.cs:182` — where it gates _container auto-creation_.
+- ~~**The Cosmos data-plane RBAC grants in `scripts/assign-roles.sh` are vestigial for the API.**~~ **Now load-bearing.** Since the Phase 7 auth switch, the Data Contributor grant is what lets the API read and write. Removing it breaks production.
+- ~~**`disableLocalAuth` must stay `false` on the new account.**~~ **No longer binding.** Nothing depends on key auth any more, so `disableLocalAuth: true` is now available as a hardening follow-up. It is still `false` in `storage.bicep`; flipping it is a deliberate change, not a cleanup.
+
+Phase 3.4 therefore carried the **new account's key**, not just its endpoint. Key rotation no longer affects the app.
 
 ## Why
 
@@ -246,24 +248,30 @@ Confirm the rollback took using the endpoint log line from Phase 4.
 
 Any writes that landed on the new account during the failed window must be replayed back to the old account before re-attempting — same script, endpoints reversed, `--prune` off (you want to add to the old account, not reconcile it against a partial copy).
 
-## Phase 6 — Decommission the old account
+## Phase 6 — Decommission the old account ✅ complete 2026-07-27
 
-Only after at least 1-2 weeks of clean operation on the new account, and only once Phase 4 has **positively confirmed via the endpoint log line** that traffic is hitting `cosmos-sudoku-prod2`. This is the irreversible step, and the whole point of Phase 4's check is to stop you taking it while the API is quietly still on the old account.
+`cosmos-sudoku-prod` was deleted on 2026-07-27, 17 days after the cutover, with Phase 4 having positively confirmed production on `cosmos-sudoku-prod2` (zero dependency calls to the old account over the preceding 7 days). The subscription's free-tier slot is released.
+
+**Rollback is gone.** The old account's access key died with it, so the connection string recorded in Phase 3.4 and the prior Key Vault secret version are now inert. Recovery from here means restoring `cosmos-sudoku-prod2` from its own periodic backups, not repointing at the old account.
+
+---
+
+Original criteria, retained for the record: only after at least 1-2 weeks of clean operation on the new account, and only once Phase 4 has **positively confirmed via the endpoint log line** that traffic is hitting `cosmos-sudoku-prod2`. This is the irreversible step, and the whole point of Phase 4's check is to stop you taking it while the API is quietly still on the old account.
 
 1. `az cosmosdb delete --name cosmos-sudoku-prod --resource-group rg-xenobiasoft-sudoku-prod-westus2`
 2. This also frees the subscription's one free-tier slot.
 
 The data here is low-value and easily recreated, so the concern isn't losing games. It's that if the cutover silently didn't take, this command deletes the account production is _actively serving from_ — the API starts throwing, the periodic backups are destroyed along with the account, and the symptom (sudden Cosmos errors, unchanged config) points nowhere obvious. Phase 4's one-line log check is what makes this step safe. After it, Phase 5 rollback is gone: the old account's access key dies with the account, so the connection string you saved is worthless.
 
-## Phase 7 — Cleanup
+## Phase 7 — Cleanup ✅ complete 2026-07-27
 
 - ✅ **Dead Cosmos config removed.** `CosmosDbOptions.AccountEndpoint`, `.DisableSslValidation`, and `.ConnectionMode` had no consumers anywhere; likewise the `CosmosDb__AccountEndpoint` app setting pushed by `compute.bicep` / `functions.bicep`, and the `UseCosmosDb` App Config key (deprecated by [ADR-004](../adr/ADR-004-cosmosdb.md), no C# reader). All deleted, along with the now-orphaned `cosmosDbEndpoint` module parameters. `CosmosDbOptions.UseManagedIdentity` survives — it _is_ read, at `CosmosDbService.cs:182` — and now carries a doc comment saying it gates container auto-creation rather than credential selection.
 - ✅ **`Sudoku.Functions` resolved.** It registers a `CosmosClient` via `AddAzureCosmosClient("CosmosDb")` but **never constructs one**. No `ConnectionStrings:CosmosDb` exists for that app, and it registers no Key Vault or App Configuration provider. Were the client ever built, Aspire would throw for the missing connection string and the host would fail to start. It starts, runs `PuzzleReplenishFunction` successfully, and emits zero Cosmos dependency calls — all its I/O is blob storage via managed identity. The registration is inert; only `IPuzzlePoolService` (blob-backed) is ever resolved.
-- **Decide on Cosmos authentication.** The API uses an account key while `CosmosDb:UseManagedIdentity` reads `true` — a flag that only gates container auto-creation and has nothing to do with credentials. The managed identities already hold Cosmos Data Contributor via `assign-roles.sh`, so switching the Key Vault secret to a bare endpoint URI would let `DefaultAzureCredential` take over and remove the embedded key entirely. Worth doing as a follow-up, but **not** during this migration — one variable at a time.
-- ✅ **Stale App Config keys still live in Azure.** `set-app-config.sh` only writes keys; dropping them from the script does not delete them from `appcs-xenobiasoft-prod`. `CosmosDb:AccountEndpoint`, `CosmosDb:ConnectionMode`, `CosmosDb:DisableSslValidation`, and `UseCosmosDb` remain there under both labels. Nothing reads them, but they are exactly the misleading residue that caused this migration's near-miss. Delete with `az appconfig kv delete --name appcs-xenobiasoft-prod --key <key> --label <label> --yes`.
-- Remove the now-unused `cosmosDbEnableFreeTier` parameter from `infra/main.bicep` and `infra/modules/storage.bicep`, or leave it defaulted to `false` — harmless either way.
-- Cosmos account names are immutable, so the `2` suffix is permanent short of another full migration. Not worth doing.
-- Add a note to [ADR-004](../adr/ADR-004-cosmosdb.md) recording the account rename and the serverless switch. Its "Cost model" section currently doesn't mention capacity mode at all.
+- ✅ **Cosmos authentication switched to managed identity.** Done after the Phase 6 decommission, deliberately as its own change rather than during the migration. The Key Vault secret `ConnectionStrings--CosmosDb` now holds a **bare endpoint URI**, so Aspire's `AddAzureCosmosClient` builds the client with `DefaultAzureCredential` and no key is embedded anywhere. **This inverts two statements made earlier in this runbook** (see the struck-through notes in "The API authenticates with an account key"): the Cosmos data-plane grants in `assign-roles.sh` are now load-bearing for the API rather than vestigial, and the `disableLocalAuth: false` constraint no longer binds. Key rotation on the account no longer breaks the app.
+- ✅ **Stale App Config keys deleted from Azure.** `set-app-config.sh` only writes keys; dropping them from the script did not remove them from `appcs-xenobiasoft-prod`. `CosmosDb:AccountEndpoint`, `CosmosDb:ConnectionMode`, `CosmosDb:DisableSslValidation`, and `UseCosmosDb` have now been deleted under both labels. Nothing read them, but they were exactly the misleading residue that caused this migration's near-miss. (`az appconfig kv delete --name appcs-xenobiasoft-prod --key <key> --label <label> --yes`.)
+- ✅ **`cosmosDbEnableFreeTier` left in place.** Resolved as "leave it": the parameter still exists in `infra/main.bicep` and `infra/modules/storage.bicep` (default `true`), with both `prod.bicepparam` and `staging.bicepparam` setting it `false`. No account in use has free tier enabled, and `storage.bicep` additionally gates it behind `&& !cosmosDbServerless`. Harmless.
+- ✅ **Account name `cosmos-sudoku-prod2` accepted as permanent.** Cosmos account names are immutable; renaming would mean another full migration. Not worth doing.
+- ✅ **[ADR-004](../adr/ADR-004-cosmosdb.md) amended** with the account rename, the serverless switch, and the decommission (#358 plus the Phase 6 close-out).
 
 ## Things to double-check before running this for real
 

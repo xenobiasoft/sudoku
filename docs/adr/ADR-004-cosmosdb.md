@@ -101,9 +101,11 @@ The production Cosmos account was migrated off the free tier. Because the free-t
 
 - **Account name:** production now runs on **`cosmos-sudoku-prod2`**, not `cosmos-sudoku-prod`. Cosmos account names are immutable, so the `2` suffix is permanent. The database (`sudoku`) and containers (`games`, `profiles`) are unchanged.
 - **Capacity mode:** the new account uses **Serverless** instead of the previous 400 RU/s × 2 provisioned throughput. Serverless bills per request with no provisioned floor, which suits this app's low, bursty workload far better than a flat provisioned cost once the free-tier discount is gone.
-- **Cutover:** completed 2026-07-10 00:08 UTC via a brief maintenance window (stop writes, single copy, repoint the Key Vault connection string, restart). The old `cosmos-sudoku-prod` account is retained temporarily as a rollback path and decommissioned only after a clean-operation window.
+- **Cutover:** completed 2026-07-10 00:08 UTC via a brief maintenance window (stop writes, single copy, repoint the Key Vault connection string, restart). The old `cosmos-sudoku-prod` account was retained as a rollback path and **deleted 2026-07-27** after 17 days of clean operation on the new account; the migration is closed and no rollback path remains.
 
-Full detail, including the finding that the API authenticates by account key rather than managed identity, is in the [Cosmos DB tier-migration runbook](../runbooks/cosmos-db-tier-migration.md).
+- **Authentication:** the migration ran with the API authenticating by **account key** (a full connection string in Key Vault). As a follow-up on 2026-07-27, once the old account was gone, the secret was reduced to a bare endpoint URI and the API moved to **managed identity** via `DefaultAzureCredential`. The Cosmos Data Contributor grants in `scripts/assign-roles.sh` are therefore load-bearing for the API, not merely vestigial.
+
+Full detail is in the [Cosmos DB tier-migration runbook](../runbooks/cosmos-db-tier-migration.md).
 
 ---
 
