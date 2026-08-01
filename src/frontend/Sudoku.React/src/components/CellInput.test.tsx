@@ -68,6 +68,39 @@ describe('CellInput - editable cell', () => {
   });
 });
 
+describe('CellInput - pencil mark highlighting', () => {
+  it('emphasizes the candidate matching the selected value', () => {
+    const cell = makeCell({ hasValue: false, possibleValues: [1, 3, 5] });
+    render(<CellInput cell={cell} {...baseProps} selectedValue={5} />);
+    expect(screen.getByText('5').className).toMatch(/pencilMatch/);
+  });
+
+  it('leaves non-matching candidates unemphasized', () => {
+    const cell = makeCell({ hasValue: false, possibleValues: [1, 3, 5] });
+    render(<CellInput cell={cell} {...baseProps} selectedValue={5} />);
+    expect(screen.getByText('3').className).not.toMatch(/pencilMatch/);
+  });
+
+  it('does not emphasize an empty positional slot whose digit matches', () => {
+    const cell = makeCell({ hasValue: false, possibleValues: [1, 3] });
+    const { container } = render(<CellInput cell={cell} {...baseProps} selectedValue={5} />);
+    expect(container.querySelectorAll('[class*="pencilMatch"]')).toHaveLength(0);
+  });
+
+  it('emphasizes nothing when no value is selected', () => {
+    const cell = makeCell({ hasValue: false, possibleValues: [1, 3, 5] });
+    const { container } = render(<CellInput cell={cell} {...baseProps} />);
+    expect(container.querySelectorAll('[class*="pencilMatch"]')).toHaveLength(0);
+  });
+
+  it('emphasizes the matching candidate in the 16x16 wrapped layout', () => {
+    const cell = makeCell({ hasValue: false, possibleValues: [3, 10, 16] });
+    render(<CellInput cell={cell} {...baseProps} selectedValue={10} size={16} boxSize={4} />);
+    expect(screen.getByText('A').className).toMatch(/pencilMatch/);
+    expect(screen.getByText('3').className).not.toMatch(/pencilMatch/);
+  });
+});
+
 describe('CellInput at size 16 (boxSize 4)', () => {
   it('renders values 10-16 as letters A-G', () => {
     const cell = makeCell({ isFixed: true, value: 16, hasValue: true });

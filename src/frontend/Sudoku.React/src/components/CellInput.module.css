@@ -97,6 +97,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: background-color 0.16s ease, color 0.16s ease;
+}
+
+/* Candidate matching the selected cell's value. A filled chip rather than a
+   recolored glyph: at clamp(7px, 2.1vw, 10px) the digit is too small for hue
+   and weight alone to register, so the slot itself carries the signal. Fill
+   and ink match the accent-button pattern used elsewhere in the app. */
+.pencilMatch {
+  margin: 1px;
+  border-radius: 3px;
+  background-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 700;
 }
 
 /* 16x16 non-positional wrapped pencil marks — a positional 4x4 grid at ~30px
@@ -116,4 +129,12 @@
   font-size: clamp(6px, 1.6vw, 7px);
   font-weight: 500;
   overflow: hidden;
+}
+
+/* In the wrapped layout an entry is only as wide as its glyph, so the chip
+   needs its own padding to read as a block. Margin is dropped because the
+   flex gap already separates entries. */
+.pencilValuesWrapped .pencilMatch {
+  margin: 0;
+  padding: 0 2px;
 }
