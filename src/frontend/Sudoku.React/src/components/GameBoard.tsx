@@ -76,6 +76,7 @@ export default function GameBoard({
                 isHighlighted={isHighlighted(r, c)}
                 isSameNumber={isSameNumber(cell)}
                 isInvalid={isInvalid(r, c)}
+                selectedValue={selectedValue}
                 onSelect={() => onCellSelect(r, c)}
               />
             );

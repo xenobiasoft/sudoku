@@ -49,6 +49,33 @@ describe('GameBoard', () => {
   });
 });
 
+describe('GameBoard - pencil mark highlighting', () => {
+  const boardWithNotes = () => {
+    const cells = make81Cells();
+    cells[0] = makeCell({ row: 0, column: 0, value: 5, hasValue: true, isFixed: true });
+    cells[40] = makeCell({ row: 4, column: 4, possibleValues: [2, 5] });
+    return cells;
+  };
+
+  it('emphasizes candidates matching the selected cell value', () => {
+    const { container } = renderBoard({
+      cells: boardWithNotes(),
+      selectedCell: { row: 0, column: 0 },
+    });
+    const matches = container.querySelectorAll('[class*="pencilMatch"]');
+    expect(matches).toHaveLength(1);
+    expect(matches[0]).toHaveTextContent('5');
+  });
+
+  it('emphasizes no candidates when the selected cell is empty', () => {
+    const { container } = renderBoard({
+      cells: boardWithNotes(),
+      selectedCell: { row: 4, column: 4 },
+    });
+    expect(container.querySelectorAll('[class*="pencilMatch"]')).toHaveLength(0);
+  });
+});
+
 describe('GameBoard at size 16', () => {
   it('renders 256 cell buttons', () => {
     renderBoard({ cells: makeCells(16), size: 16 });

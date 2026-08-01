@@ -8,6 +8,7 @@ interface CellInputProps {
   isHighlighted: boolean;
   isSameNumber: boolean;
   isInvalid: boolean;
+  selectedValue?: number | null;
   size?: number;
   boxSize?: number;
   onSelect: () => void;
@@ -19,6 +20,7 @@ export default function CellInput({
   isHighlighted,
   isSameNumber,
   isInvalid,
+  selectedValue = null,
   size = 9,
   boxSize = 3,
   onSelect,
@@ -53,6 +55,11 @@ export default function CellInput({
 
   const showPencil = cell.possibleValues.length > 0 && !cell.hasValue;
 
+  // A noted candidate matching the selected cell's value is emphasized so the
+  // "where can this number still go?" scan doesn't have to be done by eye.
+  const pencilClass = (n: number): string =>
+    n === selectedValue ? `${styles.pencilEntry} ${styles.pencilMatch}` : styles.pencilEntry;
+
   return (
     <button
       type="button"
@@ -70,18 +77,21 @@ export default function CellInput({
             {[...cell.possibleValues]
               .sort((a, b) => a - b)
               .map(n => (
-                <span key={n} className={styles.pencilEntry}>
+                <span key={n} className={pencilClass(n)}>
                   {valueToSymbol(n)}
                 </span>
               ))}
           </span>
         ) : (
           <span className={styles.pencilValues}>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-              <span key={n} className={styles.pencilEntry}>
-                {cell.possibleValues.includes(n) ? valueToSymbol(n) : ''}
-              </span>
-            ))}
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => {
+              const isNoted = cell.possibleValues.includes(n);
+              return (
+                <span key={n} className={isNoted ? pencilClass(n) : styles.pencilEntry}>
+                  {isNoted ? valueToSymbol(n) : ''}
+                </span>
+              );
+            })}
           </span>
         )
       ) : null}

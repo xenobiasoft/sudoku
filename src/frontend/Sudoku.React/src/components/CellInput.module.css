@@ -97,6 +97,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: color 0.16s ease;
+}
+
+/* Candidate matching the selected cell's value. Weight carries the signal
+   alongside color so it survives low contrast and color-vision differences. */
+.pencilMatch {
+  color: var(--accent);
+  font-weight: 700;
 }
 
 /* 16x16 non-positional wrapped pencil marks — a positional 4x4 grid at ~30px
