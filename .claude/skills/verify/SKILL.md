@@ -40,10 +40,12 @@ Skip that and you'll silently land back on the home page and your selectors won'
 
 ## Gotchas worth knowing
 
-- **StrictMode double-fires effects in dev.** `NewGamePage`'s create-game effect has no
-  concurrency guard, so **every new game POSTs twice and creates two games** in dev. This is
-  not difficulty-specific and not a regression — don't chase it as a bug in your change.
-  (A production build won't double-invoke.)
+- **StrictMode double-fires effects in dev.** Expect `GamePage` to `GET` the game twice on
+  load. That's normal. A new game should still produce exactly **one** `POST .../games/{difficulty}`
+  and **one** `POST .../status/resume`, and the `PUT .../actions` for a move should target the
+  game id in the URL. Guards in `NewGamePage`, `GamePage` and `useGameService.getGame` enforce
+  this (#395). Two creates, a resume 400, or a move landing on a different game means
+  something broke those guards.
 - **A fresh local puzzle pool is empty.** At 9x9 that only costs speed — the first game per
   difficulty falls back to on-demand generation. **At 16x16 there is no fallback**, so creating
   a game returns `503 PUZZLE_POOL_EMPTY` and the UI parks on "Preparing puzzles — try again in
@@ -58,8 +60,7 @@ Skip that and you'll silently land back on the home page and your selectors won'
   Omit the query params to top up the whole matrix (~11s from empty). Local auth is not
   enforced, so no function key is needed. The emulator now has a data volume, so a seeded pool
   survives AppHost restarts — but each created game still consumes one puzzle with no
-  replenishment, and StrictMode's double-create burns two per UI run, so re-seed when a
-  previously working flow starts 503ing.
+  replenishment, so re-seed when a previously working flow starts 503ing.
 - Ground truth for a board is the API payload, not the DOM: `GET /api/players/{pid}/games/{id}`
   → count `cells` where `value === null`.
 

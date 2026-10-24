@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -259,6 +260,62 @@ describe('GamePage - after load', () => {
     await waitFor(() => {
       expect(mockResumeGame).toHaveBeenCalledWith('test-player', 'g1');
     });
+  });
+
+  it('resumes the game only once when StrictMode re-runs the load effect', async () => {
+    const game = makeGame({ id: 'g1' });
+    const mockGetGame = vi.fn().mockResolvedValue(game);
+    const mockResumeGame = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(useGameService).mockReturnValue({
+      savedGames: [], isLoading: false, error: null, isLoaded: false,
+      loadGames: vi.fn(), deleteGame: vi.fn(), createGame: vi.fn(), clearCache: vi.fn(), refreshGames: vi.fn(),
+      currentGame: null, isGameLoading: false, gameError: null,
+      getGame: mockGetGame, pauseGame: vi.fn(), resumeGame: mockResumeGame, makeMove: vi.fn(), undoMove: vi.fn(), requestHint: vi.fn(), resetGame: vi.fn(),
+      addPossibleValue: vi.fn(), removePossibleValue: vi.fn(), clearPossibleValues: vi.fn(), clearCurrentGame: vi.fn(),
+    });
+    render(
+      <StrictMode>
+        <MemoryRouter initialEntries={['/game/g1']}>
+          <Routes>
+            <Route path="/game/:puzzleId" element={<GamePage />} />
+          </Routes>
+        </MemoryRouter>
+      </StrictMode>
+    );
+    await waitFor(() => {
+      expect(mockResumeGame).toHaveBeenCalledWith('test-player', 'g1');
+    });
+    expect(mockGetGame).toHaveBeenCalledTimes(2);
+    expect(mockResumeGame).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not navigate home when a superseded load fails', async () => {
+    let rejectFirst: (e: Error) => void = () => {};
+    const mockGetGame = vi.fn()
+      .mockImplementationOnce(() => new Promise((_, reject) => { rejectFirst = reject; }))
+      .mockResolvedValue(makeGame({ id: 'g1' }));
+    vi.mocked(useGameService).mockReturnValue({
+      savedGames: [], isLoading: false, error: null, isLoaded: false,
+      loadGames: vi.fn(), deleteGame: vi.fn(), createGame: vi.fn(), clearCache: vi.fn(), refreshGames: vi.fn(),
+      currentGame: null, isGameLoading: false, gameError: null,
+      getGame: mockGetGame, pauseGame: vi.fn(), resumeGame: vi.fn().mockResolvedValue(undefined), makeMove: vi.fn(), undoMove: vi.fn(), requestHint: vi.fn(), resetGame: vi.fn(),
+      addPossibleValue: vi.fn(), removePossibleValue: vi.fn(), clearPossibleValues: vi.fn(), clearCurrentGame: vi.fn(),
+    });
+    render(
+      <StrictMode>
+        <MemoryRouter initialEntries={['/game/g1']}>
+          <Routes>
+            <Route path="/game/:puzzleId" element={<GamePage />} />
+          </Routes>
+        </MemoryRouter>
+      </StrictMode>
+    );
+    await waitFor(() => {
+      expect(mockGetGame).toHaveBeenCalledTimes(2);
+    });
+    rejectFirst(new Error('aborted'));
+    await Promise.resolve();
+    expect(mockNavigate).not.toHaveBeenCalledWith('/');
   });
 
   it('waits for player initialization before loading game', () => {

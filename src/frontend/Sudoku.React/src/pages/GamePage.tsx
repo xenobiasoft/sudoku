@@ -94,19 +94,25 @@ export default function GamePage() {
 
   useEffect(() => {
     if (!puzzleId || !profileId || !isInitialized) return;
+    // Set by cleanup so a superseded run (StrictMode re-run, puzzleId change)
+    // doesn't start the timer or resume a game a second time
+    let cancelled = false;
     const load = async () => {
       try {
         const g = await getGame(profileId, puzzleId);
+        if (cancelled) return;
         const duration = g.statistics?.playDuration ?? '00:00:00';
         startTimer(duration);
         await resumeGame(profileId, g.id);
       } catch (e) {
+        if (cancelled) return;
         console.error('Failed to load game', e);
         navigate('/');
       }
     };
     load();
     return () => {
+      cancelled = true;
       stopTimer();
       clearCurrentGame();
     };

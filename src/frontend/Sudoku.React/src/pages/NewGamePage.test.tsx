@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -188,6 +189,53 @@ describe('NewGamePage', () => {
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/game/retried-game', { replace: true });
     });
+  });
+
+  it('creates only one game when StrictMode re-runs the create effect', async () => {
+    const mockCreateGame = vi.fn().mockResolvedValue(makeGame({ id: 'only-game' }));
+    mockUseGameService.mockReturnValue({
+      savedGames: [], isLoading: false, error: null, isLoaded: false,
+      loadGames: vi.fn(), deleteGame: vi.fn(), createGame: mockCreateGame, clearCache: vi.fn(), refreshGames: vi.fn(),
+    });
+    render(
+      <StrictMode>
+        <MemoryRouter initialEntries={['/new/Easy']}>
+          <Routes>
+            <Route path="/new/:difficulty" element={<NewGamePage />} />
+          </Routes>
+        </MemoryRouter>
+      </StrictMode>
+    );
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/game/only-game', { replace: true });
+    });
+    expect(mockCreateGame).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not create another game when the createGame reference changes after mount', async () => {
+    const firstCreateGame = vi.fn().mockResolvedValue(makeGame());
+    const secondCreateGame = vi.fn().mockResolvedValue(makeGame());
+    const service = (createGame: typeof firstCreateGame) => ({
+      savedGames: [], isLoading: false, error: null, isLoaded: false,
+      loadGames: vi.fn(), deleteGame: vi.fn(), createGame, clearCache: vi.fn(), refreshGames: vi.fn(),
+    });
+    mockUseGameService.mockReturnValue(service(firstCreateGame));
+    const { rerender } = renderNewGamePage('Easy');
+    await waitFor(() => {
+      expect(firstCreateGame).toHaveBeenCalledTimes(1);
+    });
+
+    mockUseGameService.mockReturnValue(service(secondCreateGame));
+    rerender(
+      <MemoryRouter initialEntries={['/new/Easy']}>
+        <Routes>
+          <Route path="/new/:difficulty" element={<NewGamePage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(secondCreateGame).not.toHaveBeenCalled();
   });
 
   it('navigates home on a non-503 error, unaffected by the pool-empty handling', async () => {

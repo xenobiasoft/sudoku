@@ -10,6 +10,7 @@ vi.mock('../api/apiClient', () => ({
     getGames: vi.fn(),
     deleteGame: vi.fn(),
     getHint: vi.fn(),
+    getGame: vi.fn(),
   },
 }));
 
@@ -363,6 +364,65 @@ describe('useGameService', () => {
 
       expect(apiClient.getGames).toHaveBeenCalledWith('test-player');
       expect(result.current.savedGames).toEqual([mockGames[0]]);
+    });
+  });
+
+  describe('getGame', () => {
+    it('should set the current game from the API', async () => {
+      vi.mocked(apiClient.getGame).mockResolvedValue(mockGames[0]);
+
+      const { result } = renderHook(() => useGameService());
+
+      await act(async () => {
+        await result.current.getGame('test-player', 'game-1');
+      });
+
+      expect(result.current.currentGame).toEqual(mockGames[0]);
+      expect(result.current.isGameLoading).toBe(false);
+    });
+
+    it('should ignore a stale response that resolves after a newer request', async () => {
+      let resolveStale: (game: GameModel) => void = () => {};
+      vi.mocked(apiClient.getGame)
+        .mockImplementationOnce(() => new Promise(resolve => { resolveStale = resolve; }))
+        .mockResolvedValueOnce(mockGames[2]);
+
+      const { result } = renderHook(() => useGameService());
+
+      let stale: Promise<GameModel> = Promise.resolve(mockGames[0]);
+      await act(async () => {
+        stale = result.current.getGame('test-player', 'game-1');
+        await result.current.getGame('test-player', 'game-3');
+      });
+      await act(async () => {
+        resolveStale(mockGames[0]);
+        await stale;
+      });
+
+      expect(result.current.currentGame).toEqual(mockGames[2]);
+    });
+
+    it('should not repopulate the current game after clearCurrentGame', async () => {
+      let resolvePending: (game: GameModel) => void = () => {};
+      vi.mocked(apiClient.getGame)
+        .mockImplementationOnce(() => new Promise(resolve => { resolvePending = resolve; }));
+
+      const { result } = renderHook(() => useGameService());
+
+      let pending: Promise<GameModel> = Promise.resolve(mockGames[0]);
+      act(() => {
+        pending = result.current.getGame('test-player', 'game-1');
+      });
+      act(() => {
+        result.current.clearCurrentGame();
+      });
+      await act(async () => {
+        resolvePending(mockGames[0]);
+        await pending;
+      });
+
+      expect(result.current.currentGame).toBeNull();
+      expect(result.current.isGameLoading).toBe(false);
     });
   });
 
