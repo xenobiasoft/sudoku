@@ -43,6 +43,8 @@ export function useGameService(): UseGameServiceReturn {
   const [currentGame, setCurrentGame] = useState<GameModel | null>(null);
   const [isGameLoading, setIsGameLoading] = useState(false);
   const [gameError, setGameError] = useState<string | null>(null);
+  // Sequence number of the latest getGame call; older responses are stale and dropped
+  const gameRequestRef = useRef(0);
 
   const clearCache = useCallback(() => {
     localStorage.removeItem('savedGames');
@@ -186,7 +188,10 @@ export function useGameService(): UseGameServiceReturn {
 
   // Single game management functions
   const clearCurrentGame = useCallback(() => {
+    // Invalidate any in-flight getGame so it can't repopulate the cleared game
+    gameRequestRef.current++;
     setCurrentGame(null);
+    setIsGameLoading(false);
     setGameError(null);
   }, []);
 
@@ -195,20 +200,23 @@ export function useGameService(): UseGameServiceReturn {
       throw new Error('Profile ID and game ID are required');
     }
 
+    const requestId = ++gameRequestRef.current;
+    const isLatest = () => requestId === gameRequestRef.current;
+
     setIsGameLoading(true);
     setGameError(null);
 
     try {
       const game = await apiClient.getGame(profileId, gameId);
-      setCurrentGame(game);
+      if (isLatest()) setCurrentGame(game);
       return game;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load game';
-      setGameError(errorMessage);
+      if (isLatest()) setGameError(errorMessage);
       console.error('Failed to load game:', err);
       throw err;
     } finally {
-      setIsGameLoading(false);
+      if (isLatest()) setIsGameLoading(false);
     }
   }, []);
 

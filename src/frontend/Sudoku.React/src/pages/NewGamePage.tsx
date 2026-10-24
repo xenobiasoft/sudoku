@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams, type NavigateFunction } from 'react-router-dom';
 import type { GameModel } from '../types';
 import { usePlayerService } from '../hooks/usePlayerService';
@@ -51,6 +51,9 @@ export default function NewGamePage() {
   const { profileId, isInitialized, isNewPlayer } = usePlayerService();
   const { createGame } = useGameService();
   const [poolEmpty, setPoolEmpty] = useState(false);
+  // Key of the request already started; StrictMode and dependency identity changes
+  // re-run the create effect, and each extra run would create (and burn) another game
+  const startedRequestRef = useRef<string | null>(null);
 
   const sizeParam = searchParams.get('size');
   const parsedSize = sizeParam ? parseInt(sizeParam, 10) : 9;
@@ -60,6 +63,11 @@ export default function NewGamePage() {
     if (!isInitialized || !profileId || !difficulty) {
       return;
     }
+    const requestKey = `${profileId}:${difficulty}:${size}`;
+    if (startedRequestRef.current === requestKey) {
+      return;
+    }
+    startedRequestRef.current = requestKey;
     attemptCreateGame({
       profileId,
       difficulty,
