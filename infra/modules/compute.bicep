@@ -115,6 +115,9 @@ resource apiAppSettings 'Microsoft.Web/sites/config@2023-12-01' = {
     // secret (a bare URI since 2026-07-27; credentials are the app's managed
     // identity). See docs/runbooks/cosmos-db-tier-migration.md.
     CosmosDb__UseManagedIdentity: 'true'
+    // API startup has taken up to 233s on B1, and the default probe limit is
+    // 230s. Hitting it restarts the container and can cause a ~10 minute outage.
+    WEBSITES_CONTAINER_START_TIME_LIMIT: '600'
   }
 }
 
