@@ -390,6 +390,50 @@ jobs:
             --resource-group "rg-xenobiasoft-sudoku-prod-westus2" \
             --src "${{ github.workspace }}/functions.zip"
 
+  # Deploy actions return once the package is uploaded, before the new container
+  # has started, so a green deploy doesn't prove the API is up. This is a separate
+  # job so an unhealthy API fails the run without blocking deploy-event-grid.
+  verify-api:
+    needs: deploy-apps
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Wait for API to be healthy
+        shell: bash
+        run: |
+          set -uo pipefail
+          URL="https://${AZURE_API_NAME}.azurewebsites.net/health-check"
+          INTERVAL_SECONDS=30
+          REQUIRED_SUCCESSES=4
+          SLOW_START_SECONDS=300
+          DEADLINE_SECONDS=900
+
+          # Consecutive successes guard against the old container answering
+          # briefly before App Service swaps it out.
+          successes=0
+          while [ "$SECONDS" -lt "$DEADLINE_SECONDS" ]; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" --max-time 25 "$URL" || true)
+            if [ "$status" = "200" ]; then
+              successes=$((successes + 1))
+            else
+              successes=0
+            fi
+            echo "[${SECONDS}s] HTTP $status ($successes/$REQUIRED_SUCCESSES)"
+            if [ "$successes" -ge "$REQUIRED_SUCCESSES" ]; then
+              if [ "$SECONDS" -gt "$SLOW_START_SECONDS" ]; then
+                echo "::warning::API took ${SECONDS}s to become healthy. Check the startup probe in its docker logs."
+              fi
+              echo "API is healthy."
+              exit 0
+            fi
+            sleep "$INTERVAL_SECONDS"
+          done
+
+          echo "::error::API was not healthy within ${DEADLINE_SECONDS}s: $URL"
+          exit 1
+
   deploy-event-grid:
     needs: deploy-apps
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
