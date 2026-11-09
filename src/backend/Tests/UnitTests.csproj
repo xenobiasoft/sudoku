@@ -13,7 +13,7 @@
     <PackageReference Include="AutoFixture.AutoMoq" Version="4.18.1" />
     <PackageReference Include="DepenMock.Moq" Version="4.0.0" />
     <PackageReference Include="DepenMock.XUnit.V3" Version="4.0.0" />
-    <PackageReference Include="FluentAssertions" Version="8.10.0" />
+    <PackageReference Include="FluentAssertions" Version="8.11.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.12" />
