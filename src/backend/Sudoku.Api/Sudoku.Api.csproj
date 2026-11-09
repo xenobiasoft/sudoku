@@ -12,7 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Aspire.Azure.Security.KeyVault" Version="13.6.4" />
     <PackageReference Include="Aspire.Microsoft.Azure.Cosmos" Version="13.6.4" />
-    <PackageReference Include="MediatR" Version="14.2.0" />
+    <PackageReference Include="MediatR" Version="14.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
     <PackageReference Include="Microsoft.OpenApi" Version="2.10.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
